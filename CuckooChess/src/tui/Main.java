@@ -3,9 +3,13 @@
  * and open the template in the editor.
  */
 
-package chess;
+package tui;
 
 import java.io.IOException;
+
+import chess.ComputerPlayer;
+import chess.HumanPlayer;
+import chess.Player;
 
 /**
  *
@@ -24,7 +28,7 @@ public class Main {
         } else {
             Player whitePlayer = new HumanPlayer();
             Player blackPlayer = new ComputerPlayer();
-            Game game = new Game(whitePlayer, blackPlayer);
+            TUIGame game = new TUIGame(whitePlayer, blackPlayer);
             game.play();
         }
     }

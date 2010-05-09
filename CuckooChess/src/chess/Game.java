@@ -5,14 +5,10 @@
 
 package chess;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import uci.UCIProtocol;
 
 /**
  *
@@ -27,8 +23,8 @@ public class Game {
     GameState drawState;
     GameState resignState;
     public Position pos = null;
-    Player whitePlayer;
-    Player blackPlayer;
+    protected Player whitePlayer;
+    protected Player blackPlayer;
     
     public Game(Player whitePlayer, Player blackPlayer) {
         this.whitePlayer = whitePlayer;
@@ -212,7 +208,7 @@ public class Game {
      * @param moveStr  The command to handle
      * @return  True if command handled, false otherwise.
      */
-    private boolean handleCommand(String moveStr) {
+    protected boolean handleCommand(String moveStr) {
         if (moveStr.equals("new")) {
             moveList = new ArrayList<Move>();
             uiInfoList = new ArrayList<UndoInfo>();
@@ -292,9 +288,6 @@ public class Game {
             } else {
                 return true;
             }
-        } else if (moveStr.startsWith("testsuite ")) {
-            String testSuiteCmd = moveStr.substring(moveStr.indexOf(" ") + 1);
-            return handleTestSuite(testSuiteCmd);
         } else if (moveStr.startsWith("book")) {
             String bookCmd = moveStr.substring(moveStr.indexOf(" ") + 1);
             return handleBookCmd(bookCmd);
@@ -310,15 +303,6 @@ public class Game {
                 System.out.printf("Number format exception: %s\n", nfe.getMessage());
                 return false;
             }
-        } else if (moveStr.equals("uci")) {
-            whitePlayer = null;
-            blackPlayer = null;
-            UCIProtocol.main(new String[0]);
-            System.exit(0);
-            return false;
-        } else if (moveStr.equals("help")) {
-            showHelp();
-            return true;
         } else {
             return false;
         }
@@ -504,86 +488,6 @@ public class Game {
         }
     }
 
-    private boolean handleTestSuite(String cmd) {
-        LineNumberReader fr = null;
-        try {
-            int idx = cmd.indexOf(" ");
-            String filename = cmd.substring(0, idx);
-            String timeStr = cmd.substring(idx + 1, cmd.length());
-            int timeLimit = Integer.parseInt(timeStr);
-//            System.out.printf("file:%s time:%s (%d)\n", filename, timeStr, timeLimit);
-            fr = new LineNumberReader(new FileReader(filename));
-            String line;
-            Player pl = whitePlayer.isHumanPlayer() ? blackPlayer : whitePlayer;
-            if (pl.isHumanPlayer()) {
-                System.out.printf("No computer player available");
-                return false;
-            }
-            ComputerPlayer cp = (ComputerPlayer)pl;
-            int numRight = 0;
-            int numTotal = 0;
-            while ((line = fr.readLine()) != null) {
-                if (line.startsWith("#") || (line.length() == 0)) {
-                    continue;
-                }
-                int idx1 = line.indexOf(" bm ");
-                String fen = line.substring(0, idx1);
-                int idx2 = line.indexOf(";", idx1);
-                String bm = line.substring(idx1 + 4, idx2);
-//                System.out.printf("Line %3d: fen:%s bm:%s\n", fr.getLineNumber(), fen, bm);
-                Position testPos = TextIO.readFEN(fen);
-                cp.clearTT();
-                TwoReturnValues<Move, String> ret = cp.searchPosition(testPos, timeLimit);
-                Move sm = ret.first;
-                String PV = ret.second;
-                Move m = new Move(sm);
-                String[] answers = bm.split(" ");
-                boolean correct = false;
-                for (String a : answers) {
-                    Move am = TextIO.stringToMove(testPos, a);
-                    if (am == null) {
-                        throw new ChessParseError("Invalid move " + a);
-                    }
-                    if (am.equals(m)) {
-                        correct = true;
-                        break;
-                    }
-                }
-                if (correct) {
-                    numRight++;
-                }
-                numTotal++;
-                System.out.printf("%3d : %6s %6d %d %03d/%03d %s : %s\n", fr.getLineNumber(),
-                        TextIO.moveToString(testPos, sm, false), sm.score, correct ? 1 : 0,
-                        numRight, numTotal, bm, PV);
-            }
-            fr.close();
-        } catch (NumberFormatException nfe) {
-            System.out.printf("Number format exception: %s\n", nfe.getMessage());
-            return false;
-        } catch (FileNotFoundException fnfe) {
-            System.out.printf("File not found: %s\n", fnfe.getMessage());
-            return false;
-        } catch (IOException ex) {
-            System.out.printf("IO error: %s\n", ex.getMessage());
-        } catch (ChessParseError cpe) {
-            int lineNo = (fr == null) ? -1 : fr.getLineNumber();
-            System.out.printf("Parse error, line %d: %s\n", lineNo, cpe.getMessage());
-        } catch (StringIndexOutOfBoundsException e) {
-            int lineNo = (fr == null) ? -1 : fr.getLineNumber();
-            System.out.printf("Parse error, line %d: %s\n", lineNo, e.getMessage());
-        } finally {
-            if (fr != null) {
-                try {
-                    fr.close();
-                } catch (IOException ex) {
-                    // Stupid FileReader class forces me to catch this meaningless exception
-                }
-            }
-        }
-        return true;
-    }
-
     private boolean handleBookCmd(String bookCmd) {
         if (bookCmd.equals("off")) {
             whitePlayer.useBook(false);
@@ -633,28 +537,5 @@ public class Game {
         }
 
         return false;
-    }
-
-    private void showHelp() {
-        System.out.println("Enter a move, or one of the following special commands:");
-        System.out.println("  new             - Start a new game");
-        System.out.println("  undo            - Undo last half-move");
-        System.out.println("  redo            - Redo next half-move");
-        System.out.println("  swap            - Swap sides");
-        System.out.println("  go              - Same as swap");
-        System.out.println("  list            - List all moves in current game");
-        System.out.println("  setpos FEN      - Set a position using a FEN string");
-        System.out.println("  getpos          - Print current position in FEN notation");
-        System.out.println("  draw rep [move] - Claim draw by repetition");
-        System.out.println("  draw 50 [move]  - Claim draw by 50-move rule");
-        System.out.println("  draw offer move - Play move and offer draw");
-        System.out.println("  draw accept     - Accept a draw offer");
-        System.out.println("  resign          - Resign the current game");
-        System.out.println("  testsuite filename maxtime");
-        System.out.println("  book on|off     - Turn opening book on/off");
-        System.out.println("  time t          - Set computer thinking time, ms");
-        System.out.println("  uci             - Switch to uci protocol.");
-        System.out.println("  help            - Show this help");
-        System.out.println("  quit            - Terminate program");
     }
 }

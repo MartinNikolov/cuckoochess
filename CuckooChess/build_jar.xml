@@ -7,7 +7,7 @@
         	filesetmanifest="skip"
         	update="false" duplicate="fail">
             <manifest>
-                <attribute name="Main-Class" value="chess.Main"/>
+                <attribute name="Main-Class" value="tui.Main"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
         	<fileset dir="/home/petero/workspace/CuckooChess/bin">

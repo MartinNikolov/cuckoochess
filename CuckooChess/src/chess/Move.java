@@ -21,7 +21,7 @@ public class Move {
     /** Promotion piece. */
     public int promoteTo;
 
-    int score;
+    public int score;
     
     /** Create a move object. */
     public Move(int from, int to, int promoteTo) {
@@ -44,7 +44,7 @@ public class Move {
         }
     }
     
-    Move(Move m) {
+    public Move(Move m) {
         this.from = m.from;
         this.to = m.to;
         this.promoteTo = m.promoteTo;
