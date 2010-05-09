@@ -3,7 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="/home/petero/workspace/CuckooChess/deploy/CuckooChess.jar"
+        <jar destfile="deploy/CuckooChess.jar"
         	filesetmanifest="skip"
         	update="false" duplicate="fail">
             <manifest>
@@ -11,20 +11,20 @@
                 <attribute name="Class-Path" value="."/>
             </manifest>
 
-        	<fileset dir="/home/petero/workspace/CuckooChessEngine/bin">
+        	<fileset dir="../CuckooChessEngine/bin">
         	  <include name="**/*"/>
         	  <exclude name="**/*Test.class"/>
         	</fileset>
-        	<fileset dir="/home/petero/workspace/CuckooChessEngine">
+        	<fileset dir="../CuckooChessEngine">
         		<include name="src/**/*.java"/>
         		<include name="test/**/*.java"/>
         	</fileset>
             	
-        	<fileset dir="/home/petero/workspace/CuckooChess/bin">
+        	<fileset dir="bin">
         	  <include name="**/*"/>
         	  <exclude name="**/*Test.class"/>
         	</fileset>
-        	<fileset dir="/home/petero/workspace/CuckooChess">
+        	<fileset dir=".">
         		<include name="src/**/*.java"/>
         		<include name="test/**/*.java"/>
         	</fileset>
