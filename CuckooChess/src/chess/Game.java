@@ -5,7 +5,6 @@
 
 package chess;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,10 +14,10 @@ import java.util.List;
  * @author petero
  */
 public class Game {
-    List<Move> moveList = null;
-    List<UndoInfo> uiInfoList = null;
+    protected List<Move> moveList = null;
+    protected List<UndoInfo> uiInfoList = null;
     List<Boolean> drawOfferList = null;
-    int currentMove;
+    protected int currentMove;
     boolean pendingDrawOffer;
     GameState drawState;
     GameState resignState;
@@ -30,57 +29,6 @@ public class Game {
         this.whitePlayer = whitePlayer;
         this.blackPlayer = blackPlayer;
         handleCommand("new");
-    }
-
-    /**
-     * Administrate a game between two players, human or computer.
-     */
-    public void play() throws IOException {
-        handleCommand("new");
-        while (true) {
-            // Print last move
-            if (currentMove > 0) {
-                Position prevPos = new Position(pos);
-                prevPos.unMakeMove(moveList.get(currentMove - 1), uiInfoList.get(currentMove - 1));
-                String moveStr= TextIO.moveToString(prevPos, moveList.get(currentMove - 1), false);
-                if (haveDrawOffer()) {
-                    moveStr += " (offer draw)";
-                }
-                String msg = String.format("Last move: %d%s %s",
-                        prevPos.fullMoveCounter, prevPos.isWhiteMove() ? "." : "...",
-                        moveStr);
-                System.out.println(msg);
-            }
-//            System.out.printf("Hash: %016x\n", pos.zobristHash());
-            {
-                Evaluate eval = new Evaluate();
-                int evScore = eval.evalPos(pos) * (pos.isWhiteMove() ? 1 : -1);
-                System.out.printf("Eval: %.2f%n", evScore / 100.0);
-            }
-            
-            // Check game state
-            System.out.print(TextIO.asciiBoard(pos));
-            String stateStr = getGameStateString();
-            if (stateStr.length() > 0) {
-                System.out.printf("%s%n", stateStr);
-            }
-            
-            if (getGameState() != GameState.ALIVE) {
-                activateHumanPlayer();
-            }
-            
-            // Get command from current player and act on it
-            Player pl = pos.isWhiteMove() ? whitePlayer : blackPlayer;
-            String moveStr = pl.getCommand(new Position(pos), haveDrawOffer(), getHistory());
-            if (moveStr.equals("quit")) {
-                return;
-            } else {
-                boolean ok = processString(moveStr);
-                if (!ok) {
-                    System.out.printf("Invalid move: %s\n", moveStr);
-                }
-            }
-        }
     }
 
     /**
@@ -309,7 +257,7 @@ public class Game {
     }
 
     /** Swap players around if needed to make the human player in control of the next move. */
-    private void activateHumanPlayer() {
+    protected void activateHumanPlayer() {
         if (!(pos.isWhiteMove() ? whitePlayer : blackPlayer).isHumanPlayer()) {
             Player tmp = whitePlayer;
             whitePlayer = blackPlayer;

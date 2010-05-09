@@ -37,7 +37,7 @@ public class Position {
     int halfMoveClock;
     
     /** Game move number, starting from 1. */
-    int fullMoveCounter;
+    public int fullMoveCounter;
 
     private long hashKey;           // Cached Zobrist hash key
     private int wKingSq, bKingSq;   // Cached king positions

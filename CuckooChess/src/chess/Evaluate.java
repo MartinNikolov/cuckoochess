@@ -158,7 +158,7 @@ public class Evaluate {
      * @return The evaluation score, measured in centipawns.
      *         Positive values are good for the side to make the next move.
      */
-    final int evalPos(Position pos) {
+    final public int evalPos(Position pos) {
         computeMaterial(pos);
         int score = wMtrl - bMtrl;
 
