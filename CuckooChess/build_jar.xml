@@ -10,6 +10,16 @@
                 <attribute name="Main-Class" value="tui.Main"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
+
+        	<fileset dir="/home/petero/workspace/CuckooChessEngine/bin">
+        	  <include name="**/*"/>
+        	  <exclude name="**/*Test.class"/>
+        	</fileset>
+        	<fileset dir="/home/petero/workspace/CuckooChessEngine">
+        		<include name="src/**/*.java"/>
+        		<include name="test/**/*.java"/>
+        	</fileset>
+            	
         	<fileset dir="/home/petero/workspace/CuckooChess/bin">
         	  <include name="**/*"/>
         	  <exclude name="**/*Test.class"/>
