@@ -3,6 +3,7 @@
 	<name>CuckooChessAPK</name>
 	<comment></comment>
 	<projects>
+		<project>CuckooChessEngine</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
