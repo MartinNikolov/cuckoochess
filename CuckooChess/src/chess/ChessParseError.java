@@ -10,7 +10,8 @@ package chess;
  * @author petero
  */
 public class ChessParseError extends Exception {
-    public ChessParseError() {
+	private static final long serialVersionUID = -6051856171275301175L;
+	public ChessParseError() {
     }
     public ChessParseError(String msg) {
         super(msg);

@@ -553,7 +553,6 @@ public class Evaluate {
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
-        final int pV = pieceValue[Piece.WPAWN];
         final int maxM = qV + 2 * rV + 2 * bV + 2 * nV;
         final int minM = rV + bV;
         int score = 0;
@@ -692,7 +691,6 @@ public class Evaluate {
     /** Implements special knowledge for some endgame situations. */
     private final int endGameEval(Position pos, int oldScore) {
         int score = oldScore;
-        final int pV = pieceValue[Piece.WPAWN];
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];

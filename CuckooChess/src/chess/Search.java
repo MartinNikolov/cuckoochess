@@ -62,7 +62,8 @@ public class Search {
     }
 
     class StopSearch extends Exception {
-        public StopSearch() {
+		private static final long serialVersionUID = -5546906604987117015L;
+		public StopSearch() {
         }
         public StopSearch(String msg) {
             super(msg);
@@ -616,7 +617,6 @@ public class Search {
     final public int SEE(Move m) {
         int nCapt = 0;                  // Number of entries in captures[]
         int pV = Evaluate.pieceValue[Piece.WPAWN];
-        int qV = Evaluate.pieceValue[Piece.WQUEEN];
         
         final int square = m.to;
         captures[nCapt] = SEEgetPieceValue(pos.getPiece(square));

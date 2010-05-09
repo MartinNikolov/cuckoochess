@@ -210,7 +210,6 @@ public class SearchTest {
         final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
         final int bV = Evaluate.pieceValue[Piece.WBISHOP];
         final int rV = Evaluate.pieceValue[Piece.WROOK];
-        final int qV = Evaluate.pieceValue[Piece.WQUEEN];
 
         // Basic tests
         Position pos = TextIO.readFEN("r2qk2r/ppp2ppp/1bnp1nb1/1N2p3/3PP3/1PP2N2/1P3PPP/R1BQRBK1 w kq - 0 1");
