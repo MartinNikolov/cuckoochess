@@ -3,6 +3,7 @@
 	<name>CuckooChess</name>
 	<comment></comment>
 	<projects>
+		<project>CuckooChessEngine</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
