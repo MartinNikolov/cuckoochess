@@ -3,12 +3,21 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="/home/petero/workspace/CuckooChess/deploy/CuckooChess.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="/home/petero/workspace/CuckooChess/deploy/CuckooChess.jar"
+        	filesetmanifest="skip"
+        	update="false" duplicate="fail">
             <manifest>
                 <attribute name="Main-Class" value="chess.Main"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="/home/petero/workspace/CuckooChess/bin"/>
+        	<fileset dir="/home/petero/workspace/CuckooChess/bin">
+        	  <include name="**/*"/>
+        	  <exclude name="**/*Test.class"/>
+        	</fileset>
+        	<fileset dir="/home/petero/workspace/CuckooChess">
+        		<include name="src/**/*.java"/>
+        		<include name="test/**/*.java"/>
+        	</fileset>
         </jar>
     </target>
 </project>
