@@ -5,6 +5,7 @@ import chess.Position;
 import chess.TextIO;
 import android.app.Activity;
 import android.os.Bundle;
+//import android.widget.EditText;
 import android.widget.TextView;
 
 public class CuckooChess extends Activity {
@@ -21,5 +22,7 @@ public class CuckooChess extends Activity {
 		} catch (ChessParseError e) {
 			e.printStackTrace();
 		}
+
+//		EditText cmd = (EditText)findViewById(R.id.cmd);
     }
 }
