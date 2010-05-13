@@ -149,50 +149,49 @@ public class TUIGame extends Game {
 	 * Administrate a game between two players, human or computer.
 	 */
 	public void play() throws IOException {
-	        handleCommand("new");
-	        while (true) {
-	            // Print last move
-	            if (currentMove > 0) {
-	                Position prevPos = new Position(pos);
-	                prevPos.unMakeMove(moveList.get(currentMove - 1), uiInfoList.get(currentMove - 1));
-	                String moveStr= TextIO.moveToString(prevPos, moveList.get(currentMove - 1), false);
-	                if (haveDrawOffer()) {
-	                    moveStr += " (offer draw)";
-	                }
-	                String msg = String.format("Last move: %d%s %s",
-	                        prevPos.fullMoveCounter, prevPos.isWhiteMove() ? "." : "...",
-	                        moveStr);
-	                System.out.println(msg);
-	            }
-	//            System.out.printf("Hash: %016x\n", pos.zobristHash());
-	            {
-	                Evaluate eval = new Evaluate();
-	                int evScore = eval.evalPos(pos) * (pos.isWhiteMove() ? 1 : -1);
-	                System.out.printf("Eval: %.2f%n", evScore / 100.0);
-	            }
-	            
-	            // Check game state
-	            System.out.print(TextIO.asciiBoard(pos));
-	            String stateStr = getGameStateString();
-	            if (stateStr.length() > 0) {
-	                System.out.printf("%s%n", stateStr);
-	            }
-	            
-	            if (getGameState() != GameState.ALIVE) {
-	                activateHumanPlayer();
-	            }
-	            
-	            // Get command from current player and act on it
-	            Player pl = pos.isWhiteMove() ? whitePlayer : blackPlayer;
-	            String moveStr = pl.getCommand(new Position(pos), haveDrawOffer(), getHistory());
-	            if (moveStr.equals("quit")) {
-	                return;
-	            } else {
-	                boolean ok = processString(moveStr);
-	                if (!ok) {
-	                    System.out.printf("Invalid move: %s\n", moveStr);
-	                }
-	            }
-	        }
-	    }
+		handleCommand("new");
+		while (true) {
+			// Print last move
+			if (currentMove > 0) {
+				Position prevPos = new Position(pos);
+				prevPos.unMakeMove(moveList.get(currentMove - 1), uiInfoList.get(currentMove - 1));
+				String moveStr= TextIO.moveToString(prevPos, moveList.get(currentMove - 1), false);
+				if (haveDrawOffer()) {
+					moveStr += " (offer draw)";
+				}
+				String msg = String.format("Last move: %d%s %s",
+						prevPos.fullMoveCounter, prevPos.isWhiteMove() ? "." : "...",
+								moveStr);
+				System.out.println(msg);
+			}
+//            System.out.printf("Hash: %016x\n", pos.zobristHash());
+			{
+				Evaluate eval = new Evaluate();
+				int evScore = eval.evalPos(pos) * (pos.isWhiteMove() ? 1 : -1);
+				System.out.printf("Eval: %.2f%n", evScore / 100.0);
+			}
+
+			// Check game state
+			System.out.print(TextIO.asciiBoard(pos));
+			String stateStr = getGameStateString();
+			if (stateStr.length() > 0) {
+				System.out.printf("%s%n", stateStr);
+			}
+			if (getGameState() != GameState.ALIVE) {
+				activateHumanPlayer();
+			}
+
+			// Get command from current player and act on it
+			Player pl = pos.isWhiteMove() ? whitePlayer : blackPlayer;
+			String moveStr = pl.getCommand(new Position(pos), haveDrawOffer(), getHistory());
+			if (moveStr.equals("quit")) {
+				return;
+			} else {
+				boolean ok = processString(moveStr);
+				if (!ok) {
+					System.out.printf("Invalid move: %s\n", moveStr);
+				}
+			}
+		}
+	}
 }
