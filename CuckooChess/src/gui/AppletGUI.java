@@ -11,6 +11,7 @@
 
 package gui;
 
+import javax.swing.JOptionPane;
 import chess.ComputerPlayer;
 import chess.Move;
 import chess.Position;
@@ -383,4 +384,12 @@ public class AppletGUI extends javax.swing.JApplet {
     final boolean showThinking() {
         return ShowThinking.isSelected();
     }
+
+	public int getPromotePiece() {
+        Object[] options = { "Queen", "Rook", "Bishop", "Knight" };
+        int choice = JOptionPane.showOptionDialog(
+                cbp, "Promote pawn to?", "Pawn Promotion",
+                0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+		return choice;
+	}
 }

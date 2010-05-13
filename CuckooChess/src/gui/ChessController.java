@@ -17,7 +17,6 @@ import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
 import java.util.List;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -194,10 +193,7 @@ public class ChessController {
         for (Move m : moves) {
             if ((m.from == from) && (m.to == to)) {
                 if ((m.promoteTo != Piece.EMPTY) && (promoteTo == Piece.EMPTY)) {
-                    Object[] options = { "Queen", "Rook", "Bishop", "Knight" };
-                    int choice = JOptionPane.showOptionDialog(
-                            gui.cbp, "Promote pawn to?", "Pawn Promotion",
-                            0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    int choice = gui.getPromotePiece();
                     switch (choice) {
                         case 1:
                             promoteTo = white ? Piece.WROOK : Piece.BROOK;
