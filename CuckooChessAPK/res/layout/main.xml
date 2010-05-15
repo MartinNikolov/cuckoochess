@@ -7,7 +7,9 @@
 <EditText
 	android:id="@+id/cmd"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content" android:maxLines="1"/>
+	android:layout_height="wrap_content"
+	android:maxLines="1"
+    android:typeface="monospace" android:textSize="10dip"/>	
 <TextView  
     android:id="@+id/textview"
     android:layout_width="fill_parent" 
