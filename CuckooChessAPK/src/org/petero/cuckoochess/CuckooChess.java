@@ -2,11 +2,14 @@ package org.petero.cuckoochess;
 
 import guibase.ChessController;
 import guibase.GUIInterface;
-import chess.Position;
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnKeyListener;
 import android.widget.EditText;
 import android.widget.TextView;
+import chess.Position;
 
 public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
@@ -36,7 +39,19 @@ public class CuckooChess extends Activity implements GUIInterface {
         
         ctrl.newGame(playerWhite, ttLogSize);
 
-		EditText cmd = (EditText)findViewById(R.id.cmd);
+		final EditText cmd = (EditText)findViewById(R.id.cmd);
+        cmd.setOnKeyListener(new OnKeyListener() {
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+					(keyCode == KeyEvent.KEYCODE_ENTER)) {
+					String str = cmd.getText().toString();
+					ctrl.processString(str);
+					cmd.setText("");
+					return true;
+				}
+				return false;
+			}
+        });
     }
 
 	@Override

@@ -293,4 +293,11 @@ public class ChessController {
             computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit());
         }
     }
+
+	public void processString(String str) {
+		Move m = TextIO.stringToMove(game.pos, str);
+		if (m != null) {
+			humanMove(m);
+		}
+	}
 }
