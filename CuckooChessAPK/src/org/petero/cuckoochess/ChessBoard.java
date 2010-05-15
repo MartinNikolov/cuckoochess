@@ -81,7 +81,16 @@ public class ChessBoard extends TextView {
             invalidate();
         }
     }
-    
+
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		int width = getMeasuredWidth();
+		int height = getMeasuredHeight();
+		int minSize = Math.min(width, height);
+		setMeasuredDimension(minSize, minSize);
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		final int width = getWidth();
