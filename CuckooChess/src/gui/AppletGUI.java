@@ -12,6 +12,8 @@
 package gui;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import chess.ComputerPlayer;
 import chess.Move;
 import chess.Position;
@@ -391,5 +393,9 @@ public class AppletGUI extends javax.swing.JApplet {
                 cbp, "Promote pawn to?", "Pawn Promotion",
                 0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 		return choice;
+	}
+
+	public void runOnUIThread(Runnable runnable) {
+		SwingUtilities.invokeLater(runnable);
 	}
 }

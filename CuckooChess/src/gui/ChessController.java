@@ -17,7 +17,6 @@ import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The glue between the chess engine and the GUI.
@@ -69,7 +68,7 @@ public class ChessController {
             buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d%n", currDepth,
                     currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
             final String newPV = buf.toString();
-            SwingUtilities.invokeLater(new Runnable() {
+            gui.runOnUIThread(new Runnable() {
                 public void run() {
                     thinkingPV = newPV;
                     setMoveList();
@@ -258,7 +257,7 @@ public class ChessController {
                        computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit());
                        final String cmd = computerPlayer.getCommand(new Position(game.pos),
                                game.haveDrawOffer(), game.getHistory());
-                       SwingUtilities.invokeLater(new Runnable() {
+                       gui.runOnUIThread(new Runnable() {
                            public void run() {
                                game.processString(cmd);
                                thinkingPV = "";
