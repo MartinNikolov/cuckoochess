@@ -373,7 +373,7 @@ public class Game {
             boolean rep = drawCmd.startsWith("rep");
             Move m = null;
             String ms = drawCmd.substring(drawCmd.indexOf(" ") + 1);
-            if (!ms.isEmpty()) {
+            if (ms.length() > 0) {
                 m = TextIO.stringToMove(pos, ms);
             }
             boolean valid;
