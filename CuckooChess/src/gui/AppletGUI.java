@@ -11,6 +11,7 @@
 
 package gui;
 
+import guibase.ChessController;
 import guibase.GUIInterface;
 
 import javax.swing.JOptionPane;

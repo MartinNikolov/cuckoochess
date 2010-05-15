@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package gui;
+package guibase;
 
 import chess.ComputerPlayer;
 import chess.Game;
@@ -16,7 +16,6 @@ import chess.Position;
 import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
-import guibase.GUIInterface;
 
 import java.util.List;
 
@@ -120,13 +119,13 @@ public class ChessController {
     }
     SearchListener listener;
     
-    ChessController(GUIInterface gui) {
+    public ChessController(GUIInterface gui) {
         this.gui = gui;
         listener = new SearchListener();
         thinkingPV = "";
     }
 
-    final void newGame(boolean humanIsWhite) {
+    public final void newGame(boolean humanIsWhite) {
         stopComputerThinking();
         this.humanIsWhite = humanIsWhite;
         humanPlayer = new HumanPlayer();
@@ -142,11 +141,11 @@ public class ChessController {
         startComputerThinking();
     }
 
-    final boolean humansTurn() {
+    public final boolean humansTurn() {
         return game.pos.isWhiteMove() == humanIsWhite;
     }
 
-    final void takeBackMove() {
+    public final void takeBackMove() {
         if (humansTurn()) {
             if (game.getLastMove() != null) {
                 game.processString("undo");
@@ -161,7 +160,7 @@ public class ChessController {
         }
     }
 
-    final void redoMove() {
+    public final void redoMove() {
         if (humansTurn()) {
             game.processString("redo");
             game.processString("redo");
@@ -170,7 +169,7 @@ public class ChessController {
         }
     }
 
-    final void humanMove(Move m) {
+    public final void humanMove(Move m) {
         if (humansTurn()) {
             if (doMove(m.from, m.to)) {
                 updateGUI();
@@ -235,7 +234,7 @@ public class ChessController {
         gui.setStatusString(str);
     }
 
-    final void setMoveList() {
+    public final void setMoveList() {
         String str = game.getMoveListString(true);
         str += String.format("%n");
         if ((thinkingPV.length() > 0) && gui.showThinking()) {
