@@ -29,6 +29,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 	private static final long serialVersionUID = 7357610346389734323L;
 	ChessBoardPainter cbp;
     ChessController ctrl;
+    final static int ttLogSize = 19; // Use 2^19 hash entries.
 
     /** Initializes the applet AppletGUI */
     @Override
@@ -39,7 +40,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
                 public void run() {
                     initComponents();
                     cbp = (ChessBoardPainter)ChessBoard;
-                    ctrl.newGame(PlayerWhite.isSelected());
+                    ctrl.newGame(PlayerWhite.isSelected(), ttLogSize);
                 }
             });
         } catch (Exception ex) {
@@ -308,7 +309,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     }//GEN-LAST:event_FlipBoardStateChanged
 
     private void NewGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NewGameActionPerformed
-        ctrl.newGame(PlayerWhite.isSelected());
+        ctrl.newGame(PlayerWhite.isSelected(), ttLogSize);
     }//GEN-LAST:event_NewGameActionPerformed
 
     private void ShowThinkingStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ShowThinkingStateChanged

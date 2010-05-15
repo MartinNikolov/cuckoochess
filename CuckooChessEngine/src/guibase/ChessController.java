@@ -125,11 +125,12 @@ public class ChessController {
         thinkingPV = "";
     }
 
-    public final void newGame(boolean humanIsWhite) {
+    public final void newGame(boolean humanIsWhite, int ttLogSize) {
         stopComputerThinking();
         this.humanIsWhite = humanIsWhite;
         humanPlayer = new HumanPlayer();
         computerPlayer = new ComputerPlayer();
+        computerPlayer.setTTLogSize(ttLogSize);
         computerPlayer.setListener(listener);
         if (humanIsWhite) {
             game = new Game(humanPlayer, computerPlayer);

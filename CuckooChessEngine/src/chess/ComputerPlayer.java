@@ -31,11 +31,15 @@ public class ComputerPlayer implements Player {
         maxDepth = 100;
         maxNodes = -1;
         verbose = true;
-        tt = new TranspositionTable(19);
+        setTTLogSize(15);
         book = new Book(verbose);
         bookEnabled = true;
     }
 
+	public void setTTLogSize(int logSize) {
+		tt = new TranspositionTable(logSize);
+	}
+    
     Search.Listener listener;
     public void setListener(Search.Listener listener) {
         this.listener = listener;

@@ -14,7 +14,8 @@ public class CuckooChess extends Activity implements GUIInterface {
 	boolean mShowThinking;
 	int mTimeLimit;
 	boolean playerWhite;
-
+	static final int ttLogSize = 15; // Use 2^15 hash entries.
+	
 	TextView status;
 	TextView moveList;
 	
@@ -32,7 +33,8 @@ public class CuckooChess extends Activity implements GUIInterface {
         mShowThinking = true;
         mTimeLimit = 5000;
         playerWhite = false;
-        ctrl.newGame(playerWhite);
+        
+        ctrl.newGame(playerWhite, ttLogSize);
 
 		EditText cmd = (EditText)findViewById(R.id.cmd);
     }
