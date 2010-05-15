@@ -19,7 +19,7 @@ public class ComputerPlayer implements Player {
     int maxTimeMillis;
     int maxDepth;
     int maxNodes;
-    boolean verbose;
+    public boolean verbose;
     TranspositionTable tt;
     Book book;
     boolean bookEnabled;

@@ -37,7 +37,7 @@ public class CuckooChess extends Activity implements GUIInterface {
         mTimeLimit = 5000;
         playerWhite = false;
         
-        ctrl.newGame(playerWhite, ttLogSize);
+        ctrl.newGame(playerWhite, ttLogSize, false);
 
 		final EditText cmd = (EditText)findViewById(R.id.cmd);
         cmd.setOnKeyListener(new OnKeyListener() {

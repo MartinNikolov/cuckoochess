@@ -40,7 +40,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
                 public void run() {
                     initComponents();
                     cbp = (ChessBoardPainter)ChessBoard;
-                    ctrl.newGame(PlayerWhite.isSelected(), ttLogSize);
+                    ctrl.newGame(PlayerWhite.isSelected(), ttLogSize, true);
                 }
             });
         } catch (Exception ex) {
@@ -309,7 +309,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     }//GEN-LAST:event_FlipBoardStateChanged
 
     private void NewGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NewGameActionPerformed
-        ctrl.newGame(PlayerWhite.isSelected(), ttLogSize);
+        ctrl.newGame(PlayerWhite.isSelected(), ttLogSize, true);
     }//GEN-LAST:event_NewGameActionPerformed
 
     private void ShowThinkingStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ShowThinkingStateChanged
