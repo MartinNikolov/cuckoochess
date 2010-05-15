@@ -7,7 +7,7 @@ public interface GUIInterface {
 	/** Update the displayed board position. */
 	public void setPosition(Position pos);
 
-	/** Mark square i as selected */
+	/** Mark square i as selected. Set to -1 to clear selection. */
 	public void setSelection(int sq);
 
 	/** Set the status text. */
