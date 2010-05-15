@@ -3,6 +3,7 @@ package org.petero.cuckoochess;
 import guibase.ChessController;
 import guibase.GUIInterface;
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,8 +31,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 
         status = (TextView)findViewById(R.id.status);
         moveList = (TextView)findViewById(R.id.moveList);
-		TextView chessBoard = (TextView)this.findViewById(R.id.chessboard);
-		cb = new ChessBoard(chessBoard);
+		cb = (ChessBoard)findViewById(R.id.chessboard);
         ctrl = new ChessController(this);
         mShowThinking = true;
         mTimeLimit = 5000;

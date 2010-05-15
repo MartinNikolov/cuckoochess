@@ -10,13 +10,11 @@
 	android:layout_height="wrap_content"
 	android:maxLines="1"
     android:typeface="monospace" android:textSize="10dip"/>	
-<TextView  
+<view
+	class="org.petero.cuckoochess.ChessBoard"
     android:id="@+id/chessboard"
     android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:includeFontPadding="true"
-    android:typeface="monospace"
-    android:textSize="10dip"/>
+    android:layout_height="fill_parent"/> 
 <TextView
     android:id="@+id/status"
     android:layout_width="fill_parent" 
