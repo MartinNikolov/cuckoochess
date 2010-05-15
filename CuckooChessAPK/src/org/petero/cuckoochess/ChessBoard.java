@@ -16,7 +16,6 @@ public class ChessBoard extends TextView {
     private int selectedSquare;
     private int x0, y0, sqSize;
     private boolean flipped;
-    private Typeface chessFont;
 
     private Paint darkPaint;
     private Paint brightPaint;
@@ -26,7 +25,6 @@ public class ChessBoard extends TextView {
     
 	public ChessBoard(Context context, AttributeSet attrs) {
 		super(context, attrs);
-    	chessFont = Typeface.createFromFile("assets/casefont.ttf");
     	pos = new Position();
         selectedSquare = -1;
         x0 = y0 = sqSize = 0;
@@ -44,14 +42,18 @@ public class ChessBoard extends TextView {
         
         whitePiecePaint = new Paint();
         whitePiecePaint.setARGB(255, 255, 255, 255);
-    	whitePiecePaint.setTypeface(chessFont);
         
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
-    	blackPiecePaint.setTypeface(chessFont);
 	}
 
-    /**
+	public void setFont(Typeface tf) {
+		whitePiecePaint.setTypeface(tf);
+		blackPiecePaint.setTypeface(tf);
+		invalidate();
+	}
+
+	/**
      * Set the board to a given state.
      * @param pos
      */
@@ -158,7 +160,7 @@ public class ChessBoard extends TextView {
         }
         if (ps.length() > 0) {
         	Paint paint = Piece.isWhite(p) ? whitePiecePaint : blackPiecePaint;
-        	paint.setTextSize(10.0f);
+        	paint.setTextSize(sqSize);
             Rect bounds = new Rect();
             paint.getTextBounds(ps, 0, ps.length(), bounds);
             int xCent = bounds.centerX();

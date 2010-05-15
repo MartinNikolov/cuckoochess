@@ -37,6 +37,9 @@ public class CuckooChess extends Activity implements GUIInterface {
         mTimeLimit = 5000;
         playerWhite = false;
         
+        Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
+        cb.setFont(chessFont);
+        
         ctrl.newGame(playerWhite, ttLogSize, false);
 
 		final EditText cmd = (EditText)findViewById(R.id.cmd);

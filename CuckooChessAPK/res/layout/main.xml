@@ -13,8 +13,8 @@
 <view
 	class="org.petero.cuckoochess.ChessBoard"
     android:id="@+id/chessboard"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent"/> 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"/>
 <TextView
     android:id="@+id/status"
     android:layout_width="fill_parent" 
