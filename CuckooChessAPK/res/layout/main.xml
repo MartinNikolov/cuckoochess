@@ -11,9 +11,25 @@
 	android:maxLines="1"
     android:typeface="monospace" android:textSize="10dip"/>	
 <TextView  
-    android:id="@+id/textview"
+    android:id="@+id/chessboard"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="@string/hello" android:includeFontPadding="true"
-    android:typeface="monospace" android:textSize="10dip"/>
+    android:includeFontPadding="true"
+    android:typeface="monospace"
+    android:textSize="10dip"/>
+<TextView
+    android:id="@+id/status"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:includeFontPadding="true"
+    android:typeface="monospace"
+    android:textSize="10dip"/>
+<TextView
+    android:id="@+id/moveList"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:includeFontPadding="true"
+    android:typeface="monospace"
+    android:textSize="10dip"/>
+
 </LinearLayout>

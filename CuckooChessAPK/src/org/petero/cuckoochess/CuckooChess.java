@@ -5,7 +5,7 @@ import guibase.GUIInterface;
 import chess.Position;
 import android.app.Activity;
 import android.os.Bundle;
-//import android.widget.EditText;
+import android.widget.EditText;
 import android.widget.TextView;
 
 public class CuckooChess extends Activity implements GUIInterface {
@@ -14,6 +14,9 @@ public class CuckooChess extends Activity implements GUIInterface {
 	boolean mShowThinking;
 	int mTimeLimit;
 	boolean playerWhite;
+
+	TextView status;
+	TextView moveList;
 	
     /** Called when the activity is first created. */
     @Override
@@ -21,15 +24,17 @@ public class CuckooChess extends Activity implements GUIInterface {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-		TextView tv = (TextView)this.findViewById(R.id.textview);
-        cb = new ChessBoard(tv);
+        status = (TextView)findViewById(R.id.status);
+        moveList = (TextView)findViewById(R.id.moveList);
+		TextView chessBoard = (TextView)this.findViewById(R.id.chessboard);
+		cb = new ChessBoard(chessBoard);
         ctrl = new ChessController(this);
         mShowThinking = true;
         mTimeLimit = 5000;
-        playerWhite = true;
+        playerWhite = false;
         ctrl.newGame(playerWhite);
-        
-//		EditText cmd = (EditText)findViewById(R.id.cmd);
+
+		EditText cmd = (EditText)findViewById(R.id.cmd);
     }
 
 	@Override
@@ -44,13 +49,12 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	@Override
 	public void setStatusString(String str) {
-		// TODO Auto-generated method stub
+		status.setText(str);
 	}
 
 	@Override
 	public void setMoveListString(String str) {
-		// TODO Auto-generated method stub
-		
+		moveList.setText(str);
 	}
 
 	@Override
@@ -62,7 +66,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 	public boolean showThinking() {
 		return mShowThinking;
 	}
-
 
 	@Override
 	public int getPromotePiece() {
