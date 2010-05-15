@@ -11,6 +11,8 @@
 
 package gui;
 
+import guibase.GUIInterface;
+
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -22,7 +24,7 @@ import chess.Position;
  * The main class for the chess GUI.
  * @author petero
  */
-public class AppletGUI extends javax.swing.JApplet {
+public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 	private static final long serialVersionUID = 7357610346389734323L;
 	ChessBoardPainter cbp;
     ChessController ctrl;
@@ -361,29 +363,29 @@ public class AppletGUI extends javax.swing.JApplet {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    void setPosition(Position pos) {
+    public void setPosition(Position pos) {
         cbp.setPosition(pos);
     }
 
-    void setSelection(int sq) {
+    public void setSelection(int sq) {
         cbp.setSelection(sq);
     }
 
-    void setStatusString(String str) {
+    public void setStatusString(String str) {
         StatusLine.setText(str);
     }
 
-    void setMoveListString(String str) {
+    public void setMoveListString(String str) {
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }
     }
 
-    final int timeLimit() {
+    public final int timeLimit() {
         return TimeSlider.getValue() * 1000;
     }
 
-    final boolean showThinking() {
+    public final boolean showThinking() {
         return ShowThinking.isSelected();
     }
 

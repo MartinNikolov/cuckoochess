@@ -16,6 +16,8 @@ import chess.Position;
 import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
+import guibase.GUIInterface;
+
 import java.util.List;
 
 /**
@@ -26,7 +28,7 @@ public class ChessController {
     Player humanPlayer;
     ComputerPlayer computerPlayer;
     Game game;
-    AppletGUI gui;
+    GUIInterface gui;
     boolean humanIsWhite;
     Thread computerThread;
 
@@ -118,7 +120,7 @@ public class ChessController {
     }
     SearchListener listener;
     
-    ChessController(AppletGUI gui) {
+    ChessController(GUIInterface gui) {
         this.gui = gui;
         listener = new SearchListener();
         thinkingPV = "";
