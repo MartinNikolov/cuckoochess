@@ -1,5 +1,8 @@
 package org.petero.cuckoochess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import guibase.ChessController;
 import guibase.GUIInterface;
 import android.app.Activity;
@@ -9,10 +12,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.TextView;
-import chess.ChessParseError;
 import chess.Move;
 import chess.Position;
-import chess.TextIO;
 
 public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
@@ -44,14 +45,19 @@ public class CuckooChess extends Activity implements GUIInterface {
         
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
-        	String fen = savedInstanceState.getString("fen");
-        	if (fen != null) {
-        		try {
-        			ctrl.setPosition(TextIO.readFEN(fen));
-        		} catch (ChessParseError e) {
-        			// Just ignore invalid state
-        		}
+        	
+        	String fen = savedInstanceState.getString("startFEN");
+        	if (fen == null) {
+        		fen = "";
         	}
+        	String moves = savedInstanceState.getString("moves");
+        	if (moves == null) {
+        		moves = "";
+        	}
+        	List<String> posHistStr = new ArrayList<String>();
+        	posHistStr.add(fen);
+        	posHistStr.add(moves);
+        	ctrl.setPosHistory(posHistStr);
         }
         
         cb.setOnTouchListener(new OnTouchListener() {
@@ -73,11 +79,11 @@ public class CuckooChess extends Activity implements GUIInterface {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		String fen = TextIO.toFEN(ctrl.game.pos);
-		outState.putString("fen", fen);
+		List<String> posHistStr = ctrl.getPosHistory();
+		outState.putString("startFEN", posHistStr.get(0));
+		outState.putString("moves", posHistStr.get(1));
 	}
     
-    // FIXME!!! Need to handle lifecycle events, so that game is not reset when turning phone
     // FIXME!!! Add a menu: Back, forward, new game, quit.
     // FIXME!!! Options menu: Flip board, play black, thinking time, show thinking.
     

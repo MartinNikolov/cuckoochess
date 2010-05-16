@@ -5,6 +5,7 @@
 
 package guibase;
 
+import chess.ChessParseError;
 import chess.ComputerPlayer;
 import chess.Game;
 import chess.HumanPlayer;
@@ -26,7 +27,7 @@ import java.util.List;
 public class ChessController {
     Player humanPlayer;
     ComputerPlayer computerPlayer;
-    public Game game;
+    Game game;
     GUIInterface gui;
     boolean humanIsWhite;
     Thread computerThread;
@@ -143,11 +144,27 @@ public class ChessController {
         startComputerThinking();
     }
 
-    public final void setPosition(Position pos) {
-    	game.pos = pos;
-        gui.setSelection(-1);
-        updateGUI();
-        startComputerThinking();
+    public final void setPosHistory(List<String> posHistStr) {
+		try {
+			String fen = posHistStr.get(0);
+			Position pos;
+			pos = TextIO.readFEN(fen);
+			game.pos = pos;
+			String[] strArr = posHistStr.get(1).split(" ");
+			final int arrLen = strArr.length;
+			for (int i = 0; i < arrLen; i++) {
+				game.processString(strArr[i]);
+			}
+			gui.setSelection(-1);
+			updateGUI();
+			startComputerThinking();
+		} catch (ChessParseError e) {
+			// Just ignore invalid positions
+		}
+    }
+    
+    public final List<String> getPosHistory() {
+    	return game.getPosHistory();
     }
     
     public final boolean humansTurn() {

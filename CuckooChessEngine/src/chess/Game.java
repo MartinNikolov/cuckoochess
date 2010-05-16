@@ -264,7 +264,28 @@ public class Game {
             blackPlayer = tmp;
         }
     }
-    
+
+	public List<String> getPosHistory() {
+        List<String> ret = new ArrayList<String>();
+    	
+        Position pos = new Position(this.pos);
+        for (int i = currentMove; i > 0; i--) {
+            pos.unMakeMove(moveList.get(i - 1), uiInfoList.get(i - 1));
+        }
+        ret.add(TextIO.toFEN(pos)); // Store initial FEN
+
+        StringBuilder moves = new StringBuilder();
+        for (int i = 0; i < currentMove; i++) {
+            Move move = moveList.get(i);
+            String strMove = TextIO.moveToString(pos, move, false);
+            moves.append(String.format(" %s", strMove));
+            UndoInfo ui = new UndoInfo();
+            pos.makeMove(move, ui);
+        }
+        ret.add(moves.toString()); // Store move list string
+        return ret;
+	}
+
     /**
      * Print a list of all moves.
      */
