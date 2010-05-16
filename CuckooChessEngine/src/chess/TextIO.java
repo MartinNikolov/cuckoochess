@@ -259,6 +259,11 @@ public class TextIO {
      *                 Otherwise, use short notation, eg Nf3
      */
     public static final String moveToString(Position pos, Move move, boolean longForm) {
+        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        moves = MoveGen.removeIllegal(pos, moves);
+        return moveToString(pos, move, longForm, moves);
+    }
+    public static final String moveToString(Position pos, Move move, boolean longForm, List<Move> moves) {
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -297,8 +302,6 @@ public class TextIO {
                     int numSameTarget = 0;
                     int numSameFile = 0;
                     int numSameRow = 0;
-                    List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
-                    moves = MoveGen.removeIllegal(pos, moves);
                     for (Move m : moves) {
                         if ((pos.getPiece(m.from) == p) && (m.to == move.to)) {
                             numSameTarget++;
@@ -332,9 +335,9 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
         if (MoveGen.inCheck(pos)) {
-            List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
-            moves = MoveGen.removeIllegal(pos, moves);
-            if (moves.size() == 0) {
+            List<Move> nextMoves = new MoveGen().pseudoLegalMoves(pos);
+            nextMoves = MoveGen.removeIllegal(pos, nextMoves);
+            if (nextMoves.size() == 0) {
                 ret.append('#');
             } else {
                 ret.append('+');
@@ -388,8 +391,8 @@ public class TextIO {
         for (int i = 0; i < 2; i++) {
             // Search for full match
             for (Move m : moves) {
-                String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true));
-                String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false));
+                String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true, moves));
+                String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false, moves));
                 if (i == 0) {
                     if (strMove.equals(str1) || strMove.equals(str2)) {
                         return m;

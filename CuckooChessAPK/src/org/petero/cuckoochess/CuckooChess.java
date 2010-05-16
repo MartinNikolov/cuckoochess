@@ -28,6 +28,7 @@ public class CuckooChess extends Activity implements GUIInterface {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        // FIXME!!! Layout should be different in landscape mode.
 
         status = (TextView)findViewById(R.id.status);
         moveList = (TextView)findViewById(R.id.moveList);
@@ -57,7 +58,11 @@ public class CuckooChess extends Activity implements GUIInterface {
 			}
 		});
     }
-
+    
+    // FIXME!!! Need to handle lifecycle events, so that game is not reset when turning phone
+    // FIXME!!! Add a menu: Back, forward, new game, quit.
+    // FIXME!!! Options menu: Flip board, play black, thinking time, show thinking.
+    
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
