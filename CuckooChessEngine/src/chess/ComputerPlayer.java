@@ -48,7 +48,7 @@ public class ComputerPlayer implements Player {
     @Override
     public String getCommand(Position pos, boolean drawOffer, List<Position> history) {
         // Create a search object
-        List<Long> posHashList = new ArrayList<Long>();
+        ArrayList<Long> posHashList = new ArrayList<Long>();
         for (Position p : history) {
             posHashList.add(p.zobristHash());
         }
@@ -56,7 +56,7 @@ public class ComputerPlayer implements Player {
         Search sc = new Search(pos, posHashList, tt);
 
         // Determine all legal moves
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         sc.scoreMoveList(moves, false, 0);
 
@@ -129,12 +129,12 @@ public class ComputerPlayer implements Player {
     /** Search a position and return the best move and score. Used for test suite processing. */
     public TwoReturnValues<Move, String> searchPosition(Position pos, int maxTimeMillis) {
         // Create a search object
-        List<Long> posHashList = new ArrayList<Long>();
+        ArrayList<Long> posHashList = new ArrayList<Long>();
         tt.nextGeneration();
         Search sc = new Search(pos, posHashList, tt);
         
         // Determine all legal moves
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         sc.scoreMoveList(moves, false, 0);
 

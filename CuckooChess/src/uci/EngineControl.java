@@ -34,7 +34,7 @@ public class EngineControl {
     MoveGen moveGen;
 
     Position pos;
-    List<Long> posHashList;
+    ArrayList<Long> posHashList;
     boolean ponder;     // True if currently doing pondering
     boolean infinite;
 
@@ -69,7 +69,7 @@ public class EngineControl {
         }
 
         public void notifyPV(int depth, int score, int time, int nodes, int nps, boolean isMate,
-                boolean upperBound, boolean lowerBound, List<Move> pv) {
+                boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             StringBuilder pvBuf = new StringBuilder();
             for (Move m : pv) {
                 pvBuf.append(" ");
@@ -97,7 +97,7 @@ public class EngineControl {
         moveGen = new MoveGen();
     }
 
-    final public void startSearch(Position pos, List<Move> moves, SearchParams sPar) {
+    final public void startSearch(Position pos, ArrayList<Move> moves, SearchParams sPar) {
         setupPosition(new Position(pos), moves);
         computeTimeLimit(sPar);
         ponder = false;
@@ -191,12 +191,12 @@ public class EngineControl {
         synchronized (threadMutex) {} // Must not start new search until old search is finished
         sc = new Search(pos, posHashList, tt);
         sc.setListener(new SearchListener(os));
-        List<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if ((searchMoves != null) && (searchMoves.size() > 0)) {
             moves.retainAll(searchMoves);
         }
-        final List<Move> srchMoves = moves;
+        final ArrayList<Move> srchMoves = moves;
         if ((srchMoves.size() <= 1) && !infinite) {
             minTimeLimit = maxTimeLimit = 0;
         }
@@ -283,7 +283,7 @@ public class EngineControl {
         TTEntry ent = tt.probe(pos.historyHash());
         if (ent.type != TTEntry.T_EMPTY) {
             ret = ent.getMove();
-            List<Move> moves = moveGen.pseudoLegalMoves(pos);
+            ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(ret)) {
                 ret = null;

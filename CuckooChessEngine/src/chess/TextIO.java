@@ -137,7 +137,7 @@ public class TextIO {
         // Remove bogus epSquare
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
-            List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+            ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             boolean epValid = false;
             for (Move m : moves) {
@@ -259,7 +259,7 @@ public class TextIO {
      *                 Otherwise, use short notation, eg Nf3
      */
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
@@ -335,7 +335,7 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
         if (MoveGen.inCheck(pos)) {
-            List<Move> nextMoves = new MoveGen().pseudoLegalMoves(pos);
+            ArrayList<Move> nextMoves = new MoveGen().pseudoLegalMoves(pos);
             nextMoves = MoveGen.removeIllegal(pos, nextMoves);
             if (nextMoves.size() == 0) {
                 ret.append('#');
@@ -371,12 +371,12 @@ public class TextIO {
         Move move = null;
         if (strMove.length() == 0)
             return move;
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         {
             char lastChar = strMove.charAt(strMove.length() - 1);
             if ((lastChar == '#') || (lastChar == '+')) {
-                List<Move> subMoves = new ArrayList<Move>();
+                ArrayList<Move> subMoves = new ArrayList<Move>();
                 for (Move m : moves) {
                     String str1 = TextIO.moveToString(pos, m, true);
                     if (str1.charAt(str1.length() - 1) == lastChar) {

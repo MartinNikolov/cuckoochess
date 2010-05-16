@@ -195,11 +195,11 @@ public class MoveGenTest {
     }
     
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         if (onlyLegal) {
             moves = MoveGen.removeIllegal(pos, moves);
         }
-        List<String> strMoves = new ArrayList<String>();
+        ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
             String mStr = TextIO.moveToString(pos, m, true);
             strMoves.add(mStr);

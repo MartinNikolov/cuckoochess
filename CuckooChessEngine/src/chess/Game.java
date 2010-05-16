@@ -121,7 +121,7 @@ public class Game {
      * Get the current state of the game.
      */
     public GameState getGameState() {
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if (moves.size() == 0) {
             if (MoveGen.inCheck(pos)) {
@@ -376,8 +376,8 @@ public class Game {
     }
 
     /** Return a list of previous positions in this game, back to the last "zeroing" move. */
-    public List<Position> getHistory() {
-        List<Position> posList = new ArrayList<Position>();
+    public ArrayList<Position> getHistory() {
+        ArrayList<Position> posList = new ArrayList<Position>();
         Position pos = new Position(this.pos);
         for (int i = currentMove; i > 0; i--) {
             if (pos.halfMoveClock == 0)

@@ -6,6 +6,8 @@
 package chess;
 
 import chess.TranspositionTable.TTEntry;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class Search {
     Evaluate eval;
     KillerTable kt;
     History ht;
-    List<Long> posHashList;     // List of hashes for previous positions up to the last "zeroing" move.
+    ArrayList<Long> posHashList; // List of hashes for previous positions up to the last "zeroing" move.
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
 
@@ -40,7 +42,7 @@ public class Search {
 
     public final static int MATE0 = 32000;
 
-    public Search(Position pos, List<Long> posHashList, TranspositionTable tt) {
+    public Search(Position pos, ArrayList<Long> posHashList, TranspositionTable tt) {
         this.pos = new Position(pos);
         this.moveGen = new MoveGen();
         this.posHashList = posHashList;
@@ -77,7 +79,7 @@ public class Search {
         public void notifyDepth(int depth);
         public void notifyCurrMove(Move m, int moveNr);
         public void notifyPV(int depth, int score, int time, int nodes, int nps,
-                boolean isMate, boolean upperBound, boolean lowerBound, List<Move> pv);
+                boolean isMate, boolean upperBound, boolean lowerBound, ArrayList<Move> pv);
         public void notifyStats(int nodes, int nps, int time);
     }
 
@@ -86,7 +88,7 @@ public class Search {
         this.listener = listener;
     }
 
-    final public Move iterativeDeepening(List<Move> scMoves,
+    final public Move iterativeDeepening(ArrayList<Move> scMoves,
             int initialMinTimeMillis, int initialMaxTimeMillis,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
@@ -259,7 +261,7 @@ public class Search {
             long tNow = System.currentTimeMillis();
             int time = (int) (tNow - tStart);
             int nps = (time > 0) ? (int)(totalNodes / (time / 1000.0)) : 0;
-            List<Move> pv = tt.extractPVMoves(pos, m);
+            ArrayList<Move> pv = tt.extractPVMoves(pos, m);
             listener.notifyPV(depth, score, time, totalNodes, nps, isMate, uBound, lBound, pv);
         }
     }
@@ -302,7 +304,7 @@ public class Search {
         // Draw tests
         if (canClaimDraw50(pos)) {
             if (MoveGen.inCheck(pos)) {
-                List<Move> moves = moveGen.pseudoLegalMoves(pos);
+                ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
                 moves = MoveGen.removeIllegal(pos, moves);
                 if (moves.size() == 0) {            // Can't claim draw if already check mated.
                     return -(MATE0-(ply+1));
@@ -402,7 +404,7 @@ public class Search {
         }
         
         // Start searching move alternatives
-        List<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         boolean seeDone = false;
         boolean hashMoveSelected = true;
         if (!selectHashMove(moves, hashMove)) {
@@ -538,7 +540,7 @@ public class Search {
         if (score > alpha)
             alpha = score;
         int bestScore = score;
-        List<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         final boolean tryChecks = (depth > -3);
         final boolean onlyCaptures = !inCheck && !tryChecks;
         scoreMoveList(moves, onlyCaptures, ply);
@@ -800,7 +802,7 @@ public class Search {
     }
 
     /** If hashMove exists in the move list, move the hash move to the front of the list. */
-    final boolean selectHashMove(List<Move> moves, Move hashMove) {
+    final boolean selectHashMove(ArrayList<Move> moves, Move hashMove) {
         if (hashMove == null) {
             return false;
         }
@@ -819,7 +821,7 @@ public class Search {
         return (pos.halfMoveClock >= 100);
     }
     
-    public boolean canClaimDrawRep(Position pos, List<Long> posHashList, int posHashFirstNew) {
+    public boolean canClaimDrawRep(Position pos, ArrayList<Long> posHashList, int posHashFirstNew) {
         int reps = 0;
         for (int i = posHashList.size() - 4; i >= 0; i -= 2) {
             if (pos.zobristHash() == posHashList.get(i)) {

@@ -118,7 +118,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		return false;
 	}
 
-	// FIXME!!! Options menu: Flip board, play black, thinking time, show thinking.
+	// FIXME!!! Settings menu: Flip board, play black, thinking time, show thinking.
 	// FIXME!!! Handle joystick
 	// FIXME!!! Redo history is lost when flipping phone.
     

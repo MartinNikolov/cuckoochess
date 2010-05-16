@@ -6,7 +6,6 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Implement a table of killer moves for the killer heuristic.
@@ -23,7 +22,7 @@ public class KillerTable {
         }
         Move[] ent;
     }
-    List<KTEntry> ktList;
+    ArrayList<KTEntry> ktList;
 
     /** Create an empty killer table. */
     public KillerTable() {

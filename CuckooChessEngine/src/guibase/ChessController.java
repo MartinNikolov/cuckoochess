@@ -18,6 +18,7 @@ import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -90,7 +91,7 @@ public class ChessController {
         }
 
         public void notifyPV(int depth, int score, int time, int nodes, int nps, boolean isMate,
-                boolean upperBound, boolean lowerBound, List<Move> pv) {
+                boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             pvDepth = depth;
             pvScore = score;
             pvTime = currTime = time;
@@ -213,7 +214,7 @@ public class ChessController {
     final private boolean doMove(int from, int to) {
         Position pos = game.pos;
         final boolean white = pos.isWhiteMove();
-        List<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         int promoteTo = Piece.EMPTY;
         for (Move m : moves) {

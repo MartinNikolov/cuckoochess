@@ -6,7 +6,6 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +34,7 @@ public class ComputerPlayerTest {
     @Test
     public void testGetCommand() throws ChessParseError {
         System.out.println("getCommand");
-        List<Position> nullHist = new ArrayList<Position>();
+        ArrayList<Position> nullHist = new ArrayList<Position>();
 
         Position pos = TextIO.readFEN("7k/5Q2/p5K1/8/8/8/8/8 b - - 99 80");
         ComputerPlayer cp = new ComputerPlayer();

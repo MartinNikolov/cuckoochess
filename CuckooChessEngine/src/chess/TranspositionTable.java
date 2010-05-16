@@ -161,10 +161,10 @@ public class TranspositionTable {
     /**
      * Extract a list of PV moves, starting from "rootPos" and first move "m".
      */
-    public List<Move> extractPVMoves(Position rootPos, Move m) {
+    public ArrayList<Move> extractPVMoves(Position rootPos, Move m) {
         Position pos = new Position(rootPos);
         m = new Move(m);
-        List<Move> ret = new ArrayList<Move>();
+        ArrayList<Move> ret = new ArrayList<Move>();
         UndoInfo ui = new UndoInfo();
         List<Long> hashHistory = new ArrayList<Long>();
         MoveGen moveGen = new MoveGen();
@@ -180,7 +180,7 @@ public class TranspositionTable {
                 break;
             }
             m = ent.getMove();
-            List<Move> moves = moveGen.pseudoLegalMoves(pos);
+            ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(m))
                 break;
@@ -195,7 +195,7 @@ public class TranspositionTable {
         boolean first = true;
         TTEntry ent = probe(pos.historyHash());
         UndoInfo ui = new UndoInfo();
-        List<Long> hashHistory = new ArrayList<Long>();
+        ArrayList<Long> hashHistory = new ArrayList<Long>();
         boolean repetition = false;
         MoveGen moveGen = new MoveGen();
         while (ent.type != TTEntry.T_EMPTY) {
@@ -206,7 +206,7 @@ public class TranspositionTable {
                 type = ">";
             }
             Move m = ent.getMove();
-            List<Move> moves = moveGen.pseudoLegalMoves(pos);
+            ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(m))
                 break;

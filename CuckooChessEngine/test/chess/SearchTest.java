@@ -7,7 +7,6 @@ package chess;
 
 import chess.Search.StopSearch;
 import java.util.ArrayList;
-import java.util.List;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,7 +17,7 @@ import static org.junit.Assert.*;
  * @author petero
  */
 public class SearchTest {
-    static final List<Long> nullHist = new ArrayList<Long>();
+    static final ArrayList<Long> nullHist = new ArrayList<Long>();
     static TranspositionTable tt = new TranspositionTable(19);
     
     public SearchTest() {
@@ -193,7 +192,7 @@ public class SearchTest {
     }
     
     private Move idSearch(Search sc, int maxDepth) {
-        List<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);
         sc.scoreMoveList(moves, false, 0);
         Move bestM = sc.iterativeDeepening(moves, -1, -1, maxDepth, -1, false);
@@ -352,7 +351,7 @@ public class SearchTest {
         Position pos = TextIO.readFEN("r2qk2r/ppp2ppp/1bnp1nb1/1N2p3/3PP3/1PP2N2/1P3PPP/R1BQRBK1 w kq - 0 1");
         Search sc = new Search(pos, nullHist, tt);
         MoveGen moveGen = new MoveGen();
-        List<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         sc.scoreMoveList(moves, false, 0);
         for (int i = 1; i < moves.size(); i++) {
             sc.selectBest(moves.subList(i, moves.size()));

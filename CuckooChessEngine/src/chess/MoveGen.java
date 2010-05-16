@@ -6,7 +6,6 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -17,8 +16,8 @@ public class MoveGen {
      * Generate and return a list of pseudo-legal moves.
      * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
      */
-    public final List<Move> pseudoLegalMoves(Position pos) {
-        List<Move> moveList = getMoveListObj();
+    public final ArrayList<Move> pseudoLegalMoves(Position pos) {
+        ArrayList<Move> moveList = getMoveListObj();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 int p = pos.getPiece(Position.getSquare(x, y));
@@ -201,8 +200,8 @@ public class MoveGen {
      * "moveList" is assumed to be a list of pseudo-legal moves.
      * This function removes the moves that don't defend from check threats.
      */
-    public static final List<Move> removeIllegal(Position pos, List<Move> moveList) {
-        List<Move> ret = new ArrayList<Move>();
+    public static final ArrayList<Move> removeIllegal(Position pos, ArrayList<Move> moveList) {
+        ArrayList<Move> ret = new ArrayList<Move>();
         UndoInfo ui = new UndoInfo();
         for (Move m : moveList) {
             pos.makeMove(m, ui);
@@ -220,7 +219,7 @@ public class MoveGen {
      * @param multiMove If true, the piece can move more than one step.
      * @ return True if the enemy king could be captured, false otherwise.
      */
-    private final boolean addDirection(List<Move> moveList, Position pos, int x0, int y0, int dx, int dy, boolean multiMove) {
+    private final boolean addDirection(ArrayList<Move> moveList, Position pos, int x0, int y0, int dx, int dy, boolean multiMove) {
         int sq0 = Position.getSquare(x0, y0);
         int x = x0 + dx;
         int y = y0 + dy;
@@ -254,7 +253,7 @@ public class MoveGen {
     /**
      * Generate all possible pawn moves from (x0,y0) to (x1,y1), taking pawn promotions into account.
      */
-    private final void addPawnMoves(List<Move> moveList, int x0, int y0, int x1, int y1) {
+    private final void addPawnMoves(ArrayList<Move> moveList, int x0, int y0, int x1, int y1) {
         int sq0 = Position.getSquare(x0, y0);
         int sq1 = Position.getSquare(x1, y1);
         if (y1 == 7) { // White promotion
@@ -346,15 +345,15 @@ public class MoveGen {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Move> getMoveListObj() {
+    private ArrayList<Move> getMoveListObj() {
         if (moveListsInCache > 0) {
-            return (List<Move>)moveListCache[--moveListsInCache];
+            return (ArrayList<Move>)moveListCache[--moveListsInCache];
         }
         return new ArrayList<Move>(60);
     }
 
     /** Return all move objects in moveList to the move cache. */
-    public void returnMoveList(List<Move> moveList) {
+    public void returnMoveList(ArrayList<Move> moveList) {
         if (movesInCache + moveList.size() <= moveCache.length) {
             for (Move m : moveList) {
                 moveCache[movesInCache++] = m;
