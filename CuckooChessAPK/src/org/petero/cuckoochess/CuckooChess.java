@@ -5,11 +5,11 @@ import guibase.GUIInterface;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnKeyListener;
-import android.widget.EditText;
+import android.view.View.OnTouchListener;
 import android.widget.TextView;
+import chess.Move;
 import chess.Position;
 
 public class CuckooChess extends Activity implements GUIInterface {
@@ -35,26 +35,27 @@ public class CuckooChess extends Activity implements GUIInterface {
         ctrl = new ChessController(this);
         mShowThinking = true;
         mTimeLimit = 5000;
-        playerWhite = false;
+        playerWhite = true;
         
         Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
         cb.setFont(chessFont);
         
         ctrl.newGame(playerWhite, ttLogSize, false);
 
-		final EditText cmd = (EditText)findViewById(R.id.cmd);
-        cmd.setOnKeyListener(new OnKeyListener() {
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-					(keyCode == KeyEvent.KEYCODE_ENTER)) {
-					String str = cmd.getText().toString();
-					ctrl.processString(str);
-					cmd.setText("");
-					return true;
-				}
-				return false;
+        cb.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+//				System.out.printf("%d %g %g%n", event.getAction(), event.getX(), event.getY());
+		        if (ctrl.humansTurn()) {
+		            int sq = cb.eventToSquare(event);
+		            Move m = cb.mousePressed(sq);
+		            if (m != null) {
+		                ctrl.humanMove(m);
+		            }
+		        }
+		        return false;
 			}
-        });
+		});
     }
 
 	@Override

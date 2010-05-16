@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.widget.TextView;
 import chess.Move;
 import chess.Piece;
@@ -76,8 +77,8 @@ public class ChessBoard extends TextView {
      * @param square The square to select, or -1 to clear selection.
      */
     final public void setSelection(int square) {
-        if (square != this.selectedSquare) {
-            this.selectedSquare = square;
+        if (square != selectedSquare) {
+            selectedSquare = square;
             invalidate();
         }
     }
@@ -190,10 +191,9 @@ public class ChessBoard extends TextView {
      * @param evt Details about the mouse event.
      * @return The square corresponding to the mouse event, or -1 if outside board.
      */
-    /*
-    final int eventToSquare(MouseEvent evt) {
-        int xCrd = evt.getX();
-        int yCrd = evt.getY();
+    final int eventToSquare(MotionEvent evt) {
+        int xCrd = (int)(evt.getX());
+        int yCrd = (int)(evt.getY());
 
         int sq = -1;
         if ((xCrd >= x0) && (yCrd >= y0) && (sqSize > 0)) {
@@ -209,34 +209,31 @@ public class ChessBoard extends TextView {
         }
         return sq;
     }
-    */
 
     final Move mousePressed(int sq) {
-        Move m = null;
-        int p = pos.getPiece(sq);
-        if ((selectedSquare >= 0) && (sq == selectedSquare)) {
-            int fromPiece = pos.getPiece(selectedSquare);
-            if ((fromPiece == Piece.EMPTY) || (Piece.isWhite(fromPiece) != pos.isWhiteMove())) {
-                return m; // Can't move the piece the oppenent just moved.
-            }
-        }
-        if ((selectedSquare < 0) &&
-                ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove()))) {
-            return m;  // You must click on one of your own pieces.
+        if (selectedSquare >= 0) {
+        	int p = pos.getPiece(selectedSquare);
+        	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
+        		setSelection(-1); // Remove selection of opponents last moving piece
+        	}
         }
 
+        int p = pos.getPiece(sq);
         if (selectedSquare >= 0) {
             if (sq != selectedSquare) {
                 if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
-                    m = new Move(selectedSquare, sq, Piece.EMPTY);
+                    Move m = new Move(selectedSquare, sq, Piece.EMPTY);
                     setSelection(sq);
+                    return m;
                 }
             }
-        }
-        if (m == null) {
             setSelection(-1);
+        } else {
+            boolean myColor = (p != Piece.EMPTY) && (Piece.isWhite(p) == pos.isWhiteMove());
+        	if (myColor) {
+        		setSelection(sq);
+        	}
         }
-        return m;
+        return null;
     }
-
 }
