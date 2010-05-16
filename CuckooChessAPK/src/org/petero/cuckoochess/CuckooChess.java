@@ -9,8 +9,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.TextView;
+import chess.ChessParseError;
 import chess.Move;
 import chess.Position;
+import chess.TextIO;
 
 public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
@@ -28,7 +30,6 @@ public class CuckooChess extends Activity implements GUIInterface {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        // FIXME!!! Layout should be different in landscape mode.
 
         status = (TextView)findViewById(R.id.status);
         moveList = (TextView)findViewById(R.id.moveList);
@@ -42,7 +43,17 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setFont(chessFont);
         
         ctrl.newGame(playerWhite, ttLogSize, false);
-
+        if (savedInstanceState != null) {
+        	String fen = savedInstanceState.getString("fen");
+        	if (fen != null) {
+        		try {
+        			ctrl.setPosition(TextIO.readFEN(fen));
+        		} catch (ChessParseError e) {
+        			// Just ignore invalid state
+        		}
+        	}
+        }
+        
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -58,6 +69,13 @@ public class CuckooChess extends Activity implements GUIInterface {
 			}
 		});
     }
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		String fen = TextIO.toFEN(ctrl.game.pos);
+		outState.putString("fen", fen);
+	}
     
     // FIXME!!! Need to handle lifecycle events, so that game is not reset when turning phone
     // FIXME!!! Add a menu: Back, forward, new game, quit.

@@ -26,7 +26,7 @@ import java.util.List;
 public class ChessController {
     Player humanPlayer;
     ComputerPlayer computerPlayer;
-    Game game;
+    public Game game;
     GUIInterface gui;
     boolean humanIsWhite;
     Thread computerThread;
@@ -143,6 +143,13 @@ public class ChessController {
         startComputerThinking();
     }
 
+    public final void setPosition(Position pos) {
+    	game.pos = pos;
+        gui.setSelection(-1);
+        updateGUI();
+        startComputerThinking();
+    }
+    
     public final boolean humansTurn() {
         return game.pos.isWhiteMove() == humanIsWhite;
     }
