@@ -8,6 +8,8 @@ import guibase.GUIInterface;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -45,7 +47,6 @@ public class CuckooChess extends Activity implements GUIInterface {
         
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
-        	
         	String fen = savedInstanceState.getString("startFEN");
         	if (fen == null) {
         		fen = "";
@@ -83,9 +84,43 @@ public class CuckooChess extends Activity implements GUIInterface {
 		outState.putString("startFEN", posHistStr.get(0));
 		outState.putString("moves", posHistStr.get(1));
 	}
-    
-    // FIXME!!! Add a menu: Back, forward, new game, quit.
-    // FIXME!!! Options menu: Flip board, play black, thinking time, show thinking.
+
+	static final int MENU_NEW_GAME = 0;
+	static final int MENU_QUIT = 1;
+	static final int MENU_UNDO = 2;
+	static final int MENU_REDO = 3;
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, MENU_NEW_GAME, 0, "New Game");
+		menu.add(0, MENU_QUIT, 0, "Quit");
+		menu.add(0, MENU_UNDO, 0, "Undo");
+		menu.add(0, MENU_REDO, 0, "Redo");
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case MENU_NEW_GAME:
+	        ctrl.newGame(playerWhite, ttLogSize, true);
+			return true;
+		case MENU_QUIT:
+			finish();
+			return true;
+		case MENU_UNDO:
+			ctrl.takeBackMove();
+			return true;
+		case MENU_REDO:
+			ctrl.redoMove();
+			return true;
+		}
+		return false;
+	}
+
+	// FIXME!!! Options menu: Flip board, play black, thinking time, show thinking.
+	// FIXME!!! Handle joystick
+	// FIXME!!! Redo history is lost when flipping phone.
     
 	@Override
 	public void setPosition(Position pos) {
