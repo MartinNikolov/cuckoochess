@@ -155,21 +155,22 @@ public class MoveGen {
     public static final boolean sqAttacked(Position pos, int square) {
         int x0 = Position.getX(square);
         int y0 = Position.getY(square);
+        boolean isWhiteMove = pos.isWhiteMove();
 
-        int oQueen= pos.isWhiteMove() ? Piece.BQUEEN: Piece.WQUEEN;
-        int oRook = pos.isWhiteMove() ? Piece.BROOK : Piece.WROOK;
+        int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
+        int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
         if (checkDirection(pos, x0, y0,  1,  0, oRook, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0,  0,  1, oRook, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0, -1,  0, oRook, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0,  0, -1, oRook, oQueen, true)) return true;
 
-        int oBish = pos.isWhiteMove() ? Piece.BBISHOP: Piece.WBISHOP;
+        int oBish = isWhiteMove ? Piece.BBISHOP: Piece.WBISHOP;
         if (checkDirection(pos, x0, y0,  1,  1, oBish, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0, -1,  1, oBish, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0, -1, -1, oBish, oQueen, true)) return true;
         if (checkDirection(pos, x0, y0,  1, -1, oBish, oQueen, true)) return true;
 
-        int oKnight = pos.isWhiteMove() ? Piece.BKNIGHT : Piece.WKNIGHT;
+        int oKnight = isWhiteMove ? Piece.BKNIGHT : Piece.WKNIGHT;
         if (checkDirection(pos, x0, y0,  2,  1, oKnight, oKnight, false)) return true;
         if (checkDirection(pos, x0, y0,  1,  2, oKnight, oKnight, false)) return true;
         if (checkDirection(pos, x0, y0, -1,  2, oKnight, oKnight, false)) return true;
@@ -179,8 +180,8 @@ public class MoveGen {
         if (checkDirection(pos, x0, y0,  1, -2, oKnight, oKnight, false)) return true;
         if (checkDirection(pos, x0, y0,  2, -1, oKnight, oKnight, false)) return true;
 
-        int oPawn= pos.isWhiteMove() ? Piece.BPAWN: Piece.WPAWN;
-        int fwDir = pos.isWhiteMove() ? 1 : -1;
+        int oPawn= isWhiteMove ? Piece.BPAWN: Piece.WPAWN;
+        int fwDir = isWhiteMove ? 1 : -1;
         if (checkDirection(pos, x0, y0,  1, fwDir, oPawn, oPawn, false)) return true;
         if (checkDirection(pos, x0, y0, -1, fwDir, oPawn, oPawn, false)) return true;
 
