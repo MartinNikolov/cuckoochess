@@ -50,7 +50,7 @@ public class EvaluateTest {
         pos = TextIO.readFEN("8/8/8/1r3k2/4pP2/4P3/8/4K2R w K - 0 1");
         assertEquals(true, pos.h1Castle());
         int cs1 = evalWhite(pos);
-        pos.setCastleMask(pos.getCastleMask() & ~(1 << Position.CastleBits.H1_CASTLE.ordinal()));
+        pos.setCastleMask(pos.getCastleMask() & ~(1 << Position.H1_CASTLE));
         assertEquals(false, pos.h1Castle());
         int cs2 = evalWhite(pos);
         assertTrue(cs2 >= cs1);    // No bonus for useless castle right

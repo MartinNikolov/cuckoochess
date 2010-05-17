@@ -65,16 +65,16 @@ public class TextIO {
                 char c = words[2].charAt(i);
                 switch (c) {
                     case 'K':
-                        castleMask |= (1 << Position.CastleBits.H1_CASTLE.ordinal());
+                        castleMask |= (1 << Position.H1_CASTLE);
                         break;
                     case 'Q':
-                        castleMask |= (1 << Position.CastleBits.A1_CASTLE.ordinal());
+                        castleMask |= (1 << Position.A1_CASTLE);
                         break;
                     case 'k':
-                        castleMask |= (1 << Position.CastleBits.H8_CASTLE.ordinal());
+                        castleMask |= (1 << Position.H8_CASTLE);
                         break;
                     case 'q':
-                        castleMask |= (1 << Position.CastleBits.A8_CASTLE.ordinal());
+                        castleMask |= (1 << Position.A8_CASTLE);
                         break;
                     case '-':
                         break;

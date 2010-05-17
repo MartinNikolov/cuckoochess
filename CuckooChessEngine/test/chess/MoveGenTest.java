@@ -71,7 +71,7 @@ public class MoveGenTest {
         assertTrue(!strMoves.contains("O-O-O"));
 
         pos.setPiece(Position.getSquare(6, 3), Piece.EMPTY);
-        pos.setCastleMask(1 << Position.CastleBits.A1_CASTLE.ordinal());
+        pos.setCastleMask(1 << Position.A1_CASTLE);
         strMoves = getMoveList(pos, false);
         assertTrue(!strMoves.contains("O-O"));      // short castle right has been lost
         assertTrue(strMoves.contains("O-O-O"));

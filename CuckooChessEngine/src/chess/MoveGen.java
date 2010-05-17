@@ -58,8 +58,8 @@ public class MoveGen {
 		    
                     int k0 = pos.isWhiteMove() ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
-                        int aCastle = pos.isWhiteMove() ? Position.CastleBits.A1_CASTLE.ordinal() : Position.CastleBits.A8_CASTLE.ordinal();
-                        int hCastle = pos.isWhiteMove() ? Position.CastleBits.H1_CASTLE.ordinal() : Position.CastleBits.H8_CASTLE.ordinal();
+                        int aCastle = pos.isWhiteMove() ? Position.A1_CASTLE : Position.A8_CASTLE;
+                        int hCastle = pos.isWhiteMove() ? Position.H1_CASTLE : Position.H8_CASTLE;
                         int rook = pos.isWhiteMove() ? Piece.WROOK : Piece.BROOK;
                         if (((pos.getCastleMask() & (1 << hCastle)) != 0) &&
                                 (pos.getPiece(k0 + 1) == Piece.EMPTY) &&

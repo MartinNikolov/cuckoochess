@@ -108,10 +108,10 @@ public class PositionTest {
         assertEquals(Piece.EMPTY, pos.getPiece(Position.getSquare(4,1)));
         assertEquals(Piece.WPAWN, pos.getPiece(Position.getSquare(4,3)));
         assertTrue(!pos.equals(origPos));
-        int castleMask = (1 << Position.CastleBits.A1_CASTLE.ordinal()) |
-                         (1 << Position.CastleBits.H1_CASTLE.ordinal()) |
-                         (1 << Position.CastleBits.A8_CASTLE.ordinal()) |
-                         (1 << Position.CastleBits.H8_CASTLE.ordinal());
+        int castleMask = (1 << Position.A1_CASTLE) |
+                         (1 << Position.H1_CASTLE) |
+                         (1 << Position.A8_CASTLE) |
+                         (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         pos.unMakeMove(move, ui);
         assertEquals(pos.isWhiteMove(), true);
@@ -139,8 +139,8 @@ public class PositionTest {
         pos.makeMove(move, ui);
         assertEquals(Piece.WROOK, pos.getPiece(Position.getSquare(5,0)));
         assertEquals(Piece.EMPTY, pos.getPiece(Position.getSquare(7,0)));
-        castleMask = (1 << Position.CastleBits.A8_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.H8_CASTLE.ordinal());
+        castleMask = (1 << Position.A8_CASTLE) |
+                     (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         assertEquals(-1, pos.getEpSquare());
         pos.unMakeMove(move, ui);
@@ -149,8 +149,8 @@ public class PositionTest {
         // Test castling rights (king move)
         move = new Move(Position.getSquare(4, 0), Position.getSquare(4,1), Piece.EMPTY);
         pos.makeMove(move, ui);
-        castleMask = (1 << Position.CastleBits.A8_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.H8_CASTLE.ordinal());
+        castleMask = (1 << Position.A8_CASTLE) |
+                     (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         assertEquals(-1, pos.getEpSquare());
         pos.unMakeMove(move, ui);
@@ -159,9 +159,9 @@ public class PositionTest {
         // Test castling rights (rook move)
         move = new Move(Position.getSquare(7, 0), Position.getSquare(6,0), Piece.EMPTY);
         pos.makeMove(move, ui);
-        castleMask = (1 << Position.CastleBits.A1_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.A8_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.H8_CASTLE.ordinal());
+        castleMask = (1 << Position.A1_CASTLE) |
+                     (1 << Position.A8_CASTLE) |
+                     (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         assertEquals(-1, pos.getEpSquare());
         pos.unMakeMove(move, ui);
@@ -182,9 +182,9 @@ public class PositionTest {
         Position origPos2 = new Position(pos);
         move = new Move(Position.getSquare(6,2), Position.getSquare(7,0), Piece.EMPTY);
         pos.makeMove(move, ui);
-        castleMask = (1 << Position.CastleBits.A1_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.A8_CASTLE.ordinal()) |
-                     (1 << Position.CastleBits.H8_CASTLE.ordinal());
+        castleMask = (1 << Position.A1_CASTLE) |
+                     (1 << Position.A8_CASTLE) |
+                     (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         assertEquals(-1, pos.getEpSquare());
         pos.unMakeMove(move, ui);

@@ -22,12 +22,10 @@ public class Position {
     private boolean whiteMove;
 
     /** Bit definitions for the castleMask bit mask. */
-    public enum CastleBits {
-        /** White long castle.  */ A1_CASTLE,
-        /** White short castle. */ H1_CASTLE,
-        /** Black long castle.  */ A8_CASTLE,
-        /** Black short castle. */ H8_CASTLE
-    }
+    public static final int A1_CASTLE = 0; /** White long castle. */
+    public static final int H1_CASTLE = 1; /** White short castle. */
+    public static final int A8_CASTLE = 2; /** Black long castle. */
+    public static final int H8_CASTLE = 3; /** Black short castle. */
     
     private int castleMask;
 
@@ -169,19 +167,19 @@ public class Position {
 
     /** Return true if white long castling right has not been lost. */
     public final boolean a1Castle() {
-        return (castleMask & (1 << CastleBits.A1_CASTLE.ordinal())) != 0;
+        return (castleMask & (1 << A1_CASTLE)) != 0;
     }
     /** Return true if white short castling right has not been lost. */
     public final boolean h1Castle() {
-        return (castleMask & (1 << CastleBits.H1_CASTLE.ordinal())) != 0;
+        return (castleMask & (1 << H1_CASTLE)) != 0;
     }
     /** Return true if black long castling right has not been lost. */
     public final boolean a8Castle() {
-        return (castleMask & (1 << CastleBits.A8_CASTLE.ordinal())) != 0;
+        return (castleMask & (1 << A8_CASTLE)) != 0;
     }
     /** Return true if black short castling right has not been lost. */
     public final boolean h8Castle() {
-        return (castleMask & (1 << CastleBits.H8_CASTLE.ordinal())) != 0;
+        return (castleMask & (1 << H8_CASTLE)) != 0;
     }
     /** Bitmask describing castling rights. */
     public final int getCastleMask() {
@@ -251,11 +249,11 @@ public class Position {
                 setPiece(k0 - 4, Piece.EMPTY);
             }
             if (whiteMove) {
-                setCastleMask(castleMask & ~(1 << Position.CastleBits.A1_CASTLE.ordinal()));
-                setCastleMask(castleMask & ~(1 << Position.CastleBits.H1_CASTLE.ordinal()));
+                setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
+                setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
             } else {
-                setCastleMask(castleMask & ~(1 << Position.CastleBits.A8_CASTLE.ordinal()));
-                setCastleMask(castleMask & ~(1 << Position.CastleBits.H8_CASTLE.ordinal()));
+                setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
+                setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
             }
         }
         int rook = whiteMove ? Piece.WROOK : Piece.BROOK;
@@ -341,13 +339,13 @@ public class Position {
     
     private final void removeCastleRights(int square) {
         if (square== Position.getSquare(0, 0)) {
-            setCastleMask(castleMask & ~(1 << Position.CastleBits.A1_CASTLE.ordinal()));
+            setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
         } else if (square== Position.getSquare(7, 0)) {
-            setCastleMask(castleMask & ~(1 << Position.CastleBits.H1_CASTLE.ordinal()));
+            setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
         } else if (square== Position.getSquare(0, 7)) {
-            setCastleMask(castleMask & ~(1 << Position.CastleBits.A8_CASTLE.ordinal()));
+            setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
         } else if (square== Position.getSquare(7, 7)) {
-            setCastleMask(castleMask & ~(1 << Position.CastleBits.H8_CASTLE.ordinal()));
+            setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
         }
     }
 
