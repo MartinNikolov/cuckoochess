@@ -283,13 +283,14 @@ public class MoveGen {
         int x = x0 + dx;
         int y = y0 + dy;
         while ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-            int sq = Position.getSquare(x, y);
-            if (pos.getPiece(sq) == p0)
+            final int sq = Position.getSquare(x, y);
+            final int p = pos.getPiece(sq);
+            if (p == p0)
                 return true;
             if (multiMove) {
-                if (pos.getPiece(sq) == p1) {
+                if (p == p1) {
                     return true;
-                } else if (pos.getPiece(sq) != Piece.EMPTY) {
+                } else if (p != Piece.EMPTY) {
                     break;
                 }
             } else {
