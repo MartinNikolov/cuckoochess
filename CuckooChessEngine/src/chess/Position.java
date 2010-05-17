@@ -138,15 +138,15 @@ public class Position {
     }
     /** Return x position (file) corresponding to a square. */
     public final static int getX(int square) {
-        return square % 8;
+        return square & 7;
     }
     /** Return y position (rank) corresponding to a square. */
     public final static int getY(int square) {
-        return square / 8;
+        return square >> 3;
     }
     /** Return true if (x,y) is a dark square. */
     public final static boolean darkSquare(int x, int y) {
-        return (x % 2) == (y % 2);
+        return (x & 1) == (y & 1);
     }
 
     /** Return piece occuping a square. */

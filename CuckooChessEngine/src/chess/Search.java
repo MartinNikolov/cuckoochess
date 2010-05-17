@@ -710,7 +710,7 @@ public class Search {
             }
             if ((p == Piece.WQUEEN) || (p == Piece.BQUEEN))
                 return index;
-            if ((direction % 2) == 0) {
+            if ((direction & 1) == 0) {
                 if ((p == Piece.WROOK) || (p == Piece.BROOK))
                     return index;
             } else {
