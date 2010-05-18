@@ -44,6 +44,9 @@ public class CuckooChess extends Activity implements GUIInterface {
         
         Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
         cb.setFont(chessFont);
+        cb.setFocusable(true);
+        cb.requestFocus();
+        cb.setClickable(true);
         
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
@@ -65,16 +68,28 @@ public class CuckooChess extends Activity implements GUIInterface {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 //				System.out.printf("%d %g %g%n", event.getAction(), event.getX(), event.getY());
-		        if (ctrl.humansTurn()) {
+		        if (ctrl.humansTurn() && (event.getAction() == MotionEvent.ACTION_DOWN)) {
 		            int sq = cb.eventToSquare(event);
 		            Move m = cb.mousePressed(sq);
 		            if (m != null) {
 		                ctrl.humanMove(m);
 		            }
+		            return true;
 		        }
 		        return false;
 			}
 		});
+        
+        cb.setOnTrackballListener(new ChessBoard.OnTrackballListener() {
+        	public void onTrackballEvent(MotionEvent event) {
+		        if (ctrl.humansTurn()) {
+		        	Move m = cb.handleTrackballEvent(event);
+		        	if (m != null) {
+		        		ctrl.humanMove(m);
+		        	}
+		        }
+        	}
+        });
     }
 
 	@Override

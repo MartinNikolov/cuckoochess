@@ -7,20 +7,23 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.TextView;
+import android.view.View;
 import chess.Move;
 import chess.Piece;
 import chess.Position;
 
-public class ChessBoard extends TextView {
+public class ChessBoard extends View {
 	private Position pos;
     private int selectedSquare;
+    private float cursorX;
+    private float cursorY;
     private int x0, y0, sqSize;
     private boolean flipped;
 
     private Paint darkPaint;
     private Paint brightPaint;
     private Paint redOutline;
+    private Paint greenOutline;
     private Paint whitePiecePaint;
     private Paint blackPiecePaint;
     
@@ -28,6 +31,8 @@ public class ChessBoard extends TextView {
 		super(context, attrs);
     	pos = new Position();
         selectedSquare = -1;
+        cursorX = -1;
+        cursorY = -1;
         x0 = y0 = sqSize = 0;
         flipped = false;
 
@@ -40,6 +45,10 @@ public class ChessBoard extends TextView {
         redOutline = new Paint();
         redOutline.setARGB(255, 255, 0, 0);
         redOutline.setStyle(Paint.Style.STROKE);
+        
+        greenOutline = new Paint();
+        greenOutline.setARGB(255, 0, 255, 0);
+        greenOutline.setStyle(Paint.Style.STROKE);
         
         whitePiecePaint = new Paint();
         whitePiecePaint.setARGB(255, 255, 255, 255);
@@ -111,6 +120,14 @@ public class ChessBoard extends TextView {
                 int p = pos.getPiece(sq);
                 drawPiece(canvas, xCrd + sqSize / 2, yCrd + sqSize / 2, p);
             }
+        }
+        if ((cursorX >= 0) && (cursorY >= 0)) {
+        	int x = Math.round(cursorX);
+        	int y = Math.round(cursorY);
+        	int x0 = getXCrd(x);
+        	int y0 = getYCrd(y);
+            greenOutline.setStrokeWidth(sqSize/(float)16);
+            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
         }
         if (selectedSquare >= 0) {
             int selX = Position.getX(selectedSquare);
@@ -210,7 +227,8 @@ public class ChessBoard extends TextView {
         return sq;
     }
 
-    final Move mousePressed(int sq) {
+	final Move mousePressed(int sq) {
+    	cursorX = cursorY = -1;
         if (selectedSquare >= 0) {
         	int p = pos.getPiece(selectedSquare);
         	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
@@ -236,4 +254,51 @@ public class ChessBoard extends TextView {
         }
         return null;
     }
+
+	public static class OnTrackballListener {
+    	public void onTrackballEvent(MotionEvent event) { }
+	}
+	OnTrackballListener otbl = null;
+	public void setOnTrackballListener(OnTrackballListener onTrackballListener) {
+		otbl = onTrackballListener;
+	}
+	@Override
+	public boolean onTrackballEvent(MotionEvent event) {
+		if (otbl != null) {
+			otbl.onTrackballEvent(event);
+			return true;
+		}
+		return false;
+	}
+	
+	public Move handleTrackballEvent(MotionEvent event) {
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			invalidate();
+			if ((cursorX >= 0) && (cursorY >= 0)) {
+				int x = Math.round(cursorX);
+				int y = Math.round(cursorY);
+				int sq = Position.getSquare(x, y);
+				return mousePressed(sq);
+			}
+			return null;
+		}
+		if ((cursorX < 0) || (cursorY < 0)) {
+			if (selectedSquare >= 0) {
+				cursorX = Position.getX(selectedSquare);
+				cursorY = Position.getY(selectedSquare);
+			} else {
+				cursorX = 0;
+				cursorY = 0;
+			}
+		}
+		cursorX += event.getX();
+		cursorY -= event.getY();
+		if (cursorX < 0) cursorX = 0;
+		if (cursorX > 7) cursorX = 7;
+		if (cursorY < 0) cursorY = 0;
+		if (cursorY > 7) cursorY = 7;
+		invalidate();
+		return null;
+	}
 }
