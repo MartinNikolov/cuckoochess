@@ -74,7 +74,7 @@ public class ChessController {
             gui.runOnUIThread(new Runnable() {
                 public void run() {
                     thinkingPV = newPV;
-                    setMoveList();
+                    setThinkingPV();
                 }
             });
         }
@@ -250,6 +250,7 @@ public class ChessController {
     final private void updateGUI() {
         setStatusString();
         setMoveList();
+        setThinkingPV();
         gui.setPosition(game.pos);
     }
 
@@ -264,10 +265,15 @@ public class ChessController {
     public final void setMoveList() {
         String str = game.getMoveListString(true);
         str += String.format("%n");
-        if ((thinkingPV.length() > 0) && gui.showThinking()) {
+        gui.setMoveListString(str);
+    }
+    
+    public final void setThinkingPV() {
+    	String str = new String();
+    	if ((thinkingPV.length() > 0) && gui.showThinking()) {
             str += String.format("%s%n", thinkingPV);
         }
-        gui.setMoveListString(str);
+        gui.setThinkingString(str);
     }
 
     final private void setSelection() {

@@ -21,6 +21,8 @@ public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
 	ChessController ctrl;
 	boolean mShowThinking;
+	String moveListStr;
+	String thinkingStr;
 	int mTimeLimit;
 	boolean playerWhite;
 	static final int ttLogSize = 15; // Use 2^15 hash entries.
@@ -98,6 +100,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		List<String> posHistStr = ctrl.getPosHistory();
 		outState.putString("startFEN", posHistStr.get(0));
 		outState.putString("moves", posHistStr.get(1));
+        ctrl.newGame(true, ttLogSize, false);
 	}
 
 	static final int MENU_NEW_GAME = 0;
@@ -154,7 +157,14 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	@Override
 	public void setMoveListString(String str) {
-		moveList.setText(str);
+		moveListStr = str;
+		moveList.setText(moveListStr + thinkingStr);
+	}
+	
+	@Override
+	public void setThinkingString(String str) {
+		thinkingStr = str;
+		moveList.setText(moveListStr + thinkingStr);
 	}
 
 	@Override

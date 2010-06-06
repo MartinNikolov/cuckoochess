@@ -16,6 +16,9 @@ public interface GUIInterface {
 	/** Update the list of moves. */
 	public void setMoveListString(String str);
 
+	/** Update the computer thinking information. */
+	public void setThinkingString(String str);
+	
 	/** Get the current time limit. */
 	public int timeLimit();
 

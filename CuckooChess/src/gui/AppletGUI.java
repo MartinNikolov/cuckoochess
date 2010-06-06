@@ -30,6 +30,8 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 	ChessBoardPainter cbp;
     ChessController ctrl;
     final static int ttLogSize = 19; // Use 2^19 hash entries.
+    String moveListStr = "";
+    String thinkingStr = "";
 
     /** Initializes the applet AppletGUI */
     @Override
@@ -378,10 +380,21 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     }
 
     public void setMoveListString(String str) {
+    	moveListStr = str;
+    	str = moveListStr + thinkingStr;
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }
     }
+    
+    public void setThinkingString(String str) {
+    	thinkingStr = str;
+    	str = moveListStr + thinkingStr;
+        if (!str.equals(LogTextArea.getText())) {
+            LogTextArea.setText(str);
+        }
+    }
+    
 
     public final int timeLimit() {
         return TimeSlider.getValue() * 1000;
