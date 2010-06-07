@@ -204,7 +204,9 @@ public class MoveGen {
     public static final ArrayList<Move> removeIllegal(Position pos, ArrayList<Move> moveList) {
         ArrayList<Move> ret = new ArrayList<Move>();
         UndoInfo ui = new UndoInfo();
-        for (Move m : moveList) {
+        int mlSize = moveList.size();
+        for (int mi = 0; mi < mlSize; mi++) {
+        	Move m = moveList.get(mi);
             pos.makeMove(m, ui);
             pos.setWhiteMove(!pos.isWhiteMove());
             if (!inCheck(pos))

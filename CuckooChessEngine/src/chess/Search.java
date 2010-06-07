@@ -426,7 +426,7 @@ public class Search {
                 seeDone = true;
             }
             if ((mi > 0) || !hashMoveSelected) {
-                selectBest(moves.subList(mi, moves.size()));
+                selectBest(moves, mi);
             }
             Move m = moves.get(mi);
             if (pos.getPiece(m.to) == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
@@ -550,7 +550,7 @@ public class Search {
             if (mi < 8) {
                 // If the first 8 moves didn't fail high, this is probably an ALL-node,
                 // so spending more effort on move ordering is probably wasted time.
-                selectBest(moves.subList(mi, nMoves));
+                selectBest(moves, mi);
             }
             Move m = moves.get(mi);
             if (pos.getPiece(m.to) == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
@@ -786,17 +786,21 @@ public class Search {
     /**
      * Find move with highest score and move it to the front of the list.
      */
-    final void selectBest(List<Move> moves) {
-        if (moves.size() < 2)
+    final void selectBest(List<Move> moves, int startIdx) {
+    	int mSize = moves.size();
+        if (mSize - startIdx < 2)
             return;
-        int bestIdx = 0;
-        for (int i = 1; i < moves.size(); i++) {
-            if (moves.get(i).score > moves.get(bestIdx).score)
+        int bestIdx = startIdx;
+        int bestScore = moves.get(bestIdx).score;
+        for (int i = startIdx + 1; i < mSize; i++) {
+            if (moves.get(i).score > bestScore) {
                 bestIdx = i;
+                bestScore = moves.get(bestIdx).score;
+            }
         }
-        if (bestIdx != 0) {
-            Move m = moves.get(0);
-            moves.set(0, moves.get(bestIdx));
+        if (bestIdx != startIdx) {
+            Move m = moves.get(startIdx);
+            moves.set(startIdx, moves.get(bestIdx));
             moves.set(bestIdx, m);
         }
     }
