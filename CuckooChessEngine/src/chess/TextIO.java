@@ -129,7 +129,7 @@ public class TextIO {
 
         // Make sure king can not be captured
         Position pos2 = new Position(pos);
-        pos2.setWhiteMove(!pos.isWhiteMove());
+        pos2.setWhiteMove(!pos.whiteMove);
         if (MoveGen.inCheck(pos2)) {
             throw new ChessParseError("King capture possible");
         }
@@ -142,7 +142,7 @@ public class TextIO {
             boolean epValid = false;
             for (Move m : moves) {
                 if (m.to == epSquare) {
-                    if (pos.getPiece(m.from) == (pos.isWhiteMove() ? Piece.WPAWN : Piece.BPAWN)) {
+                    if (pos.getPiece(m.from) == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) {
                         epValid = true;
                         break;
                     }
@@ -205,7 +205,7 @@ public class TextIO {
                 ret.append('/');
             }
         }
-        ret.append(pos.isWhiteMove() ? " w " : " b ");
+        ret.append(pos.whiteMove ? " w " : " b ");
 
         // Castling rights
         boolean anyCastle = false;
@@ -294,7 +294,7 @@ public class TextIO {
                 ret.append((char) (y1 + '1'));
                 ret.append(isCapture(pos, move) ? 'x' : '-');
             } else {
-                if (p == (pos.isWhiteMove() ? Piece.WPAWN : Piece.BPAWN)) {
+                if (p == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) {
                     if (isCapture(pos, move)) {
                         ret.append((char) (x1 + 'a'));
                     }
@@ -353,7 +353,7 @@ public class TextIO {
     private static boolean isCapture(Position pos, Move move) {
         if (pos.getPiece(move.to) == Piece.EMPTY) {
             int p = pos.getPiece(move.from);
-            if ((p == (pos.isWhiteMove() ? Piece.WPAWN : Piece.BPAWN)) && (move.to == pos.getEpSquare())) {
+            if ((p == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) && (move.to == pos.getEpSquare())) {
                 return true;
             } else {
                 return false;

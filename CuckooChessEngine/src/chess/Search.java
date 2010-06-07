@@ -358,14 +358,14 @@ public class Search {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
             }
-            int mtrl = eval.material(pos, pos.isWhiteMove());
+            int mtrl = eval.material(pos, pos.whiteMove);
             int pV = Evaluate.pieceValue[Piece.WPAWN];
-            int pMtrl = pV * pos.nPieces(pos.isWhiteMove() ? Piece.WPAWN : Piece.BPAWN);
+            int pMtrl = pV * pos.nPieces(pos.whiteMove ? Piece.WPAWN : Piece.BPAWN);
             if (mtrl > pMtrl) {
                 final int R = (depth > 6) ? 3 : 2;
-                pos.setWhiteMove(!pos.isWhiteMove());
+                pos.setWhiteMove(!pos.whiteMove);
                 int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1);
-                pos.setWhiteMove(!pos.isWhiteMove());
+                pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                     return score;
                 } else {
@@ -429,7 +429,7 @@ public class Search {
                 selectBest(moves, mi);
             }
             Move m = moves.get(mi);
-            if (pos.getPiece(m.to) == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
+            if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 return MATE0-ply;       // King capture
             }
@@ -553,7 +553,7 @@ public class Search {
                 selectBest(moves, mi);
             }
             Move m = moves.get(mi);
-            if (pos.getPiece(m.to) == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
+            if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 qNodes++;
                 totalNodes++;
                 moveGen.returnMoveList(moves);
@@ -629,7 +629,7 @@ public class Search {
 
         if (captures[0] != SEEkingValue) {
             pos.makeMove(m, seeUi);
-            boolean white = pos.isWhiteMove();
+            boolean white = pos.whiteMove;
             int valOnSquare = SEEgetPieceValue(pos.getPiece(square));
 
             for (int d = 0; d < 8; d++) {

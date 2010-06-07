@@ -125,9 +125,9 @@ public class Game {
         moves = MoveGen.removeIllegal(pos, moves);
         if (moves.size() == 0) {
             if (MoveGen.inCheck(pos)) {
-                return pos.isWhiteMove() ? GameState.BLACK_MATE : GameState.WHITE_MATE;
+                return pos.whiteMove ? GameState.BLACK_MATE : GameState.WHITE_MATE;
             } else {
-                return pos.isWhiteMove() ? GameState.WHITE_STALEMATE : GameState.BLACK_STALEMATE;
+                return pos.whiteMove ? GameState.WHITE_STALEMATE : GameState.BLACK_STALEMATE;
             }
         }
         if (insufficientMaterial()) {
@@ -231,7 +231,7 @@ public class Game {
             }
         } else if (moveStr.equals("resign")) {
             if (getGameState()== GameState.ALIVE) {
-                resignState = pos.isWhiteMove() ? GameState.RESIGN_WHITE : GameState.RESIGN_BLACK;
+                resignState = pos.whiteMove ? GameState.RESIGN_WHITE : GameState.RESIGN_BLACK;
                 return true;
             } else {
                 return true;
@@ -258,7 +258,7 @@ public class Game {
 
     /** Swap players around if needed to make the human player in control of the next move. */
     protected void activateHumanPlayer() {
-        if (!(pos.isWhiteMove() ? whitePlayer : blackPlayer).isHumanPlayer()) {
+        if (!(pos.whiteMove ? whitePlayer : blackPlayer).isHumanPlayer()) {
             Player tmp = whitePlayer;
             whitePlayer = blackPlayer;
             blackPlayer = tmp;
@@ -312,7 +312,7 @@ public class Game {
             if (drawOfferList.get(i)) {
                 strMove += " (d)";
             }
-            if (pos.isWhiteMove()) {
+            if (pos.whiteMove) {
                 whiteMove = strMove;
             } else {
                 blackMove = strMove;

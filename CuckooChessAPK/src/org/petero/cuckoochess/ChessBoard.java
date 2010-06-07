@@ -231,7 +231,7 @@ public class ChessBoard extends View {
     	cursorX = cursorY = -1;
         if (selectedSquare >= 0) {
         	int p = pos.getPiece(selectedSquare);
-        	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
+        	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
         		setSelection(-1); // Remove selection of opponents last moving piece
         	}
         }
@@ -239,7 +239,7 @@ public class ChessBoard extends View {
         int p = pos.getPiece(sq);
         if (selectedSquare >= 0) {
             if (sq != selectedSquare) {
-                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
+                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
                     Move m = new Move(selectedSquare, sq, Piece.EMPTY);
                     setSelection(sq);
                     return m;
@@ -247,7 +247,7 @@ public class ChessBoard extends View {
             }
             setSelection(-1);
         } else {
-            boolean myColor = (p != Piece.EMPTY) && (Piece.isWhite(p) == pos.isWhiteMove());
+            boolean myColor = (p != Piece.EMPTY) && (Piece.isWhite(p) == pos.whiteMove);
         	if (myColor) {
         		setSelection(sq);
         	}

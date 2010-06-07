@@ -103,7 +103,7 @@ public class PositionTest {
         Move move = new Move(Position.getSquare(4,1), Position.getSquare(4,3), Piece.EMPTY);
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
-        assertEquals(pos.isWhiteMove(), false);
+        assertEquals(pos.whiteMove, false);
         assertEquals(-1, pos.getEpSquare());
         assertEquals(Piece.EMPTY, pos.getPiece(Position.getSquare(4,1)));
         assertEquals(Piece.WPAWN, pos.getPiece(Position.getSquare(4,3)));
@@ -114,7 +114,7 @@ public class PositionTest {
                          (1 << Position.H8_CASTLE);
         assertEquals(castleMask,pos.getCastleMask());
         pos.unMakeMove(move, ui);
-        assertEquals(pos.isWhiteMove(), true);
+        assertEquals(pos.whiteMove, true);
         assertEquals(Piece.WPAWN, pos.getPiece(Position.getSquare(4,1)));
         assertEquals(Piece.EMPTY, pos.getPiece(Position.getSquare(4,3)));
         assertTrue(pos.equals(origPos));
@@ -357,11 +357,11 @@ public class PositionTest {
         pos.unMakeMove(move, ui);
         assertTrue(h1 == pos.zobristHash());
         
-        pos.setWhiteMove(!pos.isWhiteMove());
+        pos.setWhiteMove(!pos.whiteMove);
         long h4 = pos.zobristHash();
         assertEquals(h4, pos.computeZobristHash());
         assertTrue(h1 != pos.zobristHash());
-        pos.setWhiteMove(!pos.isWhiteMove());
+        pos.setWhiteMove(!pos.whiteMove);
         assertTrue(h1 == pos.zobristHash());
         
         pos.setCastleMask(0);

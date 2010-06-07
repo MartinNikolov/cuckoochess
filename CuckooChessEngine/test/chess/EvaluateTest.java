@@ -272,7 +272,7 @@ public class EvaluateTest {
     private final int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();
         int ret = eval.evalPos(pos);
-        if (!pos.isWhiteMove()) {
+        if (!pos.whiteMove) {
             ret = -ret;
         }
         return ret;

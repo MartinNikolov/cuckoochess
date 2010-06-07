@@ -21,7 +21,7 @@ public class MoveGen {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 int p = pos.getPiece(Position.getSquare(x, y));
-                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
+                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
                     continue;
                 }
                 if ((p == Piece.WROOK) || (p == Piece.BROOK) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
@@ -56,11 +56,11 @@ public class MoveGen {
                     if (addDirection(moveList, pos, x, y,  0, -1, false)) return moveList;
                     if (addDirection(moveList, pos, x, y,  1, -1, false)) return moveList;
 		    
-                    int k0 = pos.isWhiteMove() ? Position.getSquare(4,0) : Position.getSquare(4,7);
+                    int k0 = pos.whiteMove ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
-                        int aCastle = pos.isWhiteMove() ? Position.A1_CASTLE : Position.A8_CASTLE;
-                        int hCastle = pos.isWhiteMove() ? Position.H1_CASTLE : Position.H8_CASTLE;
-                        int rook = pos.isWhiteMove() ? Piece.WROOK : Piece.BROOK;
+                        int aCastle = pos.whiteMove ? Position.A1_CASTLE : Position.A8_CASTLE;
+                        int hCastle = pos.whiteMove ? Position.H1_CASTLE : Position.H8_CASTLE;
+                        int rook = pos.whiteMove ? Piece.WROOK : Piece.BROOK;
                         if (((pos.getCastleMask() & (1 << hCastle)) != 0) &&
                                 (pos.getPiece(k0 + 1) == Piece.EMPTY) &&
                                 (pos.getPiece(k0 + 2) == Piece.EMPTY) &&
@@ -81,10 +81,10 @@ public class MoveGen {
                     }
                 }
                 if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
-                    int yDir = pos.isWhiteMove() ? 1 : -1;
+                    int yDir = pos.whiteMove ? 1 : -1;
                     if (pos.getPiece(Position.getSquare(x, y + yDir)) == Piece.EMPTY) { // non-capture
                         addPawnMoves(moveList, x, y, x, y + yDir);
-                        if ((y == (pos.isWhiteMove() ? 1 : 6)) &&
+                        if ((y == (pos.whiteMove ? 1 : 6)) &&
                                 (pos.getPiece(Position.getSquare(x, y + 2 * yDir)) == Piece.EMPTY)) { // double step
                             addPawnMoves(moveList, x, y, x, y + 2 * yDir);
                         }
@@ -92,8 +92,8 @@ public class MoveGen {
                     if (x > 0) { // Capture to the left
                         int cap = pos.getPiece(Position.getSquare(x - 1, y + yDir));
                         if (cap != Piece.EMPTY) {
-                            if (Piece.isWhite(cap) != pos.isWhiteMove()) {
-                                if (cap == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
+                            if (Piece.isWhite(cap) != pos.whiteMove) {
+                                if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
                                     moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x - 1, y + yDir), Piece.EMPTY));
@@ -109,8 +109,8 @@ public class MoveGen {
                     if (x < 7) { // Capture to the right
                         int cap = pos.getPiece(Position.getSquare(x + 1, y + yDir));
                         if (cap != Piece.EMPTY) {
-                            if (Piece.isWhite(cap) != pos.isWhiteMove()) {
-                                if (cap == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
+                            if (Piece.isWhite(cap) != pos.whiteMove) {
+                                if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
                                     moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x + 1, y + yDir), Piece.EMPTY));
@@ -133,7 +133,7 @@ public class MoveGen {
      * Return true if the side to move is in check.
      */
     public static final boolean inCheck(Position pos) {
-        int kingSq = pos.getKingSq(pos.isWhiteMove());
+        int kingSq = pos.getKingSq(pos.whiteMove);
         if (kingSq < 0)
             return false;
         return sqAttacked(pos, kingSq);
@@ -143,9 +143,9 @@ public class MoveGen {
      * Return true if the side to move can take the opponents king.
      */
     public static final boolean canTakeKing(Position pos) {
-        pos.setWhiteMove(!pos.isWhiteMove());
+        pos.setWhiteMove(!pos.whiteMove);
         boolean ret = inCheck(pos);
-        pos.setWhiteMove(!pos.isWhiteMove());
+        pos.setWhiteMove(!pos.whiteMove);
         return ret;
     }
 
@@ -155,7 +155,7 @@ public class MoveGen {
     public static final boolean sqAttacked(Position pos, int square) {
         int x0 = Position.getX(square);
         int y0 = Position.getY(square);
-        boolean isWhiteMove = pos.isWhiteMove();
+        boolean isWhiteMove = pos.whiteMove;
 
         int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
         int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
@@ -185,7 +185,7 @@ public class MoveGen {
         if (checkDirection(pos, x0, y0,  1, fwDir, oPawn, oPawn, false)) return true;
         if (checkDirection(pos, x0, y0, -1, fwDir, oPawn, oPawn, false)) return true;
 
-        int oKingSq = pos.getKingSq(!pos.isWhiteMove());
+        int oKingSq = pos.getKingSq(!pos.whiteMove);
         if (oKingSq >= 0) {
             int ox0 = Position.getX(oKingSq);
             int oy0 = Position.getY(oKingSq);
@@ -208,10 +208,10 @@ public class MoveGen {
         for (int mi = 0; mi < mlSize; mi++) {
         	Move m = moveList.get(mi);
             pos.makeMove(m, ui);
-            pos.setWhiteMove(!pos.isWhiteMove());
+            pos.setWhiteMove(!pos.whiteMove);
             if (!inCheck(pos))
                 ret.add(m);
-            pos.setWhiteMove(!pos.isWhiteMove());
+            pos.setWhiteMove(!pos.whiteMove);
             pos.unMakeMove(m, ui);
         }
         return ret;
@@ -232,8 +232,8 @@ public class MoveGen {
             if (p == Piece.EMPTY) {
                 moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
             } else {
-                if (Piece.isWhite(p) != pos.isWhiteMove()) {
-                    if (p == (pos.isWhiteMove() ? Piece.BKING : Piece.WKING)) {
+                if (Piece.isWhite(p) != pos.whiteMove) {
+                    if (p == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                         returnMoveList(moveList);
                         moveList = getMoveListObj();
                         moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));

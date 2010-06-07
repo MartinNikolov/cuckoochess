@@ -172,7 +172,7 @@ public class Evaluate {
         score += bishopEval(pos, score);
         score = endGameEval(pos, score);
 
-        if (!pos.isWhiteMove())
+        if (!pos.whiteMove)
             score = -score;
         return score;
     }

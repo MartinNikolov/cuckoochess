@@ -116,7 +116,7 @@ public class GameTest {
         game.processString("undo");
         game.processString("redo");
         game.processString("e5");
-        assertEquals(true,game.pos.isWhiteMove());
+        assertEquals(true,game.pos.whiteMove);
         assertEquals(false, game.haveDrawOffer());
     }
     
@@ -160,7 +160,7 @@ public class GameTest {
         game.processString(cmd);
         game.processString("draw 50 Ke3");
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Ke3 is invalid
-        assertEquals(true,game.pos.isWhiteMove());
+        assertEquals(true,game.pos.whiteMove);
         game.processString("a6");
         assertEquals(true, game.haveDrawOffer());   // Previous invalid claim converted to offer
         game.processString("draw 50");

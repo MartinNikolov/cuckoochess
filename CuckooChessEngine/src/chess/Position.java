@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 public class Position {
     private int[] squares;
 
-    private boolean whiteMove;
+    public boolean whiteMove;
 
     /** Bit definitions for the castleMask bit mask. */
     public static final int A1_CASTLE = 0; /** White long castle. */
@@ -122,10 +122,6 @@ public class Position {
         return true;
     }
 
-    /** True if white's turn to move. */
-    public final boolean isWhiteMove() {
-        return whiteMove;
-    }
     public final void setWhiteMove(boolean whiteMove) {
         if (whiteMove != this.whiteMove) {
             hashKey ^= whiteHashKey;

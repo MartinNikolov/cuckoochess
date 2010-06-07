@@ -160,14 +160,14 @@ public class TUIGame extends Game {
 					moveStr += " (offer draw)";
 				}
 				String msg = String.format("Last move: %d%s %s",
-						prevPos.fullMoveCounter, prevPos.isWhiteMove() ? "." : "...",
+						prevPos.fullMoveCounter, prevPos.whiteMove ? "." : "...",
 								moveStr);
 				System.out.println(msg);
 			}
 //            System.out.printf("Hash: %016x\n", pos.zobristHash());
 			{
 				Evaluate eval = new Evaluate();
-				int evScore = eval.evalPos(pos) * (pos.isWhiteMove() ? 1 : -1);
+				int evScore = eval.evalPos(pos) * (pos.whiteMove ? 1 : -1);
 				System.out.printf("Eval: %.2f%n", evScore / 100.0);
 			}
 
@@ -182,7 +182,7 @@ public class TUIGame extends Game {
 			}
 
 			// Get command from current player and act on it
-			Player pl = pos.isWhiteMove() ? whitePlayer : blackPlayer;
+			Player pl = pos.whiteMove ? whitePlayer : blackPlayer;
 			String moveStr = pl.getCommand(new Position(pos), haveDrawOffer(), getHistory());
 			if (moveStr.equals("quit")) {
 				return;

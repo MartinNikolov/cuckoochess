@@ -27,7 +27,7 @@ public class HumanPlayer implements Player {
         try {
             ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
-            String color = pos.isWhiteMove() ? "white" : "black";
+            String color = pos.whiteMove ? "white" : "black";
             System.out.print(String.format("Enter move (%s):", color));
             String moveStr = in.readLine();
             if (moveStr.length() == 0) {

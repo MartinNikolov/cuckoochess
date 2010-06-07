@@ -164,7 +164,7 @@ public class EngineControl {
                 final double ponderHitRate = 0.35;
                 moves = (int)Math.ceil(moves * (1 - ponderHitRate));
             }
-            boolean white = pos.isWhiteMove();
+            boolean white = pos.whiteMove;
             int time = white ? sPar.wTime : sPar.bTime;
             int inc  = white ? sPar.wInc : sPar.bInc;
             int timeLimit = (time + inc * (moves - 1) - 1000) / moves;

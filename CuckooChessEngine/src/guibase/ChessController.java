@@ -169,7 +169,7 @@ public class ChessController {
     }
     
     public final boolean humansTurn() {
-        return game.pos.isWhiteMove() == humanIsWhite;
+        return game.pos.whiteMove == humanIsWhite;
     }
 
     public final void takeBackMove() {
@@ -213,7 +213,7 @@ public class ChessController {
      */
     final private boolean doMove(int from, int to) {
         Position pos = game.pos;
-        final boolean white = pos.isWhiteMove();
+        final boolean white = pos.whiteMove;
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         int promoteTo = Piece.EMPTY;
@@ -255,7 +255,7 @@ public class ChessController {
     }
 
     final private void setStatusString() {
-        String str = game.pos.isWhiteMove() ? "White's move" : "Black's move";
+        String str = game.pos.whiteMove ? "White's move" : "Black's move";
         if (game.getGameState() != Game.GameState.ALIVE) {
             str = game.getGameStateString();
         }
@@ -284,7 +284,7 @@ public class ChessController {
 
     
     private void startComputerThinking() {
-        if (game.pos.isWhiteMove() != humanIsWhite) {
+        if (game.pos.whiteMove != humanIsWhite) {
             if (computerThread == null) {
                 computerThread = new Thread(new Runnable() {
                    public void run() {

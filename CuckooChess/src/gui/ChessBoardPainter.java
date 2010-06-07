@@ -222,12 +222,12 @@ public class ChessBoardPainter extends JLabel {
         int p = pos.getPiece(sq);
         if ((selectedSquare >= 0) && (sq == selectedSquare)) {
             int fromPiece = pos.getPiece(selectedSquare);
-            if ((fromPiece == Piece.EMPTY) || (Piece.isWhite(fromPiece) != pos.isWhiteMove())) {
+            if ((fromPiece == Piece.EMPTY) || (Piece.isWhite(fromPiece) != pos.whiteMove)) {
                 return m; // Can't move the piece the oppenent just moved.
             }
         }
         if ((selectedSquare < 0) &&
-                ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove()))) {
+                ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove))) {
             return m;  // You must click on one of your own pieces.
         }
         activeSquare = sq;
@@ -238,7 +238,7 @@ public class ChessBoardPainter extends JLabel {
             if (sq == selectedSquare) {
                 cancelSelection = true;
             } else {
-                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.isWhiteMove())) {
+                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
                     m = new Move(selectedSquare, sq, Piece.EMPTY);
                     activeSquare = -1;
                     setSelection(sq);

@@ -49,7 +49,7 @@ public class TextIOTest {
         assertEquals(pos.getPiece(Position.getSquare(0, 3)), Piece.WQUEEN);
         assertEquals(pos.getPiece(Position.getSquare(4, 7)), Piece.BKING);
         assertEquals(pos.getPiece(Position.getSquare(4, 1)), Piece.WKING);
-        assertEquals(pos.isWhiteMove(), false);
+        assertEquals(pos.whiteMove, false);
         assertEquals(pos.a1Castle(), false);
         assertEquals(pos.h1Castle(), false);
         assertEquals(pos.a8Castle(), true);
