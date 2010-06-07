@@ -100,7 +100,12 @@ public class CuckooChess extends Activity implements GUIInterface {
 		List<String> posHistStr = ctrl.getPosHistory();
 		outState.putString("startFEN", posHistStr.get(0));
 		outState.putString("moves", posHistStr.get(1));
-        ctrl.newGame(true, ttLogSize, false);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		ctrl.newGame(true, ttLogSize, false);
+		super.onDestroy();
 	}
 
 	static final int MENU_NEW_GAME = 0;
@@ -137,7 +142,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 	}
 
 	// FIXME!!! Settings menu: Flip board, play black, thinking time, show thinking.
-	// FIXME!!! Handle joystick
 	// FIXME!!! Redo history is lost when flipping phone.
     
 	@Override

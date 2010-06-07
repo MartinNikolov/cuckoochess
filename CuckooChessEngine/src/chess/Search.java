@@ -165,7 +165,7 @@ public class Search {
                     posHashList.remove(posHashList.size() - 1);
                     pos.unMakeMove(m, ui);
                 }
-                if (verbose || (listener != null)) {
+                if (verbose || ((listener != null) && (depth > 1))) {
                     boolean havePV = false;
                     String PV = "";
                     if ((score > alpha) || (mi == 0)) {
