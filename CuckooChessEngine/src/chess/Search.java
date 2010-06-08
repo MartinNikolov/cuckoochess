@@ -793,9 +793,10 @@ public class Search {
         int bestIdx = startIdx;
         int bestScore = moves.get(bestIdx).score;
         for (int i = startIdx + 1; i < mSize; i++) {
-            if (moves.get(i).score > bestScore) {
+        	int sc = moves.get(i).score;
+            if (sc > bestScore) {
                 bestIdx = i;
-                bestScore = moves.get(bestIdx).score;
+                bestScore = sc;
             }
         }
         if (bestIdx != startIdx) {
@@ -806,7 +807,7 @@ public class Search {
     }
 
     /** If hashMove exists in the move list, move the hash move to the front of the list. */
-    final boolean selectHashMove(ArrayList<Move> moves, Move hashMove) {
+    final static boolean selectHashMove(ArrayList<Move> moves, Move hashMove) {
         if (hashMove == null) {
             return false;
         }
@@ -821,11 +822,11 @@ public class Search {
         return false;
     }
 
-    public boolean canClaimDraw50(Position pos) {
+    public static boolean canClaimDraw50(Position pos) {
         return (pos.halfMoveClock >= 100);
     }
     
-    public boolean canClaimDrawRep(Position pos, ArrayList<Long> posHashList, int posHashFirstNew) {
+    public static boolean canClaimDrawRep(Position pos, ArrayList<Long> posHashList, int posHashFirstNew) {
         int reps = 0;
         for (int i = posHashList.size() - 4; i >= 0; i -= 2) {
             if (pos.zobristHash() == posHashList.get(i)) {

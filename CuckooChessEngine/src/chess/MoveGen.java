@@ -359,8 +359,9 @@ public class MoveGen {
     /** Return all move objects in moveList to the move cache. */
     public void returnMoveList(ArrayList<Move> moveList) {
         if (movesInCache + moveList.size() <= moveCache.length) {
-            for (Move m : moveList) {
-                moveCache[movesInCache++] = m;
+        	int mlSize = moveList.size();
+        	for (int mi = 0; mi < mlSize; mi++) {
+                moveCache[movesInCache++] = moveList.get(mi);
             }
         }
         moveList.clear();
