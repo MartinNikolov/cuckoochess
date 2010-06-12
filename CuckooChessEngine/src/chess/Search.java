@@ -21,7 +21,8 @@ public class Search {
     Evaluate eval;
     KillerTable kt;
     History ht;
-    ArrayList<Long> posHashList; // List of hashes for previous positions up to the last "zeroing" move.
+    long[] posHashList;         // List of hashes for previous positions up to the last "zeroing" move.
+    int posHashListSize;		// Number of used entries in posHashList
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
 
@@ -43,15 +44,16 @@ public class Search {
 
     public final static int MATE0 = 32000;
 
-    public Search(Position pos, ArrayList<Long> posHashList, TranspositionTable tt) {
+    public Search(Position pos, long[] posHashList, int posHashListSize, TranspositionTable tt) {
         this.pos = new Position(pos);
         this.moveGen = new MoveGen();
         this.posHashList = posHashList;
+        this.posHashListSize = posHashListSize;
         this.tt = tt;
         eval = new Evaluate();
         kt = new KillerTable();
         ht = new History();
-        posHashFirstNew = posHashList.size();
+        posHashFirstNew = posHashListSize;
         initNodeStats();
         minTimeMillis = -1;
         maxTimeMillis = -1;
@@ -102,6 +104,9 @@ public class Search {
         int bestScoreLastIter = 0;
         Move bestMove = scMoves.get(0);
         this.verbose = verbose;
+        if ((maxDepth < 0) || (maxDepth > 100)) {
+        	maxDepth = 100;
+        }
         try {
         for (int depth = 1; ; depth++) {
             // FIXME!!! Order moves based on number of nodes in previous iteration
@@ -118,7 +123,7 @@ public class Search {
                     listener.notifyCurrMove(m, mi + 1);
                 }
                 nodes = qNodes = 0;
-                posHashList.add(pos.zobristHash());
+                posHashList[posHashListSize++] = pos.zobristHash();
                 pos.makeMove(m, ui);
                 int beta;
                 if (depth > 1) {
@@ -127,7 +132,7 @@ public class Search {
                     beta = Search.MATE0;
                 }
                 int score = -negaScout(-beta, -alpha, 1, depth - 1, -1);
-                posHashList.remove(posHashList.size() - 1);
+                posHashListSize--;
                 pos.unMakeMove(m, ui);
                 {
                     int type = TTEntry.T_EXACT;
@@ -149,10 +154,10 @@ public class Search {
                                 score, nodes, qNodes);
                     notifyPV(depth, score, false, true, m);
                     nodes = qNodes = 0;
-                    posHashList.add(pos.zobristHash());
+                    posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
                     score = -negaScout(-Search.MATE0, -score, 1, depth - 1, -1);
-                    posHashList.remove(posHashList.size() - 1);
+                    posHashListSize--;
                     pos.unMakeMove(m, ui);
                 } else if ((mi == 0) && (score <= alpha)) {
                     needMoreTime = searchNeedMoreTime = true;
@@ -161,10 +166,10 @@ public class Search {
                                 score, nodes, qNodes);
                     notifyPV(depth, score, true, false, m);
                     nodes = qNodes = 0;
-                    posHashList.add(pos.zobristHash());
+                    posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
                     score = -negaScout(-score, Search.MATE0, 1, depth - 1, -1);
-                    posHashList.remove(posHashList.size() - 1);
+                    posHashListSize--;
                     pos.unMakeMove(m, ui);
                 }
                 if (verbose || ((listener != null) && (depth > 1))) {
@@ -227,10 +232,8 @@ public class Search {
                 if (tNow - tStart >= minTimeMillis)
                     break;
             }
-            if (maxDepth >= 0) {
-                if (depth >= maxDepth)
-                    break;
-            }
+            if (depth >= maxDepth)
+                break;
             if (maxNodes >= 0) {
                 if (totalNodes >= maxNodes)
                     break;
@@ -242,9 +245,6 @@ public class Search {
         }
         } catch (StopSearch ss) {
             pos = origPos;
-            while (posHashList.size() > posHashFirstNew) {
-                posHashList.remove(posHashList.size() - 1);
-            }
         }
         notifyStats();
         return bestMove;
@@ -316,7 +316,7 @@ public class Search {
             }
             return 0;
         }
-        if (canClaimDrawRep(pos, posHashList, posHashFirstNew)) {
+        if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashFirstNew)) {
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
         }
@@ -479,7 +479,7 @@ public class Search {
                 }
             }
 
-            posHashList.add(pos.zobristHash());
+            posHashList[posHashListSize++] = pos.zobristHash();
             pos.makeMove(m, ui);
             int newDepth = depth - 1 + extend - lmr;
             int score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare);
@@ -488,7 +488,7 @@ public class Search {
                 score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare);
             }
             m.score = score;
-            posHashList.remove(posHashList.size() - 1);
+            posHashListSize--;
             pos.unMakeMove(m, ui);
 
             if (score != illegalScore) {
@@ -830,10 +830,10 @@ public class Search {
         return (pos.halfMoveClock >= 100);
     }
     
-    public static boolean canClaimDrawRep(Position pos, ArrayList<Long> posHashList, int posHashFirstNew) {
+    public static boolean canClaimDrawRep(Position pos, long[] posHashList, int posHashListSize, int posHashFirstNew) {
         int reps = 0;
-        for (int i = posHashList.size() - 4; i >= 0; i -= 2) {
-            if (pos.zobristHash() == posHashList.get(i)) {
+        for (int i = posHashListSize - 4; i >= 0; i -= 2) {
+            if (pos.zobristHash() == posHashList[i]) {
                 reps++;
                 if (i >= posHashFirstNew) {
                     reps++;

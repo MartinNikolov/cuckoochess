@@ -48,12 +48,13 @@ public class ComputerPlayer implements Player {
     @Override
     public String getCommand(Position pos, boolean drawOffer, List<Position> history) {
         // Create a search object
-        ArrayList<Long> posHashList = new ArrayList<Long>();
+        long[] posHashList = new long[200 + history.size()];
+        int posHashListSize = 0;
         for (Position p : history) {
-            posHashList.add(p.zobristHash());
+            posHashList[posHashListSize++] = p.zobristHash();
         }
         tt.nextGeneration();
-        Search sc = new Search(pos, posHashList, tt);
+        Search sc = new Search(pos, posHashList, posHashListSize, tt);
 
         // Determine all legal moves
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
@@ -86,15 +87,15 @@ public class ComputerPlayer implements Player {
         if (bestM.score <= 0) {
             if (Search.canClaimDraw50(pos)) {
                 strMove = "draw 50";
-            } else if (Search.canClaimDrawRep(pos, posHashList, posHashList.size())) {
+            } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
                 strMove = "draw rep";
             } else {
-                posHashList.add(pos.zobristHash());
+                posHashList[posHashListSize++] = pos.zobristHash();
                 UndoInfo ui = new UndoInfo();
                 pos.makeMove(bestM, ui);
                 if (Search.canClaimDraw50(pos)) {
                     strMove = "draw 50 " + strMove;
-                } else if (Search.canClaimDrawRep(pos, posHashList, posHashList.size())) {
+                } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
                     strMove = "draw rep " + strMove;
                 }
             }
@@ -129,9 +130,9 @@ public class ComputerPlayer implements Player {
     /** Search a position and return the best move and score. Used for test suite processing. */
     public TwoReturnValues<Move, String> searchPosition(Position pos, int maxTimeMillis) {
         // Create a search object
-        ArrayList<Long> posHashList = new ArrayList<Long>();
+        long[] posHashList = new long[200];
         tt.nextGeneration();
-        Search sc = new Search(pos, posHashList, tt);
+        Search sc = new Search(pos, posHashList, 0, tt);
         
         // Determine all legal moves
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);

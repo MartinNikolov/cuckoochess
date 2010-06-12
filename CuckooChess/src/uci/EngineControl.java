@@ -34,7 +34,8 @@ public class EngineControl {
     MoveGen moveGen;
 
     Position pos;
-    ArrayList<Long> posHashList;
+    long[] posHashList;
+    int posHashListSize;
     boolean ponder;     // True if currently doing pondering
     boolean infinite;
 
@@ -189,7 +190,7 @@ public class EngineControl {
 
     final public void startThread(int minTimeLimit, int maxTimeLimit, final int maxDepth, final int maxNodes) {
         synchronized (threadMutex) {} // Must not start new search until old search is finished
-        sc = new Search(pos, posHashList, tt);
+        sc = new Search(pos, posHashList, posHashListSize, tt);
         sc.setListener(new SearchListener(os));
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
@@ -265,9 +266,10 @@ public class EngineControl {
 
     final void setupPosition(Position pos, List<Move> moves) {
         UndoInfo ui = new UndoInfo();
-        posHashList = new ArrayList<Long>();
+        posHashList = new long[200 + moves.size()];
+        posHashListSize = 0;
         for (Move m : moves) {
-            posHashList.add(pos.zobristHash());
+            posHashList[posHashListSize++] = pos.zobristHash();
             pos.makeMove(m, ui);
         }
         this.pos = pos;
