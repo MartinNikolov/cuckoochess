@@ -25,7 +25,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	String thinkingStr;
 	int mTimeLimit;
 	boolean playerWhite;
-	static final int ttLogSize = 15; // Use 2^15 hash entries.
+	static final int ttLogSize = 16; // Use 2^16 hash entries.
 	
 	TextView status;
 	TextView moveList;
