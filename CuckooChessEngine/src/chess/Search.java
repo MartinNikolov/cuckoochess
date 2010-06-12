@@ -27,6 +27,7 @@ public class Search {
     TranspositionTable tt;
     UndoInfo[] undoInfoVec;
     Move[] hashMoveVec;
+    int depth;
 
     // Time management
     long tStart;            // Time when search started
@@ -117,7 +118,7 @@ public class Search {
         	maxDepth = 100;
         }
         try {
-        for (int depth = 1; ; depth++) {
+        for (depth = 1; ; depth++) {
             // FIXME!!! Order moves based on number of nodes in previous iteration
             initNodeStats();
             if (listener != null) listener.notifyDepth(depth);
@@ -383,8 +384,8 @@ public class Search {
                 if (score >= beta) {
                     return score;
                 } else {
-                    if (score == -(MATE0-(ply+3))) {
-                        posExtend = 1; // mate threat extension
+                    if ((score == -(MATE0-(ply+3))) && (ply < 2 * depth)) {
+                    	posExtend = 1; // mate threat extension
                     }
                 }
             }
