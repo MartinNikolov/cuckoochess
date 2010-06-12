@@ -13,7 +13,7 @@ import java.util.List;
  * @author petero
  */
 public class ComputerPlayer implements Player {
-    public static String engineName = "CuckooChess 1.04";
+    public static String engineName = "CuckooChess 1.05a1";
 
     int minTimeMillis;
     int maxTimeMillis;
