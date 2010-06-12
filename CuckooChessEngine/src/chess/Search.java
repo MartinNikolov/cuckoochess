@@ -25,6 +25,7 @@ public class Search {
     int posHashListSize;		// Number of used entries in posHashList
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
+    UndoInfo[] undoInfoVec;
 
     // Time management
     long tStart;            // Time when search started
@@ -59,6 +60,11 @@ public class Search {
         maxTimeMillis = -1;
         searchNeedMoreTime = false;
         maxNodes = -1;
+        final int uiVecLen = 200;
+        undoInfoVec = new UndoInfo[uiVecLen];
+        for (int i = 0; i < uiVecLen; i++) {
+        	undoInfoVec[i] = new UndoInfo();
+        }
     }
 
     final public void timeLimit(int minTimeLimit, int maxTimeLimit) {
@@ -417,7 +423,7 @@ public class Search {
             hashMoveSelected = false;
         }
         
-        UndoInfo ui = new UndoInfo();
+        UndoInfo ui = undoInfoVec[ply];
         boolean haveLegalMoves = false;
         int illegalScore = -(MATE0-(ply+1));
         int b = beta;
@@ -548,7 +554,7 @@ public class Search {
         final boolean tryChecks = (depth > -3);
         final boolean onlyCaptures = !inCheck && !tryChecks;
         scoreMoveList(moves, onlyCaptures, ply);
-        UndoInfo ui = new UndoInfo();
+        UndoInfo ui = undoInfoVec[ply];
         final int nMoves = moves.size();
         for (int mi = 0; mi < nMoves; mi++) {
             if (mi < 8) {
