@@ -137,7 +137,7 @@ public class TextIO {
         // Remove bogus epSquare
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
-            ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+            ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             boolean epValid = false;
             for (Move m : moves) {
@@ -258,9 +258,8 @@ public class TextIO {
      * @param longForm If true, use long notation, eg Ng1-f3.
      *                 Otherwise, use short notation, eg Nf3
      */
-    static private MoveGen moveGen = new MoveGen();
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
@@ -338,7 +337,7 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
         if (MoveGen.inCheck(pos)) {
-            ArrayList<Move> nextMoves = moveGen.pseudoLegalMoves(pos);
+            ArrayList<Move> nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
             nextMoves = MoveGen.removeIllegal(pos, nextMoves);
             if (nextMoves.size() == 0) {
                 ret.append('#');
@@ -374,7 +373,7 @@ public class TextIO {
         Move move = null;
         if (strMove.length() == 0)
             return move;
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         {
             char lastChar = strMove.charAt(strMove.length() - 1);

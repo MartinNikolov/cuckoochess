@@ -197,7 +197,7 @@ public class TranspositionTable {
         UndoInfo ui = new UndoInfo();
         ArrayList<Long> hashHistory = new ArrayList<Long>();
         boolean repetition = false;
-        MoveGen moveGen = new MoveGen();
+        MoveGen moveGen = MoveGen.instance;
         while (ent.type != TTEntry.T_EMPTY) {
             String type = "";
             if (ent.type == TTEntry.T_LE) {

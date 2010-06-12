@@ -12,6 +12,11 @@ import java.util.ArrayList;
  * @author petero
  */
 public class MoveGen {
+	static MoveGen instance;
+	static {
+		instance = new MoveGen();
+	}
+
     /**
      * Generate and return a list of pseudo-legal moves.
      * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
