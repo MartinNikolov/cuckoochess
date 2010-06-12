@@ -381,7 +381,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 
     public void setMoveListString(String str) {
     	moveListStr = str;
-    	str = moveListStr + thinkingStr;
+    	str = moveListStr + "\n" + thinkingStr;
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }
@@ -389,7 +389,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     
     public void setThinkingString(String str) {
     	thinkingStr = str;
-    	str = moveListStr + thinkingStr;
+    	str = moveListStr + "\n" + thinkingStr;
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }

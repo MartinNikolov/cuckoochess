@@ -21,14 +21,13 @@ public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
 	ChessController ctrl;
 	boolean mShowThinking;
-	String moveListStr;
-	String thinkingStr;
 	int mTimeLimit;
 	boolean playerWhite;
 	static final int ttLogSize = 16; // Use 2^16 hash entries.
 	
 	TextView status;
 	TextView moveList;
+	TextView thinking;
 	
     /** Called when the activity is first created. */
     @Override
@@ -38,6 +37,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 
         status = (TextView)findViewById(R.id.status);
         moveList = (TextView)findViewById(R.id.moveList);
+        thinking = (TextView)findViewById(R.id.thinking);
 		cb = (ChessBoard)findViewById(R.id.chessboard);
         ctrl = new ChessController(this);
         mShowThinking = true;
@@ -161,14 +161,12 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	@Override
 	public void setMoveListString(String str) {
-		moveListStr = str;
-		moveList.setText(moveListStr + thinkingStr);
+		moveList.setText(str);
 	}
 	
 	@Override
 	public void setThinkingString(String str) {
-		thinkingStr = str;
-		moveList.setText(moveListStr + thinkingStr);
+		thinking.setText(str);
 	}
 
 	@Override

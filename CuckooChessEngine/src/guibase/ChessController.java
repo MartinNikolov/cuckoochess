@@ -68,7 +68,7 @@ public class ChessController {
             }
             buf.append(pvStr);
             buf.append(String.format("%n"));
-            buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d%n", currDepth,
+            buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d", currDepth,
                     currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
             final String newPV = buf.toString();
             gui.runOnUIThread(new Runnable() {
@@ -264,14 +264,13 @@ public class ChessController {
 
     public final void setMoveList() {
         String str = game.getMoveListString(true);
-        str += String.format("%n");
         gui.setMoveListString(str);
     }
     
     public final void setThinkingPV() {
     	String str = new String();
-    	if ((thinkingPV.length() > 0) && gui.showThinking()) {
-            str += String.format("%s%n", thinkingPV);
+    	if (gui.showThinking()) {
+            str = thinkingPV;
         }
         gui.setThinkingString(str);
     }
