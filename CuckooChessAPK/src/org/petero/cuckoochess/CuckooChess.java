@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import chess.Move;
 import chess.Position;
@@ -26,6 +27,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	static final int ttLogSize = 16; // Use 2^16 hash entries.
 	
 	TextView status;
+	ScrollView moveListScroll;
 	TextView moveList;
 	TextView thinking;
 	
@@ -36,6 +38,7 @@ public class CuckooChess extends Activity implements GUIInterface {
         setContentView(R.layout.main);
 
         status = (TextView)findViewById(R.id.status);
+        moveListScroll = (ScrollView)findViewById(R.id.scrollView);
         moveList = (TextView)findViewById(R.id.moveList);
         thinking = (TextView)findViewById(R.id.thinking);
 		cb = (ChessBoard)findViewById(R.id.chessboard);
@@ -162,6 +165,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	@Override
 	public void setMoveListString(String str) {
 		moveList.setText(str);
+		moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 	
 	@Override
