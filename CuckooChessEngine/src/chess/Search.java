@@ -39,6 +39,7 @@ public class Search {
     int[] nodesDepthVec;
     int totalNodes;
     long tLastStats;        // Time when notifyStats was last called
+    boolean verbose;
 
     public final static int MATE0 = 32000;
 
@@ -100,6 +101,7 @@ public class Search {
         final int aspirationDelta = 50;
         int bestScoreLastIter = 0;
         Move bestMove = scMoves.get(0);
+        this.verbose = verbose;
         try {
         for (int depth = 1; ; depth++) {
             // FIXME!!! Order moves based on number of nodes in previous iteration
@@ -296,8 +298,10 @@ public class Search {
         }
         
         // Collect statistics
-        if (ply < 20) nodesPlyVec[ply]++;
-        if (depth < 20) nodesDepthVec[depth]++;
+        if (verbose) {
+        	if (ply < 20) nodesPlyVec[ply]++;
+        	if (depth < 20) nodesDepthVec[depth]++;
+        }
         nodes++;
         totalNodes++;
 
