@@ -126,7 +126,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case MENU_NEW_GAME:
-	        ctrl.newGame(playerWhite, ttLogSize, true);
+	        ctrl.newGame(playerWhite, ttLogSize, false);
 			return true;
 		case MENU_QUIT:
 			finish();
