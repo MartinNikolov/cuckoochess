@@ -84,17 +84,17 @@ public class ComputerPlayer implements Player {
 
         // Claim draw if appropriate
         if (bestM.score <= 0) {
-            if (sc.canClaimDraw50(pos)) {
+            if (Search.canClaimDraw50(pos)) {
                 strMove = "draw 50";
-            } else if (sc.canClaimDrawRep(pos, posHashList, posHashList.size())) {
+            } else if (Search.canClaimDrawRep(pos, posHashList, posHashList.size())) {
                 strMove = "draw rep";
             } else {
                 posHashList.add(pos.zobristHash());
                 UndoInfo ui = new UndoInfo();
                 pos.makeMove(bestM, ui);
-                if (sc.canClaimDraw50(pos)) {
+                if (Search.canClaimDraw50(pos)) {
                     strMove = "draw 50 " + strMove;
-                } else if (sc.canClaimDrawRep(pos, posHashList, posHashList.size())) {
+                } else if (Search.canClaimDrawRep(pos, posHashList, posHashList.size())) {
                     strMove = "draw rep " + strMove;
                 }
             }
