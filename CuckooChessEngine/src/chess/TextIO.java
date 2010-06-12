@@ -258,8 +258,9 @@ public class TextIO {
      * @param longForm If true, use long notation, eg Ng1-f3.
      *                 Otherwise, use short notation, eg Nf3
      */
+    static private MoveGen moveGen = new MoveGen();
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
