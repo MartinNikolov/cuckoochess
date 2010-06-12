@@ -228,6 +228,8 @@ public class ChessBoard extends View {
     }
 
 	final Move mousePressed(int sq) {
+		if (sq < 0)
+			return null;
     	cursorX = cursorY = -1;
         if (selectedSquare >= 0) {
         	int p = pos.getPiece(selectedSquare);
