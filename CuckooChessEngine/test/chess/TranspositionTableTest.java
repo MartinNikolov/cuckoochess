@@ -49,7 +49,9 @@ public class TranspositionTableTest {
         ent1.generation = 0;
         ent1.type = TranspositionTable.TTEntry.T_EXACT;
         ent1.hashSlot = 0;
-        assertEquals(move, ent1.getMove());
+        Move tmpMove = new Move(0,0,0);
+        ent1.getMove(tmpMove);
+        assertEquals(move, tmpMove);
         assertEquals(score, ent1.getScore(ply));
         assertEquals(score, ent1.getScore(ply + 3));    // Non-mate score, should be ply-independent
 
@@ -65,7 +67,8 @@ public class TranspositionTableTest {
         ent2.generation = 0;
         ent2.type = TranspositionTable.TTEntry.T_EXACT;
         ent2.hashSlot = 0;
-        assertEquals(move, ent2.getMove());
+        ent2.getMove(tmpMove);
+        assertEquals(move, tmpMove);
         assertEquals(score, ent2.getScore(ply));
         assertEquals(score + 2, ent2.getScore(ply - 2));
         
@@ -97,7 +100,8 @@ public class TranspositionTableTest {
         ent3.generation = 0;
         ent3.type = TranspositionTable.TTEntry.T_EXACT;
         ent3.hashSlot = 0;
-        assertEquals(move, ent3.getMove());
+        ent3.getMove(tmpMove);
+        assertEquals(move, tmpMove);
         assertEquals(score, ent3.getScore(ply));
         assertEquals(score - 2, ent3.getScore(ply - 2));
     }
@@ -136,7 +140,9 @@ public class TranspositionTableTest {
             int depth = i * 2 + 5;
             assertEquals(score, ent.getScore(ply));
             assertEquals(depth, ent.depth);
-            assertEquals(m, ent.getMove());
+            Move tmpMove = new Move(0,0,0);
+            ent.getMove(tmpMove);
+            assertEquals(m, tmpMove);
         }
     }
 }

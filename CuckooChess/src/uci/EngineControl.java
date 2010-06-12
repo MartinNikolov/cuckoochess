@@ -284,7 +284,8 @@ public class EngineControl {
         pos.makeMove(m, ui);
         TTEntry ent = tt.probe(pos.historyHash());
         if (ent.type != TTEntry.T_EMPTY) {
-            ret = ent.getMove();
+            ret = new Move(0, 0, 0);
+            ent.getMove(ret);
             ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(ret)) {

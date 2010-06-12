@@ -26,6 +26,7 @@ public class Search {
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
     UndoInfo[] undoInfoVec;
+    Move[] hashMoveVec;
 
     // Time management
     long tStart;            // Time when search started
@@ -60,10 +61,12 @@ public class Search {
         maxTimeMillis = -1;
         searchNeedMoreTime = false;
         maxNodes = -1;
-        final int uiVecLen = 200;
-        undoInfoVec = new UndoInfo[uiVecLen];
-        for (int i = 0; i < uiVecLen; i++) {
+        final int vecLen = 200;
+        undoInfoVec = new UndoInfo[vecLen];
+        hashMoveVec = new Move[vecLen];
+        for (int i = 0; i < vecLen; i++) {
         	undoInfoVec[i] = new UndoInfo();
+        	hashMoveVec[i] = new Move(0, 0, 0);
         }
     }
 
@@ -340,7 +343,8 @@ public class Search {
                     return score;
                 }
             }
-            hashMove = ent.getMove();
+            hashMove = hashMoveVec[ply];
+            ent.getMove(hashMove);
         }
         
         boolean inCheck = MoveGen.inCheck(pos);
@@ -409,7 +413,8 @@ public class Search {
             negaScout(alpha, beta, ply, depth - 4, -1);
             ent = tt.probe(pos.historyHash());
             if (ent.type != TTEntry.T_EMPTY) {
-                hashMove = ent.getMove();
+            	hashMove = hashMoveVec[ply];
+                ent.getMove(hashMove);
             }
         }
         

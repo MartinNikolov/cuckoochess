@@ -42,11 +42,10 @@ public class TranspositionTable {
             return false;   // Otherwise, pretty much equally valuable
         }
 
-        public final Move getMove() {
-            int from = move & 63;
-            int to = (move >> 6) & 63;
-            int promote = (move >> 12) & 15;
-            return new Move(from, to, promote);
+        public final void getMove(Move m) {
+            m.from = move & 63;
+            m.to = (move >> 6) & 63;
+            m.promoteTo = (move >> 12) & 15;
         }
         public final void setMove(Move move) {
             this.move = (short)(move.from + (move.to << 6) + (move.promoteTo << 12));
@@ -179,7 +178,8 @@ public class TranspositionTable {
             if (ent.type == TTEntry.T_EMPTY) {
                 break;
             }
-            m = ent.getMove();
+            m = new Move(0,0,0);
+            ent.getMove(m);
             ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(m))
@@ -205,7 +205,8 @@ public class TranspositionTable {
             } else if (ent.type == TTEntry.T_GE) {
                 type = ">";
             }
-            Move m = ent.getMove();
+            Move m = new Move(0,0,0);
+            ent.getMove(m);
             ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             if (!moves.contains(m))
