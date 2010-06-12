@@ -264,7 +264,7 @@ public class TextIO {
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
-    public static final String moveToString(Position pos, Move move, boolean longForm, List<Move> moves) {
+    private static final String moveToString(Position pos, Move move, boolean longForm, List<Move> moves) {
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -338,7 +338,7 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
         if (MoveGen.inCheck(pos)) {
-            ArrayList<Move> nextMoves = new MoveGen().pseudoLegalMoves(pos);
+            ArrayList<Move> nextMoves = moveGen.pseudoLegalMoves(pos);
             nextMoves = MoveGen.removeIllegal(pos, nextMoves);
             if (nextMoves.size() == 0) {
                 ret.append('#');
