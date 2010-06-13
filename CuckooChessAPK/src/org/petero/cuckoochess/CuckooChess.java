@@ -40,7 +40,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	private void readPrefs() {
         mShowThinking = settings.getBoolean("showThinking", false);
         String timeLimitStr = settings.getString("timeLimit", "5000");
-        mTimeLimit = Integer.parseInt(timeLimitStr); 
+        mTimeLimit = Integer.parseInt(timeLimitStr);
         playerWhite = settings.getBoolean("playerWhite", true);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         cb.setFlipped(boardFlipped);
@@ -133,39 +133,28 @@ public class CuckooChess extends Activity implements GUIInterface {
 		super.onDestroy();
 	}
 
-	static final int MENU_NEW_GAME = 0;
-	static final int MENU_QUIT = 1;
-	static final int MENU_UNDO = 2;
-	static final int MENU_REDO = 3;
-	static final int MENU_PREFS = 4;
-	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// FIXME!!! Define menu in xml file.
-		menu.add(0, MENU_NEW_GAME, 0, "New Game");
-		menu.add(0, MENU_QUIT, 0, "Quit");
-		menu.add(0, MENU_UNDO, 0, "Undo");
-		menu.add(0, MENU_REDO, 0, "Redo");
-		menu.add(0, MENU_PREFS, 0, "Settings");
+		getMenuInflater().inflate(R.menu.options_menu, menu);
 		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case MENU_NEW_GAME:
+		case R.id.item_new_game:
 	        ctrl.newGame(playerWhite, ttLogSize, false);
 			return true;
-		case MENU_QUIT:
+		case R.id.item_quit:
 			finish();
 			return true;
-		case MENU_UNDO:
+		case R.id.item_undo:
 			ctrl.takeBackMove();
 			return true;
-		case MENU_REDO:
+		case R.id.item_redo:
 			ctrl.redoMove();
 			return true;
-		case MENU_PREFS:
+		case R.id.item_settings:
 		{
 			Intent i = new Intent(CuckooChess.this, Preferences.class);
 			startActivityForResult(i, 0);
