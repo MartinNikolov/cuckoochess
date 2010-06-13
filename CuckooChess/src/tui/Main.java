@@ -27,7 +27,8 @@ public class Main {
             uci.UCIProtocol.main(args);
         } else {
             Player whitePlayer = new HumanPlayer();
-            Player blackPlayer = new ComputerPlayer();
+            ComputerPlayer blackPlayer = new ComputerPlayer();
+            blackPlayer.setTTLogSize(21);
             TUIGame game = new TUIGame(whitePlayer, blackPlayer);
             game.play();
         }
