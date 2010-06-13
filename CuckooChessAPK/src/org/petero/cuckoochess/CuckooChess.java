@@ -39,10 +39,12 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	private void readPrefs() {
         mShowThinking = settings.getBoolean("showThinking", false);
-        mTimeLimit = settings.getInt("timeLimit", 5000);
+        String timeLimitStr = settings.getString("timeLimit", "5000");
+        mTimeLimit = Integer.parseInt(timeLimitStr); 
         playerWhite = settings.getBoolean("playerWhite", true);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         cb.setFlipped(boardFlipped);
+        ctrl.setTimeLimit();
 	}
 	
     /** Called when the activity is first created. */
@@ -180,7 +182,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 		}
 	}
 
-	// FIXME!!! Settings menu: thinking time
 	// FIXME!!! Redo history is lost when flipping phone.
 	// FIXME!!! Implement "switch sides".
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)

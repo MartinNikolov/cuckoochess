@@ -5,5 +5,7 @@
 <CheckBoxPreference android:title="Play White" android:key="playerWhite" android:defaultValue="true"></CheckBoxPreference>
 <CheckBoxPreference android:title="Flip Board" android:key="boardFlipped" android:defaultValue="false"></CheckBoxPreference>
 
-<CheckBoxPreference android:title="Show Computer Thinking" android:key="showThinking" android:defaultValue="false"></CheckBoxPreference>
+<ListPreference android:summary="Thinking Time" android:key="timeLimit" android:entryValues="@array/thinking_times_values" android:entries="@array/thinking_times_texts"></ListPreference><CheckBoxPreference android:title="Show Computer Thinking" android:key="showThinking" android:defaultValue="false"></CheckBoxPreference>
+
+
 </PreferenceScreen>
