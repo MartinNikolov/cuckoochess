@@ -20,6 +20,7 @@ public class Game {
     protected int currentMove;
     boolean pendingDrawOffer;
     GameState drawState;
+    String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
     GameState resignState;
     public Position pos = null;
     protected Player whitePlayer;
@@ -76,9 +77,21 @@ public class Game {
             case BLACK_STALEMATE:
                 return "Game over, draw by stalemate!";
             case DRAW_REP:
-                return "Game over, draw by repetition!"; // FIXME! Add final move string
+            {
+            	String ret = "Game over, draw by repetition!";
+            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
+            		ret = ret + " [" + drawStateMoveStr + "]";
+            	}
+            	return ret;
+            }
             case DRAW_50:
-                return "Game over, draw by 50 move rule!"; // FIXME! Add final move string
+            {
+                String ret = "Game over, draw by 50 move rule!";
+            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
+            		ret = ret + " [" + drawStateMoveStr + "]";  
+            	}
+            	return ret;
+            }
             case DRAW_NO_MATE:
                 return "Game over, draw by impossibility of mate!";
             case DRAW_AGREE:
@@ -433,6 +446,10 @@ public class Game {
             }
             if (valid) {
                 drawState = rep ? GameState.DRAW_REP : GameState.DRAW_50;
+                drawStateMoveStr = null;
+                if (m != null) {
+                	drawStateMoveStr = TextIO.moveToString(pos, m, false);
+                }
             } else {
                 pendingDrawOffer = true;
                 if (m != null) {

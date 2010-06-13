@@ -143,6 +143,7 @@ public class GameTest {
         game.processString(cmd);
         game.processString("draw 50 Nc3");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Draw claim valid
+        assertEquals("Game over, draw by 50 move rule! [Nc3]", game.getGameStateString());
 
         game.processString(cmd);
         game.processString("draw 50 a6");
