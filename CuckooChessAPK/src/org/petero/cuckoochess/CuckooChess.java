@@ -6,8 +6,12 @@ import java.util.List;
 import guibase.ChessController;
 import guibase.GUIInterface;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,28 +28,44 @@ public class CuckooChess extends Activity implements GUIInterface {
 	boolean mShowThinking;
 	int mTimeLimit;
 	boolean playerWhite;
-	static final int ttLogSize = 16; // Use 2^16 hash entries.
+	static final int ttLogSize = 16; // Use 2^ttLogSize hash entries.
 	
 	TextView status;
 	ScrollView moveListScroll;
 	TextView moveList;
 	TextView thinking;
 	
+	SharedPreferences settings;
+
+	private void readPrefs() {
+        mShowThinking = settings.getBoolean("showThinking", false);
+        mTimeLimit = settings.getInt("timeLimit", 5000);
+        playerWhite = settings.getBoolean("playerWhite", true);
+        boolean boardFlipped = settings.getBoolean("boardFlipped", false);
+        cb.setFlipped(boardFlipped);
+	}
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
 
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+			@Override
+			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+				readPrefs();
+			}
+		});
+        
+        setContentView(R.layout.main);
         status = (TextView)findViewById(R.id.status);
         moveListScroll = (ScrollView)findViewById(R.id.scrollView);
         moveList = (TextView)findViewById(R.id.moveList);
         thinking = (TextView)findViewById(R.id.thinking);
 		cb = (ChessBoard)findViewById(R.id.chessboard);
         ctrl = new ChessController(this);
-        mShowThinking = true;
-        mTimeLimit = 5000;
-        playerWhite = true;
+        readPrefs();
         
         Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
         cb.setFont(chessFont);
@@ -115,13 +135,16 @@ public class CuckooChess extends Activity implements GUIInterface {
 	static final int MENU_QUIT = 1;
 	static final int MENU_UNDO = 2;
 	static final int MENU_REDO = 3;
+	static final int MENU_PREFS = 4;
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		// FIXME!!! Define menu in xml file.
 		menu.add(0, MENU_NEW_GAME, 0, "New Game");
 		menu.add(0, MENU_QUIT, 0, "Quit");
 		menu.add(0, MENU_UNDO, 0, "Undo");
 		menu.add(0, MENU_REDO, 0, "Redo");
+		menu.add(0, MENU_PREFS, 0, "Settings");
 		return true;
 	}
 	
@@ -140,14 +163,28 @@ public class CuckooChess extends Activity implements GUIInterface {
 		case MENU_REDO:
 			ctrl.redoMove();
 			return true;
+		case MENU_PREFS:
+		{
+			Intent i = new Intent(CuckooChess.this, Preferences.class);
+			startActivityForResult(i, 0);
+			return true;
+		}
 		}
 		return false;
 	}
 
-	// FIXME!!! Settings menu: Flip board, play black, thinking time, show thinking.
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 0) {
+			readPrefs();
+		}
+	}
+
+	// FIXME!!! Settings menu: thinking time
 	// FIXME!!! Redo history is lost when flipping phone.
 	// FIXME!!! Implement "switch sides".
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
+	// FIXME!!! Show "Thinking..." string when computer is thinking.
     
 	@Override
 	public void setPosition(Position pos) {
