@@ -76,9 +76,9 @@ public class Game {
             case BLACK_STALEMATE:
                 return "Game over, draw by stalemate!";
             case DRAW_REP:
-                return "Game over, draw by repetition!";
+                return "Game over, draw by repetition!"; // FIXME! Add final move string
             case DRAW_50:
-                return "Game over, draw by 50 move rule!";
+                return "Game over, draw by 50 move rule!"; // FIXME! Add final move string
             case DRAW_NO_MATE:
                 return "Game over, draw by impossibility of mate!";
             case DRAW_AGREE:

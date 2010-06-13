@@ -146,6 +146,8 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! Settings menu: Flip board, play black, thinking time, show thinking.
 	// FIXME!!! Redo history is lost when flipping phone.
+	// FIXME!!! Implement "switch sides".
+	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
     
 	@Override
 	public void setPosition(Position pos) {

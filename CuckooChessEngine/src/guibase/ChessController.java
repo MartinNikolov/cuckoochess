@@ -181,9 +181,22 @@ public class ChessController {
                 } else {
                     game.processString("redo");
                 }
+                updateGUI();
+                setSelection();
             }
-            updateGUI();
-            setSelection();
+        } else if (game.getGameState() != Game.GameState.ALIVE) {
+            if (game.getLastMove() != null) {
+                game.processString("undo");
+                if (!humansTurn()) {
+                	if (game.getLastMove() != null) {
+                		game.processString("undo");
+                	} else {
+                		game.processString("redo");
+                	}
+                }
+                updateGUI();
+                setSelection();
+            }
         }
     }
 
