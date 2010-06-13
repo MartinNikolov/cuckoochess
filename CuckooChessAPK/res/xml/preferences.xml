@@ -12,7 +12,8 @@
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
-	android:summary="Thinking Time" android:key="timeLimit"
+	android:title="Thinking Time"
+	android:key="timeLimit"
 	android:entryValues="@array/thinking_times_values"
 	android:entries="@array/thinking_times_texts"
 	android:defaultValue="5000">
