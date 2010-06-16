@@ -160,7 +160,7 @@ public class TranspositionTable {
     /**
      * Extract a list of PV moves, starting from "rootPos" and first move "m".
      */
-    public ArrayList<Move> extractPVMoves(Position rootPos, Move m) {
+    public final ArrayList<Move> extractPVMoves(Position rootPos, Move m) {
         Position pos = new Position(rootPos);
         m = new Move(m);
         ArrayList<Move> ret = new ArrayList<Move>();
@@ -189,7 +189,7 @@ public class TranspositionTable {
     }
 
     /** Extract the PV starting from pos, using hash entries, both exact scores and bounds. */
-    public String extractPV(Position pos) {
+    public final String extractPV(Position pos) {
         StringBuilder ret = new StringBuilder(100);
         pos = new Position(pos);    // To avoid modifying the input parameter
         boolean first = true;

@@ -40,7 +40,7 @@ public class Book {
         }
     }
 
-    private void initBook(boolean verbose) {
+    private final void initBook(boolean verbose) {
         long t0 = System.currentTimeMillis();
         bookMap = new HashMap<Long, List<BookEntry>>();
         rndGen = new SecureRandom();
@@ -129,7 +129,7 @@ public class Book {
     }
 
     /** Add a sequence of moves, starting from pos, to the opening book. */
-    private boolean addBookLine(String line) throws ChessParseError {
+    private final boolean addBookLine(String line) throws ChessParseError {
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         UndoInfo ui = new UndoInfo();
         String[] strMoves = line.split(" ");
@@ -146,7 +146,7 @@ public class Book {
     }
     
     /** Add a move to a position in the opening book. */
-    private void addToBook(Position pos, Move moveToAdd) {
+    private final void addToBook(Position pos, Move moveToAdd) {
         List<BookEntry> ent = bookMap.get(pos.zobristHash());
         if (ent == null) {
             ent= new ArrayList<BookEntry>();

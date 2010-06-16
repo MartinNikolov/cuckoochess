@@ -341,7 +341,7 @@ public class MoveGen {
     private Object[] moveListCache = new Object[200];
     private int moveListsInCache = 0;
     
-    private Move getMoveObj(int from, int to, int promoteTo) {
+    private final Move getMoveObj(int from, int to, int promoteTo) {
         if (movesInCache > 0) {
             Move m = moveCache[--movesInCache];
             m.from = from;
@@ -354,7 +354,7 @@ public class MoveGen {
     }
 
     @SuppressWarnings("unchecked")
-    private ArrayList<Move> getMoveListObj() {
+    private final ArrayList<Move> getMoveListObj() {
         if (moveListsInCache > 0) {
             return (ArrayList<Move>)moveListCache[--moveListsInCache];
         }
@@ -362,7 +362,7 @@ public class MoveGen {
     }
 
     /** Return all move objects in moveList to the move cache. */
-    public void returnMoveList(ArrayList<Move> moveList) {
+    public final void returnMoveList(ArrayList<Move> moveList) {
         if (movesInCache + moveList.size() <= moveCache.length) {
         	int mlSize = moveList.size();
         	for (int mi = 0; mi < mlSize; mi++) {
@@ -375,7 +375,7 @@ public class MoveGen {
         }
     }
     
-    public void returnMove(Move m) {
+    public final void returnMove(Move m) {
         if (movesInCache < moveCache.length) {
             moveCache[movesInCache++] = m;
         }

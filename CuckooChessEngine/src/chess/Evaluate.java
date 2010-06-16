@@ -652,7 +652,7 @@ public class Evaluate {
     }
     
     /** Count the number of pseudo-legal moves for a bishop of given color on square (x0,y0). */
-    final int bishopMobility(Position pos, int x0, int y0) {
+    final static int bishopMobility(Position pos, int x0, int y0) {
         int mobility = 0;
         mobility += dirMobility(pos, x0, y0, -1, -1);
         mobility += dirMobility(pos, x0, y0, -1,  1);
@@ -662,7 +662,7 @@ public class Evaluate {
     }
 
     /** Count the number of pseudo-legal moves for a rook of given color on square (x0,y0). */
-    final int rookMobility(Position pos, int x0, int y0) {
+    final static int rookMobility(Position pos, int x0, int y0) {
         int mobility = 0;
         mobility += dirMobility(pos, x0, y0,  0, -1);
         mobility += dirMobility(pos, x0, y0,  0,  1);
@@ -671,7 +671,7 @@ public class Evaluate {
         return mobility;
     }
 
-    private int dirMobility(Position pos, int x0, int y0, int dx, int dy) {
+    private static final int dirMobility(Position pos, int x0, int y0, int dx, int dy) {
         int mobility = 0;
         int x = x0 + dx;
         int y = y0 + dy;
