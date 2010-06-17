@@ -300,7 +300,7 @@ public class ChessController {
             if (computerThread == null) {
                 computerThread = new Thread(new Runnable() {
                    public void run() {
-                       computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit());
+                       computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
                        final String cmd = computerPlayer.getCommand(new Position(game.pos),
                                game.haveDrawOffer(), game.getHistory());
                        gui.runOnUIThread(new Runnable() {
@@ -322,7 +322,7 @@ public class ChessController {
 
     private synchronized void stopComputerThinking() {
         if (computerThread != null) {
-            computerPlayer.timeLimit(0, 0);
+            computerPlayer.timeLimit(0, 0, false);
             try {
                 computerThread.join();
             } catch (InterruptedException ex) {
@@ -334,7 +334,7 @@ public class ChessController {
 
     public synchronized void setTimeLimit() {
         if (computerThread != null) {
-            computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit());
+            computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
         }
     }
 }

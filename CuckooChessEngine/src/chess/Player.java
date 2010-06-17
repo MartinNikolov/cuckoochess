@@ -36,7 +36,7 @@ public interface Player {
      * Inform player about min recommended/max allowed thinking time per move.
      * Of course, a human player is likely to ignore this.
      */
-    public void timeLimit(int minTimeLimit, int maxTimeLimit);
+    public void timeLimit(int minTimeLimit, int maxTimeLimit, boolean randomMode);
 
     /** 
      * Inform player that the transposition table should be cleared.

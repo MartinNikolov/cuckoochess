@@ -256,8 +256,8 @@ public class Game {
             try {
                 String timeStr = moveStr.substring(moveStr.indexOf(" ") + 1);
                 int timeLimit = Integer.parseInt(timeStr);
-                whitePlayer.timeLimit(timeLimit, timeLimit);
-                blackPlayer.timeLimit(timeLimit, timeLimit);
+                whitePlayer.timeLimit(timeLimit, timeLimit, false);
+                blackPlayer.timeLimit(timeLimit, timeLimit, false);
                 return true;
             }
             catch (NumberFormatException nfe) {

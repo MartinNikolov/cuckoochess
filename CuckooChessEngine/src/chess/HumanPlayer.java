@@ -51,7 +51,7 @@ public class HumanPlayer implements Player {
     }
 
     @Override
-    public void timeLimit(int minTimeLimit, int maxTimeLimit) {
+    public void timeLimit(int minTimeLimit, int maxTimeLimit, boolean randomMode) {
     }
 
     @Override

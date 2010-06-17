@@ -94,7 +94,6 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-//				System.out.printf("%d %g %g%n", event.getAction(), event.getX(), event.getY());
 		        if (ctrl.humansTurn() && (event.getAction() == MotionEvent.ACTION_DOWN)) {
 		            int sq = cb.eventToSquare(event);
 		            Move m = cb.mousePressed(sq);
@@ -205,6 +204,11 @@ public class CuckooChess extends Activity implements GUIInterface {
 	@Override
 	public int timeLimit() {
 		return mTimeLimit;
+	}
+
+	@Override
+	public boolean randomMode() {
+		return mTimeLimit == -1;
 	}
 
 	@Override

@@ -24,7 +24,7 @@ public class Main {
         if ((args.length == 1) && args[0].equals("gui")) {
             gui.AppletGUI.main(args);
         } else if ((args.length == 1) && args[0].equals("uci")) {
-            uci.UCIProtocol.main(args);
+        	uci.UCIProtocol.main(args);
         } else {
             Player whitePlayer = new HumanPlayer();
             ComputerPlayer blackPlayer = new ComputerPlayer();

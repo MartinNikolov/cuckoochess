@@ -22,6 +22,9 @@ public interface GUIInterface {
 	/** Get the current time limit. */
 	public int timeLimit();
 
+	/** Get "random move" setting. */
+	public boolean randomMode();
+
 	/** Return true if "show thinking" is enabled. */
 	public boolean showThinking();
 

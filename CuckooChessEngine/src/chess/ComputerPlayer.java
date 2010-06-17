@@ -5,8 +5,10 @@
 
 package chess;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A computer algorithm player.
@@ -23,6 +25,7 @@ public class ComputerPlayer implements Player {
     TranspositionTable tt;
     Book book;
     boolean bookEnabled;
+    boolean randomMode;
     Search currentSearch;
 
     public ComputerPlayer() {
@@ -34,6 +37,7 @@ public class ComputerPlayer implements Player {
         setTTLogSize(15);
         book = new Book(verbose);
         bookEnabled = true;
+        randomMode = false;
     }
 
 	public void setTTLogSize(int logSize) {
@@ -78,7 +82,12 @@ public class ComputerPlayer implements Player {
         // Find best move using iterative deepening
         currentSearch = sc;
         sc.setListener(listener);
-        Move bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, maxDepth, maxNodes, verbose);
+        Move bestM;
+        if (randomMode) {
+        	bestM = findSemiRandomMove(sc, moves);
+        } else {
+        	bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, maxDepth, maxNodes, verbose);
+        }
         currentSearch = null;
 //        tt.printStats();
         String strMove = TextIO.moveToString(pos, bestM, false);
@@ -114,9 +123,14 @@ public class ComputerPlayer implements Player {
     }
 
     @Override
-    public void timeLimit(int minTimeLimit, int maxTimeLimit) {
+    public void timeLimit(int minTimeLimit, int maxTimeLimit, boolean randomMode) {
+    	if (randomMode) {
+    		minTimeLimit = 0;
+    		maxTimeLimit = 0;
+    	}
         minTimeMillis = minTimeLimit;
         maxTimeMillis = maxTimeLimit;
+		this.randomMode = randomMode;
         if (currentSearch != null) {
             currentSearch.timeLimit(minTimeLimit, maxTimeLimit);
         }
@@ -155,7 +169,37 @@ public class ComputerPlayer implements Player {
         return new TwoReturnValues<Move, String>(bestM, PV);
     }
 
+    private Move findSemiRandomMove(Search sc, ArrayList<Move> moves) {
+    	Move bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, 1, maxNodes, verbose);
+    	int bestScore = bestM.score;
 
+        Random rndGen = new SecureRandom();
+        rndGen.setSeed(System.currentTimeMillis());
+
+        int sum = 0;
+        for (int mi = 0; mi < moves.size(); mi++) {
+        	sum += moveProbWeight(moves.get(mi).score, bestScore);
+        }
+        int rnd = rndGen.nextInt(sum);
+        for (int mi = 0; mi < moves.size(); mi++) {
+        	int weight = moveProbWeight(moves.get(mi).score, bestScore);
+        	if (rnd < weight) {
+        		return moves.get(mi);
+        	}
+        	rnd -= weight;
+        }
+        assert(false);
+        return null;
+    }
+
+    private final static int moveProbWeight(int moveScore, int bestScore) {
+    	double d = (bestScore - moveScore) / 100.0;
+    	double w = 100*Math.exp(-d*d/2);
+    	return (int)Math.ceil(w);
+    }
+
+    
+    
     // FIXME!!! Test LDS in quiesce (for checks and/or SEE<0 captures)
     // FIXME!!! Test Botvinnik-Markoff extension
     // FIXME!!! Implement pawn hash table
