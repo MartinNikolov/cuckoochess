@@ -222,20 +222,21 @@ public class Position {
         ui.castleMask = castleMask;
         ui.epSquare = epSquare;
         ui.halfMoveClock = halfMoveClock;
+        boolean wtm = whiteMove;
         
         if ((squares[move.to] != Piece.EMPTY) ||
-            (squares[move.from] == (whiteMove ? Piece.WPAWN : Piece.BPAWN))) {
+            (squares[move.from] == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
             halfMoveClock = 0;
         } else {
             halfMoveClock++;
         }
-        if (!whiteMove) {
+        if (!wtm) {
             fullMoveCounter++;
         }
 
         // Handle castling
-        int king = whiteMove ? Piece.WKING : Piece.BKING;
-        int k0 = whiteMove ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
+        int king = wtm ? Piece.WKING : Piece.BKING;
+        int k0 = wtm ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
         if (move.from == k0 && squares[move.from] == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 1, squares[k0 + 3]);
@@ -244,7 +245,7 @@ public class Position {
                 setPiece(k0 - 1, squares[k0 - 4]);
                 setPiece(k0 - 4, Piece.EMPTY);
             }
-            if (whiteMove) {
+            if (wtm) {
                 setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
                 setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
             } else {
@@ -252,11 +253,11 @@ public class Position {
                 setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
             }
         }
-        int rook = whiteMove ? Piece.WROOK : Piece.BROOK;
+        int rook = wtm ? Piece.WROOK : Piece.BROOK;
         if (squares[move.from] == rook) {
             removeCastleRights(move.from);
         }
-        int oRook = whiteMove ? Piece.BROOK : Piece.WROOK;
+        int oRook = wtm ? Piece.BROOK : Piece.WROOK;
         if (squares[move.to] == oRook) {
             removeCastleRights(move.to);
         }
@@ -293,7 +294,7 @@ public class Position {
         if (move.promoteTo != Piece.EMPTY) {
             setPiece(move.to, move.promoteTo);
         }
-        setWhiteMove(!whiteMove);
+        setWhiteMove(!wtm);
     }
     
     public final void unMakeMove(Move move, UndoInfo ui) {
@@ -303,16 +304,17 @@ public class Position {
         setCastleMask(ui.castleMask);
         setEpSquare(ui.epSquare);
         halfMoveClock = ui.halfMoveClock;
+        boolean wtm = whiteMove;
         if (move.promoteTo != Piece.EMPTY) {
-            setPiece(move.from, whiteMove ? Piece.WPAWN : Piece.BPAWN);
+            setPiece(move.from, wtm ? Piece.WPAWN : Piece.BPAWN);
         }
-        if (!whiteMove) {
+        if (!wtm) {
             fullMoveCounter--;
         }
         
         // Handle castling
-        int king = whiteMove ? Piece.WKING : Piece.BKING;
-        int k0 = whiteMove ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
+        int king = wtm ? Piece.WKING : Piece.BKING;
+        int k0 = wtm ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
         if (move.from == k0 && squares[move.from] == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 3, squares[k0 + 1]);
@@ -334,13 +336,13 @@ public class Position {
     }
     
     private final void removeCastleRights(int square) {
-        if (square== Position.getSquare(0, 0)) {
+        if (square == Position.getSquare(0, 0)) {
             setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
-        } else if (square== Position.getSquare(7, 0)) {
+        } else if (square == Position.getSquare(7, 0)) {
             setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
-        } else if (square== Position.getSquare(0, 7)) {
+        } else if (square == Position.getSquare(0, 7)) {
             setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
-        } else if (square== Position.getSquare(7, 7)) {
+        } else if (square == Position.getSquare(7, 7)) {
             setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
         }
     }
