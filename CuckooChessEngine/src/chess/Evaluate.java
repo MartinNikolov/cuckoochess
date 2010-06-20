@@ -561,25 +561,29 @@ public class Evaluate {
         boolean whiteLight = false;
         boolean blackDark = false;
         boolean blackLight = false;
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                int p = pos.getPiece(Position.getSquare(x, y));
-                switch (p) {
-                    case Piece.WBISHOP:
-                        if (Position.darkSquare(x, y))
-                            whiteDark = true;
-                        else
-                            whiteLight = true;
-                        score += bishopMobility(pos, x, y) * 2;
-                        break;
-                    case Piece.BBISHOP:
-                        if (Position.darkSquare(x, y))
-                            blackDark = true;
-                        else
-                            blackLight = true;
-                        score -= bishopMobility(pos, x, y) * 2;
-                        break;
-                }
+        for (int sq = 0; sq < 64; sq++) {
+            int p = pos.getPiece(sq);
+            switch (p) {
+            case Piece.WBISHOP: {
+            	final int x = Position.getX(sq);
+            	final int y = Position.getY(sq);
+            	if (Position.darkSquare(x, y))
+            		whiteDark = true;
+            	else
+            		whiteLight = true;
+            	score += bishopMobility(pos, x, y) * 2;
+            	break;
+            }
+            case Piece.BBISHOP: {
+            	final int x = Position.getX(sq);
+            	final int y = Position.getY(sq);
+            	if (Position.darkSquare(x, y))
+            		blackDark = true;
+            	else
+            		blackLight = true;
+            	score -= bishopMobility(pos, x, y) * 2;
+            	break;
+            }
             }
         }
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
