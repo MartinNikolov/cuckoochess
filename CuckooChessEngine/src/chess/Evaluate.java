@@ -618,36 +618,34 @@ public class Evaluate {
     /** Count the number of pseudo-legal moves for a bishop of given color on square (x0,y0). */
     final static int bishopMobility(Position pos, int x0, int y0) {
         int mobility = 0;
-        mobility += dirMobility(pos, x0, y0, -1, -1);
-        mobility += dirMobility(pos, x0, y0, -1,  1);
-        mobility += dirMobility(pos, x0, y0,  1, -1);
-        mobility += dirMobility(pos, x0, y0,  1,  1);
+        int sq0 = Position.getSquare(x0, y0);
+        mobility += dirMobility(pos, sq0, Math.min(  x0,   y0), -9);
+        mobility += dirMobility(pos, sq0, Math.min(  x0, 7-y0),  7);
+        mobility += dirMobility(pos, sq0, Math.min(7-x0,   y0), -7);
+        mobility += dirMobility(pos, sq0, Math.min(7-x0, 7-y0),  9);
         return mobility;
     }
 
     /** Count the number of pseudo-legal moves for a rook of given color on square (x0,y0). */
     final static int rookMobility(Position pos, int x0, int y0) {
         int mobility = 0;
-        mobility += dirMobility(pos, x0, y0,  0, -1);
-        mobility += dirMobility(pos, x0, y0,  0,  1);
-        mobility += dirMobility(pos, x0, y0, -1,  0);
-        mobility += dirMobility(pos, x0, y0,  1,  0);
+        int sq0 = Position.getSquare(x0, y0);
+        mobility += dirMobility(pos, sq0,   x0, -1);
+        mobility += dirMobility(pos, sq0, 7-x0,  1);
+        mobility += dirMobility(pos, sq0,   y0, -8);
+        mobility += dirMobility(pos, sq0, 7-y0,  8);
         return mobility;
     }
 
-    private static final int dirMobility(Position pos, int x0, int y0, int dx, int dy) {
+    private static final int dirMobility(Position pos, int sq, int loops, int delta) {
         int mobility = 0;
-        int x = x0 + dx;
-        int y = y0 + dy;
-        while ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-            int p = pos.getPiece(Position.getSquare(x, y));
-            if (p == Piece.EMPTY) {
-                mobility++;
-            } else {
-                break;
-            }
-            x += dx;
-            y += dy;
+        while (loops > 0) {
+        	sq += delta;
+        	int p = pos.getPiece(sq);
+        	if (p != Piece.EMPTY)
+        		break;
+       		mobility++;
+        	loops--;
         }
         return mobility;
     }
