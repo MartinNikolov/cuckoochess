@@ -139,12 +139,6 @@ public class Evaluate {
      */
     int [][] firstPawn;
 
-    // Cached variables used by evalPos and the functions it calls.
-    int wMtrl;      // Total value of all white pieces and pawns
-    int bMtrl;      // Total value of all black pieces and pawns
-    int wMtrlPawns; // Total value of all white pawns
-    int bMtrlPawns; // Total value of all black pawns
-    
     /** Constructor. */
     public Evaluate() {
         nPawns = new int[2][8];
@@ -159,12 +153,7 @@ public class Evaluate {
      *         Positive values are good for the side to make the next move.
      */
     final public int evalPos(Position pos) {
-    	wMtrl = pos.wMtrl;
-    	bMtrl = pos.bMtrl;
-    	wMtrlPawns = pos.wMtrlPawns;
-    	bMtrlPawns = pos.bMtrlPawns;
-
-    	int score = wMtrl - bMtrl;
+    	int score = pos.wMtrl - pos.bMtrl;
 
         score += pieceSquareEval(pos);
         score += tradeBonus(pos);
@@ -198,6 +187,10 @@ public class Evaluate {
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
         final int pV = pieceValue[Piece.WPAWN];
+        final int wMtrl = pos.wMtrl;
+        final int bMtrl = pos.bMtrl;
+        final int wMtrlPawns = pos.wMtrlPawns;
+        final int bMtrlPawns = pos.bMtrlPawns;
 
         for (int x = 0; x < 8; x++) {
             for (int i = 0; i < 2; i++) {
@@ -335,10 +328,10 @@ public class Evaluate {
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
 
-        final int wM = wMtrl;
-        final int bM = bMtrl;
-        final int wPawn = wMtrlPawns;
-        final int bPawn = bMtrlPawns;
+        final int wM = pos.wMtrl;
+        final int bM = pos.bMtrl;
+        final int wPawn = pos.wMtrlPawns;
+        final int bPawn = pos.bMtrlPawns;
         final int deltaScore = wM - bM;
 
         int pBonus = 0;
@@ -358,7 +351,7 @@ public class Evaluate {
         final int k2 = kt2[7-0][6] - kt2[7-0][4];
         final int t1 = qV + 2 * rV + 2 * bV;
         final int t2 = rV;
-        final int t = bMtrl - bMtrlPawns;
+        final int t = pos.bMtrl - pos.bMtrlPawns;
         final int ks = interpolate(t, t2, k2, t1, k1);
 
         final int castleValue = ks + rt1[7-0][5] - rt1[7-0][7];
@@ -483,8 +476,8 @@ public class Evaluate {
         final int qV = pieceValue[Piece.WQUEEN];
         final int rV = pieceValue[Piece.WROOK];
         final int hiMtrl = qV + rV;
-        score += interpolate(bMtrl - bMtrlPawns, 0, 2 * passedBonusW, hiMtrl, passedBonusW);
-        score -= interpolate(wMtrl - wMtrlPawns, 0, 2 * passedBonusB, hiMtrl, passedBonusB);
+        score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * passedBonusW, hiMtrl, passedBonusW);
+        score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * passedBonusB, hiMtrl, passedBonusB);
         
         return score;
     }
@@ -532,7 +525,7 @@ public class Evaluate {
         int score = 0;
         for (int i = 0; i < 2; i++) {
             boolean white = (i == 0);
-            final int m = white ? wMtrl - wMtrlPawns : bMtrl - bMtrlPawns;
+            final int m = white ? pos.wMtrl - pos.wMtrlPawns : pos.bMtrl - pos.bMtrlPawns;
             if (m <= minM)
                 continue;
             int kSq = pos.getKingSq(white);
@@ -601,11 +594,11 @@ public class Evaluate {
         // Bishop pair bonus
         final int pV = pieceValue[Piece.WPAWN];
         if (numWhite == 2) {
-            final int numPawns = wMtrlPawns / pV;
+            final int numPawns = pos.wMtrlPawns / pV;
             score += 20 + (8 - numPawns) * 2;
         }
         if (numBlack == 2) {
-            final int numPawns = bMtrlPawns / pV;
+            final int numPawns = pos.bMtrlPawns / pV;
             score -= 20 + (8 - numPawns) * 2;
         }
 
@@ -618,7 +611,7 @@ public class Evaluate {
             final int bV = pieceValue[Piece.WBISHOP];
             final int loMtrl = 2 * bV;
             final int hiMtrl = 2 * (qV + rV + bV);
-            int mtrl = wMtrl + bMtrl - wMtrlPawns - bMtrlPawns;
+            int mtrl = pos.wMtrl + pos.bMtrl - pos.wMtrlPawns - pos.bMtrlPawns;
             score -= interpolate(mtrl, loMtrl, penalty, hiMtrl, 0);
         }
 
@@ -668,8 +661,10 @@ public class Evaluate {
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
-        final int wMtrlNoPawns = this.wMtrl - wMtrlPawns;
-        final int bMtrlNoPawns = this.bMtrl - bMtrlPawns;
+        final int wMtrlPawns = pos.wMtrlPawns;
+        final int bMtrlPawns = pos.bMtrlPawns;
+        final int wMtrlNoPawns = pos.wMtrl - wMtrlPawns;
+        final int bMtrlNoPawns = pos.bMtrl - bMtrlPawns;
 
         boolean handled = false;
         if ((wMtrlPawns + bMtrlPawns == 0) && (wMtrlNoPawns < rV) && (bMtrlNoPawns < rV)) {
