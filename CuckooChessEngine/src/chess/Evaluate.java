@@ -199,6 +199,13 @@ public class Evaluate {
         final int wMtrlPawns = pos.wMtrlPawns;
         final int bMtrlPawns = pos.bMtrlPawns;
 
+        // White/black pawn scores. All scores are summed first, then a 
+        // single interpolation gives the final score.
+        int wp1 = 0;
+        int wp2 = 0;
+        int bp1 = 0;
+        int bp2 = 0;
+
         for (int x = 0; x < 8; x++) {
             for (int i = 0; i < 2; i++) {
                 nPawns[i][x] = 0;
@@ -241,13 +248,8 @@ public class Evaluate {
             }
             case Piece.WPAWN:
             {
-            	final int p1 = pt1[7-y][x];
-            	final int p2 = pt2[7-y][x];
-            	final int t1 = qV + 2 * rV + 2 * bV;
-            	final int t2 = rV;
-            	final int t = bMtrl - bMtrlPawns;
-            	final int s = interpolate(t, t2, p2, t1, p1) / 2;
-            	score += s;
+            	wp1 += pt1[7-y][x];
+            	wp2 += pt2[7-y][x];
             	nPawns[0][x]++;
             	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
             	lastPawn[0][x] = Math.max(lastPawn[0][x], y);
@@ -255,13 +257,8 @@ public class Evaluate {
             }
             case Piece.BPAWN:
             {
-            	final int p1 = pt1[y][x];
-            	final int p2 = pt2[y][x];
-            	final int t1 = qV + 2 * rV + 2 * bV;
-            	final int t2 = rV;
-            	final int t = wMtrl - wMtrlPawns;
-            	final int s = interpolate(t, t2, p2, t1, p1) / 2;
-            	score -= s;
+            	bp1 += pt1[y][x];
+            	bp2 += pt2[y][x];
             	nPawns[1][x]++;
             	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
             	lastPawn[1][x] = Math.min(lastPawn[1][x], y);
@@ -331,6 +328,15 @@ public class Evaluate {
             }
             }
         }
+        {
+        	final int t1 = qV + 2 * rV + 2 * bV;
+        	final int t2 = rV;
+        	final int tw = bMtrl - bMtrlPawns;
+        	score += interpolate(tw, t2, wp2, t1, wp1) / 2;
+        	final int tb = wMtrl - wMtrlPawns;
+        	score -= interpolate(tb, t2, bp2, t1, bp1) / 2;
+        }
+        
         return score;
     }
 
