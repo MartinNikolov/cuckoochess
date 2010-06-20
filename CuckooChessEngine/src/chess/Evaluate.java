@@ -140,11 +140,16 @@ public class Evaluate {
     int [][] firstPawn;
     int [][] lastPawn;
 
+    int [][] pieces;
+    int [] nPieces;
+    
     /** Constructor. */
     public Evaluate() {
         nPawns = new int[2][8];
         firstPawn = new int[2][8];
         lastPawn = new int[2][8];
+        pieces = new int[Piece.nPieceTypes][64];
+        nPieces = new int[Piece.nPieceTypes];
     }
 
     // FIXME!!! Optimize speed. Fewer loops over all squares.
@@ -203,9 +208,12 @@ public class Evaluate {
             lastPawn[0][x] = 0;
             lastPawn[1][x] = 7;
         }
+        for (int p = 0; p < Piece.nPieceTypes; p++)
+        	nPieces[p] = 0;
         for (int sq = 0; sq < 64; sq++) {
             int p = pos.getPiece(sq);
             if (p == Piece.EMPTY) continue;
+            pieces[p][nPieces[p]++] = sq;
             final int x = Position.getX(sq);
             final int y = Position.getY(sq);
             switch (p) {
@@ -479,31 +487,25 @@ public class Evaluate {
     /** Compute rook bonus. Rook on open/half-open file. */
     final int rookBonus(Position pos) {
         int score = 0;
-        for (int sq = 0; sq < 64; sq++) {
-            int p = pos.getPiece(sq);
-            if (p == Piece.EMPTY) continue;
-            switch (p) {
-                case Piece.WROOK:
-                {
-                    final int x = Position.getX(sq);
-                    final int y = Position.getY(sq);
-                    if (nPawns[0][x] == 0) { // At least half-open file
-                        score += nPawns[1][x] == 0 ? 25 : 12;
-                    }
-                    score += rookMobility(pos, x, y) / 2;
-                    break;
-                }
-                case Piece.BROOK:
-                {
-                    final int x = Position.getX(sq);
-                    final int y = Position.getY(sq);
-                    if (nPawns[1][x] == 0) {
-                        score -= nPawns[0][x] == 0 ? 25 : 12;
-                    }
-                    score -= rookMobility(pos, x, y) / 2;
-                    break;
-                }
+        int nP = nPieces[Piece.WROOK];
+        for (int i = 0; i < nP; i++) {
+        	int sq = pieces[Piece.WROOK][i];
+            final int x = Position.getX(sq);
+            final int y = Position.getY(sq);
+            if (nPawns[0][x] == 0) { // At least half-open file
+                score += nPawns[1][x] == 0 ? 25 : 12;
             }
+            score += rookMobility(pos, x, y) / 2;
+        }
+        nP = nPieces[Piece.BROOK];
+        for (int i = 0; i < nP; i++) {
+        	int sq = pieces[Piece.BROOK][i];
+            final int x = Position.getX(sq);
+            final int y = Position.getY(sq);
+            if (nPawns[1][x] == 0) {
+                score -= nPawns[0][x] == 0 ? 25 : 12;
+            }
+            score -= rookMobility(pos, x, y) / 2;
         }
         return score;
     }
@@ -561,30 +563,27 @@ public class Evaluate {
         boolean whiteLight = false;
         boolean blackDark = false;
         boolean blackLight = false;
-        for (int sq = 0; sq < 64; sq++) {
-            int p = pos.getPiece(sq);
-            switch (p) {
-            case Piece.WBISHOP: {
-            	final int x = Position.getX(sq);
-            	final int y = Position.getY(sq);
-            	if (Position.darkSquare(x, y))
-            		whiteDark = true;
-            	else
-            		whiteLight = true;
-            	score += bishopMobility(pos, x, y) * 2;
-            	break;
-            }
-            case Piece.BBISHOP: {
-            	final int x = Position.getX(sq);
-            	final int y = Position.getY(sq);
-            	if (Position.darkSquare(x, y))
-            		blackDark = true;
-            	else
-            		blackLight = true;
-            	score -= bishopMobility(pos, x, y) * 2;
-            	break;
-            }
-            }
+        int nP = nPieces[Piece.WBISHOP];
+        for (int i = 0; i < nP; i++) {
+        	int sq = pieces[Piece.WBISHOP][i];
+        	final int x = Position.getX(sq);
+        	final int y = Position.getY(sq);
+        	if (Position.darkSquare(x, y))
+        		whiteDark = true;
+        	else
+        		whiteLight = true;
+        	score += bishopMobility(pos, x, y) * 2;
+        }        	
+        nP = nPieces[Piece.BBISHOP];
+        for (int i = 0; i < nP; i++) {
+        	int sq = pieces[Piece.BBISHOP][i];
+        	final int x = Position.getX(sq);
+        	final int y = Position.getY(sq);
+        	if (Position.darkSquare(x, y))
+        		blackDark = true;
+        	else
+        		blackLight = true;
+        	score -= bishopMobility(pos, x, y) * 2;
         }
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);
@@ -742,15 +741,24 @@ public class Evaluate {
      * Decide if there is a bishop on a white square.
      * Note that this method assumes that there is at most one bishop.
      */
-    private static final boolean bishopOnDark(Position pos) {
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                int p = pos.getPiece(Position.getSquare(x, y));
-                if ((p == Piece.WBISHOP) || (p == Piece.BBISHOP))
-                    return Position.darkSquare(x, y);
-            }
-        }
-        return false;
+    private final boolean bishopOnDark(Position pos) {
+    	int nP = nPieces[Piece.WBISHOP];
+    	if (nP > 0) {
+    		int sq = pieces[Piece.WBISHOP][0];
+            final int x = Position.getX(sq);
+            final int y = Position.getY(sq);
+            if (Position.darkSquare(x, y))
+            	return true;
+    	}
+    	nP = nPieces[Piece.BBISHOP];
+    	if (nP > 0) {
+    		int sq = pieces[Piece.BBISHOP][0];
+            final int x = Position.getX(sq);
+            final int y = Position.getY(sq);
+            if (Position.darkSquare(x, y))
+            	return true;
+    	}
+    	return false;
     }
 
     /**
