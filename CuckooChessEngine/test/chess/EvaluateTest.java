@@ -159,9 +159,8 @@ public class EvaluateTest {
     @Test
     public void testMaterial() throws ChessParseError {
         System.out.println("material");
-        Evaluate eval= new Evaluate();
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
-        assertEquals(0, eval.material(pos));
+        assertEquals(0, Evaluate.material(pos));
         
         final int p = Evaluate.pieceValue[Piece.WPAWN];
         final int q = Evaluate.pieceValue[Piece.WQUEEN];
@@ -171,19 +170,19 @@ public class EvaluateTest {
         
         UndoInfo ui = new UndoInfo();
         pos.makeMove(TextIO.stringToMove(pos, "e4"), ui);
-        assertEquals(0, eval.material(pos));
+        assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "d5"), ui);
-        assertEquals(0, eval.material(pos));
+        assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "exd5"), ui);
-        assertEquals(p, eval.material(pos));
+        assertEquals(p, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd5"), ui);
-        assertEquals(0, eval.material(pos));
+        assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Nc3"), ui);
-        assertEquals(0, eval.material(pos));
+        assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd2"), ui);
-        assertEquals(-p, eval.material(pos));
+        assertEquals(-p, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd2"), ui);
-        assertEquals(-p+q, eval.material(pos));
+        assertEquals(-p+q, Evaluate.material(pos));
     }
 
     /**

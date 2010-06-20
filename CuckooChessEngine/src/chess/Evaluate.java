@@ -159,8 +159,12 @@ public class Evaluate {
      *         Positive values are good for the side to make the next move.
      */
     final public int evalPos(Position pos) {
-        computeMaterial(pos);
-        int score = wMtrl - bMtrl;
+    	wMtrl = pos.wMtrl;
+    	bMtrl = pos.bMtrl;
+    	wMtrlPawns = pos.wMtrlPawns;
+    	bMtrlPawns = pos.bMtrlPawns;
+
+    	int score = wMtrl - bMtrl;
 
         score += pieceSquareEval(pos);
         score += tradeBonus(pos);
@@ -178,23 +182,13 @@ public class Evaluate {
     }
 
     /** Compute white_material - black_material. */
-    final int material(Position pos) {
-        computeMaterial(pos);
-        return wMtrl - bMtrl;
+    static final int material(Position pos) {
+        return pos.wMtrl - pos.bMtrl;
     }
     
-    final int material(Position pos, boolean white) {
-        computeMaterial(pos);
-        return white ? wMtrl : bMtrl;
+    static final int material(Position pos, boolean white) {
+        return white ? pos.wMtrl : pos.bMtrl;
     }
-
-    private final void computeMaterial(Position pos) {
-    	wMtrl = pos.wMtrl;
-    	bMtrl = pos.bMtrl;
-    	wMtrlPawns = pos.wMtrlPawns;
-    	bMtrlPawns = pos.bMtrlPawns;
-    }
-
 
     /** Compute score based on piece square tables. Positive values are good for white. */
     private final int pieceSquareEval(Position pos) {

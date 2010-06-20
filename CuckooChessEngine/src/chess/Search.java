@@ -373,7 +373,7 @@ public class Search {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
             }
-            int mtrl = eval.material(pos, pos.whiteMove);
+            int mtrl = Evaluate.material(pos, pos.whiteMove);
             int pV = Evaluate.pieceValue[Piece.WPAWN];
             int pMtrl = pV * pos.nPieces(pos.whiteMove ? Piece.WPAWN : Piece.BPAWN);
             if (mtrl > pMtrl) {
