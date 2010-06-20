@@ -439,37 +439,31 @@ public class Evaluate {
         for (int x = 0; x < 8; x++) {
         	int y = lastPawn[0][x];
         	if (y > 0) {
-                if (pos.getPiece(Position.getSquare(x, y)) == Piece.WPAWN) {
-                    boolean passed = true;
-                    if ((x > 0) && (firstPawn[1][x - 1] >= y + 1)) passed = false;
-                    if (           (firstPawn[1][x + 0] >= y + 1)) passed = false;
-                    if ((x < 7) && (firstPawn[1][x + 1] >= y + 1)) passed = false;
-                    if (passed) {
-                        passedBonusW += 20 + y * 4;
-                        if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y - 1)) == Piece.WPAWN) ||
-                            (x < 7) && (pos.getPiece(Position.getSquare(x + 1, y - 1)) == Piece.WPAWN)) {
-                            passedBonusW += 15;  // Guarded passed pawn
-                        }
-                    }
-                    break;
-                }
-            }
+        		boolean passed = true;
+        		if ((x > 0) && (firstPawn[1][x - 1] >= y + 1)) passed = false;
+        		if (           (firstPawn[1][x + 0] >= y + 1)) passed = false;
+        		if ((x < 7) && (firstPawn[1][x + 1] >= y + 1)) passed = false;
+        		if (passed) {
+        			passedBonusW += 20 + y * 4;
+        			if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y - 1)) == Piece.WPAWN) ||
+        				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y - 1)) == Piece.WPAWN)) {
+        				passedBonusW += 15;  // Guarded passed pawn
+        			}
+        		}
+        	}
         	y = lastPawn[1][x];
         	if (y < 7) {
-                if (pos.getPiece(Position.getSquare(x, y)) == Piece.BPAWN) {
-                    boolean passed = true;
-                    if ((x > 0) && (firstPawn[0][x - 1] <= y - 1)) passed = false;
-                    if (           (firstPawn[0][x + 0] <= y - 1)) passed = false;
-                    if ((x < 7) && (firstPawn[0][x + 1] <= y - 1)) passed = false;
-                    if (passed) {
-                        passedBonusB += 20 + (7-y) * 4;
-                        if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y + 1)) == Piece.BPAWN) ||
-                            (x < 7) && (pos.getPiece(Position.getSquare(x + 1, y + 1)) == Piece.BPAWN)) {
-                            passedBonusB += 15;  // Guarded passed pawn
-                        }
-                    }
-                    break;
-                }
+        		boolean passed = true;
+        		if ((x > 0) && (firstPawn[0][x - 1] <= y - 1)) passed = false;
+        		if (           (firstPawn[0][x + 0] <= y - 1)) passed = false;
+        		if ((x < 7) && (firstPawn[0][x + 1] <= y - 1)) passed = false;
+        		if (passed) {
+        			passedBonusB += 20 + (7-y) * 4;
+        			if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y + 1)) == Piece.BPAWN) ||
+        				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y + 1)) == Piece.BPAWN)) {
+        				passedBonusB += 15;  // Guarded passed pawn
+        			}
+        		}
             }
         }
 
