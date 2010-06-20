@@ -401,25 +401,15 @@ public class Evaluate {
     final int computePawnStructure(Position pos) {
         int score = 0;
 
-        // Evaluate double pawns
+        // Evaluate double pawns and pawn islands
         int wDouble = 0;
         int bDouble = 0;
-        for (int x = 0; x < 8; x++) {
-            if (nPawns[0][x] > 1) {
-                wDouble += nPawns[0][x] - 1;
-            }
-            if (nPawns[1][x] > 1) {
-                bDouble += nPawns[1][x] - 1;
-            }
-        }
-        score -= (wDouble - bDouble) * 20;
-
-        // Evaluate pawn islands
         int wIslands = 0;
         int bIslands = 0;
         boolean wasPawn = false;
         for (int x = 0; x < 8; x++) {
             if (nPawns[0][x] > 0) {
+                wDouble += nPawns[0][x] - 1;
                 if (!wasPawn) {
                     wIslands++;
                     wasPawn = true;
@@ -431,6 +421,7 @@ public class Evaluate {
         wasPawn = false;
         for (int x = 0; x < 8; x++) {
             if (nPawns[1][x] > 0) {
+                bDouble += nPawns[1][x] - 1;
                 if (!wasPawn) {
                     bIslands++;
                     wasPawn = true;
@@ -439,6 +430,7 @@ public class Evaluate {
                 wasPawn = false;
             }
         }
+        score -= (wDouble - bDouble) * 20;
         score -= (wIslands - bIslands) * 15;
         
         // Evaluate passed pawn bonus
