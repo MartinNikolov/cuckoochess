@@ -138,11 +138,13 @@ public class Evaluate {
      * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
      */
     int [][] firstPawn;
+    int [][] lastPawn;
 
     /** Constructor. */
     public Evaluate() {
         nPawns = new int[2][8];
         firstPawn = new int[2][8];
+        lastPawn = new int[2][8];
     }
 
     // FIXME!!! Optimize speed. Fewer loops over all squares.
@@ -198,6 +200,8 @@ public class Evaluate {
             }
             firstPawn[0][x] = 7;
             firstPawn[1][x] = 0;
+            lastPawn[0][x] = 0;
+            lastPawn[1][x] = 7;
         }
         for (int sq = 0; sq < 64; sq++) {
             int p = pos.getPiece(sq);
@@ -238,6 +242,7 @@ public class Evaluate {
             	score += s;
             	nPawns[0][x]++;
             	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
+            	lastPawn[0][x] = Math.max(lastPawn[0][x], y);
             	break;
             }
             case Piece.BPAWN:
@@ -251,6 +256,7 @@ public class Evaluate {
             	score -= s;
             	nPawns[1][x]++;
             	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
+            	lastPawn[1][x] = Math.min(lastPawn[1][x], y);
             	break;
             }
             case Piece.WKNIGHT:
@@ -439,7 +445,8 @@ public class Evaluate {
         int passedBonusW = 0;
         int passedBonusB = 0;
         for (int x = 0; x < 8; x++) {
-            for (int y = 6; y > 0; y--) {
+        	int y = lastPawn[0][x];
+        	if (y > 0) {
                 if (pos.getPiece(Position.getSquare(x, y)) == Piece.WPAWN) {
                     boolean passed = true;
                     if ((x > 0) && (firstPawn[1][x - 1] >= y + 1)) passed = false;
@@ -455,7 +462,8 @@ public class Evaluate {
                     break;
                 }
             }
-            for (int y = 1; y < 7; y++) {
+        	y = lastPawn[1][x];
+        	if (y < 7) {
                 if (pos.getPiece(Position.getSquare(x, y)) == Piece.BPAWN) {
                     boolean passed = true;
                     if ((x > 0) && (firstPawn[0][x - 1] <= y - 1)) passed = false;
