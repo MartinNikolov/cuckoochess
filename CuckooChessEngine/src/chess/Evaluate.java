@@ -302,15 +302,15 @@ public class Evaluate {
             case Piece.WQUEEN:
             {
             	score += qt1[7-y][x];
-            	score += rookMobility(pos, x, y);
-            	score += bishopMobility(pos, x, y);
+            	score += rookMobility(pos, x, y, sq);
+            	score += bishopMobility(pos, x, y, sq);
             	break;
             }
             case Piece.BQUEEN:
             {
             	score -= qt1[y][x];
-            	score -= rookMobility(pos, x, y);
-            	score -= bishopMobility(pos, x, y);
+            	score -= rookMobility(pos, x, y, sq);
+            	score -= bishopMobility(pos, x, y, sq);
             	break;
             }
             case Piece.WROOK:
@@ -495,7 +495,7 @@ public class Evaluate {
             if (nPawns[0][x] == 0) { // At least half-open file
                 score += nPawns[1][x] == 0 ? 25 : 12;
             }
-            score += rookMobility(pos, x, y) / 2;
+            score += rookMobility(pos, x, y, sq) / 2;
         }
         nP = nPieces[Piece.BROOK];
         for (int i = 0; i < nP; i++) {
@@ -505,7 +505,7 @@ public class Evaluate {
             if (nPawns[1][x] == 0) {
                 score -= nPawns[0][x] == 0 ? 25 : 12;
             }
-            score -= rookMobility(pos, x, y) / 2;
+            score -= rookMobility(pos, x, y, sq) / 2;
         }
         return score;
     }
@@ -572,7 +572,7 @@ public class Evaluate {
         		whiteDark = true;
         	else
         		whiteLight = true;
-        	score += bishopMobility(pos, x, y) * 2;
+        	score += bishopMobility(pos, x, y, sq) * 2;
         }        	
         nP = nPieces[Piece.BBISHOP];
         for (int i = 0; i < nP; i++) {
@@ -583,7 +583,7 @@ public class Evaluate {
         		blackDark = true;
         	else
         		blackLight = true;
-        	score -= bishopMobility(pos, x, y) * 2;
+        	score -= bishopMobility(pos, x, y, sq) * 2;
         }
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);
@@ -616,9 +616,8 @@ public class Evaluate {
     }
     
     /** Count the number of pseudo-legal moves for a bishop of given color on square (x0,y0). */
-    final static int bishopMobility(Position pos, int x0, int y0) {
+    final static int bishopMobility(Position pos, int x0, int y0, int sq0) {
         int mobility = 0;
-        int sq0 = Position.getSquare(x0, y0);
         mobility += dirMobility(pos, sq0, Math.min(  x0,   y0), -9);
         mobility += dirMobility(pos, sq0, Math.min(  x0, 7-y0),  7);
         mobility += dirMobility(pos, sq0, Math.min(7-x0,   y0), -7);
@@ -627,9 +626,8 @@ public class Evaluate {
     }
 
     /** Count the number of pseudo-legal moves for a rook of given color on square (x0,y0). */
-    final static int rookMobility(Position pos, int x0, int y0) {
+    final static int rookMobility(Position pos, int x0, int y0, int sq0) {
         int mobility = 0;
-        int sq0 = Position.getSquare(x0, y0);
         mobility += dirMobility(pos, sq0,   x0, -1);
         mobility += dirMobility(pos, sq0, 7-x0,  1);
         mobility += dirMobility(pos, sq0,   y0, -8);
