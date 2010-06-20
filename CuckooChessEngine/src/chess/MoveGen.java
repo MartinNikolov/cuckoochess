@@ -25,41 +25,42 @@ public class MoveGen {
         ArrayList<Move> moveList = getMoveListObj();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                int p = pos.getPiece(Position.getSquare(x, y));
+            	int sq = Position.getSquare(x, y);
+                int p = pos.getPiece(sq);
                 if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
                     continue;
                 }
                 if ((p == Piece.WROOK) || (p == Piece.BROOK) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                    if (addDirection(moveList, pos, x, y,  1,  0, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  0,  1, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1,  0, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  0, -1, true)) return moveList;
+                    if (addDirection(moveList, pos, sq, 7-x,  1)) return moveList;
+                    if (addDirection(moveList, pos, sq, 7-y,  8)) return moveList;
+                    if (addDirection(moveList, pos, sq,   x, -1)) return moveList;
+                    if (addDirection(moveList, pos, sq,   y, -8)) return moveList;
                 }
                 if ((p == Piece.WBISHOP) || (p == Piece.BBISHOP) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                    if (addDirection(moveList, pos, x, y,  1,  1, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1,  1, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1, -1, true)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  1, -1, true)) return moveList;
+                    if (addDirection(moveList, pos, sq, Math.min(7-x, 7-y),  9)) return moveList;
+                    if (addDirection(moveList, pos, sq, Math.min(  x, 7-y),  7)) return moveList;
+                    if (addDirection(moveList, pos, sq, Math.min(  x,   y), -9)) return moveList;
+                    if (addDirection(moveList, pos, sq, Math.min(7-x,   y), -7)) return moveList;
                 }
                 if ((p == Piece.WKNIGHT) || (p == Piece.BKNIGHT)) {
-                    if (addDirection(moveList, pos, x, y,  2,  1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  1,  2, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1,  2, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -2,  1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -2, -1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1, -2, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  1, -2, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  2, -1, false)) return moveList;
+                	if (x < 6 && y < 7 && addDirection(moveList, pos, sq, 1,  10)) return moveList;
+                    if (x < 7 && y < 6 && addDirection(moveList, pos, sq, 1,  17)) return moveList;
+                    if (x > 0 && y < 6 && addDirection(moveList, pos, sq, 1,  15)) return moveList;
+                    if (x > 1 && y < 7 && addDirection(moveList, pos, sq, 1,   6)) return moveList;
+                    if (x > 1 && y > 0 && addDirection(moveList, pos, sq, 1, -10)) return moveList;
+                    if (x > 0 && y > 1 && addDirection(moveList, pos, sq, 1, -17)) return moveList;
+                    if (x < 7 && y > 1 && addDirection(moveList, pos, sq, 1, -15)) return moveList;
+                    if (x < 6 && y > 0 && addDirection(moveList, pos, sq, 1,  -6)) return moveList;
                 }
                 if ((p == Piece.WKING) || (p == Piece.BKING)) {
-                    if (addDirection(moveList, pos, x, y,  1,  0, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  1,  1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  0,  1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1,  1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1,  0, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y, -1, -1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  0, -1, false)) return moveList;
-                    if (addDirection(moveList, pos, x, y,  1, -1, false)) return moveList;
+                	if (x < 7          && addDirection(moveList, pos, sq, 1,  1)) return moveList;
+                    if (x < 7 && y < 7 && addDirection(moveList, pos, sq, 1,  9)) return moveList;
+                    if (         y < 7 && addDirection(moveList, pos, sq, 1,  8)) return moveList;
+                    if (x > 0 && y < 7 && addDirection(moveList, pos, sq, 1,  7)) return moveList;
+                    if (x > 0          && addDirection(moveList, pos, sq, 1, -1)) return moveList;
+                    if (x > 0 && y > 0 && addDirection(moveList, pos, sq, 1, -9)) return moveList;
+                    if (         y > 0 && addDirection(moveList, pos, sq, 1, -8)) return moveList;
+                    if (x < 7 && y > 0 && addDirection(moveList, pos, sq, 1, -7)) return moveList;
 		    
                     int k0 = pos.whiteMove ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
@@ -223,16 +224,14 @@ public class MoveGen {
     }
 
     /**
-     * Add all moves from square (x0,y0) in direction (dx,dy).
-     * @param multiMove If true, the piece can move more than one step.
+     * Add all moves from square sq0 in direction delta.
+     * @param maxSteps Max steps until reaching a border. Set to 1 for non-sliding pieces.
      * @ return True if the enemy king could be captured, false otherwise.
      */
-    private final boolean addDirection(ArrayList<Move> moveList, Position pos, int x0, int y0, int dx, int dy, boolean multiMove) {
-        int sq0 = Position.getSquare(x0, y0);
-        int x = x0 + dx;
-        int y = y0 + dy;
-        while ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-            int sq = Position.getSquare(x, y);
+    private final boolean addDirection(ArrayList<Move> moveList, Position pos, int sq0, int maxSteps, int delta) {
+    	int sq = sq0;
+        while (maxSteps > 0) {
+        	sq += delta;
             int p = pos.getPiece(sq);
             if (p == Piece.EMPTY) {
                 moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
@@ -249,11 +248,7 @@ public class MoveGen {
                 }
                 break;
             }
-            if (!multiMove) {
-                break;
-            }
-            x += dx;
-            y += dy;
+            maxSteps--;
         }
         return false;
     }

@@ -573,7 +573,7 @@ public class Evaluate {
         	else
         		whiteLight = true;
         	score += bishopMobility(pos, x, y, sq) * 2;
-        }        	
+        }
         nP = nPieces[Piece.BBISHOP];
         for (int i = 0; i < nP; i++) {
         	int sq = pieces[Piece.BBISHOP][i];
