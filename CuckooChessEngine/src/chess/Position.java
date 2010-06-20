@@ -39,6 +39,10 @@ public class Position {
 
     private long hashKey;           // Cached Zobrist hash key
     private int wKingSq, bKingSq;   // Cached king positions
+    int wMtrl;      // Total value of all white pieces and pawns
+    int bMtrl;      // Total value of all black pieces and pawns
+    int wMtrlPawns; // Total value of all white pawns
+    int bMtrlPawns; // Total value of all black pawns
     
     /** Initialize board to empty position. */
     public Position() {
@@ -52,6 +56,7 @@ public class Position {
         fullMoveCounter = 1;
         hashKey = computeZobristHash();
         wKingSq = bKingSq = -1;
+        wMtrl = bMtrl = wMtrlPawns = bMtrlPawns = 0;
     }
 
     public Position(Position other) {
@@ -66,6 +71,10 @@ public class Position {
         hashKey = other.hashKey;
         wKingSq = other.wKingSq;
         bKingSq = other.bKingSq;
+        wMtrl = other.wMtrl;
+        bMtrl = other.bMtrl;
+        wMtrlPawns = other.wMtrlPawns;
+        bMtrlPawns = other.bMtrlPawns;
     }
     
     @Override
@@ -151,9 +160,37 @@ public class Position {
     }
     /** Set a square to a piece value. */
     public final void setPiece(int square, int piece) {
+    	// Update hash key
         hashKey ^= psHashKeys[squares[square]][square];
         hashKey ^= psHashKeys[piece][square];
+
+        // Update material balance
+        int removedPiece = squares[square];
+    	int pVal = Evaluate.pieceValue[removedPiece]; 
+        if (Piece.isWhite(removedPiece)) {
+        	wMtrl -= pVal;
+        	if (removedPiece == Piece.WPAWN)
+        		wMtrlPawns -= pVal;
+        } else {
+        	bMtrl -= pVal;
+        	if (removedPiece == Piece.BPAWN)
+        		bMtrlPawns -= pVal;
+        }
+    	pVal = Evaluate.pieceValue[piece];
+        if (Piece.isWhite(piece)) {
+        	wMtrl += pVal;
+        	if (piece == Piece.WPAWN)
+        		wMtrlPawns += pVal;
+        } else {
+        	bMtrl += pVal;
+        	if (piece == Piece.BPAWN)
+        		bMtrlPawns += pVal;
+        }
+
+        // Update board
         squares[square] = piece;
+
+        // Update king position 
         if (piece == Piece.WKING) {
             wKingSq = square;
         } else if (piece == Piece.BKING) {

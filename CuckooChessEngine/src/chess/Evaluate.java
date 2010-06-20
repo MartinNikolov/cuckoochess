@@ -189,30 +189,10 @@ public class Evaluate {
     }
 
     private final void computeMaterial(Position pos) {
-        int wMtrl = 0;
-        int bMtrl = 0;
-        final int pV = pieceValue[Piece.WPAWN];
-        int wMtrlPawns = 0;
-        int bMtrlPawns = 0;
-        for (int sq = 0; sq < 64; sq++) {
-            int p = pos.getPiece(sq);
-            if (p == Piece.EMPTY) continue;
-            if (Piece.isWhite(p)) {
-                wMtrl += pieceValue[p];
-                if (p == Piece.WPAWN) {
-                    wMtrlPawns += pV;
-                }
-            } else {
-                bMtrl += pieceValue[p];
-                if (p == Piece.BPAWN) {
-                    bMtrlPawns += pV;
-                }
-            }
-        }
-        this.wMtrl = wMtrl;
-        this.bMtrl = bMtrl;
-        this.wMtrlPawns = wMtrlPawns;
-        this.bMtrlPawns = bMtrlPawns;
+    	wMtrl = pos.wMtrl;
+    	bMtrl = pos.bMtrl;
+    	wMtrlPawns = pos.wMtrlPawns;
+    	bMtrlPawns = pos.bMtrlPawns;
     }
 
 
