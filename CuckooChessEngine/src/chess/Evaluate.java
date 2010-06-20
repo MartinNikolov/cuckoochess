@@ -238,117 +238,117 @@ public class Evaluate {
             final int x = Position.getX(sq);
             final int y = Position.getY(sq);
             switch (p) {
-                case Piece.WKING:
-		{
-		    final int k1 = kt1[7-y][x];
-		    final int k2 = kt2[7-y][x];
-		    final int t1 = qV + 2 * rV + 2 * bV;
-		    final int t2 = rV;
-		    final int t = bMtrl - bMtrlPawns;
-		    final int s = interpolate(t, t2, k2, t1, k1);
-		    score += s;
-		    break;
-		}
-                case Piece.BKING:
-		{
-		    final int k1 = kt1[y][x];
-		    final int k2 = kt2[y][x];
-		    final int t1 = qV + 2 * rV + 2 * bV;
-		    final int t2 = rV;
-		    final int t = wMtrl - wMtrlPawns;
-		    final int s = interpolate(t, t2, k2, t1, k1);
-		    score -= s;
-		    break;
-		}
-                case Piece.WPAWN:
-		{
-		    final int p1 = pt1[7-y][x];
-		    final int p2 = pt2[7-y][x];
-		    final int t1 = qV + 2 * rV + 2 * bV;
-		    final int t2 = rV;
-		    final int t = bMtrl - bMtrlPawns;
-		    final int s = interpolate(t, t2, p2, t1, p1) / 2;
-		    score += s;
-		    nPawns[0][x]++;
-		    firstPawn[0][x] = Math.min(firstPawn[0][x], y);
-		    break;
-		}
-                case Piece.BPAWN:
-		{
-		    final int p1 = pt1[y][x];
-		    final int p2 = pt2[y][x];
-		    final int t1 = qV + 2 * rV + 2 * bV;
-		    final int t2 = rV;
-		    final int t = wMtrl - wMtrlPawns;
-		    final int s = interpolate(t, t2, p2, t1, p1) / 2;
-		    score -= s;
-		    nPawns[1][x]++;
-		    firstPawn[1][x] = Math.max(firstPawn[1][x], y);
-		    break;
-		}
-                case Piece.WKNIGHT:
-		{
-		    final int n1 = nt1[7-y][x];
-		    final int n2 = nt2[7-y][x];
-		    final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
-		    final int t2 = nV + 8 * pV;
-		    final int t = bMtrl;
-		    final int s = interpolate(t, t2, n2, t1, n1);
-		    score += s;
-		    break;
-		}
-                case Piece.BKNIGHT:
-		{
-		    final int n1 = nt1[y][x];
-		    final int n2 = nt2[y][x];
-		    final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
-		    final int t2 = nV + 8 * pV;
-		    final int t = wMtrl;
-		    final int s = interpolate(t, t2, n2, t1, n1);
-		    score -= s;
-		    break;
-		}
-                case Piece.WBISHOP:
-		{
-		    score += bt1[7-y][x];
-		    break;
-		}
-                case Piece.BBISHOP:
-		{
-		    score -= bt1[y][x];
-		    break;
-		}
-                case Piece.WQUEEN:
-		{
-		    score += qt1[7-y][x];
-		    score += rookMobility(pos, x, y);
-		    score += bishopMobility(pos, x, y);
-		    break;
-		}
-                case Piece.BQUEEN:
-		{
-		    score -= qt1[y][x];
-		    score -= rookMobility(pos, x, y);
-		    score -= bishopMobility(pos, x, y);
-		    break;
-		}
-                case Piece.WROOK:
-		{
-		    final int r1 = rt1[7-y][x];
-		    final int nP = bMtrlPawns / pV;
-		    final int s = r1 * Math.min(nP, 6) / 6;
-		    score += s;
-		    break;
-		}
-                case Piece.BROOK:
-		{
-		    final int r1 = rt1[y][x];
-		    final int nP = wMtrlPawns / pV;
-		    final int s = r1 * Math.min(nP, 6) / 6;
-		    score -= s;
-		    break;
-		}
-	    }
+            case Piece.WKING:
+            {
+            	final int k1 = kt1[7-y][x];
+            	final int k2 = kt2[7-y][x];
+            	final int t1 = qV + 2 * rV + 2 * bV;
+            	final int t2 = rV;
+            	final int t = bMtrl - bMtrlPawns;
+            	final int s = interpolate(t, t2, k2, t1, k1);
+            	score += s;
+            	break;
+            }
+            case Piece.BKING:
+            {
+            	final int k1 = kt1[y][x];
+            	final int k2 = kt2[y][x];
+            	final int t1 = qV + 2 * rV + 2 * bV;
+            	final int t2 = rV;
+            	final int t = wMtrl - wMtrlPawns;
+            	final int s = interpolate(t, t2, k2, t1, k1);
+            	score -= s;
+            	break;
+            }
+            case Piece.WPAWN:
+            {
+            	final int p1 = pt1[7-y][x];
+            	final int p2 = pt2[7-y][x];
+            	final int t1 = qV + 2 * rV + 2 * bV;
+            	final int t2 = rV;
+            	final int t = bMtrl - bMtrlPawns;
+            	final int s = interpolate(t, t2, p2, t1, p1) / 2;
+            	score += s;
+            	nPawns[0][x]++;
+            	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
+            	break;
+            }
+            case Piece.BPAWN:
+            {
+            	final int p1 = pt1[y][x];
+            	final int p2 = pt2[y][x];
+            	final int t1 = qV + 2 * rV + 2 * bV;
+            	final int t2 = rV;
+            	final int t = wMtrl - wMtrlPawns;
+            	final int s = interpolate(t, t2, p2, t1, p1) / 2;
+            	score -= s;
+            	nPawns[1][x]++;
+            	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
+            	break;
+            }
+            case Piece.WKNIGHT:
+            {
+            	final int n1 = nt1[7-y][x];
+            	final int n2 = nt2[7-y][x];
+            	final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
+            	final int t2 = nV + 8 * pV;
+            	final int t = bMtrl;
+            	final int s = interpolate(t, t2, n2, t1, n1);
+            	score += s;
+            	break;
+            }
+            case Piece.BKNIGHT:
+            {
+            	final int n1 = nt1[y][x];
+            	final int n2 = nt2[y][x];
+            	final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
+            	final int t2 = nV + 8 * pV;
+            	final int t = wMtrl;
+            	final int s = interpolate(t, t2, n2, t1, n1);
+            	score -= s;
+            	break;
+            }
+            case Piece.WBISHOP:
+            {
+            	score += bt1[7-y][x];
+            	break;
+            }
+            case Piece.BBISHOP:
+            {
+            	score -= bt1[y][x];
+            	break;
+            }
+            case Piece.WQUEEN:
+            {
+            	score += qt1[7-y][x];
+            	score += rookMobility(pos, x, y);
+            	score += bishopMobility(pos, x, y);
+            	break;
+            }
+            case Piece.BQUEEN:
+            {
+            	score -= qt1[y][x];
+            	score -= rookMobility(pos, x, y);
+            	score -= bishopMobility(pos, x, y);
+            	break;
+            }
+            case Piece.WROOK:
+            {
+            	final int r1 = rt1[7-y][x];
+            	final int nP = bMtrlPawns / pV;
+            	final int s = r1 * Math.min(nP, 6) / 6;
+            	score += s;
+            	break;
+            }
+            case Piece.BROOK:
+            {
+            	final int r1 = rt1[y][x];
+            	final int nP = wMtrlPawns / pV;
+            	final int s = r1 * Math.min(nP, 6) / 6;
+            	score -= s;
+            	break;
+            }
+            }
         }
         return score;
     }
