@@ -158,44 +158,48 @@ public class MoveGen {
     /**
      * Return true if a square is attacked by the opposite side.
      */
-    public static final boolean sqAttacked(Position pos, int square) {
-        int x0 = Position.getX(square);
-        int y0 = Position.getY(square);
+    public static final boolean sqAttacked(Position pos, int sq) {
+        int x = Position.getX(sq);
+        int y = Position.getY(sq);
         boolean isWhiteMove = pos.whiteMove;
 
-        int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
-        int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
-        if (checkDirection(pos, x0, y0,  1,  0, oRook, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0,  0,  1, oRook, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0, -1,  0, oRook, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0,  0, -1, oRook, oQueen, true)) return true;
+        final int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
+        final int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
+        int p;
+        p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
+        p = checkDirection(pos, sq, 7-y,  8); if ((p == oQueen) || (p == oRook)) return true;
+        p = checkDirection(pos, sq,   x, -1); if ((p == oQueen) || (p == oRook)) return true;
+        p = checkDirection(pos, sq,   y, -8); if ((p == oQueen) || (p == oRook)) return true;
 
-        int oBish = isWhiteMove ? Piece.BBISHOP: Piece.WBISHOP;
-        if (checkDirection(pos, x0, y0,  1,  1, oBish, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0, -1,  1, oBish, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0, -1, -1, oBish, oQueen, true)) return true;
-        if (checkDirection(pos, x0, y0,  1, -1, oBish, oQueen, true)) return true;
+        final int oBish = isWhiteMove ? Piece.BBISHOP : Piece.WBISHOP;
+        p = checkDirection(pos, sq, Math.min(7-x, 7-y),  9); if ((p == oQueen) || (p == oBish)) return true;
+        p = checkDirection(pos, sq, Math.min(  x, 7-y),  7); if ((p == oQueen) || (p == oBish)) return true;
+        p = checkDirection(pos, sq, Math.min(  x,   y), -9); if ((p == oQueen) || (p == oBish)) return true;
+        p = checkDirection(pos, sq, Math.min(7-x,   y), -7); if ((p == oQueen) || (p == oBish)) return true;
 
-        int oKnight = isWhiteMove ? Piece.BKNIGHT : Piece.WKNIGHT;
-        if (checkDirection(pos, x0, y0,  2,  1, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0,  1,  2, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0, -1,  2, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0, -2,  1, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0, -2, -1, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0, -1, -2, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0,  1, -2, oKnight, oKnight, false)) return true;
-        if (checkDirection(pos, x0, y0,  2, -1, oKnight, oKnight, false)) return true;
+        final int oKnight = isWhiteMove ? Piece.BKNIGHT : Piece.WKNIGHT;
+        if (x < 6 && y < 7) { p = checkDirection(pos, sq, 1,  10); if (p == oKnight) return true; }
+        if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1,  17); if (p == oKnight) return true; }
+        if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1,  15); if (p == oKnight) return true; }
+        if (x > 1 && y < 7) { p = checkDirection(pos, sq, 1,   6); if (p == oKnight) return true; }
+        if (x > 1 && y > 0) { p = checkDirection(pos, sq, 1, -10); if (p == oKnight) return true; }
+        if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -17); if (p == oKnight) return true; }
+        if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -15); if (p == oKnight) return true; }
+        if (x < 6 && y > 0) { p = checkDirection(pos, sq, 1,  -6); if (p == oKnight) return true; }
 
-        int oPawn= isWhiteMove ? Piece.BPAWN: Piece.WPAWN;
-        int fwDir = isWhiteMove ? 1 : -1;
-        if (checkDirection(pos, x0, y0,  1, fwDir, oPawn, oPawn, false)) return true;
-        if (checkDirection(pos, x0, y0, -1, fwDir, oPawn, oPawn, false)) return true;
+        if (isWhiteMove) {
+        	if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1, 9); if (p == Piece.BPAWN) return true; }
+        	if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1, 7); if (p == Piece.BPAWN) return true; }
+        } else {
+        	if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -7); if (p == Piece.WPAWN) return true; }
+        	if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -9); if (p == Piece.WPAWN) return true; }
+        }
 
-        int oKingSq = pos.getKingSq(!pos.whiteMove);
+        int oKingSq = pos.getKingSq(!isWhiteMove);
         if (oKingSq >= 0) {
-            int ox0 = Position.getX(oKingSq);
-            int oy0 = Position.getY(oKingSq);
-            if ((Math.abs(x0 - ox0) <= 1) && (Math.abs(y0 - oy0) <= 1))
+            int ox = Position.getX(oKingSq);
+            int oy = Position.getY(oKingSq);
+            if ((Math.abs(x - ox) <= 1) && (Math.abs(y - oy) <= 1))
                 return true;
         }
         
@@ -275,33 +279,21 @@ public class MoveGen {
     }
 
     /**
-     * Check if there is an attacking piece in a given direction starting from (x0,y0).
-     * The direction is given by (dx,dy). The pieces to check for are given by p0 and p1.
-     * If multiMove is true, the piece is assumed to be a long-range piece, otherwise it
-     * is assumed that the piece can only move one step.
-     * @return True if there is an attacking piece in the given direction, false otherwise.
+     * Check if there is an attacking piece in a given direction starting from sq.
+     * The direction is given by delta.
+     * @param maxSteps Max steps until reaching a border. Set to 1 for non-sliding pieces.
+     * @return The first piece in the given direction, or EMPTY if there is no piece
+     *         in that direction.
      */
-    private static final boolean checkDirection(Position pos, int x0, int y0, int dx, int dy, int p0, int p1, boolean multiMove) {
-        int x = x0 + dx;
-        int y = y0 + dy;
-        while ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-            final int sq = Position.getSquare(x, y);
-            final int p = pos.getPiece(sq);
-            if (p == p0)
-                return true;
-            if (multiMove) {
-                if (p == p1) {
-                    return true;
-                } else if (p != Piece.EMPTY) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            x += dx;
-            y += dy;
-        }
-        return false;
+    private static final int checkDirection(Position pos, int sq, int maxSteps, int delta) {
+    	while (maxSteps > 0) {
+    		sq += delta;
+    		int p = pos.getPiece(sq);
+    		if (p != Piece.EMPTY)
+    			return p;
+    		maxSteps--;
+    	}
+    	return Piece.EMPTY;
     }
 
     static final int[] knightDx = { 2, 1, -1, -2, -2, -1,  1,  2 };
