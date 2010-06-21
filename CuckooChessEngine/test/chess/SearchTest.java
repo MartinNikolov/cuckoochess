@@ -194,7 +194,7 @@ public class SearchTest {
     private Move idSearch(Search sc, int maxDepth) {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);
-        sc.scoreMoveList(moves, false, 0);
+        sc.scoreMoveList(moves, 0);
         Move bestM = sc.iterativeDeepening(moves, -1, -1, maxDepth, -1, false);
         return bestM;
     }
@@ -352,7 +352,7 @@ public class SearchTest {
         Search sc = new Search(pos, nullHist, 0, tt);
         MoveGen moveGen = new MoveGen();
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
-        sc.scoreMoveList(moves, false, 0);
+        sc.scoreMoveList(moves, 0);
         for (int i = 1; i < moves.size(); i++) {
             sc.selectBest(moves, i);
             int sc1 = moves.get(i - 1).score;
@@ -364,7 +364,7 @@ public class SearchTest {
         moves.get(0).score = 17;
         moves.get(1).score = 666;
         moves.get(2).score = 4711;
-        sc.scoreMoveList(moves.subList(2, moves.size()), false, 0);
+        sc.scoreMoveList(moves.subList(2, moves.size()), 0);
         assertEquals(17, moves.get(0).score);
         for (int i = 2; i < moves.size(); i++) {
             sc.selectBest(moves, i);

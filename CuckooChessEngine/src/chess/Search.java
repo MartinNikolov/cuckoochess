@@ -424,7 +424,7 @@ public class Search {
         boolean seeDone = false;
         boolean hashMoveSelected = true;
         if (!selectHashMove(moves, hashMove)) {
-            scoreMoveList(moves, false, ply);
+            scoreMoveList(moves, ply);
             seeDone = true;
             hashMoveSelected = false;
         }
@@ -438,7 +438,7 @@ public class Search {
         int lmrCount = 0;
         for (int mi = 0; mi < moves.size(); mi++) {
             if ((mi == 1) && !seeDone) {
-                scoreMoveList(moves.subList(1, moves.size()), false, ply);
+                scoreMoveList(moves.subList(1, moves.size()), ply);
                 seeDone = true;
             }
             if ((mi > 0) || !hashMoveSelected) {
@@ -556,10 +556,16 @@ public class Search {
         if (score > alpha)
             alpha = score;
         int bestScore = score;
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         final boolean tryChecks = (depth > -3);
         final boolean onlyCaptures = !inCheck && !tryChecks;
-        scoreMoveList(moves, onlyCaptures, ply);
+        ArrayList<Move> moves;
+        if (onlyCaptures) {
+        	moves = moveGen.pseudoLegalCaptures(pos);
+        	scoreCaptureList(moves, ply);
+        } else {
+        	moves = moveGen.pseudoLegalMoves(pos);
+        	scoreMoveList(moves, ply);
+        }
         UndoInfo ui = undoInfoVec[ply];
         final int nMoves = moves.size();
         for (int mi = 0; mi < nMoves; mi++) {
@@ -770,35 +776,29 @@ public class Search {
     /**
      * Compute scores for each move in a move list, using SEE, killer and history information.
      * @param moves  List of moves to score.
-     * @param onlyCaptures  If true, remove non-capture moves
      */
-    final void scoreMoveList(List<Move> moves, boolean onlyCaptures, int ply) {
-        int savedIdx = 0;
+    final void scoreMoveList(List<Move> moves, int ply) {
         for (int i = 0; i < moves.size(); i++) {
             Move m = moves.get(i);
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
-            if (onlyCaptures && !isCapture) {
-                moveGen.returnMove(m);
-                continue;
-            }
             int score = isCapture ? SEE(m) : 0;
-            if (!onlyCaptures) {
-                int ks = kt.getKillerScore(ply, m);
-                if (ks > 0) {
-                    score += ks + 50;
-                } else {
-                    int hs = ht.getHistScore(pos, m);
-                    score += hs;
-                }
+            int ks = kt.getKillerScore(ply, m);
+            if (ks > 0) {
+            	score += ks + 50;
+            } else {
+            	int hs = ht.getHistScore(pos, m);
+            	score += hs;
             }
             m.score = score;
-            moves.set(savedIdx++, m);
-        }
-        while (moves.size() > savedIdx) {
-            moves.remove(moves.size() - 1);
         }
     }
-
+    final void scoreCaptureList(List<Move> moves, int ply) {
+        for (int i = 0; i < moves.size(); i++) {
+            Move m = moves.get(i);
+            m.score = SEE(m);
+        }
+    }
+    
     /**
      * Find move with highest score and move it to the front of the list.
      */

@@ -63,7 +63,7 @@ public class ComputerPlayer implements Player {
         // Determine all legal moves
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
-        sc.scoreMoveList(moves, false, 0);
+        sc.scoreMoveList(moves, 0);
 
         // Test for "game over"
         if (moves.size() <= 0) {
@@ -151,7 +151,7 @@ public class ComputerPlayer implements Player {
         // Determine all legal moves
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
-        sc.scoreMoveList(moves, false, 0);
+        sc.scoreMoveList(moves, 0);
 
         // Find best move using iterative deepening
         Move bestM = sc.iterativeDeepening(moves, maxTimeMillis, maxTimeMillis, -1, -1, false);
