@@ -335,8 +335,8 @@ public class TextIO {
             }
         }
         UndoInfo ui = new UndoInfo();
-        pos.makeMove(move, ui);
-        if (MoveGen.inCheck(pos)) {
+        if (MoveGen.givesCheck(pos, move, ui)) {
+            pos.makeMove(move, ui);
             ArrayList<Move> nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
             nextMoves = MoveGen.removeIllegal(pos, nextMoves);
             if (nextMoves.size() == 0) {
@@ -344,8 +344,8 @@ public class TextIO {
             } else {
                 ret.append('+');
             }
+            pos.unMakeMove(move, ui);
         }
-        pos.unMakeMove(move, ui);
 
         return ret.toString();
     }
