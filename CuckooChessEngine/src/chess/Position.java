@@ -273,8 +273,8 @@ public class Position {
 
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
-        int k0 = wtm ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
-        if (move.from == k0 && squares[move.from] == king) {
+        int k0 = move.from;
+        if (squares[k0] == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 1, squares[k0 + 3]);
                 setPiece(k0 + 3, Piece.EMPTY);
@@ -351,8 +351,8 @@ public class Position {
         
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
-        int k0 = wtm ? Position.getSquare(4, 0) : Position.getSquare(4, 7);
-        if (move.from == k0 && squares[move.from] == king) {
+        int k0 = move.from;
+        if (squares[k0] == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 3, squares[k0 + 1]);
                 setPiece(k0 + 1, Piece.EMPTY);
