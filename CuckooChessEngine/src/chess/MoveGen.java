@@ -253,36 +253,40 @@ public class MoveGen {
 
         final int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
         final int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
-        int p;
-        p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
-        p = checkDirection(pos, sq, 7-y,  8); if ((p == oQueen) || (p == oRook)) return true;
-        p = checkDirection(pos, sq,   x, -1); if ((p == oQueen) || (p == oRook)) return true;
-        p = checkDirection(pos, sq,   y, -8); if ((p == oQueen) || (p == oRook)) return true;
-
         final int oBish = isWhiteMove ? Piece.BBISHOP : Piece.WBISHOP;
-        p = checkDirection(pos, sq, Math.min(7-x, 7-y),  9); if ((p == oQueen) || (p == oBish)) return true;
-        p = checkDirection(pos, sq, Math.min(  x, 7-y),  7); if ((p == oQueen) || (p == oBish)) return true;
-        p = checkDirection(pos, sq, Math.min(  x,   y), -9); if ((p == oQueen) || (p == oBish)) return true;
-        p = checkDirection(pos, sq, Math.min(7-x,   y), -7); if ((p == oQueen) || (p == oBish)) return true;
-
         final int oKnight = isWhiteMove ? Piece.BKNIGHT : Piece.WKNIGHT;
-        if (x < 6 && y < 7) { p = checkDirection(pos, sq, 1,  10); if (p == oKnight) return true; }
-        if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1,  17); if (p == oKnight) return true; }
-        if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1,  15); if (p == oKnight) return true; }
-        if (x > 1 && y < 7) { p = checkDirection(pos, sq, 1,   6); if (p == oKnight) return true; }
-        if (x > 1 && y > 0) { p = checkDirection(pos, sq, 1, -10); if (p == oKnight) return true; }
-        if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -17); if (p == oKnight) return true; }
-        if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -15); if (p == oKnight) return true; }
-        if (x < 6 && y > 0) { p = checkDirection(pos, sq, 1,  -6); if (p == oKnight) return true; }
 
-        if (isWhiteMove) {
-        	if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1, 9); if (p == Piece.BPAWN) return true; }
-        	if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1, 7); if (p == Piece.BPAWN) return true; }
-        } else {
-        	if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -7); if (p == Piece.WPAWN) return true; }
-        	if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -9); if (p == Piece.WPAWN) return true; }
+        int p;
+        if (y > 0) {
+            p = checkDirection(pos, sq,   y, -8); if ((p == oQueen) || (p == oRook)) return true;
+            p = checkDirection(pos, sq, Math.min(  x,   y), -9); if ((p == oQueen) || (p == oBish)) return true;
+            p = checkDirection(pos, sq, Math.min(7-x,   y), -7); if ((p == oQueen) || (p == oBish)) return true;
+            if (x > 1         ) { p = checkDirection(pos, sq, 1, -10); if (p == oKnight) return true; }
+            if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -17); if (p == oKnight) return true; }
+            if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -15); if (p == oKnight) return true; }
+            if (x < 6         ) { p = checkDirection(pos, sq, 1,  -6); if (p == oKnight) return true; }
+
+            if (!isWhiteMove) {
+            	if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -7); if (p == Piece.WPAWN) return true; }
+            	if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -9); if (p == Piece.WPAWN) return true; }
+            }
         }
-
+        if (y < 7) {
+            p = checkDirection(pos, sq, 7-y,  8); if ((p == oQueen) || (p == oRook)) return true;
+            p = checkDirection(pos, sq, Math.min(7-x, 7-y),  9); if ((p == oQueen) || (p == oBish)) return true;
+            p = checkDirection(pos, sq, Math.min(  x, 7-y),  7); if ((p == oQueen) || (p == oBish)) return true;
+            if (x < 6         ) { p = checkDirection(pos, sq, 1,  10); if (p == oKnight) return true; }
+            if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1,  17); if (p == oKnight) return true; }
+            if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1,  15); if (p == oKnight) return true; }
+            if (x > 1         ) { p = checkDirection(pos, sq, 1,   6); if (p == oKnight) return true; }
+            if (isWhiteMove) {
+            	if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1, 9); if (p == Piece.BPAWN) return true; }
+            	if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1, 7); if (p == Piece.BPAWN) return true; }
+            }
+        }
+        p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
+        p = checkDirection(pos, sq,   x, -1); if ((p == oQueen) || (p == oRook)) return true;
+        
         int oKingSq = pos.getKingSq(!isWhiteMove);
         if (oKingSq >= 0) {
             int ox = Position.getX(oKingSq);
