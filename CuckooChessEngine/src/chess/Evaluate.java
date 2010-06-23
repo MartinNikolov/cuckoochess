@@ -768,10 +768,10 @@ public class Evaluate {
      * If x < x1, return y1, if x > x2 return y2. Otherwise, use linear interpolation.
      */
     static final int interpolate(int x, int x1, int y1, int x2, int y2) {
-        if (x < x1) {
+    	if (x > x2) {
+    		return y2;
+    	} else if (x < x1) {
             return y1;
-        } else if (x > x2) {
-            return y2;
         } else {
             return (x - x1) * (y2 - y1) / (x2 - x1) + y1;
         }
