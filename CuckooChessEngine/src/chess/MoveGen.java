@@ -233,6 +233,41 @@ public class MoveGen {
         return sqAttacked(pos, kingSq);
     }
 
+	private static final int slideDirectionType(int sq1, int sq2) {
+		int dx = Math.abs(Position.getX(sq1) - Position.getX(sq2));
+		int dy = Math.abs(Position.getY(sq1) - Position.getY(sq2));
+		if ((dx == 0) || (dy == 0)) return 1;    // Type 1, rook move
+		if (dx == dy) return 2;                  // Type 2, bishop move
+		if ((dx == 1) && (dy == 2)) return 3;    // Type 3, knight move
+		if ((dx == 2) && (dy == 1)) return 3;
+		return 0;
+	}
+
+	public static final boolean givesCheck(Position pos, Move m, UndoInfo ui) {
+    	int okingSq = pos.getKingSq(!pos.whiteMove);
+    	boolean needTest = false;
+    	if (    (MoveGen.slideDirectionType(okingSq, m.to) > 0) ||
+    			(MoveGen.slideDirectionType(okingSq, m.from) > 0)) {
+    		needTest = true;
+    	} else {
+    		int p = pos.getPiece(m.from);
+    		if ((p == Piece.WKING) || (p == Piece.BKING)) {
+    			needTest = true;     // Could be castle move
+    		} else if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
+    			if (pos.getPiece(m.to) != Piece.EMPTY) {
+    				needTest = true; // Could be ep capture
+    			}
+    		}
+    	}
+    	if (needTest) {
+    		pos.makeMove(m, ui);
+    		boolean givesCheck = MoveGen.inCheck(pos);
+    		pos.unMakeMove(m, ui);
+        	return givesCheck;
+    	}
+    	return false;
+    }
+    
     /**
      * Return true if the side to move can take the opponents king.
      */

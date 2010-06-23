@@ -469,10 +469,7 @@ public class Search {
             }
             
             if (futilityPrune && !isCapture && !isPromotion && haveLegalMoves) {
-                pos.makeMove(m, ui);
-                boolean givesCheck = MoveGen.inCheck(pos);
-                pos.unMakeMove(m, ui);
-                if (!givesCheck)
+                if (!MoveGen.givesCheck(pos, m, ui))
                     continue;
             }
             int extend = Math.max(posExtend, moveExtend);
@@ -480,10 +477,7 @@ public class Search {
             int lmr = 0;
             if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
                     (extend == 0) && !isPromotion) {
-                pos.makeMove(m, ui);
-                boolean givesCheck = MoveGen.inCheck(pos);
-                pos.unMakeMove(m, ui);
-                if (!givesCheck) {
+                if (!MoveGen.givesCheck(pos, m, ui)) {
                     lmrCount++;
                     if (lmrCount > 3) {
                         lmr = 1;
@@ -594,24 +588,21 @@ public class Search {
                     if (!tryChecks) {
                         continue;
                     }
-                    pos.makeMove(m, ui);
-                    givesCheck = MoveGen.inCheck(pos);
+                    givesCheck = MoveGen.givesCheck(pos, m, ui);
                     givesCheckComputed = true;
-                    if (!givesCheck) {
-                        pos.unMakeMove(m, ui);
+                    if (!givesCheck)
                         continue;
-                    }
                 }
             }
 
             if (!givesCheckComputed) {
-                pos.makeMove(m, ui);
                 if (depth - 1 > -4) {
-                    givesCheck = MoveGen.inCheck(pos);
+                    givesCheck = MoveGen.givesCheck(pos, m, ui);
                 }
             }
             final boolean nextInCheck = (depth - 1) > -4 ? givesCheck : false;
 
+            pos.makeMove(m, ui);
             score = -quiesce(-beta, -alpha, ply + 1, depth - 1, nextInCheck);
             pos.unMakeMove(m, ui);
             if (score > bestScore) {
