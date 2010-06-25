@@ -632,69 +632,68 @@ public class Search {
      * @return SEE score for m. Positive value is good for the side that makes the first move.
      */
     final public int SEE(Move m) {
-        int nCapt = 0;                  // Number of entries in captures[]
-        final int pV = Evaluate.pieceValue[Piece.WPAWN];
         final int kV = Evaluate.pieceValue[Piece.WKING];
         
         final int square = m.to;
-        captures[nCapt] = Evaluate.pieceValue[pos.getPiece(square)];
         if (square == pos.getEpSquare()) {
-            captures[nCapt] = pV;
+            captures[0] = Evaluate.pieceValue[Piece.WPAWN];
+        } else {
+            captures[0] = Evaluate.pieceValue[pos.getPiece(square)];
+            if (captures[0] == kV)
+            	return kV;
         }
-        nCapt++;
+        int nCapt = 1;                  // Number of entries in captures[]
 
-        if (captures[0] != kV) {
-            pos.makeMove(m, seeUi);
-            boolean white = pos.whiteMove;
-            int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
+        pos.makeMove(m, seeUi);
+        boolean white = pos.whiteMove;
+        int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
 
-            for (int d = 0; d < 8; d++) {
-                dirIdx[d] = SEEnextAttacker(square, d, 0);
-            }
-            int wNattacks = MoveGen.numKnightAttacks(pos, square, true);
-            int bNattacks = MoveGen.numKnightAttacks(pos, square, false);
-            final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
-            
-            while (true) {
-                int bestDir = -1;
-                int bestValue = Integer.MAX_VALUE;
-                for (int d = 0; d < 8; d++) {
-                    int idx = dirIdx[d];
-                    if (idx > 0) {
-                        int val = SEEgetAttackerValue(square, white, d, idx);
-                        if (val < bestValue) {
-                            bestDir = d;
-                            bestValue = val;
-                        }
-                    }
-                }
-                if ((white ? wNattacks : bNattacks) > 0) {
-                    if (nV < bestValue) {
-                        bestValue = nV;
-                        bestDir = 8;
-                    }
-                }
-                if (bestDir == -1) {
-                    break;
-                }
-                captures[nCapt++] = valOnSquare;
-                if (valOnSquare == kV) {
-                    break;
-                }
-                valOnSquare = bestValue;
-                if (bestDir == 8) {
-                    if (white) {
-                        wNattacks--;
-                    } else {
-                        bNattacks--;
-                    }
-                } else {
-                    dirIdx[bestDir] = SEEnextAttacker(square, bestDir, dirIdx[bestDir]);
-                }
-                white = !white;
-            }
-            pos.unMakeMove(m, seeUi);
+        for (int d = 0; d < 8; d++) {
+        	dirIdx[d] = SEEnextAttacker(square, d, 0);
         }
+        int wNattacks = MoveGen.numKnightAttacks(pos, square, true);
+        int bNattacks = MoveGen.numKnightAttacks(pos, square, false);
+        final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
+
+        while (true) {
+        	int bestDir = -1;
+        	int bestValue = Integer.MAX_VALUE;
+        	for (int d = 0; d < 8; d++) {
+        		int idx = dirIdx[d];
+        		if (idx > 0) {
+        			int val = SEEgetAttackerValue(square, white, d, idx);
+        			if (val < bestValue) {
+        				bestDir = d;
+        				bestValue = val;
+        			}
+        		}
+        	}
+        	if ((white ? wNattacks : bNattacks) > 0) {
+        		if (nV < bestValue) {
+        			bestValue = nV;
+        			bestDir = 8;
+        		}
+        	}
+        	if (bestDir == -1) {
+        		break;
+        	}
+        	captures[nCapt++] = valOnSquare;
+        	if (valOnSquare == kV) {
+        		break;
+        	}
+        	valOnSquare = bestValue;
+        	if (bestDir == 8) {
+        		if (white) {
+        			wNattacks--;
+        		} else {
+        			bNattacks--;
+        		}
+        	} else {
+        		dirIdx[bestDir] = SEEnextAttacker(square, bestDir, dirIdx[bestDir]);
+        	}
+        	white = !white;
+        }
+        pos.unMakeMove(m, seeUi);
         
         int score = 0;
         for (int i = nCapt - 1; i > 0; i--) {
