@@ -525,12 +525,12 @@ public class Evaluate {
         final int nV = pieceValue[Piece.WKNIGHT];
         final int maxM = qV + 2 * rV + 2 * bV + 2 * nV;
         final int minM = rV + bV;
+        final int m = (pos.wMtrl - pos.wMtrlPawns + pos.bMtrl - pos.bMtrlPawns) / 2;
+        if (m <= minM)
+            return 0;
         int score = 0;
         for (int i = 0; i < 2; i++) {
             boolean white = (i == 0);
-            final int m = white ? pos.wMtrl - pos.wMtrlPawns : pos.bMtrl - pos.bMtrlPawns;
-            if (m <= minM)
-                continue;
             int kSq = pos.getKingSq(white);
             int xk = Position.getX(kSq);
             int yk = Position.getY(kSq);
@@ -541,7 +541,7 @@ public class Evaluate {
                 int yd = white ? 8 : -8;    // pawn direction
                 int ownPawn = white ? Piece.WPAWN : Piece.BPAWN;
                 int otherPawn = white ? Piece.BPAWN : Piece.WPAWN;
-                final int xa = Math.max(xk - 1, 1);
+                final int xa = Math.max(xk - 1, 0);
                 final int xb = Math.min(xk + 1, 7);
                 for (int x = xa; x <= xb; x++) {
                 	int p = pos.getPiece(yb + x + yd);
@@ -554,14 +554,15 @@ public class Evaluate {
                 }
                 safety = Math.min(safety, 6);
             }
-            final int kSafety = interpolate(m, minM, 0, maxM, (safety - 6) * 15 - halfOpenFiles * 20);
+            final int kSafety = (safety - 6) * 15 - halfOpenFiles * 20;
             if (white) {
                 score += kSafety;
             } else {
                 score -= kSafety;
             }
         }
-        return score;
+        final int kSafety = interpolate(m, minM, 0, maxM, score);
+        return kSafety;
     }
 
     /** Compute bishop evaluation. */
