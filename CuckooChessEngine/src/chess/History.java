@@ -27,21 +27,21 @@ public class History {
     }
 
     /** Record move as a success. */
-    public final synchronized void addSuccess(Position pos, Move m) {
+    public final void addSuccess(Position pos, Move m) {
         int p = pos.getPiece(m.from);
         countSuccess[p][m.to]++;
         renormalizeIfNeeded();
     }
 
     /** Record move as a failure. */
-    public final synchronized void addFail(Position pos, Move m) {
+    public final void addFail(Position pos, Move m) {
         int p = pos.getPiece(m.from);
         countFail[p][m.to]++;
         renormalizeIfNeeded();
     }
 
     /** Get a score between 0 and 49, depending of the success/fail ratio of the move. */
-    public final synchronized int getHistScore(Position pos, Move m) {
+    public final int getHistScore(Position pos, Move m) {
         int p = pos.getPiece(m.from);
         int succ = countSuccess[p][m.to];
         int fail = countFail[p][m.to];

@@ -749,7 +749,8 @@ public class Search {
      * @param moves  List of moves to score.
      */
     final void scoreMoveList(List<Move> moves, int ply) {
-        for (int i = 0; i < moves.size(); i++) {
+    	final int mSize = moves.size();
+        for (int i = 0; i < mSize; i++) {
             Move m = moves.get(i);
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
             int score = isCapture ? SEE(m) : 0;
