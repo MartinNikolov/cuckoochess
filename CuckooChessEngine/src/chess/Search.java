@@ -134,6 +134,7 @@ public class Search {
                 }
                 nodes = qNodes = 0;
                 posHashList[posHashListSize++] = pos.zobristHash();
+                boolean givesCheck = MoveGen.givesCheck(pos, m);
                 pos.makeMove(m, ui);
                 int beta;
                 if (depth > 1) {
@@ -141,7 +142,7 @@ public class Search {
                 } else {
                     beta = Search.MATE0;
                 }
-                int score = -negaScout(-beta, -alpha, 1, depth - 1, -1);
+                int score = -negaScout(-beta, -alpha, 1, depth - 1, -1, givesCheck);
                 posHashListSize--;
                 pos.unMakeMove(m, ui);
                 {
@@ -166,7 +167,7 @@ public class Search {
                     nodes = qNodes = 0;
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
-                    score = -negaScout(-Search.MATE0, -score, 1, depth - 1, -1);
+                    score = -negaScout(-Search.MATE0, -score, 1, depth - 1, -1, givesCheck);
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
                 } else if ((mi == 0) && (score <= alpha)) {
@@ -178,7 +179,7 @@ public class Search {
                     nodes = qNodes = 0;
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
-                    score = -negaScout(-score, Search.MATE0, 1, depth - 1, -1);
+                    score = -negaScout(-score, Search.MATE0, 1, depth - 1, -1, givesCheck);
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
                 }
@@ -294,7 +295,8 @@ public class Search {
      * Main recursive search algorithm.
      * @return Score for the side to make a move, in position given by "pos".
      */
-    final public int negaScout(int alpha, int beta, int ply, int depth, int recaptureSquare) throws StopSearch {
+    final public int negaScout(int alpha, int beta, int ply, int depth, int recaptureSquare,
+    						   final boolean inCheck) throws StopSearch {
         if (depth > 2) {
             long tNow = System.currentTimeMillis();
             long timeLimit = searchNeedMoreTime ? maxTimeMillis : minTimeMillis;
@@ -317,7 +319,7 @@ public class Search {
 
         // Draw tests
         if (canClaimDraw50(pos)) {
-            if (MoveGen.inCheck(pos)) {
+            if (inCheck) {
                 ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
                 moves = MoveGen.removeIllegal(pos, moves);
                 if (moves.size() == 0) {            // Can't claim draw if already check mated.
@@ -348,7 +350,6 @@ public class Search {
             ent.getMove(hashMove);
         }
         
-        boolean inCheck = MoveGen.inCheck(pos);
         int posExtend = inCheck ? 1 : 0; // Check extension
 
         // If out of depth, perform quiescence search
@@ -386,7 +387,8 @@ public class Search {
             if (mtrl > pMtrl) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
-                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1);
+                boolean nextInCheck = MoveGen.inCheck(pos);
+                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, nextInCheck);
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                     return score;
@@ -418,7 +420,7 @@ public class Search {
         
         if ((depth > 4) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
             // No hash move at PV node. Try internal iterative deepening.
-            negaScout(alpha, beta, ply, depth - 4, -1);
+            negaScout(alpha, beta, ply, depth - 4, -1, inCheck);
             ent = tt.probe(pos.historyHash());
             if (ent.type != TTEntry.T_EMPTY) {
             	hashMove = hashMoveVec[ply];
@@ -475,8 +477,9 @@ public class Search {
                 moveExtend = 1;
             }
             
+            boolean givesCheck = MoveGen.givesCheck(pos, m); 
             if (futilityPrune && !isCapture && !isPromotion && haveLegalMoves) {
-                if (!MoveGen.givesCheck(pos, m))
+                if (!givesCheck)
                     continue;
             }
             int extend = Math.max(posExtend, moveExtend);
@@ -484,7 +487,7 @@ public class Search {
             int lmr = 0;
             if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
                     (extend == 0) && !isPromotion) {
-                if (!MoveGen.givesCheck(pos, m)) {
+                if (!givesCheck) {
                     lmrCount++;
                     if (lmrCount > 3) {
                         lmr = 1;
@@ -495,10 +498,10 @@ public class Search {
             posHashList[posHashListSize++] = pos.zobristHash();
             pos.makeMove(m, ui);
             int newDepth = depth - 1 + extend - lmr;
-            int score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare);
+            int score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
             if ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore)) {
                 newDepth += lmr;
-                score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare);
+                score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
             }
             m.score = score;
             posHashListSize--;
