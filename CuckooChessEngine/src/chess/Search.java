@@ -356,6 +356,13 @@ public class Search {
             qNodes--;
             totalNodes--;
             int score = quiesce(alpha, beta, ply, 0, inCheck);
+            if (score >= beta) {
+                if (MoveGen.canTakeKing(pos)) {
+                    // To make stale-mate detection work
+                    score = MATE0 - ply;
+                }
+            }
+            
             int type = TTEntry.T_EXACT;
             if (score <= alpha) {
                 type = TTEntry.T_LE;
@@ -540,13 +547,8 @@ public class Search {
         qNodes++;
         totalNodes++;
         int score = inCheck ? -(MATE0 - (ply+1)) : eval.evalPos(pos);
-        if (score >= beta) {
-            if ((depth == 0) && MoveGen.canTakeKing(pos)) {
-                // To make stale-mate detection in negaScout() work
-                return MATE0 - ply;
-            }
+        if (score >= beta)
             return score;
-        }
         if (score > alpha)
             alpha = score;
         int bestScore = score;
