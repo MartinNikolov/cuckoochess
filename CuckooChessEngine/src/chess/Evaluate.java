@@ -363,6 +363,7 @@ public class Evaluate {
 
     /** Score castling ability. */
     final int castleBonus(Position pos) {
+    	if (pos.getCastleMask() == 0) return 0;
         final int qV = pieceValue[Piece.WQUEEN];
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
@@ -381,30 +382,30 @@ public class Evaluate {
         int h1Dist = 100;
         if (pos.h1Castle()) {
             h1Dist = 2;
-            if (pos.getPiece(Position.getSquare(5, 0)) != Piece.EMPTY) h1Dist++;
-            if (pos.getPiece(Position.getSquare(6, 0)) != Piece.EMPTY) h1Dist++;
+            if (pos.getPiece(5) != Piece.EMPTY) h1Dist++;
+            if (pos.getPiece(6) != Piece.EMPTY) h1Dist++;
         }
         int a1Dist = 100;
         if (pos.a1Castle()) {
             a1Dist = 2;
-            if (pos.getPiece(Position.getSquare(3, 0)) != Piece.EMPTY) a1Dist++;
-            if (pos.getPiece(Position.getSquare(2, 0)) != Piece.EMPTY) a1Dist++;
-            if (pos.getPiece(Position.getSquare(1, 0)) != Piece.EMPTY) a1Dist++;
+            if (pos.getPiece(3) != Piece.EMPTY) a1Dist++;
+            if (pos.getPiece(2) != Piece.EMPTY) a1Dist++;
+            if (pos.getPiece(1) != Piece.EMPTY) a1Dist++;
         }
         final int wBonus = castleValue / Math.min(a1Dist, h1Dist);
 
         int h8Dist = 100;
         if (pos.h8Castle()) {
             h8Dist = 2;
-            if (pos.getPiece(Position.getSquare(5, 7)) != Piece.EMPTY) h8Dist++;
-            if (pos.getPiece(Position.getSquare(6, 7)) != Piece.EMPTY) h8Dist++;
+            if (pos.getPiece(61) != Piece.EMPTY) h8Dist++;
+            if (pos.getPiece(62) != Piece.EMPTY) h8Dist++;
         }
         int a8Dist = 100;
         if (pos.a8Castle()) {
             a8Dist = 2;
-            if (pos.getPiece(Position.getSquare(3, 7)) != Piece.EMPTY) a8Dist++;
-            if (pos.getPiece(Position.getSquare(2, 7)) != Piece.EMPTY) a8Dist++;
-            if (pos.getPiece(Position.getSquare(1, 7)) != Piece.EMPTY) a8Dist++;
+            if (pos.getPiece(59) != Piece.EMPTY) a8Dist++;
+            if (pos.getPiece(58) != Piece.EMPTY) a8Dist++;
+            if (pos.getPiece(57) != Piece.EMPTY) a8Dist++;
         }
         final int bBonus = castleValue / Math.min(a8Dist, h8Dist);
 
@@ -658,6 +659,8 @@ public class Evaluate {
     private final int endGameEval(Position pos, int oldScore) {
         int score = oldScore;
         final int rV = pieceValue[Piece.WROOK];
+    	if (pos.wMtrl + pos.bMtrl > 6 * rV)
+    		return score;
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
         final int wMtrlPawns = pos.wMtrlPawns;
