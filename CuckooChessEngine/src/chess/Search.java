@@ -713,34 +713,33 @@ public class Search {
         index++;
         int x = Position.getX(square) + dirDx[direction] * index;
         int y = Position.getY(square) + dirDy[direction] * index;
+        square += dirD[direction] * index;
         for (;;) {
             if ((x < 0) || (x >= 8) || (y < 0) || (y >= 8)) {
                 return -1;      // Outside board
             }
-            int p = pos.getPiece(Position.getSquare(x, y));
-            if (index == 1) {
-                if ((p == Piece.WKING) || (p == Piece.BKING))
-                    return index;
-                if ((p == Piece.WPAWN) && (dirDy[direction] == -1) && (dirDx[direction] != 0))
-                    return index;
-                if ((p == Piece.BPAWN) && (dirDy[direction] == 1) && (dirDx[direction] != 0))
-                    return index;
+            int p = pos.getPiece(square);
+            switch (p) {
+            case Piece.WKING: case Piece.BKING:
+            	if (index == 1) return 1; else return -1;
+            case Piece.WPAWN:
+            	if ((index == 1) && (dirDy[direction] == -1) && (dirDx[direction] != 0)) return 1; else return -1;
+            case Piece.BPAWN:
+            	if ((index == 1) && (dirDy[direction] == 1) && (dirDx[direction] != 0)) return 1; else return -1;
+            case Piece.WQUEEN: case Piece.BQUEEN:
+            	return index;
+            case Piece.WROOK: case Piece.BROOK:
+            	if ((direction & 1) == 0) return index; else return -1;
+            case Piece.WBISHOP: case Piece.BBISHOP:
+            	if ((direction & 1) != 0) return index; else return -1;
+            case Piece.EMPTY:
+            	break;
+            default:
+            	return -1;
             }
-            if ((p == Piece.WQUEEN) || (p == Piece.BQUEEN))
-                return index;
-            if ((direction & 1) == 0) {
-                if ((p == Piece.WROOK) || (p == Piece.BROOK))
-                    return index;
-            } else {
-                if ((p == Piece.WBISHOP) || (p == Piece.BBISHOP))
-                    return index;
-            }
-            if (p != Piece.EMPTY) {
-                return -1;      // Further attacks blocked by wrong piece type.
-            }
-
             x += dirDx[direction];
             y += dirDy[direction];
+            square += dirD[direction];
             index++;
         }
     }
