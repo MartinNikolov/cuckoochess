@@ -585,31 +585,6 @@ public class MoveGen {
     	return Piece.EMPTY;
     }
 
-    static final int[] knightDx = { 2, 1, -1, -2, -2, -1,  1,  2 };
-    static final int[] knightDy = { 1, 2,  2,  1, -1, -2, -2, -1 };
-
-    /**
-     * Count how many knights of a given color attack a square.
-     * This function does not care if the knight is pinned or not.
-     * @return Number of white/black knights attacking square.
-     */
-    static final int numKnightAttacks(Position pos, int square, boolean white) {
-        int ret = 0;
-        int x0 = Position.getX(square);
-        int y0 = Position.getY(square);
-        for (int d = 0; d < 8; d++) {
-            int x = x0 + knightDx[d];
-            int y = y0 + knightDy[d];
-            if ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-                int p = pos.getPiece(Position.getSquare(x, y));
-                if (p == (white ? Piece.WKNIGHT : Piece.BKNIGHT))
-                    ret++;
-            }
-        }
-        return ret;
-    }
-    
-
     // Code to handle the Move cache.
 
     private Move[] moveCache = new Move[2048];

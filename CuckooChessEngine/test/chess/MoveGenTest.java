@@ -366,18 +366,4 @@ public class MoveGenTest {
         }
         return strMoves;
     }
-    
-    /**
-     * Test of numKnightAttacks method, of class MoveGen.
-     */
-    @Test
-    public void testNumKnightAttacks() throws ChessParseError {
-        System.out.println("numKnightAttacks");
-        Position pos = TextIO.readFEN("r2qk2r/ppp2ppp/1bnp1nb1/1N2p3/3PP3/1PP2N2/1P3PPP/R1BQRBK1 w kq - 0 1");
-        assertEquals(2, MoveGen.numKnightAttacks(pos, TextIO.getSquare("d4"), true));
-        assertEquals(0, MoveGen.numKnightAttacks(pos, TextIO.getSquare("e4"), true));
-        assertEquals(1, MoveGen.numKnightAttacks(pos, TextIO.getSquare("e4"), false));
-        assertEquals(1, MoveGen.numKnightAttacks(pos, TextIO.getSquare("c7"), true));
-        assertEquals(0, MoveGen.numKnightAttacks(pos, TextIO.getSquare("c7"), false));        
-    }
 }
