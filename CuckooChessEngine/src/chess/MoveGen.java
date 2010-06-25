@@ -495,14 +495,16 @@ public class MoveGen {
      */
     private final boolean addDirection(ArrayList<Move> moveList, Position pos, int sq0, int maxSteps, int delta) {
     	int sq = sq0;
+    	boolean wtm = pos.whiteMove;
+    	final int oKing = (wtm ? Piece.BKING : Piece.WKING);
         while (maxSteps > 0) {
         	sq += delta;
             int p = pos.getPiece(sq);
             if (p == Piece.EMPTY) {
                 moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
             } else {
-                if (Piece.isWhite(p) != pos.whiteMove) {
-                    if (p == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
+                if (Piece.isWhite(p) != wtm) {
+                    if (p == oKing) {
                         returnMoveList(moveList);
                         moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
                         moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
