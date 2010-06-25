@@ -661,11 +661,14 @@ public class Search {
         	for (int d = 0; d < 8; d++) {
         		int idx = dirIdx[d];
         		if (idx > 0) {
-        			int val = SEEgetAttackerValue(square, white, d, idx);
-        			if (val < bestValue) {
-        				bestDir = d;
-        				bestValue = val;
-        			}
+        	        int p = pos.getPiece(square + dirD[d] * idx);
+        	        if (Piece.isWhite(p) == white) {
+        	            int val = Evaluate.pieceValue[p];
+            			if (val < bestValue) {
+            				bestDir = d;
+            				bestValue = val;
+            			}
+        	        }
         		}
         	}
         	if ((white ? wNattacks : bNattacks) > 0) {
@@ -704,6 +707,7 @@ public class Search {
 
     static final int[] dirDx = { 1, 1, 0, -1, -1, -1,  0,  1 };
     static final int[] dirDy = { 0, 1, 1,  1,  0, -1, -1, -1 };
+    static final int[] dirD  = { 1, 9, 8,  7, -1, -9, -8, -7 };
 
     final private int SEEnextAttacker(int square, int direction, int index) {
         index++;
@@ -741,21 +745,6 @@ public class Search {
         }
     }
     
-    /**
-     * Get the value of an attacker piece in the indicated direction/distance.
-     * If the piece has wrong color, MAX_VALUE is returned.
-     */
-    final private int SEEgetAttackerValue(int square, boolean white, int direction, int index) {
-        int x = Position.getX(square) + dirDx[direction] * index;
-        int y = Position.getY(square) + dirDy[direction] * index;
-        int p = pos.getPiece(Position.getSquare(x, y));
-        if (Piece.isWhite(p) == white) {
-            return Evaluate.pieceValue[p];
-        } else {
-            return Integer.MAX_VALUE;
-        }
-    }
-
     /**
      * Compute scores for each move in a move list, using SEE, killer and history information.
      * @param moves  List of moves to score.
