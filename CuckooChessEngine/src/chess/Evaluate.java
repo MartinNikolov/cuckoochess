@@ -536,20 +536,21 @@ public class Evaluate {
             int yk = Position.getY(kSq);
             int safety = 0;
             int halfOpenFiles = 0;
-            int yb = white ? 0 : 7;     // king home rank
-            int yd = white ? 1 : -1;    // pawn direction
             if (white ? (yk < 2) : (yk >= 6)) {
+                int yb = white ? 0 : 56;    // king home rank
+                int yd = white ? 8 : -8;    // pawn direction
                 int ownPawn = white ? Piece.WPAWN : Piece.BPAWN;
                 int otherPawn = white ? Piece.BPAWN : Piece.WPAWN;
-                for (int x = xk - 1; x <= xk + 1; x++) {
-                    if ((x > 0) && (x < 8)) {
-                        safety += pos.getPiece(Position.getSquare(x, yb + 1 * yd)) == ownPawn ? 2 : 0;
-                        safety += pos.getPiece(Position.getSquare(x, yb + 2 * yd)) == ownPawn ? 1 : 0;
-                        safety -= pos.getPiece(Position.getSquare(x, yb + 1 * yd)) == otherPawn ? 2 : 0;
-                        safety -= pos.getPiece(Position.getSquare(x, yb + 2 * yd)) == otherPawn ? 2 : 0;
-                        safety -= pos.getPiece(Position.getSquare(x, yb + 3 * yd)) == otherPawn ? 1 : 0;
-                        if (nPawns[1-i][x] == 0) halfOpenFiles++;
-                    }
+                final int xa = Math.max(xk - 1, 1);
+                final int xb = Math.min(xk + 1, 7);
+                for (int x = xa; x <= xb; x++) {
+                	int p = pos.getPiece(yb + x + yd);
+                	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
+                	p = pos.getPiece(yb + x + 2 * yd);
+                	if (p == ownPawn) safety += 1; else if (p == otherPawn) safety -= 2;
+                	p = pos.getPiece(yb + x + 3 * yd);
+                	if (p == otherPawn) safety -= 1;
+                	if (nPawns[1-i][x] == 0) halfOpenFiles++;
                 }
                 safety = Math.min(safety, 6);
             }
