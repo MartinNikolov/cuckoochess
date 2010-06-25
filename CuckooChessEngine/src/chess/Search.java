@@ -633,19 +633,20 @@ public class Search {
      */
     final public int SEE(Move m) {
         int nCapt = 0;                  // Number of entries in captures[]
-        int pV = Evaluate.pieceValue[Piece.WPAWN];
+        final int pV = Evaluate.pieceValue[Piece.WPAWN];
+        final int kV = Evaluate.pieceValue[Piece.WKING];
         
         final int square = m.to;
-        captures[nCapt] = SEEgetPieceValue(pos.getPiece(square));
+        captures[nCapt] = Evaluate.pieceValue[pos.getPiece(square)];
         if (square == pos.getEpSquare()) {
             captures[nCapt] = pV;
         }
         nCapt++;
 
-        if (captures[0] != SEEkingValue) {
+        if (captures[0] != kV) {
             pos.makeMove(m, seeUi);
             boolean white = pos.whiteMove;
-            int valOnSquare = SEEgetPieceValue(pos.getPiece(square));
+            int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
 
             for (int d = 0; d < 8; d++) {
                 dirIdx[d] = SEEnextAttacker(square, d, 0);
@@ -677,7 +678,7 @@ public class Search {
                     break;
                 }
                 captures[nCapt++] = valOnSquare;
-                if (valOnSquare == SEEkingValue) {
+                if (valOnSquare == kV) {
                     break;
                 }
                 valOnSquare = bestValue;
@@ -702,7 +703,6 @@ public class Search {
         return captures[0] - score;
     }
 
-    static final int SEEkingValue = 9900;
     static final int[] dirDx = { 1, 1, 0, -1, -1, -1,  0,  1 };
     static final int[] dirDy = { 0, 1, 1,  1,  0, -1, -1, -1 };
 
@@ -751,18 +751,9 @@ public class Search {
         int y = Position.getY(square) + dirDy[direction] * index;
         int p = pos.getPiece(Position.getSquare(x, y));
         if (Piece.isWhite(p) == white) {
-            return SEEgetPieceValue(p);
+            return Evaluate.pieceValue[p];
         } else {
             return Integer.MAX_VALUE;
-        }
-    }
-
-    /** Get the SEE piece value. The only difference from normal piece values is the king value. */
-    final private static int SEEgetPieceValue(int p) {
-        if ((p == Piece.WKING) || (p == Piece.BKING)) {
-            return SEEkingValue;
-        } else {
-            return Evaluate.pieceValue[p];
         }
     }
 

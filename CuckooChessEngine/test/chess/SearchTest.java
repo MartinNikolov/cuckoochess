@@ -292,7 +292,7 @@ public class SearchTest {
         assertEquals(pV, sc.SEE(TextIO.stringToMove(pos, "Rxe4+")));
         
         pos = TextIO.readFEN("8/8/8/4k3/r3P1R1/4K3/8/8 b - - 0 1");
-        final int kV = Search.SEEkingValue;
+        final int kV = Evaluate.pieceValue[Piece.WKING];
         sc = new Search(pos, nullHist, 0, tt);
         // 1 5 5 99
         //-4 5 0 99

@@ -56,7 +56,8 @@ public class Position {
         fullMoveCounter = 1;
         hashKey = computeZobristHash();
         wKingSq = bKingSq = -1;
-        wMtrl = bMtrl = wMtrlPawns = bMtrlPawns = 0;
+        wMtrl = bMtrl = -Evaluate.pieceValue[Piece.WKING];
+        wMtrlPawns = bMtrlPawns = 0;
     }
 
     public Position(Position other) {
@@ -166,7 +167,7 @@ public class Position {
 
         // Update material balance
         int removedPiece = squares[square];
-    	int pVal = Evaluate.pieceValue[removedPiece]; 
+    	int pVal = Evaluate.pieceValue[removedPiece];
         if (Piece.isWhite(removedPiece)) {
         	wMtrl -= pVal;
         	if (removedPiece == Piece.WPAWN)

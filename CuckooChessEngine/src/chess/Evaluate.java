@@ -15,13 +15,13 @@ public class Evaluate {
     static {
         // Initialize material table
         pieceValue = new int[Piece.nPieceTypes];
-        pieceValue[Piece.WKING  ] =     0;
+        pieceValue[Piece.WKING  ] =  9900; // Used by SEE algorithm, but not included in board material sums
         pieceValue[Piece.WQUEEN ] =  1200;
         pieceValue[Piece.WROOK  ] =   600;
         pieceValue[Piece.WBISHOP] =   400;
         pieceValue[Piece.WKNIGHT] =   400;
         pieceValue[Piece.WPAWN  ] =   100;
-        pieceValue[Piece.BKING  ] =     0;
+        pieceValue[Piece.BKING  ] =  9900;
         pieceValue[Piece.BQUEEN ] =  1200;
         pieceValue[Piece.BROOK  ] =   600;
         pieceValue[Piece.BBISHOP] =   400;
