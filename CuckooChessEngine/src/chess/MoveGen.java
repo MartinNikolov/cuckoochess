@@ -23,11 +23,12 @@ public class MoveGen {
      */
     public final ArrayList<Move> pseudoLegalMoves(Position pos) {
         ArrayList<Move> moveList = getMoveListObj();
+        final boolean wtm = pos.whiteMove;
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
             	int sq = Position.getSquare(x, y);
                 int p = pos.getPiece(sq);
-                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
+                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != wtm)) {
                     continue;
                 }
                 if ((p == Piece.WROOK) || (p == Piece.BROOK) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
@@ -62,11 +63,11 @@ public class MoveGen {
                     if (         y > 0 && addDirection(moveList, pos, sq, 1, -8)) return moveList;
                     if (x < 7 && y > 0 && addDirection(moveList, pos, sq, 1, -7)) return moveList;
 		    
-                    int k0 = pos.whiteMove ? Position.getSquare(4,0) : Position.getSquare(4,7);
+                    int k0 = wtm ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
-                        int aCastle = pos.whiteMove ? Position.A1_CASTLE : Position.A8_CASTLE;
-                        int hCastle = pos.whiteMove ? Position.H1_CASTLE : Position.H8_CASTLE;
-                        int rook = pos.whiteMove ? Piece.WROOK : Piece.BROOK;
+                        int aCastle = wtm ? Position.A1_CASTLE : Position.A8_CASTLE;
+                        int hCastle = wtm ? Position.H1_CASTLE : Position.H8_CASTLE;
+                        int rook = wtm ? Piece.WROOK : Piece.BROOK;
                         if (((pos.getCastleMask() & (1 << hCastle)) != 0) &&
                                 (pos.getPiece(k0 + 1) == Piece.EMPTY) &&
                                 (pos.getPiece(k0 + 2) == Piece.EMPTY) &&
@@ -87,46 +88,48 @@ public class MoveGen {
                     }
                 }
                 if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
-                    int yDir = pos.whiteMove ? 1 : -1;
-                    if (pos.getPiece(Position.getSquare(x, y + yDir)) == Piece.EMPTY) { // non-capture
-                        addPawnMoves(moveList, x, y, x, y + yDir);
-                        if ((y == (pos.whiteMove ? 1 : 6)) &&
-                                (pos.getPiece(Position.getSquare(x, y + 2 * yDir)) == Piece.EMPTY)) { // double step
-                            addPawnMoves(moveList, x, y, x, y + 2 * yDir);
+                    int yDir = wtm ? 8 : -8;
+                    if (pos.getPiece(sq + yDir) == Piece.EMPTY) { // non-capture
+                        addPawnMoves(moveList, sq, sq + yDir);
+                        if ((y == (wtm ? 1 : 6)) &&
+                                (pos.getPiece(sq + 2 * yDir) == Piece.EMPTY)) { // double step
+                            addPawnMoves(moveList, sq, sq + yDir * 2);
                         }
                     }
                     if (x > 0) { // Capture to the left
-                        int cap = pos.getPiece(Position.getSquare(x - 1, y + yDir));
+                    	int toSq = sq + yDir - 1;
+                        int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
-                            if (Piece.isWhite(cap) != pos.whiteMove) {
-                                if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
+                            if (Piece.isWhite(cap) != wtm) {
+                                if (cap == (wtm ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
-                                    moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x - 1, y + yDir), Piece.EMPTY));
+                                    moveList.add(getMoveObj(sq, toSq, Piece.EMPTY));
                                     return moveList;
                                 } else {
-                                    addPawnMoves(moveList, x, y, x - 1, y + yDir);
+                                    addPawnMoves(moveList, sq, toSq);
                                 }
                             }
-                        } else if (Position.getSquare(x - 1, y + yDir) == pos.getEpSquare()) {
-                            addPawnMoves(moveList, x, y, x - 1, y + yDir);
+                        } else if (toSq == pos.getEpSquare()) {
+                            addPawnMoves(moveList, sq, toSq);
                         }
                     }
                     if (x < 7) { // Capture to the right
-                        int cap = pos.getPiece(Position.getSquare(x + 1, y + yDir));
+                    	int toSq = sq + yDir + 1;
+                        int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
-                            if (Piece.isWhite(cap) != pos.whiteMove) {
-                                if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
+                            if (Piece.isWhite(cap) != wtm) {
+                                if (cap == (wtm ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
-                                    moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x + 1, y + yDir), Piece.EMPTY));
+                                    moveList.add(getMoveObj(sq, toSq, Piece.EMPTY));
                                     return moveList;
                                 } else {
-                                    addPawnMoves(moveList, x, y, x + 1, y + yDir);
+                                    addPawnMoves(moveList, sq, toSq);
                                 }
                             }
-                        } else if (Position.getSquare(x + 1, y + yDir) == pos.getEpSquare()) {
-                            addPawnMoves(moveList, x, y, x + 1, y + yDir);
+                        } else if (toSq == pos.getEpSquare()) {
+                            addPawnMoves(moveList, sq, toSq);
                         }
                     }
                 }
@@ -178,44 +181,46 @@ public class MoveGen {
                     if (x < 7 && y > 0 && addCaptureDirection(moveList, pos, sq, 1, -7)) return moveList;
                 }
                 if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
-                    int yDir = pos.whiteMove ? 1 : -1;
-                    if ((y + yDir == 0) || (y + yDir == 7)) {
-                    	if (pos.getPiece(Position.getSquare(x, y + yDir)) == Piece.EMPTY) { // non-capture promotion
-                    		addPawnMoves(moveList, x, y, x, y + yDir);
+                    int yDir = pos.whiteMove ? 8 : -8;
+                    if ((sq + yDir < 8) || (sq + yDir >= 56)) {
+                    	if (pos.getPiece(sq + yDir) == Piece.EMPTY) { // non-capture promotion
+                    		addPawnMoves(moveList, sq, sq + yDir);
                     	}
                     }
                     if (x > 0) { // Capture to the left
-                        int cap = pos.getPiece(Position.getSquare(x - 1, y + yDir));
+                    	int toSq = sq + yDir - 1;
+                        int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
                             if (Piece.isWhite(cap) != pos.whiteMove) {
                                 if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
-                                    moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x - 1, y + yDir), Piece.EMPTY));
+                                    moveList.add(getMoveObj(sq, toSq, Piece.EMPTY));
                                     return moveList;
                                 } else {
-                                    addPawnMoves(moveList, x, y, x - 1, y + yDir);
+                                    addPawnMoves(moveList, sq, toSq);
                                 }
                             }
-                        } else if (Position.getSquare(x - 1, y + yDir) == pos.getEpSquare()) {
-                            addPawnMoves(moveList, x, y, x - 1, y + yDir);
+                        } else if (toSq == pos.getEpSquare()) {
+                            addPawnMoves(moveList, sq, toSq);
                         }
                     }
                     if (x < 7) { // Capture to the right
-                        int cap = pos.getPiece(Position.getSquare(x + 1, y + yDir));
+                    	int toSq = sq + yDir + 1;
+                        int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
                             if (Piece.isWhite(cap) != pos.whiteMove) {
                                 if (cap == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                                     returnMoveList(moveList);
                                     moveList = getMoveListObj();
-                                    moveList.add(getMoveObj(Position.getSquare(x, y), Position.getSquare(x + 1, y + yDir), Piece.EMPTY));
+                                    moveList.add(getMoveObj(sq, toSq, Piece.EMPTY));
                                     return moveList;
                                 } else {
-                                    addPawnMoves(moveList, x, y, x + 1, y + yDir);
+                                    addPawnMoves(moveList, sq, toSq);
                                 }
                             }
-                        } else if (Position.getSquare(x + 1, y + yDir) == pos.getEpSquare()) {
-                            addPawnMoves(moveList, x, y, x + 1, y + yDir);
+                        } else if (toSq == pos.getEpSquare()) {
+                            addPawnMoves(moveList, sq, toSq);
                         }
                     }
                 }
@@ -546,15 +551,13 @@ public class MoveGen {
     /**
      * Generate all possible pawn moves from (x0,y0) to (x1,y1), taking pawn promotions into account.
      */
-    private final void addPawnMoves(ArrayList<Move> moveList, int x0, int y0, int x1, int y1) {
-        int sq0 = Position.getSquare(x0, y0);
-        int sq1 = Position.getSquare(x1, y1);
-        if (y1 == 7) { // White promotion
+    private final void addPawnMoves(ArrayList<Move> moveList, int sq0, int sq1) {
+            if (sq1 >= 56) { // White promotion
             moveList.add(getMoveObj(sq0, sq1, Piece.WQUEEN));
             moveList.add(getMoveObj(sq0, sq1, Piece.WKNIGHT));
             moveList.add(getMoveObj(sq0, sq1, Piece.WROOK));
             moveList.add(getMoveObj(sq0, sq1, Piece.WBISHOP));
-        } else if (y1 == 0) { // Black promotion
+        } else if (sq1 < 8) { // Black promotion
             moveList.add(getMoveObj(sq0, sq1, Piece.BQUEEN));
             moveList.add(getMoveObj(sq0, sq1, Piece.BKNIGHT));
             moveList.add(getMoveObj(sq0, sq1, Piece.BROOK));
