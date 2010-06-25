@@ -118,6 +118,7 @@ public class MoveGenTest {
         assertTrue(strMoves.contains("a2-a1N"));
         assertTrue(strMoves.contains("a2-a1B"));
     }
+
     /**
      * Test of inCheck method, of class MoveGen.
      */
@@ -151,6 +152,164 @@ public class MoveGenTest {
         pos.setPiece(Position.getSquare(2, 3), Piece.EMPTY);
         pos.setPiece(Position.getSquare(0, 4), Piece.BKNIGHT);
         assertEquals(false, MoveGen.inCheck(pos));
+    }
+
+    /**
+     * Test of givesCheck method, of class MoveGen.
+     */
+    @Test
+    public void testGivesCheck() throws ChessParseError {
+        System.out.println("givesCheck");
+        Position pos = new Position();
+        UndoInfo ui = new UndoInfo();
+        pos.setPiece(TextIO.getSquare("e3"), Piece.WKING);
+        pos.setPiece(TextIO.getSquare("e8"), Piece.BKING);
+        pos.setPiece(TextIO.getSquare("c2"), Piece.WROOK);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Rc8")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Rc6")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Rc7")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Re2")));
+        
+        pos.setPiece(TextIO.getSquare("c2"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("e2"), Piece.WROOK);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Kd3")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Kd4")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Ke4")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Kf2")));
+
+        pos.setPiece(TextIO.getSquare("e4"), Piece.WBISHOP);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Bd5")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Bc6")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Kd3")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Re1")));
+
+        pos = TextIO.readFEN("4k3/3p4/8/8/4B3/2K5/4R3/8 w - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Bc6")));
+        pos = TextIO.readFEN("4k3/8/5K2/8/6N1/8/8/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Ke6")));
+        assertTrue(!MoveGen.givesCheck(pos, new Move(TextIO.getSquare("f6"),
+        											 TextIO.getSquare("e7"),
+        											 Piece.EMPTY)));
+
+        pos = TextIO.readFEN("8/2k5/8/4N3/8/2K3B1/8/8 w - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Kc4")));
+        pos.setPiece(TextIO.getSquare("g3"), Piece.WROOK);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos.setPiece(TextIO.getSquare("g3"), Piece.WQUEEN);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos.setPiece(TextIO.getSquare("g3"), Piece.WKNIGHT);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos.setPiece(TextIO.getSquare("g3"), Piece.WPAWN);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos.setPiece(TextIO.getSquare("c3"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("g3"), Piece.WKING);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        
+        pos = TextIO.readFEN("8/2k5/3p4/4N3/8/2K3B1/8/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+
+        pos = TextIO.readFEN("8/2k5/8/4N3/8/6q1/2K5/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos = TextIO.readFEN("8/2k5/8/4N3/8/8/2K5/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));
+        pos = TextIO.readFEN("2nk4/3P4/8/8/3R4/8/2K5/8 w - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc8N")));
+
+        pos = TextIO.readFEN("8/2k5/2p5/1P1P4/8/2K5/8/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "d6")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "bxc6")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "b6")));
+        
+        pos = TextIO.readFEN("8/8/R1PkP2R/8/8/2K5/8/8 w - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c7")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "e7")));
+
+        // Test pawn promotion
+        pos = TextIO.readFEN("8/1P6/2kP4/8/8/2K5/8/8 w - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "d7")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "b8Q")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "b8N")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "b8R")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "b8B")));
+        
+        pos = TextIO.readFEN("8/2P1P3/2k5/8/8/2K5/8/8 w - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "e8Q")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "e8N")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "e8R")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "e8B")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c8Q")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c8N")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c8R")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c8B")));
+
+        // Test castling
+        pos = TextIO.readFEN("8/8/8/8/5k2/8/8/R3K2R w KQ - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+        pos = TextIO.readFEN("8/8/8/8/6k1/8/8/R3K2R w KQ - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        pos = TextIO.readFEN("8/8/8/8/3k4/8/8/R3K2R w KQ - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+        pos = TextIO.readFEN("8/8/8/8/5k2/8/5P2/R3K2R w KQ - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        pos = TextIO.readFEN("8/8/8/8/8/8/8/R3K2k w Q - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+        pos = TextIO.readFEN("8/8/8/8/8/8/8/2k1K2R w K - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        pos.setPiece(TextIO.getSquare("d1"), Piece.WKNIGHT);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+
+        // Test en passant
+        pos = TextIO.readFEN("8/1kp5/8/3P4/8/8/8/4K3 b - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "c5"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+
+        pos = TextIO.readFEN("3k4/2p5/8/3P4/8/8/3R4/4K3 b - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "c5"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+        
+        pos = TextIO.readFEN("5k2/2p5/8/3P4/8/B7/8/4K3 b - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "c5"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+        
+        pos = TextIO.readFEN("5k2/2p5/8/3P4/1P6/B7/8/4K3 b - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "c5"), ui);
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+
+        pos = TextIO.readFEN("8/2p5/8/R2P1k2/8/8/8/4K3 b - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "c5"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "dxc6")));
+
+        // Black pawn moves
+        pos = TextIO.readFEN("8/2p5/8/R4k2/1K6/8/8/8 b - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c5")));
+        pos = TextIO.readFEN("8/2p5/8/R4k2/2K5/8/8/8 b - - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c5")));
+        pos = TextIO.readFEN("8/2p5/8/R4k2/3K4/8/8/8 b - - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "c5")));
+
+        // Black castling
+        pos = TextIO.readFEN("r3k2r/8/8/5K2/8/8/8/8 b kq - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+        pos = TextIO.readFEN("r3k2r/8/8/6K1/8/8/8/8 b kq - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O")));
+        pos = TextIO.readFEN("r3k2r/8/8/2K5/8/8/8/8 b kq - 0 1");
+        assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+        pos = TextIO.readFEN("r3k2r/8/8/3K4/8/8/8/8 b kq - 0 1");
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "O-O-O")));
+
+        // Black en passant
+        pos = TextIO.readFEN("8/8/4k3/8/4p3/8/5PK1/8 w - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "f4"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "exf3")));
+
+        pos = TextIO.readFEN("8/8/4k3/8/K3p1r1/8/5P2/8 w - - 0 1");
+        pos.makeMove(TextIO.stringToMove(pos, "f4"), ui);
+        assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "exf3")));
     }
 
     /**

@@ -99,7 +99,7 @@ public class Book {
         int rnd = rndGen.nextInt(sum);
         sum = 0;
         for (int i = 0; i < bookMoves.size(); i++) {
-            sum += getWeight(bookMoves.get(i).count);
+        	sum += getWeight(bookMoves.get(i).count);
             if (rnd < sum) {
                 return bookMoves.get(i).move;
             }

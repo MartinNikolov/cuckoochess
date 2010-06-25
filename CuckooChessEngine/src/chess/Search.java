@@ -469,7 +469,7 @@ public class Search {
             }
             
             if (futilityPrune && !isCapture && !isPromotion && haveLegalMoves) {
-                if (!MoveGen.givesCheck(pos, m, ui))
+                if (!MoveGen.givesCheck(pos, m))
                     continue;
             }
             int extend = Math.max(posExtend, moveExtend);
@@ -477,7 +477,7 @@ public class Search {
             int lmr = 0;
             if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
                     (extend == 0) && !isPromotion) {
-                if (!MoveGen.givesCheck(pos, m, ui)) {
+                if (!MoveGen.givesCheck(pos, m)) {
                     lmrCount++;
                     if (lmrCount > 3) {
                         lmr = 1;
@@ -588,7 +588,7 @@ public class Search {
                     if (!tryChecks) {
                         continue;
                     }
-                    givesCheck = MoveGen.givesCheck(pos, m, ui);
+                    givesCheck = MoveGen.givesCheck(pos, m);
                     givesCheckComputed = true;
                     if (!givesCheck)
                         continue;
@@ -597,7 +597,7 @@ public class Search {
 
             if (!givesCheckComputed) {
                 if (depth - 1 > -4) {
-                    givesCheck = MoveGen.givesCheck(pos, m, ui);
+                    givesCheck = MoveGen.givesCheck(pos, m);
                 }
             }
             final boolean nextInCheck = (depth - 1) > -4 ? givesCheck : false;
