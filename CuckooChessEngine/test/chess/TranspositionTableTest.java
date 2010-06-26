@@ -126,7 +126,7 @@ public class TranspositionTableTest {
             int type = TranspositionTable.TTEntry.T_EXACT;
             int ply = i + 1;
             int depth = i * 2 + 5;
-            tt.insert(pos.historyHash(), m, type, ply, depth);
+            tt.insert(pos.historyHash(), m, type, ply, depth, score * 2 + 3);
         }
 
         pos = TextIO.readFEN(TextIO.startPosFEN);
@@ -140,6 +140,7 @@ public class TranspositionTableTest {
             int depth = i * 2 + 5;
             assertEquals(score, ent.getScore(ply));
             assertEquals(depth, ent.depth);
+            assertEquals(score * 2 + 3, ent.evalScore);
             Move tmpMove = new Move(0,0,0);
             ent.getMove(tmpMove);
             assertEquals(m, tmpMove);

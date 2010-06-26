@@ -44,8 +44,11 @@ public class Search {
     int totalNodes;
     long tLastStats;        // Time when notifyStats was last called
     boolean verbose;
-
+    
     public final static int MATE0 = 32000;
+
+    public final static int UNKNOWN_SCORE = -32767; // Represents unknown static eval score
+    int q0Eval; // Static eval score at first level of quiescence search 
 
     public Search(Position pos, long[] posHashList, int posHashListSize, TranspositionTable tt) {
         this.pos = new Position(pos);
@@ -153,7 +156,7 @@ public class Search {
                         type = TTEntry.T_GE;
                     }
                     m.score = score;
-                    tt.insert(pos.historyHash(), m, type, 0, depth);
+                    tt.insert(pos.historyHash(), m, type, 0, depth, UNKNOWN_SCORE);
                 }
                 if (score >= beta) {
                     if (mi != 0) {
@@ -258,6 +261,7 @@ public class Search {
             pos = origPos;
         }
         notifyStats();
+
         return bestMove;
     }
 
@@ -333,11 +337,13 @@ public class Search {
                                  // discovered the first time the position came up.
         }
 
+        int evalScore = UNKNOWN_SCORE;
         // Check transposition table
         TTEntry ent = tt.probe(pos.historyHash());
         Move hashMove = null;
         if (ent.type != TTEntry.T_EMPTY) {
             int score = ent.getScore(ply);
+            evalScore = ent.evalScore;
             int plyToMate = MATE0 - Math.abs(score);
             if ((beta == alpha + 1) && ((ent.depth >= depth) || (ent.depth >= plyToMate))) {
                 if (    (ent.type == TTEntry.T_EXACT) ||
@@ -356,6 +362,7 @@ public class Search {
         if (depth + posExtend <= 0) {
             qNodes--;
             totalNodes--;
+            q0Eval = evalScore;
             int score = quiesce(alpha, beta, ply, 0, inCheck);
             if (score >= beta) {
                 if (MoveGen.canTakeKing(pos)) {
@@ -371,7 +378,7 @@ public class Search {
                 type = TTEntry.T_GE;
             }
             emptyMove.score = score;
-            tt.insert(pos.historyHash(), emptyMove, type, ply, depth);
+            tt.insert(pos.historyHash(), emptyMove, type, ply, depth, q0Eval);
             return score;
         }
 
@@ -411,8 +418,10 @@ public class Search {
                 } else {
                     margin = Evaluate.pieceValue[Piece.WROOK];
                 }
-                int e = eval.evalPos(pos);
-                if (e + margin <= alpha) {
+                if (evalScore == UNKNOWN_SCORE) {
+                	evalScore = eval.evalPos(pos);
+                }
+                if (evalScore + margin <= alpha) {
                     futilityPrune = true;
                 }
             }
@@ -523,7 +532,7 @@ public class Search {
                         ht.addFail(pos, moves.get(mi2));
                     }
                 }
-                tt.insert(pos.historyHash(), m, TTEntry.T_GE, ply, depth);
+                tt.insert(pos.historyHash(), m, TTEntry.T_GE, ply, depth, evalScore);
                 moveGen.returnMoveList(moves);
                 return alpha;
             }
@@ -534,10 +543,10 @@ public class Search {
             return 0;       // Stale-mate
         }
         if (bestMove >= 0) {
-            tt.insert(pos.historyHash(), moves.get(bestMove), TTEntry.T_EXACT, ply, depth);
+            tt.insert(pos.historyHash(), moves.get(bestMove), TTEntry.T_EXACT, ply, depth, evalScore);
         } else {
             emptyMove.score = bestScore;
-            tt.insert(pos.historyHash(), emptyMove, TTEntry.T_LE, ply, depth);
+            tt.insert(pos.historyHash(), emptyMove, TTEntry.T_LE, ply, depth, evalScore);
         }
         moveGen.returnMoveList(moves);
         return bestScore;
@@ -546,10 +555,21 @@ public class Search {
     /**
      * Quiescence search. Only non-losing captures are searched.
      */
-    final public int quiesce(int alpha, int beta, int ply, int depth, final boolean inCheck) {
+    final private int quiesce(int alpha, int beta, int ply, int depth, final boolean inCheck) {
         qNodes++;
         totalNodes++;
-        int score = inCheck ? -(MATE0 - (ply+1)) : eval.evalPos(pos);
+        int score;
+        if (inCheck) {
+        	score = -(MATE0 - (ply+1));
+        } else {
+        	if ((depth == 0) && (q0Eval != UNKNOWN_SCORE)) {
+        		score = q0Eval;
+        	} else {
+        		score = eval.evalPos(pos);
+        		if (depth == 0)
+        			q0Eval = score;
+        	}
+        }
         if (score >= beta)
             return score;
         if (score > alpha)

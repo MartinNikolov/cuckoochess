@@ -21,6 +21,7 @@ public class TranspositionTable {
         byte generation;        // Increase when OTB position changes
         public byte type;       // exact score, lower bound, upper bound
         byte hashSlot;          // Which hash function was used for hashing, 0 or 1.
+        short evalScore;        // Score from static evaluation 
         // FIXME!!! Test storing both upper and lower bound in each hash entry.
         
         static public final int T_EXACT = 0;   // Exact score
@@ -92,7 +93,7 @@ public class TranspositionTable {
         generation = 0;
     }
 
-    public final void insert(long key, Move sm, int type, int ply, int depth) {
+    public final void insert(long key, Move sm, int type, int ply, int depth, int evalScore) {
         int idx0 = h0(key);
         int idx1 = h1(key);
         TTEntry ent = table[idx0];
@@ -116,6 +117,7 @@ public class TranspositionTable {
                 altEnt.generation = ent.generation;
                 altEnt.type = ent.type;
                 altEnt.hashSlot = (byte)(1 - ent.hashSlot);
+                altEnt.evalScore = ent.evalScore;
             }
         }
         ent.key = key;
@@ -125,6 +127,7 @@ public class TranspositionTable {
         ent.generation = generation;
         ent.type = (byte)type;
         ent.hashSlot = hashSlot;
+        ent.evalScore = (short)evalScore;
     }
 
     /** Retrieve an entry from the hash table corresponding to "pos". */
