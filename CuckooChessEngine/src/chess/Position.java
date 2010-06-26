@@ -274,8 +274,10 @@ public class Position {
         ui.halfMoveClock = halfMoveClock;
         boolean wtm = whiteMove;
         
-        if ((squares[move.to] != Piece.EMPTY) ||
-            (squares[move.from] == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
+        int p = squares[move.from];
+        int capP = squares[move.to];
+
+        if ((capP != Piece.EMPTY) || (p == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
             halfMoveClock = 0;
         } else {
             halfMoveClock++;
@@ -287,7 +289,7 @@ public class Position {
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
         int k0 = move.from;
-        if (squares[k0] == king) {
+        if (p == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 1, squares[k0 + 3]);
                 setPiece(k0 + 3, Piece.EMPTY);
@@ -304,18 +306,18 @@ public class Position {
             }
         }
         int rook = wtm ? Piece.WROOK : Piece.BROOK;
-        if (squares[move.from] == rook) {
+        if (p == rook) {
             removeCastleRights(move.from);
         }
         int oRook = wtm ? Piece.BROOK : Piece.WROOK;
-        if (squares[move.to] == oRook) {
+        if (capP == oRook) {
             removeCastleRights(move.to);
         }
 
         // Handle en passant and epSquare
         int prevEpSquare = epSquare;
         setEpSquare(-1);
-        if (squares[move.from] == Piece.WPAWN) {
+        if (p == Piece.WPAWN) {
             if (move.to - move.from == 2 * 8) {
                 int x = Position.getX(move.to);
                 if (    ((x > 0) && (squares[move.to - 1] == Piece.BPAWN)) ||
@@ -325,7 +327,7 @@ public class Position {
             } else if (move.to == prevEpSquare) {
                 setPiece(move.to - 8, Piece.EMPTY);
             }
-        } else if (squares[move.from] == Piece.BPAWN) {
+        } else if (p == Piece.BPAWN) {
             if (move.to - move.from == -2 * 8) {
                 int x = Position.getX(move.to);
                 if (    ((x > 0) && (squares[move.to - 1] == Piece.WPAWN)) ||
@@ -338,25 +340,28 @@ public class Position {
         }
             
         // Perform move
-        setPiece(move.to, squares[move.from]);
         setPiece(move.from, Piece.EMPTY);
         // Handle promotion
         if (move.promoteTo != Piece.EMPTY) {
             setPiece(move.to, move.promoteTo);
+        } else {
+        	setPiece(move.to, p);
         }
         setWhiteMove(!wtm);
     }
     
     public final void unMakeMove(Move move, UndoInfo ui) {
         setWhiteMove(!whiteMove);
-        setPiece(move.from, squares[move.to]);
+        int p = squares[move.to];
+        setPiece(move.from, p);
         setPiece(move.to, ui.capturedPiece);
         setCastleMask(ui.castleMask);
         setEpSquare(ui.epSquare);
         halfMoveClock = ui.halfMoveClock;
         boolean wtm = whiteMove;
         if (move.promoteTo != Piece.EMPTY) {
-            setPiece(move.from, wtm ? Piece.WPAWN : Piece.BPAWN);
+        	p = wtm ? Piece.WPAWN : Piece.BPAWN;
+            setPiece(move.from, p);
         }
         if (!wtm) {
             fullMoveCounter--;
@@ -365,7 +370,7 @@ public class Position {
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
         int k0 = move.from;
-        if (squares[k0] == king) {
+        if (p == king) {
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 3, squares[k0 + 1]);
                 setPiece(k0 + 1, Piece.EMPTY);
@@ -376,12 +381,12 @@ public class Position {
         }
 
         // Handle en passant
-        if (squares[move.from] == Piece.WPAWN) {
-            if (move.to == epSquare)
+        if (move.to == epSquare) {
+        	if (p == Piece.WPAWN) {
                 setPiece(move.to - 8, Piece.BPAWN);
-        } else if (squares[move.from] == Piece.BPAWN) {
-            if (move.to == epSquare)
+        	} else if (p == Piece.BPAWN) {
                 setPiece(move.to + 8, Piece.WPAWN);
+        	}
         }
     }
     
