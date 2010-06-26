@@ -202,6 +202,5 @@ public class ComputerPlayer implements Player {
     
     // FIXME!!! Test LDS in quiesce (for checks and/or SEE<0 captures)
     // FIXME!!! Test Botvinnik-Markoff extension
-    // FIXME!!! Implement pawn hash table
     // FIXME!!! Should a repeated position have a different hash key, to avoid repetition draw problems?
 }

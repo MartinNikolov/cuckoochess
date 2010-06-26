@@ -38,6 +38,7 @@ public class Position {
     public int fullMoveCounter;
 
     private long hashKey;           // Cached Zobrist hash key
+    private long pHashKey;
     private int wKingSq, bKingSq;   // Cached king positions
     int wMtrl;      // Total value of all white pieces and pawns
     int bMtrl;      // Total value of all black pieces and pawns
@@ -70,6 +71,7 @@ public class Position {
         halfMoveClock = other.halfMoveClock;
         fullMoveCounter = other.fullMoveCounter;
         hashKey = other.hashKey;
+        pHashKey = other.pHashKey;
         wKingSq = other.wKingSq;
         bKingSq = other.bKingSq;
         wMtrl = other.wMtrl;
@@ -91,6 +93,8 @@ public class Position {
             return false;
         if (hashKey != other.hashKey)
             return false;
+        if (pHashKey != other.pHashKey)
+            return false;
         return true;
     }
     @Override
@@ -104,6 +108,9 @@ public class Position {
      */
     public final long zobristHash() {
         return hashKey;
+    }
+    public final long pawnZobristHash() {
+    	return pHashKey;
     }
 
     public final long historyHash() {
@@ -162,9 +169,14 @@ public class Position {
     /** Set a square to a piece value. */
     public final void setPiece(int square, int piece) {
     	// Update hash key
-        hashKey ^= psHashKeys[squares[square]][square];
+    	int oldPiece = squares[square];
+        hashKey ^= psHashKeys[oldPiece][square];
         hashKey ^= psHashKeys[piece][square];
-
+        if ((oldPiece == Piece.WPAWN) || (oldPiece == Piece.BPAWN))
+            pHashKey ^= psHashKeys[oldPiece][square];
+        if ((piece == Piece.WPAWN) || (piece == Piece.BPAWN))
+            pHashKey ^= psHashKeys[piece][square];
+        
         // Update material balance
         int removedPiece = squares[square];
     	int pVal = Evaluate.pieceValue[removedPiece];
@@ -418,8 +430,12 @@ public class Position {
      */
     final long computeZobristHash() {
         long hash = 0;
-        for (int sq = 0; sq < 64; sq++)
-            hash ^= psHashKeys[squares[sq]][sq];
+        for (int sq = 0; sq < 64; sq++) {
+        	int p = squares[sq];
+            hash ^= psHashKeys[p][sq];
+            if ((p == Piece.WPAWN) || (p == Piece.BPAWN))
+            	pHashKey ^= psHashKeys[p][sq];
+        }
         if (whiteMove)
             hash ^= whiteHashKey;
         hash ^= castleHashKeys[castleMask];

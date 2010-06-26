@@ -129,23 +129,34 @@ public class Evaluate {
 										{ 6, 7, 6, 5, 4, 3, 2, 1 },
 										{ 7, 6, 5, 4, 3, 2, 1, 0 } };
 
+    private static final class PawnHashData {
+    	PawnHashData() {
+            nPawns = new byte[2][8];
+    	}
+    	long key;
+    	byte [][] nPawns;  // nPawns[0/1][file] contains the number of white/black pawns on a file.
+    	int score;         // Positive score means good for white
+    	int passedBonusW;
+    	int passedBonusB;
+    }
+    PawnHashData ph;
+    static PawnHashData[] pawnHash;
+    static {
+        final int numEntries = 1<<12;
+    	pawnHash = new PawnHashData[numEntries];
+        for (int i = 0; i < numEntries; i++) {
+            PawnHashData phd = new PawnHashData();
+            phd.key = -1; // Non-zero to avoid collision for positions with no pawns
+            phd.score = 0;
+            pawnHash[i] = phd;
+        }
+    }
     
-    /** nPawns[0/1][file] contains the number of white/black pawns on a file. */
-    int [][] nPawns;
-    
-    /**
-     * firstPawn[0/1][file] contains the rank of the first (least advanced) pawn for a color/file.
-     * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
-     */
-    int [][] firstPawn;
-    int [][] lastPawn;
-
     int [][] pieces;
     int [] nPieces;
     
     /** Constructor. */
     public Evaluate() {
-        nPawns = new int[2][8];
         firstPawn = new int[2][8];
         lastPawn = new int[2][8];
         pieces = new int[Piece.nPieceTypes][64];
@@ -163,10 +174,10 @@ public class Evaluate {
     	int score = pos.wMtrl - pos.bMtrl;
 
         score += pieceSquareEval(pos);
+        score += pawnBonus(pos);
         score += tradeBonus(pos);
         score += castleBonus(pos);
 
-        score += computePawnStructure(pos);
         score += rookBonus(pos);
         score += kingSafety(pos);
         score += bishopEval(pos, score);
@@ -206,15 +217,6 @@ public class Evaluate {
         int bp1 = 0;
         int bp2 = 0;
 
-        for (int x = 0; x < 8; x++) {
-            for (int i = 0; i < 2; i++) {
-                nPawns[i][x] = 0;
-            }
-            firstPawn[0][x] = 7;
-            firstPawn[1][x] = 0;
-            lastPawn[0][x] = 0;
-            lastPawn[1][x] = 7;
-        }
         for (int p = 0; p < Piece.nPieceTypes; p++)
         	nPieces[p] = 0;
         for (int sq = 0; sq < 64; sq++) {
@@ -250,18 +252,12 @@ public class Evaluate {
             {
             	wp1 += pt1[7-y][x];
             	wp2 += pt2[7-y][x];
-            	nPawns[0][x]++;
-            	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
-            	lastPawn[0][x] = Math.max(lastPawn[0][x], y);
             	break;
             }
             case Piece.BPAWN:
             {
             	bp1 += pt1[y][x];
             	bp2 += pt2[y][x];
-            	nPawns[1][x]++;
-            	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
-            	lastPawn[1][x] = Math.min(lastPawn[1][x], y);
             	break;
             }
             case Piece.WKNIGHT:
@@ -412,9 +408,65 @@ public class Evaluate {
         return wBonus - bBonus;
     }
 
+    final int pawnBonus(Position pos) {
+    	long key = pos.pawnZobristHash();
+    	PawnHashData phd = pawnHash[(int)key & (pawnHash.length - 1)];
+    	if (phd.key != key)
+    		computePawnHashData(pos, phd);
+    	int score = phd.score;
+
+    	final int qV = pieceValue[Piece.WQUEEN];
+        final int rV = pieceValue[Piece.WROOK];
+        final int hiMtrl = qV + rV;
+        score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * phd.passedBonusW, hiMtrl, phd.passedBonusW);
+        score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * phd.passedBonusB, hiMtrl, phd.passedBonusB);
+    	
+        ph = phd;
+    	return score;
+    }
+
+    /**
+	 * firstPawn[0/1][file] contains the rank of the first (least advanced) pawn for a color/file.
+	 * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
+	 */
+	private int [][] firstPawn;
+	private int [][] lastPawn;
+    
     /** Compute nPawns[][] corresponding to pos. */
-    final int computePawnStructure(Position pos) {
-        int score = 0;
+    final void computePawnHashData(Position pos, PawnHashData ph) {
+    	byte[][] nPawns = ph.nPawns;
+        for (int x = 0; x < 8; x++) {
+            nPawns[0][x] = 0;
+            nPawns[1][x] = 0;
+            firstPawn[0][x] = 7;
+            firstPawn[1][x] = 0;
+            lastPawn[0][x] = 0;
+            lastPawn[1][x] = 7;
+        }
+
+        for (int sq = 0; sq < 64; sq++) {
+        	int p = pos.getPiece(sq);
+        	switch (p) {
+        	case Piece.WPAWN: {
+        		int x = Position.getX(sq);
+        		int y = Position.getY(sq);
+                nPawns[0][x]++;
+            	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
+            	lastPawn[0][x] = Math.max(lastPawn[0][x], y);
+            	break;
+        	}
+        	case Piece.BPAWN: {
+        		int x = Position.getX(sq);
+        		int y = Position.getY(sq);
+            	nPawns[1][x]++;
+            	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
+            	lastPawn[1][x] = Math.min(lastPawn[1][x], y);
+            	break;
+        	}
+        	}
+        }
+
+    	int score = 0;
 
         // Evaluate double pawns and pawn islands
         int wDouble = 0;
@@ -482,13 +534,10 @@ public class Evaluate {
             }
         }
 
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int rV = pieceValue[Piece.WROOK];
-        final int hiMtrl = qV + rV;
-        score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * passedBonusW, hiMtrl, passedBonusW);
-        score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * passedBonusB, hiMtrl, passedBonusB);
-        
-        return score;
+        ph.key = pos.pawnZobristHash();
+        ph.score = score;
+        ph.passedBonusW = passedBonusW;
+        ph.passedBonusB = passedBonusB;
     }
     
     /** Compute rook bonus. Rook on open/half-open file. */
@@ -499,8 +548,8 @@ public class Evaluate {
         	int sq = pieces[Piece.WROOK][i];
             final int x = Position.getX(sq);
             final int y = Position.getY(sq);
-            if (nPawns[0][x] == 0) { // At least half-open file
-                score += nPawns[1][x] == 0 ? 25 : 12;
+            if (ph.nPawns[0][x] == 0) { // At least half-open file
+                score += ph.nPawns[1][x] == 0 ? 25 : 12;
             }
             score += rookMobility(pos, x, y, sq) / 2;
         }
@@ -509,8 +558,8 @@ public class Evaluate {
         	int sq = pieces[Piece.BROOK][i];
             final int x = Position.getX(sq);
             final int y = Position.getY(sq);
-            if (nPawns[1][x] == 0) {
-                score -= nPawns[0][x] == 0 ? 25 : 12;
+            if (ph.nPawns[1][x] == 0) {
+                score -= ph.nPawns[0][x] == 0 ? 25 : 12;
             }
             score -= rookMobility(pos, x, y, sq) / 2;
         }
@@ -550,7 +599,7 @@ public class Evaluate {
                 	if (p == ownPawn) safety += 1; else if (p == otherPawn) safety -= 2;
                 	p = pos.getPiece(yb + x + 3 * yd);
                 	if (p == otherPawn) safety -= 1;
-                	if (nPawns[1-i][x] == 0) halfOpenFiles++;
+                	if (ph.nPawns[1-i][x] == 0) halfOpenFiles++;
                 }
                 safety = Math.min(safety, 6);
             }
