@@ -158,7 +158,6 @@ public class Evaluate {
     /** Constructor. */
     public Evaluate() {
         firstPawn = new int[2][8];
-        lastPawn = new int[2][8];
         pieces = new int[Piece.nPieceTypes][64];
         nPieces = new int[Piece.nPieceTypes];
     }
@@ -430,7 +429,6 @@ public class Evaluate {
 	 * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
 	 */
 	private int [][] firstPawn;
-	private int [][] lastPawn;
     
     /** Compute nPawns[][] corresponding to pos. */
     final void computePawnHashData(Position pos, PawnHashData ph) {
@@ -440,8 +438,6 @@ public class Evaluate {
             nPawns[1][x] = 0;
             firstPawn[0][x] = 7;
             firstPawn[1][x] = 0;
-            lastPawn[0][x] = 0;
-            lastPawn[1][x] = 7;
         }
 
         for (int sq = 0; sq < 64; sq++) {
@@ -452,7 +448,6 @@ public class Evaluate {
         		int y = Position.getY(sq);
                 nPawns[0][x]++;
             	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
-            	lastPawn[0][x] = Math.max(lastPawn[0][x], y);
             	break;
         	}
         	case Piece.BPAWN: {
@@ -460,7 +455,6 @@ public class Evaluate {
         		int y = Position.getY(sq);
             	nPawns[1][x]++;
             	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
-            	lastPawn[1][x] = Math.min(lastPawn[1][x], y);
             	break;
         	}
         	}
@@ -504,8 +498,10 @@ public class Evaluate {
         int passedBonusW = 0;
         int passedBonusB = 0;
         for (int x = 0; x < 8; x++) {
-        	int y = lastPawn[0][x];
-        	if (y > 0) {
+        	if (nPawns[0][x] > 0) {
+        		int y = 6;
+        		while (pos.getPiece(Position.getSquare(x, y)) != Piece.WPAWN)
+        			y--;
         		boolean passed = true;
         		if ((x > 0) && (firstPawn[1][x - 1] >= y + 1)) passed = false;
         		if (           (firstPawn[1][x + 0] >= y + 1)) passed = false;
@@ -518,8 +514,10 @@ public class Evaluate {
         			}
         		}
         	}
-        	y = lastPawn[1][x];
-        	if (y < 7) {
+        	if (nPawns[1][x] > 0) {
+        		int y = 1;
+        		while (pos.getPiece(Position.getSquare(x, y)) != Piece.BPAWN)
+        			y++;
         		boolean passed = true;
         		if ((x > 0) && (firstPawn[0][x - 1] <= y - 1)) passed = false;
         		if (           (firstPawn[0][x + 0] <= y - 1)) passed = false;
