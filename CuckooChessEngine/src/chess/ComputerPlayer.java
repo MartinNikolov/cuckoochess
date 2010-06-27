@@ -83,7 +83,10 @@ public class ComputerPlayer implements Player {
         currentSearch = sc;
         sc.setListener(listener);
         Move bestM;
-        if (randomMode) {
+        if ((moves.size() == 1) && (canClaimDraw(pos, posHashList, posHashListSize, moves.get(0)) == "")) {
+        	bestM = moves.get(0);
+        	bestM.score = 0;
+        } else if (randomMode) {
         	bestM = findSemiRandomMove(sc, moves);
         } else {
         	bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, maxDepth, maxNodes, verbose);
@@ -94,22 +97,36 @@ public class ComputerPlayer implements Player {
 
         // Claim draw if appropriate
         if (bestM.score <= 0) {
-            if (Search.canClaimDraw50(pos)) {
-                strMove = "draw 50";
-            } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
-                strMove = "draw rep";
-            } else {
-                posHashList[posHashListSize++] = pos.zobristHash();
-                UndoInfo ui = new UndoInfo();
-                pos.makeMove(bestM, ui);
-                if (Search.canClaimDraw50(pos)) {
-                    strMove = "draw 50 " + strMove;
-                } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
-                    strMove = "draw rep " + strMove;
-                }
-            }
+        	String drawClaim = canClaimDraw(pos, posHashList, posHashListSize, bestM);
+        	if (drawClaim != "")
+        		strMove = drawClaim;
         }
         return strMove;
+    }
+    
+    /** Check if a draw claim is allowed, possibly after playing "move".
+     * @param move The move that may have to be made before claiming draw.
+     * @return The draw string that claims the draw, or empty string if draw claim not valid.
+     */
+    private String canClaimDraw(Position pos, long[] posHashList, int posHashListSize, Move move) {
+    	String drawStr = "";
+        if (Search.canClaimDraw50(pos)) {
+            drawStr = "draw 50";
+        } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
+            drawStr = "draw rep";
+        } else {
+            String strMove = TextIO.moveToString(pos, move, false);
+            posHashList[posHashListSize++] = pos.zobristHash();
+            UndoInfo ui = new UndoInfo();
+            pos.makeMove(move, ui);
+            if (Search.canClaimDraw50(pos)) {
+                drawStr = "draw 50 " + strMove;
+            } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
+                drawStr = "draw rep " + strMove;
+            }
+            pos.unMakeMove(move, ui);
+        }
+        return drawStr;
     }
 
     @Override

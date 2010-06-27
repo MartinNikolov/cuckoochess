@@ -55,6 +55,11 @@ public class ComputerPlayerTest {
         pos = TextIO.readFEN("8/1R5k/R7/8/8/8/B7/1K6 b - - 99 80");
         result = cp.getCommand(pos, false, nullHist);
         assertEquals("draw 50 Kh8", result);     // Should claim draw by 50-move rule
+
+        // Only one possible move. Should realize that draw claim is possible, but very bad
+        pos = TextIO.readFEN("6Nk/8/5K1R/q7/q7/q7/8/8 b - - 100 80");
+        result = cp.getCommand(pos, false, nullHist);
+        assertEquals("Kxg8", result);
     }
 
     /**
