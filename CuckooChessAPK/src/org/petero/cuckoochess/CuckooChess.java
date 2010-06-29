@@ -88,9 +88,14 @@ public class CuckooChess extends Activity implements GUIInterface {
         	if (moves == null) {
         		moves = "";
         	}
+        	String numUndo = savedInstanceState.getString("numUndo");
+        	if (numUndo == null) {
+        		numUndo = "0";
+        	}
         	List<String> posHistStr = new ArrayList<String>();
         	posHistStr.add(fen);
         	posHistStr.add(moves);
+        	posHistStr.add(numUndo);
         	ctrl.setPosHistory(posHistStr);
         }
         
@@ -127,6 +132,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		List<String> posHistStr = ctrl.getPosHistory();
 		outState.putString("startFEN", posHistStr.get(0));
 		outState.putString("moves", posHistStr.get(1));
+		outState.putString("numUndo", posHistStr.get(2));
 	}
 	
 	@Override
@@ -173,7 +179,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 		}
 	}
 
-	// FIXME!!! Redo history is lost when flipping phone.
 	// FIXME!!! Implement "switch sides".
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
 	// FIXME!!! Show "Thinking..." string when computer is thinking.

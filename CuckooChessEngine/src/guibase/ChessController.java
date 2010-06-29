@@ -156,6 +156,10 @@ public class ChessController {
 			for (int i = 0; i < arrLen; i++) {
 				game.processString(strArr[i]);
 			}
+			int numUndo = Integer.parseInt(posHistStr.get(2));
+			for (int i = 0; i < numUndo; i++) {
+				game.processString("undo");
+			}
 			gui.setSelection(-1);
 			updateGUI();
 			startComputerThinking();

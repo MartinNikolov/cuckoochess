@@ -288,7 +288,7 @@ public class Game {
         ret.add(TextIO.toFEN(pos)); // Store initial FEN
 
         StringBuilder moves = new StringBuilder();
-        for (int i = 0; i < currentMove; i++) {
+        for (int i = 0; i < moveList.size(); i++) {
             Move move = moveList.get(i);
             String strMove = TextIO.moveToString(pos, move, false);
             moves.append(String.format(" %s", strMove));
@@ -296,6 +296,8 @@ public class Game {
             pos.makeMove(move, ui);
         }
         ret.add(moves.toString()); // Store move list string
+        int numUndo = moveList.size() - currentMove;
+        ret.add(((Integer)numUndo).toString());
         return ret;
 	}
 
