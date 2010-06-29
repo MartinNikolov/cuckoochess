@@ -404,12 +404,16 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
         return ShowThinking.isSelected();
     }
 
-	public int getPromotePiece() {
-        Object[] options = { "Queen", "Rook", "Bishop", "Knight" };
-        int choice = JOptionPane.showOptionDialog(
-                cbp, "Promote pawn to?", "Pawn Promotion",
-                0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-		return choice;
+	public void requestPromotePiece() {
+		runOnUIThread(new Runnable() {
+            public void run() {
+                Object[] options = { "Queen", "Rook", "Bishop", "Knight" };
+                int choice = JOptionPane.showOptionDialog(
+                        cbp, "Promote pawn to?", "Pawn Promotion",
+                        0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                ctrl.reportPromotePiece(choice);
+            }
+		});
 	}
 
 	public void runOnUIThread(Runnable runnable) {

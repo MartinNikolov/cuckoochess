@@ -28,8 +28,8 @@ public interface GUIInterface {
 	/** Return true if "show thinking" is enabled. */
 	public boolean showThinking();
 
-	/** Ask for which piece to promote a pawn to. Should be implemented as a modal dialog. */
-	public int getPromotePiece();
+	/** Ask what to promote a pawn to. Should call reportPromotePiece() when done. */
+	public void requestPromotePiece();
 
 	/** Run code on the GUI thread. */
 	public void runOnUIThread(Runnable runnable);

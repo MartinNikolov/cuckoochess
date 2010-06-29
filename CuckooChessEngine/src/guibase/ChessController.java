@@ -211,7 +211,7 @@ public class ChessController {
 
     public final void humanMove(Move m) {
         if (humansTurn()) {
-            if (doMove(m.from, m.to)) {
+            if (doMove(m)) {
                 updateGUI();
                 startComputerThinking();
             } else {
@@ -220,34 +220,45 @@ public class ChessController {
         }
     }
 
+    Move promoteMove;
+    public final void reportPromotePiece(int choice) {
+    	final boolean white = game.pos.whiteMove;
+    	int promoteTo;
+        switch (choice) {
+            case 1:
+                promoteTo = white ? Piece.WROOK : Piece.BROOK;
+                break;
+            case 2:
+                promoteTo = white ? Piece.WBISHOP : Piece.BBISHOP;
+                break;
+            case 3:
+                promoteTo = white ? Piece.WKNIGHT : Piece.BKNIGHT;
+                break;
+            default:
+                promoteTo = white ? Piece.WQUEEN : Piece.BQUEEN;
+                break;
+        }
+        promoteMove.promoteTo = promoteTo;
+        Move m = promoteMove;
+        promoteMove = null;
+        humanMove(m);
+    }
+
     /**
      * Move a piece from one square to another.
      * @return True if the move was legal, false otherwise.
      */
-    final private boolean doMove(int from, int to) {
+    final private boolean doMove(Move move) {
         Position pos = game.pos;
-        final boolean white = pos.whiteMove;
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
-        int promoteTo = Piece.EMPTY;
+        int promoteTo = move.promoteTo;
         for (Move m : moves) {
-            if ((m.from == from) && (m.to == to)) {
+            if ((m.from == move.from) && (m.to == move.to)) {
                 if ((m.promoteTo != Piece.EMPTY) && (promoteTo == Piece.EMPTY)) {
-                    int choice = gui.getPromotePiece();
-                    switch (choice) {
-                        case 1:
-                            promoteTo = white ? Piece.WROOK : Piece.BROOK;
-                            break;
-                        case 2:
-                            promoteTo = white ? Piece.WBISHOP : Piece.BBISHOP;
-                            break;
-                        case 3:
-                            promoteTo = white ? Piece.WKNIGHT : Piece.BKNIGHT;
-                            break;
-                        default:
-                            promoteTo = white ? Piece.WQUEEN : Piece.BQUEEN;
-                            break;
-                    }
+                	promoteMove = m;
+                	gui.requestPromotePiece();
+                	return false;
                 }
                 if (m.promoteTo == promoteTo) {
                     String strMove = TextIO.moveToString(pos, m, false);

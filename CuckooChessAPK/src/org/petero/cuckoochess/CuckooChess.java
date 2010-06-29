@@ -6,6 +6,9 @@ import java.util.List;
 import guibase.ChessController;
 import guibase.GUIInterface;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -216,9 +219,34 @@ public class CuckooChess extends Activity implements GUIInterface {
 		return mShowThinking;
 	}
 
+	static final int PROMOTE_DIALOG = 0; 
+	
 	@Override
-	public int getPromotePiece() {
-		return 0; // FIXME!!! Handle under-promotion. (How? No modal dialogs?)
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case PROMOTE_DIALOG: {
+			final CharSequence[] items = {"Queen", "Rook", "Bishop", "Knight"};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Promote pawn to?");
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int item) {
+	        		ctrl.reportPromotePiece(item);
+			    }
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		}
+		return null;
+	}
+
+	@Override
+	public void requestPromotePiece() {
+		runOnUIThread(new Runnable() {
+            public void run() {
+            	showDialog(PROMOTE_DIALOG);
+            }
+		});
 	}
 
 	@Override
