@@ -181,7 +181,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement "switch sides".
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
-	// FIXME!!! Show "Thinking..." string when computer is thinking.
     
 	@Override
 	public void setPosition(Position pos) {

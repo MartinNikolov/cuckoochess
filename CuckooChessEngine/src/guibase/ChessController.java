@@ -284,6 +284,7 @@ public class ChessController {
 
     final private void setStatusString() {
         String str = game.pos.whiteMove ? "White's move" : "Black's move";
+        if (computerThread != null) str += " (thinking)";
         if (game.getGameState() != Game.GameState.ALIVE) {
             str = game.getGameStateString();
         }
@@ -330,6 +331,7 @@ public class ChessController {
                    }
                 });
                 thinkingPV = "";
+                updateGUI();
                 computerThread.start();
             }
         }
@@ -344,6 +346,7 @@ public class ChessController {
                 System.out.printf("Could not stop thread%n");
             }
             computerThread = null;
+            updateGUI();
         }
     }
 
