@@ -359,7 +359,19 @@ public class Game {
                         pos.fullMoveCounter, whiteMove, blackMove));
             }
         }
-        String gameResult = "";
+        String gameResult = getPGNResultString();
+        if (!gameResult.equals("*")) {
+            if (compressed) {
+                ret.append(gameResult);
+            } else {
+                ret.append(String.format("%s%n", gameResult));
+            }
+        }
+        return ret.toString();
+    }
+    
+    public final String getPGNResultString() {
+        String gameResult = "*";
         switch (getGameState()) {
             case ALIVE:
                 break;
@@ -380,14 +392,7 @@ public class Game {
                 gameResult = "1/2-1/2";
                 break;
         }
-        if (gameResult.length() > 0) {
-            if (compressed) {
-                ret.append(gameResult);
-            } else {
-                ret.append(String.format("%s%n", gameResult));
-            }
-        }
-        return ret.toString();
+        return gameResult;
     }
 
     /** Return a list of previous positions in this game, back to the last "zeroing" move. */

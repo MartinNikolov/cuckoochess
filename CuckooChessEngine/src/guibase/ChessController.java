@@ -184,6 +184,29 @@ public class ChessController {
 		startComputerThinking();
     }
     
+    public String getPGN() {
+    	List<String> posHist = getPosHistory();
+    	String fen = posHist.get(0);
+        String moves = game.getMoveListString(true);
+    	String pgn = "";
+    	pgn += String.format("[Date \"%s\"]%n", "xxxx.xx.xx"); // FIXME!!! Compute real date
+    	String white = "Player";
+    	String black = ComputerPlayer.engineName;
+    	if (!humanIsWhite) {
+    		String tmp = white; white = black; black = tmp;
+    	}
+    	pgn += String.format("[White \"%s\"]%n", white);
+    	pgn += String.format("[Black \"%s\"]%n", black);
+    	pgn += String.format("[Result \"%s\"]%n", game.getPGNResultString());
+    	if (!fen.equals(TextIO.startPosFEN)) {
+    		pgn += String.format("[FEN \"%s\"]%n", fen);
+    		pgn += "[SetUp \"1\"]\n";
+    	}
+    	pgn += "\n";
+    	pgn += moves;
+    	return pgn;
+    }
+    
     public final boolean humansTurn() {
         return game.pos.whiteMove == humanIsWhite;
     }

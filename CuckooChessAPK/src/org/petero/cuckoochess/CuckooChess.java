@@ -88,7 +88,9 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.requestFocus();
         cb.setClickable(true);
 
+        registerForContextMenu(status);
         registerForContextMenu(moveList);
+        registerForContextMenu(thinking);
 
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
@@ -216,6 +218,9 @@ public class CuckooChess extends Activity implements GUIInterface {
 			return true;
 		}
 		case R.id.item_pgn_to_clipboard: {
+			String pgn = ctrl.getPGN();
+			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+			clipboard.setText(pgn);
 			return true;
 		}
 		case R.id.item_clipboard_to_pgn: {
