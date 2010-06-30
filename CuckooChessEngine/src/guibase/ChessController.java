@@ -140,11 +140,13 @@ public class ChessController {
         } else {
             game = new Game(computerPlayer, humanPlayer);
         }
+    }
+    public final void startGame() {
         gui.setSelection(-1);
         updateGUI();
         startComputerThinking();
     }
-
+    
     public final void setPosHistory(List<String> posHistStr) {
 		try {
 			String fen = posHistStr.get(0);
@@ -160,9 +162,6 @@ public class ChessController {
 			for (int i = 0; i < numUndo; i++) {
 				game.processString("undo");
 			}
-			gui.setSelection(-1);
-			updateGUI();
-			startComputerThinking();
 		} catch (ChessParseError e) {
 			// Just ignore invalid positions
 		}

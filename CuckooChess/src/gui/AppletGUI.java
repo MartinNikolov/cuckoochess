@@ -43,6 +43,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
                     initComponents();
                     cbp = (ChessBoardPainter)ChessBoard;
                     ctrl.newGame(PlayerWhite.isSelected(), ttLogSize, true);
+                    ctrl.startGame();
                 }
             });
         } catch (Exception ex) {
@@ -312,6 +313,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 
     private void NewGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NewGameActionPerformed
         ctrl.newGame(PlayerWhite.isSelected(), ttLogSize, true);
+        ctrl.startGame();
     }//GEN-LAST:event_NewGameActionPerformed
 
     private void ShowThinkingStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ShowThinkingStateChanged

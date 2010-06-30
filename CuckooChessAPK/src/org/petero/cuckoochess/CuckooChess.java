@@ -110,6 +110,7 @@ public class CuckooChess extends Activity implements GUIInterface {
         	posHistStr.add(numUndo);
         	ctrl.setPosHistory(posHistStr);
         }
+        ctrl.startGame();
         
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
@@ -164,6 +165,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		switch (item.getItemId()) {
 		case R.id.item_new_game:
 	        ctrl.newGame(playerWhite, ttLogSize, false);
+	        ctrl.startGame();
 			return true;
 		case R.id.item_quit:
 			finish();
@@ -230,7 +232,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		}
 	}
 
-	// FIXME!!! Implement "switch sides".
+	// FIXME!!! Implement "switch sides". ("Play white" should take effect immediately.)
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
     
 	@Override
