@@ -146,7 +146,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
         TimeSlider.setMinorTickSpacing(5);
         TimeSlider.setPaintLabels(true);
         TimeSlider.setPaintTicks(true);
-        TimeSlider.setValue(10);
+        TimeSlider.setValue(5);
         TimeSlider.setFocusable(false);
         TimeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
