@@ -23,4 +23,11 @@
 	android:key="showThinking"
 	android:defaultValue="false">
 </CheckBoxPreference>
+<ListPreference
+	android:title="Text Size"
+	android:key="fontSize"
+	android:entryValues="@array/font_size_values"
+	android:entries="@array/font_size_texts"
+	android:defaultValue="12">
+</ListPreference>
 </PreferenceScreen>

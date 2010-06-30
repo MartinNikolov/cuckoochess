@@ -48,6 +48,11 @@ public class CuckooChess extends Activity implements GUIInterface {
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         cb.setFlipped(boardFlipped);
         ctrl.setTimeLimit();
+        String fontSizeStr = settings.getString("fontSize", "12");
+        int fontSize = Integer.parseInt(fontSizeStr);
+        status.setTextSize(fontSize);
+        moveList.setTextSize(fontSize);
+        thinking.setTextSize(fontSize);
 	}
 	
     /** Called when the activity is first created. */
@@ -77,7 +82,7 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setFocusable(true);
         cb.requestFocus();
         cb.setClickable(true);
-        
+
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
         	String fen = savedInstanceState.getString("startFEN");
