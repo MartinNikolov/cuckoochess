@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/item_fen_to_clipboard" android:title="FEN -> Clipboard"></item>
+  <item android:id="@+id/item_clipboard_to_fen" android:title="Clipboard -> FEN"></item>
+  <item android:id="@+id/item_pgn_to_clipboard" android:title="PGN -> Clipboard"></item>
+  <item android:id="@+id/item_clipboard_to_pgn" android:title="Clipboard -> PGN"></item>
+</menu>

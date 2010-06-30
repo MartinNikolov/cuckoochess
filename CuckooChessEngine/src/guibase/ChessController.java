@@ -148,8 +148,8 @@ public class ChessController {
     public final void setPosHistory(List<String> posHistStr) {
 		try {
 			String fen = posHistStr.get(0);
-			Position pos;
-			pos = TextIO.readFEN(fen);
+			Position pos = TextIO.readFEN(fen);
+			game.processString("new");
 			game.pos = pos;
 			String[] strArr = posHistStr.get(1).split(" ");
 			final int arrLen = strArr.length;
@@ -170,6 +170,19 @@ public class ChessController {
     
     public final List<String> getPosHistory() {
     	return game.getPosHistory();
+    }
+    
+    public String getFEN() {
+    	return TextIO.toFEN(game.pos);
+    }
+    
+    public void setFEN(String fen) throws ChessParseError {
+    	Position pos = TextIO.readFEN(fen);
+    	game.processString("new");
+    	game.pos = pos;
+		gui.setSelection(-1);
+		updateGUI();
+		startComputerThinking();
     }
     
     public final boolean humansTurn() {

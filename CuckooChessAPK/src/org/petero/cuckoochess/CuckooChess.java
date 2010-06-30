@@ -15,13 +15,18 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.ClipboardManager;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnTouchListener;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+import chess.ChessParseError;
 import chess.Move;
 import chess.Position;
 
@@ -82,6 +87,8 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setFocusable(true);
         cb.requestFocus();
         cb.setClickable(true);
+
+        registerForContextMenu(moveList);
 
         ctrl.newGame(playerWhite, ttLogSize, false);
         if (savedInstanceState != null) {
@@ -171,6 +178,45 @@ public class CuckooChess extends Activity implements GUIInterface {
 		{
 			Intent i = new Intent(CuckooChess.this, Preferences.class);
 			startActivityForResult(i, 0);
+			return true;
+		}
+		}
+		return false;
+	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		getMenuInflater().inflate(R.menu.context_menu, menu);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+        if (!ctrl.humansTurn())
+        	return false;
+		switch (item.getItemId()) {
+		case R.id.item_fen_to_clipboard: {
+			String fen = ctrl.getFEN();
+			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+			clipboard.setText(fen);
+			return true;
+		}
+		case R.id.item_clipboard_to_fen: {
+			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+			if (clipboard.hasText()) {
+				String fen = clipboard.getText().toString();
+				try {
+					ctrl.setFEN(fen);
+				} catch (ChessParseError e) {
+					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+				}
+			}
+			return true;
+		}
+		case R.id.item_pgn_to_clipboard: {
+			return true;
+		}
+		case R.id.item_clipboard_to_pgn: {
 			return true;
 		}
 		}
