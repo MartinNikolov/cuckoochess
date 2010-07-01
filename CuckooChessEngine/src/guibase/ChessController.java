@@ -19,6 +19,8 @@ import chess.TextIO;
 import chess.UndoInfo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -189,7 +191,14 @@ public class ChessController {
     	String fen = posHist.get(0);
         String moves = game.getMoveListString(true);
     	String pgn = "";
-    	pgn += String.format("[Date \"%s\"]%n", "xxxx.xx.xx"); // FIXME!!! Compute real date
+    	int year, month, day;
+    	{
+    		Calendar now = GregorianCalendar.getInstance();
+    		year = now.get(Calendar.YEAR);
+    		month = now.get(Calendar.MONTH) + 1;
+    		day = now.get(Calendar.DAY_OF_MONTH);
+    	}
+    	pgn += String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day);
     	String white = "Player";
     	String black = ComputerPlayer.engineName;
     	if (!humanIsWhite) {

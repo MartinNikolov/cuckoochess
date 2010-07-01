@@ -237,7 +237,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		}
 	}
 
-	// FIXME!!! Implement "switch sides". ("Play white" should take effect immediately.)
+	// FIXME!!! "Play white" should take effect directly after clipboard -> FEN,PGN or edit board.
 	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
     
 	@Override
