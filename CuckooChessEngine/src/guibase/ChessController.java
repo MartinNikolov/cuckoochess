@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * The glue between the chess engine and the GUI.
@@ -177,15 +178,6 @@ public class ChessController {
     	return TextIO.toFEN(game.pos);
     }
     
-    public void setFEN(String fen) throws ChessParseError {
-    	Position pos = TextIO.readFEN(fen);
-    	game.processString("new");
-    	game.pos = pos;
-		gui.setSelection(-1);
-		updateGUI();
-		startComputerThinking();
-    }
-
     /** Convert current game to PGN format. */
     public String getPGN() {
     	StringBuilder pgn = new StringBuilder();
@@ -237,7 +229,78 @@ public class ChessController {
     	pgn.append("\n\n");
     	return pgn.toString();
     }
-    
+
+    public void setPGN(String pgn) throws ChessParseError {
+    	// First pass, remove comments
+    	{
+    		StringBuilder out = new StringBuilder();
+    		Scanner sc = new Scanner(pgn);
+    		sc.useDelimiter("");
+    		while (sc.hasNext()) {
+    			String c = sc.next();
+    			if (c.equals("{")) {
+    				sc.skip("[^}]*}");
+    			} else if (c.equals(";")) {
+    				sc.skip("[^\n]*\n");
+    			} else {
+    				out.append(c);
+    			}
+    		}
+    		pgn = out.toString();
+    	}
+
+    	// Parse tag section
+    	Position pos = TextIO.readFEN(TextIO.startPosFEN);
+    	Scanner sc = new Scanner(pgn);
+    	sc.useDelimiter("\\s+");
+    	while (sc.hasNext("\\[.*")) {
+    		String tagName = sc.next();
+    		if (tagName.length() > 1) {
+    			tagName = tagName.substring(1);
+    		} else {
+    			tagName = sc.next();
+    		}
+    		String tagValue = sc.findWithinHorizon(".*\\]", 0);
+    		tagValue = tagValue.trim();
+    		if (tagValue.charAt(0) == '"')
+    			tagValue = tagValue.substring(1);
+    		if (tagValue.charAt(tagValue.length()-1) == '"')
+    			tagValue = tagValue.substring(0, tagValue.length() - 1);
+    		if (tagName.equals("FEN")) {
+    			pos = TextIO.readFEN(tagValue);
+    		}
+    	}
+    	game.processString("new");
+    	game.pos = pos;
+
+    	// FIXME!!! Handle recursive comments ( )
+
+    	// Parse move text section
+    	while (sc.hasNext()) {
+    		String strMove = sc.next();
+    		strMove = strMove.replaceFirst("[0-9]*\\.*([^?!]*)[?!]*", "$1");
+    		if (strMove.length() == 0) continue;
+    		Move m = TextIO.stringToMove(game.pos, strMove);
+    		if (m == null)
+    			break;
+    		game.processString(strMove);
+    	}
+    }
+
+    public void setFENOrPGN(String fenPgn) throws ChessParseError {
+    	try {
+    		Position pos = TextIO.readFEN(fenPgn);
+    		game.processString("new");
+    		game.pos = pos;
+    	} catch (ChessParseError e) {
+    		// Try read as PGN instead
+    		setPGN(fenPgn);
+    	}
+		gui.setSelection(-1);
+		updateGUI();
+		startComputerThinking();
+    }
+
     public final boolean humansTurn() {
         return game.pos.whiteMove == humanIsWhite;
     }

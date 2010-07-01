@@ -205,12 +205,12 @@ public class CuckooChess extends Activity implements GUIInterface {
 			clipboard.setText(fen);
 			return true;
 		}
-		case R.id.item_clipboard_to_fen: {
+		case R.id.item_clipboard_to_fen_pgn: {
 			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 			if (clipboard.hasText()) {
-				String fen = clipboard.getText().toString();
+				String fenPgn = clipboard.getText().toString();
 				try {
-					ctrl.setFEN(fen);
+					ctrl.setFENOrPGN(fenPgn);
 				} catch (ChessParseError e) {
 					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
@@ -221,9 +221,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 			String pgn = ctrl.getPGN();
 			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 			clipboard.setText(pgn);
-			return true;
-		}
-		case R.id.item_clipboard_to_pgn: {
 			return true;
 		}
 		}
@@ -238,7 +235,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	}
 
 	// FIXME!!! "Play white" should take effect directly after clipboard -> FEN,PGN or edit board.
-	// FIXME!!! Implement "edit board" (And/or copy/paste FEN)
+	// FIXME!!! Implement "edit board"
     
 	@Override
 	public void setPosition(Position pos) {
