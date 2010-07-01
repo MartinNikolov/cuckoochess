@@ -185,12 +185,13 @@ public class ChessController {
 		updateGUI();
 		startComputerThinking();
     }
-    
+
+    /** Convert current game to PGN format. */
     public String getPGN() {
+    	StringBuilder pgn = new StringBuilder();
     	List<String> posHist = getPosHistory();
     	String fen = posHist.get(0);
         String moves = game.getMoveListString(true);
-    	String pgn = "";
     	int year, month, day;
     	{
     		Calendar now = GregorianCalendar.getInstance();
@@ -198,22 +199,43 @@ public class ChessController {
     		month = now.get(Calendar.MONTH) + 1;
     		day = now.get(Calendar.DAY_OF_MONTH);
     	}
-    	pgn += String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day);
+    	pgn.append(String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day));
     	String white = "Player";
     	String black = ComputerPlayer.engineName;
     	if (!humanIsWhite) {
     		String tmp = white; white = black; black = tmp;
     	}
-    	pgn += String.format("[White \"%s\"]%n", white);
-    	pgn += String.format("[Black \"%s\"]%n", black);
-    	pgn += String.format("[Result \"%s\"]%n", game.getPGNResultString());
+    	pgn.append(String.format("[White \"%s\"]%n", white));
+    	pgn.append(String.format("[Black \"%s\"]%n", black));
+    	pgn.append(String.format("[Result \"%s\"]%n", game.getPGNResultString()));
     	if (!fen.equals(TextIO.startPosFEN)) {
-    		pgn += String.format("[FEN \"%s\"]%n", fen);
-    		pgn += "[SetUp \"1\"]\n";
+    		pgn.append(String.format("[FEN \"%s\"]%n", fen));
+    		pgn.append("[SetUp \"1\"]\n");
     	}
-    	pgn += "\n";
-    	pgn += moves;
-    	return pgn;
+    	pgn.append("\n");
+		String[] strArr = moves.split(" ");
+    	int currLineLength = 0;
+		final int arrLen = strArr.length;
+		for (int i = 0; i < arrLen; i++) {
+			String move = strArr[i].trim();
+			int moveLen = move.length();
+			if (moveLen > 0) {
+				if (currLineLength + 1 + moveLen >= 80) {
+					pgn.append("\n");
+					pgn.append(move);
+					currLineLength = moveLen;
+				} else {
+					if (currLineLength > 0) {
+						pgn.append(" ");
+						currLineLength++;
+					}
+					pgn.append(move);
+					currLineLength += moveLen;
+				}
+			}
+		}
+    	pgn.append("\n\n");
+    	return pgn.toString();
     }
     
     public final boolean humansTurn() {
