@@ -280,7 +280,7 @@ public class ChessController {
     	// Parse move text section
     	while (sc.hasNext()) {
     		String strMove = sc.next();
-    		strMove = strMove.replaceFirst("[0-9]*\\.*([^?!]*)[?!]*", "$1");
+    		strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
     		if (strMove.length() == 0) continue;
     		Move m = TextIO.stringToMove(game.pos, strMove);
     		if (m == null)

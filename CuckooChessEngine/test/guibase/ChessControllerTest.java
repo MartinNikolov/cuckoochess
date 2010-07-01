@@ -18,7 +18,7 @@ public class ChessControllerTest {
 		assertEquals(TextIO.getSquare("a2"), ctrl.game.pos.getKingSq(true));
 		assertEquals(TextIO.getSquare("a8"), ctrl.game.pos.getKingSq(false));
 		
-		ctrl.setPGN("1.e4 e5 2. Nf3!!! Nc6?? Bb5!!? a6?! * Ba4");
+		ctrl.setPGN("1.e4 e5 2. Nf3!!! $6 Nc6?? Bb5!!? a6?! * Ba4");
 		assertEquals(Piece.BPAWN, ctrl.game.pos.getPiece(TextIO.getSquare("a6")));
 		assertEquals(Piece.WBISHOP, ctrl.game.pos.getPiece(TextIO.getSquare("b5")));
 		assertEquals(Piece.EMPTY, ctrl.game.pos.getPiece(TextIO.getSquare("a4")));
