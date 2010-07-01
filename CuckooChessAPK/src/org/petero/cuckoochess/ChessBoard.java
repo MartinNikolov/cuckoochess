@@ -15,7 +15,7 @@ import chess.Position;
 public class ChessBoard extends View {
 	private Position pos;
     private int selectedSquare;
-    private float cursorX;
+    private float cursorX; // FIXME!!! Cursor should never jump to -1. Use boolean cursorVisible instead.
     private float cursorY;
     private int x0, y0, sqSize;
     private boolean flipped;

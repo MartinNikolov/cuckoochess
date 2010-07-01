@@ -215,9 +215,6 @@ public class ComputerPlayer implements Player {
     	return (int)Math.ceil(w);
     }
 
-    
-    
     // FIXME!!! Test LDS in quiesce (for checks and/or SEE<0 captures)
     // FIXME!!! Test Botvinnik-Markoff extension
-    // FIXME!!! Should a repeated position have a different hash key, to avoid repetition draw problems?
 }

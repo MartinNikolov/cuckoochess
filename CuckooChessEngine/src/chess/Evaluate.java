@@ -162,7 +162,6 @@ public class Evaluate {
         nPieces = new int[Piece.nPieceTypes];
     }
 
-    // FIXME!!! Optimize speed. Fewer loops over all squares.
     /**
      * Static evaluation of a position.
      * @param pos The position to evaluate.
