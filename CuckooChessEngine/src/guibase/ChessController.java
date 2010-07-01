@@ -264,6 +264,8 @@ public class ChessController {
     		tagValue = tagValue.trim();
     		if (tagValue.charAt(0) == '"')
     			tagValue = tagValue.substring(1);
+    		if (tagValue.charAt(tagValue.length()-1) == ']')
+    			tagValue = tagValue.substring(0, tagValue.length() - 1);
     		if (tagValue.charAt(tagValue.length()-1) == '"')
     			tagValue = tagValue.substring(0, tagValue.length() - 1);
     		if (tagName.equals("FEN")) {

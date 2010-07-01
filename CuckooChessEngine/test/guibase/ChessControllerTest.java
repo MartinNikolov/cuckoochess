@@ -22,5 +22,8 @@ public class ChessControllerTest {
 		assertEquals(Piece.BPAWN, ctrl.game.pos.getPiece(TextIO.getSquare("a6")));
 		assertEquals(Piece.WBISHOP, ctrl.game.pos.getPiece(TextIO.getSquare("b5")));
 		assertEquals(Piece.EMPTY, ctrl.game.pos.getPiece(TextIO.getSquare("a4")));
+
+		ctrl.setPGN("[FEN \"r1bq1rk1/pp3ppp/2n1pn2/6B1/1bBP4/2N2N2/PPQ2PPP/R3K2R w KQ - 1 10\"]\n");
+		assertEquals(10, ctrl.game.pos.fullMoveCounter);
 	}
 }
