@@ -236,6 +236,8 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! "Play white" should take effect directly after clipboard -> FEN,PGN or edit board.
 	// FIXME!!! Implement "edit board"
+	// FIXME!!! Game should not be reset when back button pressed.
+	// FIXME!!! Context menu "hit zone" should be larger.
     
 	@Override
 	public void setPosition(Position pos) {

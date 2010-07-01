@@ -22,6 +22,7 @@ import java.util.Random;
  * @author petero
  */
 public class Book {
+	// FIXME!!! Preprocess book to binary format.
     public static class BookEntry {
         Move move;
         int count;
