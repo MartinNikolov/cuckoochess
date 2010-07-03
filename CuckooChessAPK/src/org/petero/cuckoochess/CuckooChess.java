@@ -17,12 +17,11 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -94,10 +93,6 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.requestFocus();
         cb.setClickable(true);
 
-        registerForContextMenu(status);
-        registerForContextMenu(moveList);
-        registerForContextMenu(thinking);
-
         ctrl.newGame(playerWhite, ttLogSize, false);
         {
         	String fen = "";
@@ -130,13 +125,13 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-		        if (ctrl.humansTurn() && (event.getAction() == MotionEvent.ACTION_DOWN)) {
+		        if (ctrl.humansTurn() && (event.getAction() == MotionEvent.ACTION_UP)) {
 		            int sq = cb.eventToSquare(event);
 		            Move m = cb.mousePressed(sq);
 		            if (m != null) {
 		                ctrl.humanMove(m);
 		            }
-		            return true;
+		            return false;
 		        }
 		        return false;
 			}
@@ -152,6 +147,13 @@ public class CuckooChess extends Activity implements GUIInterface {
 		        }
         	}
         });
+        cb.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+            	showDialog(CLIPBOARD_DIALOG);
+				return true;
+			}
+		});
     }
 
 	@Override
@@ -208,45 +210,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 		}
 		return false;
 	}
-	
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		getMenuInflater().inflate(R.menu.context_menu, menu);
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-        if (ctrl.computerThinking())
-        	return false;
-		switch (item.getItemId()) {
-		case R.id.item_fen_to_clipboard: {
-			String fen = ctrl.getFEN();
-			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-			clipboard.setText(fen);
-			return true;
-		}
-		case R.id.item_clipboard_to_fen_pgn: {
-			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-			if (clipboard.hasText()) {
-				String fenPgn = clipboard.getText().toString();
-				try {
-					ctrl.setFENOrPGN(fenPgn);
-				} catch (ChessParseError e) {
-					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-				}
-			}
-			return true;
-		}
-		case R.id.item_pgn_to_clipboard: {
-			String pgn = ctrl.getPGN();
-			ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-			clipboard.setText(pgn);
-			return true;
-		}
-		}
-		return false;
-	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -258,7 +221,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
-	// FIXME!!! Context menu "hit zone" should be larger. Text disappears when clicked.
 	// FIXME!!! Copy/paste should work when computer is thinking (or menu should not be visible)
 
 	@Override
@@ -304,6 +266,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	}
 
 	static final int PROMOTE_DIALOG = 0; 
+	static final int CLIPBOARD_DIALOG = 1; 
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -315,6 +278,45 @@ public class CuckooChess extends Activity implements GUIInterface {
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 	        		ctrl.reportPromotePiece(item);
+			    }
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case CLIPBOARD_DIALOG: {
+	        if (ctrl.computerThinking())
+	        	break;
+			final CharSequence[] items = {"Copy Game", "Copy Position", "Paste"};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Clipboard");
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int item) {
+					switch (item) {
+					case 0: {
+						String pgn = ctrl.getPGN();
+						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+						clipboard.setText(pgn);
+						break;
+					}
+					case 1: {
+						String fen = ctrl.getFEN();
+						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+						clipboard.setText(fen);
+						break;
+					}
+					case 2: {
+						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+						if (clipboard.hasText()) {
+							String fenPgn = clipboard.getText().toString();
+							try {
+								ctrl.setFENOrPGN(fenPgn);
+							} catch (ChessParseError e) {
+								Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+							}
+						}
+						break;
+					}
+					}
 			    }
 			});
 			AlertDialog alert = builder.create();

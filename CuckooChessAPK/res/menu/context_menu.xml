@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu
-  xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:id="@+id/item_pgn_to_clipboard" android:title="Copy game"></item>
-  <item android:id="@+id/item_fen_to_clipboard" android:title="Copy position"></item>
-  <item android:id="@+id/item_clipboard_to_fen_pgn" android:title="Paste"></item>
-</menu>
