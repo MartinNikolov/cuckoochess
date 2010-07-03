@@ -278,9 +278,27 @@ public class ChessController {
     	game.processString("new");
     	game.pos = pos;
 
-    	// FIXME!!! Handle recursive comments ( )
+    	// Handle (ignore) recursive annotation variations
+    	{
+    		StringBuilder out = new StringBuilder();
+    		sc.useDelimiter("");
+    		int level = 0;
+    		while (sc.hasNext()) {
+    			String c = sc.next();
+    			if (c.equals("(")) {
+    				level++;
+    			} else if (c.equals(")")) {
+    				level--;
+    			} else if (level == 0) {
+    				out.append(c);
+    			}
+    		}
+    		pgn = out.toString();
+    	}
 
     	// Parse move text section
+    	sc = new Scanner(pgn);
+    	sc.useDelimiter("\\s+");
     	while (sc.hasNext()) {
     		String strMove = sc.next();
     		strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
