@@ -280,6 +280,8 @@ public class ChessBoard extends View {
 			if (cursorVisible) {
 				int x = Math.round(cursorX);
 				int y = Math.round(cursorY);
+				cursorX = x;
+				cursorY = y;
 				int sq = Position.getSquare(x, y);
 				return mousePressed(sq);
 			}
