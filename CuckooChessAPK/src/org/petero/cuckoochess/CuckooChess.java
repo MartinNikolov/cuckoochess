@@ -79,7 +79,11 @@ public class CuckooChess extends Activity implements GUIInterface {
         moveList = (TextView)findViewById(R.id.moveList);
         thinking = (TextView)findViewById(R.id.thinking);
 		cb = (ChessBoard)findViewById(R.id.chessboard);
-        ctrl = new ChessController(this);
+		status.setFocusable(false);
+		moveListScroll.setFocusable(false);
+		moveList.setFocusable(false);
+		thinking.setFocusable(false);
+		ctrl = new ChessController(this);
         readPrefs();
         
         Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
