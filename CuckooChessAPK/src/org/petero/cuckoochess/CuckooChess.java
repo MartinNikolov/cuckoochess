@@ -193,9 +193,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 	        ctrl.newGame(playerWhite, ttLogSize, false);
 	        ctrl.startGame();
 			return true;
-		case R.id.item_quit:
-			finish();
-			return true;
 		case R.id.item_undo:
 			ctrl.takeBackMove();
 			return true;
@@ -262,6 +259,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
 	// FIXME!!! Context menu "hit zone" should be larger. Text disappears when clicked.
+	// FIXME!!! Copy/paste should work when computer is thinking (or menu should not be visible)
 
 	@Override
 	public void setPosition(Position pos) {
