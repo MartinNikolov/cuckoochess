@@ -15,8 +15,8 @@ import chess.Position;
 public class ChessBoard extends View {
 	private Position pos;
     private int selectedSquare;
-    private float cursorX; // FIXME!!! Cursor should never jump to -1. Use boolean cursorVisible instead.
-    private float cursorY;
+    private float cursorX, cursorY;
+    private boolean cursorVisible;
     private int x0, y0, sqSize;
     private boolean flipped;
 
@@ -31,8 +31,8 @@ public class ChessBoard extends View {
 		super(context, attrs);
     	pos = new Position();
         selectedSquare = -1;
-        cursorX = -1;
-        cursorY = -1;
+        cursorX = cursorY = 0;
+        cursorVisible = false;
         x0 = y0 = sqSize = 0;
         flipped = false;
 
@@ -121,14 +121,6 @@ public class ChessBoard extends View {
                 drawPiece(canvas, xCrd + sqSize / 2, yCrd + sqSize / 2, p);
             }
         }
-        if ((cursorX >= 0) && (cursorY >= 0)) {
-        	int x = Math.round(cursorX);
-        	int y = Math.round(cursorY);
-        	int x0 = getXCrd(x);
-        	int y0 = getYCrd(y);
-            greenOutline.setStrokeWidth(sqSize/(float)16);
-            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
-        }
         if (selectedSquare >= 0) {
             int selX = Position.getX(selectedSquare);
             int selY = Position.getY(selectedSquare);
@@ -136,6 +128,14 @@ public class ChessBoard extends View {
             int x0 = getXCrd(selX);
             int y0 = getYCrd(selY);
             canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, redOutline);
+        }
+        if (cursorVisible) {
+        	int x = Math.round(cursorX);
+        	int y = Math.round(cursorY);
+        	int x0 = getXCrd(x);
+        	int y0 = getYCrd(y);
+            greenOutline.setStrokeWidth(sqSize/(float)16);
+            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
         }
     }
 
@@ -230,7 +230,7 @@ public class ChessBoard extends View {
 	final Move mousePressed(int sq) {
 		if (sq < 0)
 			return null;
-    	cursorX = cursorY = -1;
+    	cursorVisible = false;
         if (selectedSquare >= 0) {
         	int p = pos.getPiece(selectedSquare);
         	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
@@ -277,7 +277,7 @@ public class ChessBoard extends View {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			invalidate();
-			if ((cursorX >= 0) && (cursorY >= 0)) {
+			if (cursorVisible) {
 				int x = Math.round(cursorX);
 				int y = Math.round(cursorY);
 				int sq = Position.getSquare(x, y);
@@ -285,15 +285,7 @@ public class ChessBoard extends View {
 			}
 			return null;
 		}
-		if ((cursorX < 0) || (cursorY < 0)) {
-			if (selectedSquare >= 0) {
-				cursorX = Position.getX(selectedSquare);
-				cursorY = Position.getY(selectedSquare);
-			} else {
-				cursorX = 0;
-				cursorY = 0;
-			}
-		}
+		cursorVisible = true;
 		cursorX += event.getX();
 		cursorY -= event.getY();
 		if (cursorX < 0) cursorX = 0;
