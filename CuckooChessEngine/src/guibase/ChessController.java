@@ -306,6 +306,17 @@ public class ChessController {
 		startComputerThinking();
     }
 
+    /** Set color for human player. Doesn't work when computer is thinking. */
+    public final void setHumanWhite(final boolean humanIsWhite) {
+        if (computerThread != null)
+        	return;
+        if (this.humanIsWhite != humanIsWhite) {
+        	this.humanIsWhite = humanIsWhite;
+        	game.processString("swap");
+        	startComputerThinking();
+        }
+    }
+    
     public final boolean humansTurn() {
         return game.pos.whiteMove == humanIsWhite;
     }

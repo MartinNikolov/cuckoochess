@@ -70,6 +70,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 				readPrefs();
+				ctrl.setHumanWhite(playerWhite);
 			}
 		});
         
@@ -235,10 +236,10 @@ public class CuckooChess extends Activity implements GUIInterface {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == 0) {
 			readPrefs();
+			ctrl.setHumanWhite(playerWhite);
 		}
 	}
 
-	// FIXME!!! "Play white" should take effect directly after clipboard -> FEN,PGN or edit board.
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
 	// FIXME!!! Game should not be reset when back button pressed.
@@ -247,6 +248,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
+		ctrl.setHumanWhite(playerWhite);
 	}
 
 	@Override
