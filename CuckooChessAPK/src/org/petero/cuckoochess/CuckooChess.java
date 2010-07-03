@@ -298,7 +298,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 						break;
 					}
 					case 1: {
-						String fen = ctrl.getFEN();
+						String fen = ctrl.getFEN() + "\n";
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						clipboard.setText(fen);
 						break;
