@@ -288,8 +288,9 @@ public class ChessBoard extends View {
 			return null;
 		}
 		cursorVisible = true;
-		cursorX += event.getX();
-		cursorY -= event.getY();
+		int c = flipped ? -1 : 1;
+		cursorX += c * event.getX();
+		cursorY -= c * event.getY();
 		if (cursorX < 0) cursorX = 0;
 		if (cursorX > 7) cursorX = 7;
 		if (cursorY < 0) cursorY = 0;
