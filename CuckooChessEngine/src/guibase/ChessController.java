@@ -433,6 +433,7 @@ public class ChessController {
                 if (m.promoteTo == promoteTo) {
                     String strMove = TextIO.moveToString(pos, m, false);
                     game.processString(strMove);
+                    // FIXME!!! Complain if move illegal
                     return true;
                 }
             }
@@ -503,7 +504,7 @@ public class ChessController {
         }
     }
 
-    private synchronized void stopComputerThinking() {
+    public synchronized void stopComputerThinking() {
         if (computerThread != null) {
             computerPlayer.timeLimit(0, 0, false);
             try {

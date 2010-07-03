@@ -11,6 +11,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -98,18 +99,25 @@ public class CuckooChess extends Activity implements GUIInterface {
         registerForContextMenu(thinking);
 
         ctrl.newGame(playerWhite, ttLogSize, false);
-        if (savedInstanceState != null) {
-        	String fen = savedInstanceState.getString("startFEN");
-        	if (fen == null) {
-        		fen = "";
-        	}
-        	String moves = savedInstanceState.getString("moves");
-        	if (moves == null) {
-        		moves = "";
-        	}
-        	String numUndo = savedInstanceState.getString("numUndo");
-        	if (numUndo == null) {
-        		numUndo = "0";
+        {
+        	String fen = "";
+        	String moves = "";
+        	String numUndo = "0";
+    		String tmp;
+        	if (savedInstanceState != null) {
+        		tmp = savedInstanceState.getString("startFEN");
+        		if (tmp != null) fen = tmp;
+        		tmp = savedInstanceState.getString("moves");
+        		if (tmp != null) moves = tmp;
+        		tmp = savedInstanceState.getString("numUndo");
+        		if (tmp != null) numUndo = tmp;
+        	} else {
+        		tmp = settings.getString("startFEN", null);
+        		if (tmp != null) fen = tmp;
+        		tmp = settings.getString("moves", null);
+        		if (tmp != null) moves = tmp;
+        		tmp = settings.getString("numUndo", null);
+        		if (tmp != null) numUndo = tmp;
         	}
         	List<String> posHistStr = new ArrayList<String>();
         	posHistStr.add(fen);
@@ -156,8 +164,19 @@ public class CuckooChess extends Activity implements GUIInterface {
 	}
 	
 	@Override
+	protected void onPause() {
+		List<String> posHistStr = ctrl.getPosHistory();
+		Editor editor = settings.edit();
+		editor.putString("startFEN", posHistStr.get(0));
+		editor.putString("moves", posHistStr.get(1));
+		editor.putString("numUndo", posHistStr.get(2));
+		editor.commit();
+		super.onPause();
+	}
+
+	@Override
 	protected void onDestroy() {
-		ctrl.newGame(true, ttLogSize, false);
+		ctrl.stopComputerThinking();
 		super.onDestroy();
 	}
 
@@ -242,9 +261,8 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
-	// FIXME!!! Game should not be reset when back button pressed.
 	// FIXME!!! Context menu "hit zone" should be larger. Text disappears when clicked.
-    
+
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
