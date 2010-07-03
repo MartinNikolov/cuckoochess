@@ -150,7 +150,8 @@ public class CuckooChess extends Activity implements GUIInterface {
         cb.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-            	showDialog(CLIPBOARD_DIALOG);
+		        if (!ctrl.computerThinking())
+		        	showDialog(CLIPBOARD_DIALOG);
 				return true;
 			}
 		});
@@ -221,7 +222,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
-	// FIXME!!! Copy/paste should work when computer is thinking (or menu should not be visible)
 
 	@Override
 	public void setPosition(Position pos) {
@@ -284,8 +284,6 @@ public class CuckooChess extends Activity implements GUIInterface {
 			return alert;
 		}
 		case CLIPBOARD_DIALOG: {
-	        if (ctrl.computerThinking())
-	        	break;
 			final CharSequence[] items = {"Copy Game", "Copy Position", "Paste"};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Clipboard");
