@@ -1,5 +1,6 @@
 package guibase;
 
+import chess.Move;
 import chess.Position;
 
 public interface GUIInterface {
@@ -33,4 +34,7 @@ public interface GUIInterface {
 
 	/** Run code on the GUI thread. */
 	public void runOnUIThread(Runnable runnable);
+
+	/** Report that user attempted to make an invalid move. */
+	public void reportInvalidMove(Move m);
 }

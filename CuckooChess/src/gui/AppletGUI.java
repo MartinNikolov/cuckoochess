@@ -426,4 +426,8 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
 	public boolean randomMode() {
 		return false;
 	}
+
+	@Override
+	public void reportInvalidMove(Move m) {
+	}
 }

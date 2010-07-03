@@ -29,6 +29,7 @@ import android.widget.Toast;
 import chess.ChessParseError;
 import chess.Move;
 import chess.Position;
+import chess.TextIO;
 
 public class CuckooChess extends Activity implements GUIInterface {
 	ChessBoard cb;
@@ -331,6 +332,12 @@ public class CuckooChess extends Activity implements GUIInterface {
             	showDialog(PROMOTE_DIALOG);
             }
 		});
+	}
+
+	@Override
+	public void reportInvalidMove(Move m) {
+		String msg = String.format("Invalid move %s-%s", TextIO.squareToString(m.from), TextIO.squareToString(m.to));
+		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
