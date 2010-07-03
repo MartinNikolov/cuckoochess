@@ -196,7 +196,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-        if (!ctrl.humansTurn())
+        if (ctrl.computerThinking())
         	return false;
 		switch (item.getItemId()) {
 		case R.id.item_fen_to_clipboard: {
@@ -236,8 +236,9 @@ public class CuckooChess extends Activity implements GUIInterface {
 
 	// FIXME!!! "Play white" should take effect directly after clipboard -> FEN,PGN or edit board.
 	// FIXME!!! Implement "edit board"
+	// FIXME!!! Implement analysis mode
 	// FIXME!!! Game should not be reset when back button pressed.
-	// FIXME!!! Context menu "hit zone" should be larger.
+	// FIXME!!! Context menu "hit zone" should be larger. Text disappears when clicked.
     
 	@Override
 	public void setPosition(Position pos) {

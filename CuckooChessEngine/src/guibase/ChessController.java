@@ -17,6 +17,7 @@ import chess.Position;
 import chess.Search;
 import chess.TextIO;
 import chess.UndoInfo;
+import chess.Game.GameState;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -184,6 +185,8 @@ public class ChessController {
     	List<String> posHist = getPosHistory();
     	String fen = posHist.get(0);
         String moves = game.getMoveListString(true);
+        if (game.getGameState() == GameState.ALIVE)
+        	moves += " *";
     	int year, month, day;
     	{
     		Calendar now = GregorianCalendar.getInstance();
@@ -305,6 +308,9 @@ public class ChessController {
 
     public final boolean humansTurn() {
         return game.pos.whiteMove == humanIsWhite;
+    }
+    public final boolean computerThinking() {
+    	return computerThread != null;
     }
 
     public final void takeBackMove() {
