@@ -86,6 +86,7 @@ public class CuckooChess extends Activity implements GUIInterface {
 		moveList.setFocusable(false);
 		thinking.setFocusable(false);
 		ctrl = new ChessController(this);
+		ctrl.setThreadStackSize(32768);
         readPrefs();
         
         Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");

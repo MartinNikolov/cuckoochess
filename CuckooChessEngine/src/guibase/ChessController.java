@@ -36,6 +36,7 @@ public class ChessController {
     GUIInterface gui;
     boolean humanIsWhite;
     Thread computerThread;
+    int threadStack;       // Thread stack size, or zero to use OS default
 
     // Search statistics
     String thinkingPV;
@@ -129,8 +130,13 @@ public class ChessController {
         this.gui = gui;
         listener = new SearchListener();
         thinkingPV = "";
+        threadStack = 0;
     }
 
+    public void setThreadStackSize(int size) {
+    	threadStack = size;
+    }
+    
     public final void newGame(boolean humanIsWhite, int ttLogSize, boolean verbose) {
         stopComputerThinking();
         this.humanIsWhite = humanIsWhite;
@@ -481,22 +487,28 @@ public class ChessController {
     private void startComputerThinking() {
         if (game.pos.whiteMove != humanIsWhite) {
             if (computerThread == null) {
-                computerThread = new Thread(new Runnable() {
-                   public void run() {
-                       computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
-                       final String cmd = computerPlayer.getCommand(new Position(game.pos),
-                               game.haveDrawOffer(), game.getHistory());
-                       gui.runOnUIThread(new Runnable() {
-                           public void run() {
-                               game.processString(cmd);
-                               thinkingPV = "";
-                               updateGUI();
-                               setSelection();
-                               stopComputerThinking();
-                           }
-                       });
-                   }
-                });
+            	Runnable run = new Runnable() {
+            		public void run() {
+            			computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
+            			final String cmd = computerPlayer.getCommand(new Position(game.pos),
+            					game.haveDrawOffer(), game.getHistory());
+            			gui.runOnUIThread(new Runnable() {
+            				public void run() {
+            					game.processString(cmd);
+            					thinkingPV = "";
+            					updateGUI();
+            					setSelection();
+            					stopComputerThinking();
+            				}
+            			});
+            		}
+            	};
+            	if (threadStack > 0) {
+                	ThreadGroup tg = new ThreadGroup("searcher");
+            		computerThread = new Thread(tg, run, "searcher", threadStack);
+            	} else {
+            		computerThread = new Thread(run);
+            	}
                 thinkingPV = "";
                 updateGUI();
                 computerThread.start();
