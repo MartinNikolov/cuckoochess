@@ -327,7 +327,7 @@ public class EngineControl {
         os.printf("option name OwnBook type check default false%n");
         os.printf("option name Ponder type check default true%n");
         os.printf("option name UCI_AnalyseMode type check default false%n");
-        os.printf("option name UCI_EngineAbout type string default %s by Peter Osterlund, see http://web.telia.com/~u89404340/javachess/index.html%n",
+        os.printf("option name UCI_EngineAbout type string default %s by Peter Osterlund, see http://web.comhem.se/petero2home/javachess/index.html%n",
                 ComputerPlayer.engineName);
     }
 
