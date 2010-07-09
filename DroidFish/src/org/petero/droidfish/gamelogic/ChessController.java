@@ -460,16 +460,11 @@ public class ChessController {
             		public void run() {
             			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
             			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
-            			String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(game.pos),
+            			final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(game.pos),
             												   game.haveDrawOffer());
-            			Move m = TextIO.UCIstringToMove(cmd);
-            			if (m != null) {
-            				cmd = TextIO.moveToString(game.pos, m, false);
-            			}
-            			final String cmd2 = cmd;
             			gui.runOnUIThread(new Runnable() {
             				public void run() {
-            					game.processString(cmd2);
+            					game.processString(cmd);
             					thinkingPV = "";
             					updateGUI();
             					setSelection();

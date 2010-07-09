@@ -45,7 +45,10 @@ public class Game {
             return false;
         }
 
-        Move m = TextIO.stringToMove(pos, str);
+        Move m = TextIO.UCIstringToMove(str);
+        if (m == null) {
+            m = TextIO.stringToMove(pos, str);
+        }
         if (m == null) {
             return false;
         }
@@ -256,7 +259,7 @@ public class Game {
         StringBuilder moves = new StringBuilder();
         for (int i = 0; i < moveList.size(); i++) {
             Move move = moveList.get(i);
-            String strMove = TextIO.moveToString(pos, move, false);
+            String strMove = TextIO.moveToUCIString(move);
             moves.append(String.format(" %s", strMove));
             UndoInfo ui = new UndoInfo();
             pos.makeMove(move, ui);
