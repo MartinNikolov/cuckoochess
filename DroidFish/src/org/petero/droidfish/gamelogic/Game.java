@@ -183,7 +183,8 @@ public class Game {
             } catch (ChessParseError ex) {
                 throw new RuntimeException();
             }
-            computerPlayer.clearTT();
+            if (computerPlayer != null)
+            	computerPlayer.clearTT();
             return true;
         } else if (moveStr.equals("undo")) {
             if (currentMove > 0) {
@@ -221,6 +222,19 @@ public class Game {
             } else {
                 return true;
             }
+        } else if (moveStr.startsWith("setpos ")) {
+            String fen = moveStr.substring(moveStr.indexOf(" ") + 1);
+            Position newPos = null;
+            try {
+                newPos = TextIO.readFEN(fen);
+            } catch (ChessParseError ex) {
+                System.out.printf("Invalid FEN: %s (%s)%n", fen, ex.getMessage());
+            }
+            if (newPos != null) {
+                handleCommand("new");
+                pos = newPos;
+            }
+            return true;
         } else {
             return false;
         }
