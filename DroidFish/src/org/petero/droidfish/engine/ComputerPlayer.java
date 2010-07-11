@@ -231,7 +231,8 @@ public class ComputerPlayer {
     }
     
 
-	private int statDepth = 0;
+	private int statCurrDepth = 0;
+	private int statPVDepth = 0;
     private int statScore = 0;
     private boolean statIsMate = false;
     private boolean statUpperBound = false;
@@ -262,7 +263,7 @@ public class ComputerPlayer {
     		while (i < nTokens - 1) {
     			String is = tokens[i++];
     			if (is.equals("depth")) {
-    				statDepth = Integer.parseInt(tokens[i++]);
+    				statCurrDepth = Integer.parseInt(tokens[i++]);
     				depthModified = true;
     			} else if (is.equals("currmove")) {
     				statCurrMove = tokens[i++];
@@ -284,6 +285,7 @@ public class ComputerPlayer {
     				while (i < nTokens)
     					statPV.add(tokens[i++]);
     				pvModified = true;
+    				statPVDepth = statCurrDepth;
     			} else if (is.equals("score")) {
 					statIsMate = tokens[i++].equals("mate");
 					statScore = Integer.parseInt(tokens[i++]);
@@ -311,7 +313,7 @@ public class ComputerPlayer {
         if (listener == null)
     		return;
     	if (depthModified) {
-    		listener.notifyDepth(statDepth);
+    		listener.notifyDepth(statCurrDepth);
     		depthModified = false;
     	}
         if (currMoveModified) {
@@ -324,7 +326,7 @@ public class ComputerPlayer {
         	int nMoves = statPV.size();
         	for (int i = 0; i < nMoves; i++)
         		moves.add(TextIO.UCIstringToMove(statPV.get(i)));
-            listener.notifyPV(statDepth, statScore, statTime, statNodes, statNps,
+            listener.notifyPV(statPVDepth, statScore, statTime, statNodes, statNps,
             				  statIsMate, statUpperBound, statLowerBound, moves);
         	pvModified = false;
         }
