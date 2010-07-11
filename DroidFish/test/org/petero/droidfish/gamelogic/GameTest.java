@@ -334,6 +334,11 @@ public class GameTest {
         
         res = game.processString("junk");
         assertEquals(false, res);
+        
+        res = game.processString("new");
+        assertEquals(true, res);
+        res = game.processString("e7e5");
+        assertEquals(false, res);
     }
 
     /**

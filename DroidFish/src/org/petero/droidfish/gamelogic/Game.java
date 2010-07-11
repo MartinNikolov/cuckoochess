@@ -46,6 +46,19 @@ public class Game {
         }
 
         Move m = TextIO.UCIstringToMove(str);
+        if (m != null) {
+            ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+            moves = MoveGen.removeIllegal(pos, moves);
+            boolean legal = false;
+            for (int i = 0; i < moves.size(); i++) {
+            	if (m.equals(moves.get(i))) {
+            		legal = true;
+            		break;
+            	}
+            }
+            if (!legal)
+            	m = null;
+        }
         if (m == null) {
             m = TextIO.stringToMove(pos, str);
         }
