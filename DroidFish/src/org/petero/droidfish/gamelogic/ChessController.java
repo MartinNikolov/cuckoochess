@@ -20,7 +20,7 @@ import org.petero.droidfish.gamelogic.Game.GameState;
  * @author petero
  */
 public class ChessController {
-    ComputerPlayer computerPlayer;
+    ComputerPlayer computerPlayer = null;
     Game game;
     GUIInterface gui;
     boolean humanIsWhite;
@@ -123,9 +123,11 @@ public class ChessController {
     public final void newGame(boolean humanIsWhite, int ttLogSize) {
         stopComputerThinking();
         this.humanIsWhite = humanIsWhite;
-        computerPlayer = new ComputerPlayer();
-        computerPlayer.setListener(listener);
-        game = new Game(computerPlayer);
+        if (computerPlayer == null) {
+        	computerPlayer = new ComputerPlayer();
+        	computerPlayer.setListener(listener);
+        }
+       	game = new Game(computerPlayer);
     }
 
     public final void startGame() {
@@ -460,11 +462,12 @@ public class ChessController {
             		public void run() {
             			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
             			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
-            			final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(game.pos),
-            												   game.haveDrawOffer());
+            			final Game g = game;
+            			final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(g.pos),
+            														 g.haveDrawOffer());
             			gui.runOnUIThread(new Runnable() {
             				public void run() {
-            					game.processString(cmd);
+            					g.processString(cmd);
             					thinkingPV = "";
             					updateGUI();
             					setSelection();
