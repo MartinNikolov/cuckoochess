@@ -23,6 +23,9 @@ public class TextIO {
         if (words.length < 2) {
             throw new ChessParseError("Too few spaces");
         }
+        for (int i = 0; i < words.length; i++) {
+        	words[i] = words[i].trim();
+        }
         
         // Piece placement
         int row = 7;

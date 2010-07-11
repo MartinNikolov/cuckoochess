@@ -100,6 +100,9 @@ public class TextIOTest {
 
         wasError = testFENParseError("1B1B4/6k1/7r/7P/6q1/r7/q7/7K b - - acn 6; acs 0;");
         assertEquals(false, wasError);  // Extra stuff after FEN string is allowed
+        
+        pos = TextIO.readFEN("3r2k1/p4p1p/1ppq2p1/8/2PpQ3/1P5P/P4PP1/3R1K2 b - - 1 26\n");
+        assertEquals(26, pos.fullMoveCounter);
     }
 
     /** Tests if trying to parse a FEN string causes an error. */
