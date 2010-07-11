@@ -37,7 +37,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement analysis mode
 
 	ChessBoard cb;
-	ChessController ctrl;
+	ChessController ctrl = null;
 	boolean mShowThinking;
 	int mTimeLimit;
 	boolean playerWhite;
@@ -54,7 +54,7 @@ public class DroidFish extends Activity implements GUIInterface {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
 			@Override
@@ -74,6 +74,12 @@ public class DroidFish extends Activity implements GUIInterface {
 		moveListScroll.setFocusable(false);
 		moveList.setFocusable(false);
 		thinking.setFocusable(false);
+
+        if (android.os.Build.VERSION.SDK_INT != 7) {
+        	showDialog(VERSION_ERROR_DIALOG);
+        	return;
+        }
+		
 		ctrl = new ChessController(this);
         readPrefs();
 
@@ -150,27 +156,33 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		List<String> posHistStr = ctrl.getPosHistory();
-		outState.putString("startFEN", posHistStr.get(0));
-		outState.putString("moves", posHistStr.get(1));
-		outState.putString("numUndo", posHistStr.get(2));
+		if (ctrl != null) {
+			List<String> posHistStr = ctrl.getPosHistory();
+			outState.putString("startFEN", posHistStr.get(0));
+			outState.putString("moves", posHistStr.get(1));
+			outState.putString("numUndo", posHistStr.get(2));
+		}
 	}
 	
 	@Override
 	protected void onPause() {
-		List<String> posHistStr = ctrl.getPosHistory();
-		Editor editor = settings.edit();
-		editor.putString("startFEN", posHistStr.get(0));
-		editor.putString("moves", posHistStr.get(1));
-		editor.putString("numUndo", posHistStr.get(2));
-		editor.commit();
+		if (ctrl != null) {
+			List<String> posHistStr = ctrl.getPosHistory();
+			Editor editor = settings.edit();
+			editor.putString("startFEN", posHistStr.get(0));
+			editor.putString("moves", posHistStr.get(1));
+			editor.putString("numUndo", posHistStr.get(2));
+			editor.commit();
+		}
 		super.onPause();
 	}
 
 	@Override
 	protected void onDestroy() {
-		ctrl.stopComputerThinking();
-		ctrl.shutdownEngine();
+		if (ctrl != null) {
+			ctrl.stopComputerThinking();
+			ctrl.shutdownEngine();
+		}
 		super.onDestroy();
 	}
 
@@ -269,7 +281,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	static final int PROMOTE_DIALOG = 0; 
-	static final int CLIPBOARD_DIALOG = 1; 
+	static final int CLIPBOARD_DIALOG = 1;
+	static final int VERSION_ERROR_DIALOG = 2;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -320,6 +333,18 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 			    }
 			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case VERSION_ERROR_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Only Android 2.1 is supported!")
+			       .setCancelable(false)
+			       .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			        	   finish();
+			           }
+			       });
 			AlertDialog alert = builder.create();
 			return alert;
 		}
