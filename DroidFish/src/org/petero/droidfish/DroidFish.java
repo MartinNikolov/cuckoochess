@@ -32,7 +32,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-	// FIXME!!! Install on SD card
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Implement analysis mode
 
