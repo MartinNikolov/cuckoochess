@@ -44,7 +44,7 @@ using namespace std;
 //// Functions
 ////
 
-int main2(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
 
   // Disable IO buffering
   cout.rdbuf()->pubsetbuf(NULL, 0);

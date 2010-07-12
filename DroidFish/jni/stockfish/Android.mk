@@ -18,6 +18,6 @@ LOCAL_CFLAGS    := -I$(LOCAL_PATH)/../stlport/stlport \
 	-isystem $(SYSROOT)/usr/include \
 	-DNO_PREFETCH=1
 
-LOCAL_SHARED_LIBRARIES := stlport
+LOCAL_STATIC_LIBRARIES := stlport
 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)

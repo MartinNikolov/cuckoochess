@@ -2,8 +2,6 @@ package org.petero.droidfish.engine;
 
 public class NativePipedProcess {
 	static {
-		System.loadLibrary("stlport");
-		System.loadLibrary("stockfish");
 		System.loadLibrary("jni");
 	}
 

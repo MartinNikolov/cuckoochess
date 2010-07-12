@@ -10,7 +10,7 @@ LOCAL_CFLAGS    := -I$(LOCAL_PATH)/stlport/stlport \
 	-DTARGET_OS=android -D__ANDROID__ \
 	-isystem $(SYSROOT)/usr/include
 
-LOCAL_SHARED_LIBRARIES := stlport stockfish
+LOCAL_STATIC_LIBRARIES := stockfish stlport
 
 include $(BUILD_SHARED_LIBRARY)
 

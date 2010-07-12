@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <fcntl.h>
 
-int main2(int argc, const char* argv[]);
+int main(int argc, char* argv[]);
 
 static int fdFromChild = -1;
 static int fdToChild = -1;
@@ -34,8 +34,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
     	close(0); dup(fd1[0]); close(fd1[0]);
     	close(1); dup(fd2[1]); close(fd2[1]);
     	close(2); dup(1);
-    	static const char* argv[] = {"stockfish", NULL};
-   	    main2(1, argv);
+    	static char* argv[] = {"stockfish", NULL};
+   	    main(1, argv);
     	_exit(0);
     } else {
     	close(fd1[0]);
