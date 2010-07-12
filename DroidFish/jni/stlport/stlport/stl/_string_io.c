@@ -108,7 +108,7 @@ operator >> (basic_istream<_CharT, _Traits>& __is,
       else {
         _CharT __c = _Traits::to_char_type(__c1);
 
-        if (_Ctype.is(_C_type::space, __c)) {
+        if (isspace(__c)) {
           if (_Traits::eq_int_type(__buf->sputbackc(__c), _Traits::eof()))
             __is.setstate(__istream::failbit);
           break;

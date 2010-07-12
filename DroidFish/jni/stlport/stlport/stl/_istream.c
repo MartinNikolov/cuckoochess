@@ -57,7 +57,7 @@ struct _Is_not_wspace {
 
   _Is_not_wspace(const ctype<argument_type>* __c_type) : _M_ctype(__c_type) {}
   bool operator()(argument_type __c) const
-    { return !_M_ctype->is(ctype_base::space, __c); }
+    { return !isspace(__c); }
 };
 
 template <class _Traits>
@@ -69,8 +69,7 @@ struct _Is_wspace_null {
 
   _Is_wspace_null(const ctype<argument_type>* __c_type) : _M_ctype(__c_type) {}
   bool operator()(argument_type __c) const {
-    return _Traits::eq(__c, argument_type()) ||
-           _M_ctype->is(ctype_base::space, __c);
+      return _Traits::eq(__c, argument_type()) || isspace(__c);
   }
 };
 
@@ -86,7 +85,15 @@ struct _Scan_for_wspace {
   _Scan_for_wspace(const ctype<char_type>* __ctype) : _M_ctype(__ctype) {}
   const char_type*
   operator()(const char_type* __first, const char_type* __last) const {
+#if 1
+      for (const char_type* p = __first; p != __last; ++p) {
+	  if (isspace(*p))
+	      return p;
+      }
+      return __last;
+#else
     return _M_ctype->scan_is(ctype_base::space, __first, __last);
+#endif
   }
 };
 
@@ -104,7 +111,15 @@ struct _Scan_wspace_null {
   operator()(const char_type* __first, const char_type* __last) const {
     __last = find_if(__first, __last,
                      _Eq_char_bound<_Traits>(char_type()));
-    return _M_ctype->scan_is(ctype_base::space, __first, __last);
+#if 1
+      for (const char_type* p = __first; p != __last; ++p) {
+	  if (isspace(*p))
+	      return p;
+      }
+      return __last;
+#else
+      return _M_ctype->scan_is(ctype_base::space, __first, __last);
+#endif
   }
 };
 
@@ -120,7 +135,15 @@ struct _Scan_for_not_wspace {
   _Scan_for_not_wspace(const ctype<char_type>* __c_type) : _M_ctype(__c_type) {}
   const char_type*
   operator()(const char_type* __first, const char_type* __last) const {
+#if 1
+      for (const char_type* p = __first; p != __last; ++p) {
+	  if (!isspace(*p))
+	      return p;
+      }
+      return __last;
+#else
     return _M_ctype->scan_not(ctype_base::space, __first, __last);
+#endif
   }
 };
 

@@ -75,11 +75,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		moveList.setFocusable(false);
 		thinking.setFocusable(false);
 
-        if (android.os.Build.VERSION.SDK_INT != 7) {
-        	showDialog(VERSION_ERROR_DIALOG);
-        	return;
-        }
-		
 		ctrl = new ChessController(this);
         readPrefs();
 
@@ -282,7 +277,6 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	static final int PROMOTE_DIALOG = 0; 
 	static final int CLIPBOARD_DIALOG = 1;
-	static final int VERSION_ERROR_DIALOG = 2;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -333,18 +327,6 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 			    }
 			});
-			AlertDialog alert = builder.create();
-			return alert;
-		}
-		case VERSION_ERROR_DIALOG: {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Only Android 2.1 is supported!")
-			       .setCancelable(false)
-			       .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-			           public void onClick(DialogInterface dialog, int id) {
-			        	   finish();
-			           }
-			       });
 			AlertDialog alert = builder.create();
 			return alert;
 		}
