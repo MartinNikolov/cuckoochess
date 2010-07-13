@@ -235,7 +235,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
-		ctrl.setGameMode(gameMode);
 	}
 
 	@Override
@@ -271,7 +270,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	@Override
 	public boolean showThinking() {
-		return mShowThinking || gameMode.analysisMode;
+		return mShowThinking || gameMode.analysisMode();
 	}
 
 	static final int PROMOTE_DIALOG = 0; 

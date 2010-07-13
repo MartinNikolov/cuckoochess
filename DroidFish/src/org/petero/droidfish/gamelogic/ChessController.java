@@ -24,8 +24,7 @@ public class ChessController {
     private ComputerPlayer computerPlayer = null;
     private Game game;
     private GUIInterface gui;
-    private boolean humanIsWhite;
-    private boolean analysisMode;
+    private GameMode gameMode;
     private Thread computerThread;
     private Thread analysisThread;
 
@@ -137,7 +136,7 @@ public class ChessController {
     public final void newGame(GameMode gameMode) {
         stopComputerThinking();
         stopAnalysis();
-        this.humanIsWhite = gameMode.playerWhite;
+        this.gameMode = gameMode;
         if (computerPlayer == null) {
         	computerPlayer = new ComputerPlayer();
         	computerPlayer.setListener(listener);
@@ -152,29 +151,23 @@ public class ChessController {
     }
     
     private final void updateComputeThreads() {
-        startComputerThinking();
-        startAnalysis();
+    	boolean analysis = gameMode.analysisMode();
+    	boolean computersTurn = !gameMode.humansTurn(game.pos.whiteMove);
+    	if (!analysis)
+    		stopAnalysis();
+    	if (!computersTurn)
+    		stopComputerThinking();
+        if (analysis)
+        	startAnalysis();
+        if (computersTurn)
+            startComputerThinking();
     }
-    
-    /** Set color for human player. Doesn't work when computer is thinking. */
+
+    /** Set game mode. */
 	public final void setGameMode(GameMode newMode) {
-	    if (computerThread != null)
-	    	return;
-	    if (this.humanIsWhite != newMode.playerWhite) {
-	    	this.humanIsWhite = newMode.playerWhite;
-	    	startComputerThinking();
-	    }
-		if (analysisMode != newMode.analysisMode) {
-			analysisMode = newMode.analysisMode;
-			if (analysisMode) {
-				stopComputerThinking();
-				startAnalysis();
-			} else {
-				stopAnalysis();
-				startComputerThinking();
-			}
-			startGame();
-		}
+		gameMode = newMode;
+		updateComputeThreads();
+        updateGUI();
 	}
 
 	public final void setPosHistory(List<String> posHistStr) {
@@ -221,11 +214,9 @@ public class ChessController {
     		day = now.get(Calendar.DAY_OF_MONTH);
     	}
     	pgn.append(String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day));
-    	String white = "Player";
-    	String black = ComputerPlayer.engineName;
-    	if (!humanIsWhite) {
-    		String tmp = white; white = black; black = tmp;
-    	}
+    	String engine = ComputerPlayer.engineName;
+    	String white = gameMode.playerWhite() ? "Player" : engine;
+    	String black = gameMode.playerBlack() ? "Player" : engine;
     	pgn.append(String.format("[White \"%s\"]%n", white));
     	pgn.append(String.format("[Black \"%s\"]%n", black));
     	pgn.append(String.format("[Result \"%s\"]%n", game.getPGNResultString()));
@@ -352,8 +343,9 @@ public class ChessController {
 
     /** True if human's turn to make a move. (True in analysis mode.) */
     public final boolean humansTurn() {
-        return (game.pos.whiteMove == humanIsWhite) || analysisMode;
+    	return gameMode.humansTurn(game.pos.whiteMove);
     }
+
     /** True if the computer is thinking about next move. (False in analysis mode.) */
     public final boolean computerThinking() {
     	return computerThread != null;
@@ -372,7 +364,7 @@ public class ChessController {
                 }
                 updateGUI();
                 setSelection();
-                if (analysisMode)
+                if (gameMode.analysisMode())
                 	stopAnalysis();
                 updateComputeThreads();
             }
@@ -381,12 +373,13 @@ public class ChessController {
 
     public final void redoMove() {
         if (humansTurn()) {
+        	// FIXME!!! Check if redo will have any effect.
             game.processString("redo");
             if (!humansTurn())
             	game.processString("redo");
             updateGUI();
             setSelection();
-            if (analysisMode)
+            if (gameMode.analysisMode())
             	stopAnalysis();
             updateComputeThreads();
         }
@@ -396,7 +389,7 @@ public class ChessController {
         if (humansTurn()) {
             if (doMove(m)) {
                 updateGUI();
-                if (analysisMode)
+                if (gameMode.analysisMode())
                 	stopAnalysis();
                 updateComputeThreads();
             } else {
@@ -456,7 +449,6 @@ public class ChessController {
         return false;
     }
 
-
     final private void updateGUI() {
         String str = game.pos.whiteMove ? "White's move" : "Black's move";
         if (computerThread != null) str += " (thinking)";
@@ -471,7 +463,7 @@ public class ChessController {
     }
 
     private final void setThinkingPV() {
-    	String str = new String();
+    	String str = "";
     	if (gui.showThinking()) {
             str = thinkingPV;
         }
@@ -485,37 +477,32 @@ public class ChessController {
     }
 
     private final synchronized void startComputerThinking() {
-    	if (!humansTurn()) {
-    		if (analysisThread != null) return;
-            if (computerThread == null) {
-            	computerThread = new Thread(new Runnable() {
-            		public void run() {
-            			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
-            			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
-            			final Game g = game;
-            			final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(g.pos),
-            														 g.haveDrawOffer());
-            			gui.runOnUIThread(new Runnable() {
-            				public void run() {
-            					g.processString(cmd);
-            					thinkingPV = "";
-            					updateGUI();
-            					setSelection();
-            					stopComputerThinking();
-            	                if (analysisMode) {
-            	                	stopAnalysis();
-            	                	startAnalysis();
-            	                }
-            				}
-            			});
-            		}
-            	});
-            	thinkingPV = "";
-                updateGUI();
-                if (computerThread != null) { // UpdateGUI() can make it go away.
-                	computerThread.start();
-                }
-            }
+    	if (analysisThread != null) return;
+    	if (computerThread == null) {
+    		computerThread = new Thread(new Runnable() {
+    			public void run() {
+    				computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
+    				TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+    				final Game g = game;
+    				final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(g.pos),
+    															 g.haveDrawOffer());
+    				gui.runOnUIThread(new Runnable() {
+    					public void run() {
+    						g.processString(cmd);
+    						thinkingPV = "";
+    						updateGUI();
+    						setSelection();
+    						if (gameMode.analysisMode()) {
+    							stopAnalysis(); // To force analysis to restart for new position
+    						}
+    						updateComputeThreads();
+    					}
+    				});
+    			}
+    		});
+    		thinkingPV = "";
+    		computerThread.start();
+    		updateGUI();
         }
     }
 
@@ -533,7 +520,7 @@ public class ChessController {
     }
 
     private final synchronized void startAnalysis() {
-    	if (humansTurn() && analysisMode) {
+    	if (gameMode.analysisMode()) {
     		if (computerThread != null) return;
             if (analysisThread == null) {
             	analysisThread = new Thread(new Runnable() {
@@ -545,8 +532,8 @@ public class ChessController {
             								   g.haveDrawOffer());
             		}
             	});
-                analysisThread.start();
             	thinkingPV = "";
+                analysisThread.start();
                 updateGUI();
             }
         }
