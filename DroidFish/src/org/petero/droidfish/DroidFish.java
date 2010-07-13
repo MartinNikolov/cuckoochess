@@ -33,18 +33,18 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
-	// FIXME!!! Implement analysis mode
 
-	ChessBoard cb;
-	ChessController ctrl = null;
-	boolean mShowThinking;
-	int mTimeLimit;
-	boolean playerWhite;
+	private ChessBoard cb;
+	private ChessController ctrl = null;
+	private boolean mShowThinking;
+	private int mTimeLimit;
+	private boolean playerWhite;
+	private boolean analysisMode;
 
-	TextView status;
-	ScrollView moveListScroll;
-	TextView moveList;
-	TextView thinking;
+	private TextView status;
+	private ScrollView moveListScroll;
+	private TextView moveList;
+	private TextView thinking;
 
 	SharedPreferences settings;
 
@@ -59,6 +59,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 				readPrefs();
 				ctrl.setHumanWhite(playerWhite);
+				ctrl.setAnalysisMode(analysisMode);
 			}
 		});
 
@@ -173,7 +174,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	protected void onDestroy() {
 		if (ctrl != null) {
-			ctrl.stopComputerThinking();
 			ctrl.shutdownEngine();
 		}
 		super.onDestroy();
@@ -186,6 +186,7 @@ public class DroidFish extends Activity implements GUIInterface {
         playerWhite = settings.getBoolean("playerWhite", true);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         cb.setFlipped(boardFlipped);
+        analysisMode = settings.getBoolean("analysisMode", false);
         ctrl.setTimeLimit();
         String fontSizeStr = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(fontSizeStr);
@@ -228,6 +229,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		if (requestCode == 0) {
 			readPrefs();
 			ctrl.setHumanWhite(playerWhite);
+			ctrl.setAnalysisMode(analysisMode);
 		}
 	}
 
@@ -235,6 +237,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
 		ctrl.setHumanWhite(playerWhite);
+		ctrl.setAnalysisMode(analysisMode);
 	}
 
 	@Override
@@ -270,7 +273,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	@Override
 	public boolean showThinking() {
-		return mShowThinking;
+		return mShowThinking || analysisMode;
 	}
 
 	static final int PROMOTE_DIALOG = 0; 

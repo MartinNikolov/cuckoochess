@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class ChessBoard extends View {
+	// FIXME!!! White pieces should be filled with color, not hollow.
 	private Position pos;
     private int selectedSquare;
     private float cursorX, cursorY;

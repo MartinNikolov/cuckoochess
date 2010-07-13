@@ -186,6 +186,10 @@ public class ComputerPlayer {
         }
         return bestMove;
     }
+    
+    public void analyse(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    	getCommand(prevPos, mList, currPos, drawOffer);
+    }
 
     /** Check if a draw claim is allowed, possibly after playing "move".
      * @param move The move that may have to be made before claiming draw.

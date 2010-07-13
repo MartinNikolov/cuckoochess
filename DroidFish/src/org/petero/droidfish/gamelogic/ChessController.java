@@ -20,31 +20,33 @@ import org.petero.droidfish.gamelogic.Game.GameState;
  * @author petero
  */
 public class ChessController {
-    ComputerPlayer computerPlayer = null;
-    Game game;
-    GUIInterface gui;
-    boolean humanIsWhite;
-    Thread computerThread;
+    private ComputerPlayer computerPlayer = null;
+    private Game game;
+    private GUIInterface gui;
+    private boolean humanIsWhite;
+    private boolean analysisMode;
+    private Thread computerThread;
+    private Thread analysisThread;
 
     // Search statistics
-    String thinkingPV;
+    private String thinkingPV;
 
     class SearchListener implements org.petero.droidfish.gamelogic.SearchListener {
-        int currDepth = 0;
-        int currMoveNr = 0;
-        String currMove = "";
-        int currNodes = 0;
-        int currNps = 0;
-        int currTime = 0;
+        private int currDepth = 0;
+        private int currMoveNr = 0;
+        private String currMove = "";
+        private int currNodes = 0;
+        private int currNps = 0;
+        private int currTime = 0;
 
-        int pvDepth = 0;
-        int pvScore = 0;
-        int pvTime = 0;
-        int pvNodes = 0;
-        boolean pvIsMate = false;
-        boolean pvUpperBound = false;
-        boolean pvLowerBound = false;
-        String pvStr = "";
+        private int pvDepth = 0;
+        private int pvScore = 0;
+        private int pvTime = 0;
+        private int pvNodes = 0;
+        private boolean pvIsMate = false;
+        private boolean pvUpperBound = false;
+        private boolean pvLowerBound = false;
+        private String pvStr = "";
 
         private final void setSearchInfo() {
             StringBuilder buf = new StringBuilder();
@@ -122,6 +124,7 @@ public class ChessController {
 
     public final void newGame(boolean humanIsWhite) {
         stopComputerThinking();
+        stopAnalysis();
         this.humanIsWhite = humanIsWhite;
         if (computerPlayer == null) {
         	computerPlayer = new ComputerPlayer();
@@ -133,7 +136,12 @@ public class ChessController {
     public final void startGame() {
         gui.setSelection(-1);
         updateGUI();
+        updateComputeThreads();
+    }
+    
+    private final void updateComputeThreads() {
         startComputerThinking();
+        startAnalysis();
     }
     
     /** Set color for human player. Doesn't work when computer is thinking. */
@@ -239,7 +247,7 @@ public class ChessController {
     	}
 		gui.setSelection(-1);
 		updateGUI();
-		startComputerThinking();
+		updateComputeThreads();
     }
 
     public final void setPGN(String pgn) throws ChessParseError {
@@ -319,26 +327,17 @@ public class ChessController {
     	}
     }
 
+    /** True if human's turn to make a move. (True in analysis mode.) */
     public final boolean humansTurn() {
-        return game.pos.whiteMove == humanIsWhite;
+        return (game.pos.whiteMove == humanIsWhite) || analysisMode;
     }
+    /** True if the computer is thinking about next move. (False in analysis mode.) */
     public final boolean computerThinking() {
     	return computerThread != null;
     }
 
     public final void takeBackMove() {
-        if (humansTurn()) {
-            if (game.getLastMove() != null) {
-                game.processString("undo");
-                if (game.getLastMove() != null) {
-                    game.processString("undo");
-                } else {
-                    game.processString("redo");
-                }
-                updateGUI();
-                setSelection();
-            }
-        } else if (game.getGameState() != Game.GameState.ALIVE) {
+        if (humansTurn() || (game.getGameState() != Game.GameState.ALIVE)) {
             if (game.getLastMove() != null) {
                 game.processString("undo");
                 if (!humansTurn()) {
@@ -350,6 +349,9 @@ public class ChessController {
                 }
                 updateGUI();
                 setSelection();
+                if (analysisMode)
+                	stopAnalysis();
+                updateComputeThreads();
             }
         }
     }
@@ -357,9 +359,13 @@ public class ChessController {
     public final void redoMove() {
         if (humansTurn()) {
             game.processString("redo");
-            game.processString("redo");
+            if (!humansTurn())
+            	game.processString("redo");
             updateGUI();
             setSelection();
+            if (analysisMode)
+            	stopAnalysis();
+            updateComputeThreads();
         }
     }
 
@@ -367,7 +373,9 @@ public class ChessController {
         if (humansTurn()) {
             if (doMove(m)) {
                 updateGUI();
-                startComputerThinking();
+                if (analysisMode)
+                	stopAnalysis();
+                updateComputeThreads();
             } else {
                 gui.setSelection(-1);
             }
@@ -429,15 +437,13 @@ public class ChessController {
     final private void updateGUI() {
         String str = game.pos.whiteMove ? "White's move" : "Black's move";
         if (computerThread != null) str += " (thinking)";
+        if (analysisThread != null) str += " (analysing)";
         if (game.getGameState() != Game.GameState.ALIVE) {
             str = game.getGameStateString();
         }
         gui.setStatusString(str);
-
         gui.setMoveListString(game.getMoveListString(true));
-
         setThinkingPV();
-
         gui.setPosition(game.pos);
     }
 
@@ -456,7 +462,8 @@ public class ChessController {
     }
 
     private void startComputerThinking() {
-        if (game.pos.whiteMove != humanIsWhite) {
+    	if (!humansTurn()) {
+    		if (analysisThread != null) return;
             if (computerThread == null) {
             	computerThread = new Thread(new Runnable() {
             		public void run() {
@@ -472,6 +479,10 @@ public class ChessController {
             					updateGUI();
             					setSelection();
             					stopComputerThinking();
+            	                if (analysisMode) {
+            	                	stopAnalysis();
+            	                	startAnalysis();
+            	                }
             				}
             			});
             		}
@@ -483,15 +494,47 @@ public class ChessController {
         }
     }
 
-    public final synchronized void stopComputerThinking() {
+    private final synchronized void stopComputerThinking() {
         if (computerThread != null) {
             computerPlayer.timeLimit(0, false);
             try {
                 computerThread.join();
             } catch (InterruptedException ex) {
-                System.out.printf("Could not stop thread%n");
+                System.out.printf("Could not stop computer thread%n");
             }
             computerThread = null;
+            updateGUI();
+        }
+    }
+
+    private final synchronized void startAnalysis() {
+    	if (humansTurn() && analysisMode) {
+    		if (computerThread != null) return;
+            if (analysisThread == null) {
+            	analysisThread= new Thread(new Runnable() {
+            		public void run() {
+            			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
+            			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+            			final Game g = game;
+            			computerPlayer.analyse(ph.first, ph.second, new Position(g.pos),
+            								   g.haveDrawOffer());
+            		}
+            	});
+            	thinkingPV = "";
+                updateGUI();
+                analysisThread.start();
+            }
+        }
+    }
+    private final synchronized void stopAnalysis() {
+        if (analysisThread != null) {
+            computerPlayer.timeLimit(0, false);
+            try {
+                analysisThread.join();
+            } catch (InterruptedException ex) {
+                System.out.printf("Could not stop analysis thread%n");
+            }
+            analysisThread = null;
             updateGUI();
         }
     }
@@ -504,6 +547,21 @@ public class ChessController {
 
     public final void shutdownEngine() {
     	stopComputerThinking();
+    	stopAnalysis();
     	computerPlayer.shutdownEngine();
     }
+
+	public final void setAnalysisMode(boolean analysisMode) {
+		if (this.analysisMode != analysisMode) {
+			this.analysisMode = analysisMode;
+			if (analysisMode) {
+				stopComputerThinking();
+				startAnalysis();
+			} else {
+				stopAnalysis();
+				startComputerThinking();
+			}
+			startGame();
+		}
+	}
 }

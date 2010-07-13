@@ -11,6 +11,11 @@
 	android:key="boardFlipped"
 	android:defaultValue="false">
 </CheckBoxPreference>
+<CheckBoxPreference
+	android:title="Analysis Mode"
+	android:key="analysisMode"
+	android:defaultValue="false">
+</CheckBoxPreference>
 <ListPreference
 	android:title="Thinking Time"
 	android:key="timeLimit"
