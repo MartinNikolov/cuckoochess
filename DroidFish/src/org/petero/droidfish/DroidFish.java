@@ -40,7 +40,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	boolean mShowThinking;
 	int mTimeLimit;
 	boolean playerWhite;
-	static final int ttLogSize = 16; // Use 2^ttLogSize hash entries.
 
 	TextView status;
 	ScrollView moveListScroll;
@@ -83,7 +82,7 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.requestFocus();
         cb.setClickable(true);
 
-        ctrl.newGame(playerWhite, ttLogSize);
+        ctrl.newGame(playerWhite);
         {
         	String fen = "";
         	String moves = "";
@@ -205,7 +204,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.item_new_game:
-	        ctrl.newGame(playerWhite, ttLogSize);
+	        ctrl.newGame(playerWhite);
 	        ctrl.startGame();
 			return true;
 		case R.id.item_undo:
