@@ -35,6 +35,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
     	close(1); dup(fd2[1]); close(fd2[1]);
     	close(2); dup(1);
     	static char* argv[] = {"stockfish", NULL};
+    	nice(5);
    	    main(1, argv);
     	_exit(0);
     } else {

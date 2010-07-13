@@ -461,7 +461,7 @@ public class ChessController {
         gui.setSelection(sq);
     }
 
-    private void startComputerThinking() {
+    private final synchronized void startComputerThinking() {
     	if (!humansTurn()) {
     		if (analysisThread != null) return;
             if (computerThread == null) {
@@ -489,7 +489,9 @@ public class ChessController {
             	});
             	thinkingPV = "";
                 updateGUI();
-                computerThread.start();
+                if (computerThread != null) { // UpdateGUI() can make it go away.
+                	computerThread.start();
+                }
             }
         }
     }
@@ -535,6 +537,7 @@ public class ChessController {
                 System.out.printf("Could not stop analysis thread%n");
             }
             analysisThread = null;
+            thinkingPV = "";
             updateGUI();
         }
     }

@@ -16,7 +16,6 @@ public class NativePipedProcess {
 	/** Start process. */
 	public final void initialize() {
 		if (!processAlive) {
-			// FIXME!!! Run compute thread with lower priority
 			startProcess();
 			processAlive = true;
 		}
