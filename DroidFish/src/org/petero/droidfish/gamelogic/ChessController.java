@@ -478,6 +478,7 @@ public class ChessController {
 
     private final synchronized void startComputerThinking() {
     	if (analysisThread != null) return;
+    	if (game.getGameState() != GameState.ALIVE) return;
     	if (computerThread == null) {
     		computerThread = new Thread(new Runnable() {
     			public void run() {
@@ -492,6 +493,7 @@ public class ChessController {
     						thinkingPV = "";
     						updateGUI();
     						setSelection();
+    						stopComputerThinking();
     						if (gameMode.analysisMode()) {
     							stopAnalysis(); // To force analysis to restart for new position
     						}
@@ -559,6 +561,7 @@ public class ChessController {
     }
 
     public final void shutdownEngine() {
+    	gameMode = new GameMode(3); // Set two player mode
     	stopComputerThinking();
     	stopAnalysis();
     	computerPlayer.shutdownEngine();

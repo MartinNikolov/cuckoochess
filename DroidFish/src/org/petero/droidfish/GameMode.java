@@ -5,7 +5,7 @@ public class GameMode {
 	private final boolean playerBlack;
 	private final boolean analysisMode;
 
-	GameMode(int modeNr) {
+	public GameMode(int modeNr) {
 		switch (modeNr) {
 		case 1: default: // Player white
 			playerWhite = true;
@@ -27,6 +27,10 @@ public class GameMode {
 			playerBlack = true;
 			analysisMode = true;
 			break;
+		case 5: // Computer vs Computer
+			playerWhite = false;
+			playerBlack = false;
+			analysisMode = false;
 		}
 	}
 
