@@ -13,6 +13,8 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,6 +155,14 @@ public class Book {
     public final String getAllBookMoves(Position pos) {
         StringBuilder ret = new StringBuilder();
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
+        Collections.sort(bookMoves, new Comparator<BookEntry>() {
+			public int compare(BookEntry arg0, BookEntry arg1) {
+				if (arg1.count != arg0.count)
+					return arg1.count - arg0.count;
+				String str0 = TextIO.moveToUCIString(arg0.move);
+				String str1 = TextIO.moveToUCIString(arg1.move);
+				return str0.compareTo(str1);
+			}});
         if (bookMoves != null) {
             for (BookEntry be : bookMoves) {
                 String moveStr = TextIO.moveToString(pos, be.move, false);
