@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.petero.droidfish.GUIInterface;
+import org.petero.droidfish.GameMode;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.Game.GameState;
 
@@ -133,10 +134,10 @@ public class ChessController {
         thinkingPV = "";
     }
 
-    public final void newGame(boolean humanIsWhite) {
+    public final void newGame(GameMode gameMode) {
         stopComputerThinking();
         stopAnalysis();
-        this.humanIsWhite = humanIsWhite;
+        this.humanIsWhite = gameMode.playerWhite;
         if (computerPlayer == null) {
         	computerPlayer = new ComputerPlayer();
         	computerPlayer.setListener(listener);
@@ -156,13 +157,24 @@ public class ChessController {
     }
     
     /** Set color for human player. Doesn't work when computer is thinking. */
-	public final void setHumanWhite(final boolean humanIsWhite) {
+	public final void setGameMode(GameMode newMode) {
 	    if (computerThread != null)
 	    	return;
-	    if (this.humanIsWhite != humanIsWhite) {
-	    	this.humanIsWhite = humanIsWhite;
+	    if (this.humanIsWhite != newMode.playerWhite) {
+	    	this.humanIsWhite = newMode.playerWhite;
 	    	startComputerThinking();
 	    }
+		if (analysisMode != newMode.analysisMode) {
+			analysisMode = newMode.analysisMode;
+			if (analysisMode) {
+				stopComputerThinking();
+				startAnalysis();
+			} else {
+				stopAnalysis();
+				startComputerThinking();
+			}
+			startGame();
+		}
 	}
 
 	public final void setPosHistory(List<String> posHistStr) {
@@ -448,7 +460,7 @@ public class ChessController {
     final private void updateGUI() {
         String str = game.pos.whiteMove ? "White's move" : "Black's move";
         if (computerThread != null) str += " (thinking)";
-        if (analysisThread != null) str += " (analysing)";
+        if (analysisThread != null) str += " (analyzing)";
         if (game.getGameState() != Game.GameState.ALIVE) {
             str = game.getGameStateString();
         }
@@ -524,7 +536,7 @@ public class ChessController {
     	if (humansTurn() && analysisMode) {
     		if (computerThread != null) return;
             if (analysisThread == null) {
-            	analysisThread= new Thread(new Runnable() {
+            	analysisThread = new Thread(new Runnable() {
             		public void run() {
             			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
             			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
@@ -533,9 +545,9 @@ public class ChessController {
             								   g.haveDrawOffer());
             		}
             	});
+                analysisThread.start();
             	thinkingPV = "";
                 updateGUI();
-                analysisThread.start();
             }
         }
     }
@@ -565,17 +577,4 @@ public class ChessController {
     	computerPlayer.shutdownEngine();
     }
 
-	public final void setAnalysisMode(boolean analysisMode) {
-		if (this.analysisMode != analysisMode) {
-			this.analysisMode = analysisMode;
-			if (analysisMode) {
-				stopComputerThinking();
-				startAnalysis();
-			} else {
-				stopAnalysis();
-				startComputerThinking();
-			}
-			startGame();
-		}
-	}
 }

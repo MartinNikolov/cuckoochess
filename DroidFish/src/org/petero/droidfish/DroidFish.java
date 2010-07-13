@@ -39,8 +39,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
 	private int mTimeLimit;
-	private boolean playerWhite;
-	private boolean analysisMode;
+	private GameMode gameMode;
 
 	private TextView status;
 	private ScrollView moveListScroll;
@@ -59,8 +58,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 				readPrefs();
-				ctrl.setHumanWhite(playerWhite);
-				ctrl.setAnalysisMode(analysisMode);
+				ctrl.setGameMode(gameMode);
 			}
 		});
 
@@ -84,7 +82,7 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.requestFocus();
         cb.setClickable(true);
 
-        ctrl.newGame(playerWhite);
+        ctrl.newGame(gameMode);
         {
         	String fen = "";
         	String moves = "";
@@ -181,13 +179,14 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private void readPrefs() {
+		String gameModeStr = settings.getString("gameMode", "1");
+        int modeNr = Integer.parseInt(gameModeStr);
+        gameMode = new GameMode(modeNr);
         mShowThinking = settings.getBoolean("showThinking", false);
         String timeLimitStr = settings.getString("timeLimit", "5000");
         mTimeLimit = Integer.parseInt(timeLimitStr);
-        playerWhite = settings.getBoolean("playerWhite", true);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         cb.setFlipped(boardFlipped);
-        analysisMode = settings.getBoolean("analysisMode", false);
         ctrl.setTimeLimit();
         String fontSizeStr = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(fontSizeStr);
@@ -206,7 +205,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.item_new_game:
-	        ctrl.newGame(playerWhite);
+	        ctrl.newGame(gameMode);
 	        ctrl.startGame();
 			return true;
 		case R.id.item_undo:
@@ -229,16 +228,14 @@ public class DroidFish extends Activity implements GUIInterface {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == 0) {
 			readPrefs();
-			ctrl.setHumanWhite(playerWhite);
-			ctrl.setAnalysisMode(analysisMode);
+			ctrl.setGameMode(gameMode);
 		}
 	}
 
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
-		ctrl.setHumanWhite(playerWhite);
-		ctrl.setAnalysisMode(analysisMode);
+		ctrl.setGameMode(gameMode);
 	}
 
 	@Override
@@ -274,7 +271,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	@Override
 	public boolean showThinking() {
-		return mShowThinking || analysisMode;
+		return mShowThinking || gameMode.analysisMode;
 	}
 
 	static final int PROMOTE_DIALOG = 0; 

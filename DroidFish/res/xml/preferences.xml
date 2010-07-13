@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
-<CheckBoxPreference
-	android:title="Play White"
-	android:key="playerWhite"
-	android:defaultValue="true">
-</CheckBoxPreference>
+<ListPreference
+	android:title="Game Mode"
+	android:key="gameMode"
+	android:entryValues="@array/game_mode_values"
+	android:entries="@array/game_mode_texts"
+	android:defaultValue="1">
+</ListPreference>
 <CheckBoxPreference
 	android:title="Flip Board"
 	android:key="boardFlipped"
-	android:defaultValue="false">
-</CheckBoxPreference>
-<CheckBoxPreference
-	android:title="Analysis Mode"
-	android:key="analysisMode"
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
