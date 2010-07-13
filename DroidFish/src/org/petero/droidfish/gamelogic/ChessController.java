@@ -373,15 +373,16 @@ public class ChessController {
 
     public final void redoMove() {
         if (humansTurn()) {
-        	// FIXME!!! Check if redo will have any effect.
-            game.processString("redo");
-            if (!humansTurn())
-            	game.processString("redo");
-            updateGUI();
-            setSelection();
-            if (gameMode.analysisMode())
-            	stopAnalysis();
-            updateComputeThreads();
+        	if (game.canRedoMove()) {
+        		game.processString("redo");
+        		if (!humansTurn())
+        			game.processString("redo");
+        		updateGUI();
+        		setSelection();
+        		if (gameMode.analysisMode())
+        			stopAnalysis();
+        		updateComputeThreads();
+        	}
         }
     }
 

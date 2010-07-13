@@ -131,6 +131,11 @@ public class Game {
         }
         return m;
     }
+    
+    /** Return true if there is a move to redo. */
+    public final boolean canRedoMove() {
+    	return currentMove < moveList.size();
+    }
 
     public enum GameState {
         ALIVE,
