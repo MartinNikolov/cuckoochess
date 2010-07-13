@@ -35,7 +35,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Make analysis window scrollable
 	// FIXME!!! Add about/help window
-	// FIXME!!! paste position during analyse is broken
 	// FIXME!!! comp think -> analyze => error
 
 	private ChessBoard cb;
@@ -142,8 +141,7 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-		        if (!ctrl.computerThinking())
-		        	showDialog(CLIPBOARD_DIALOG);
+				showDialog(CLIPBOARD_DIALOG);
 				return true;
 			}
 		});

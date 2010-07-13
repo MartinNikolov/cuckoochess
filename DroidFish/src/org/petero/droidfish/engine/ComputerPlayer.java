@@ -25,6 +25,7 @@ public class ComputerPlayer {
 	SearchListener listener;
 	int timeLimit;
 	Book book;
+	private boolean newGame = false;
 
     public ComputerPlayer() {
     	if (npp == null) {
@@ -66,12 +67,12 @@ public class ComputerPlayer {
     }
 
     /** Convert a string to tokens by splitting at whitespace characters. */
-    final String[] tokenize(String cmdLine) {
+    private final String[] tokenize(String cmdLine) {
         cmdLine = cmdLine.trim();
         return cmdLine.split("\\s+");
     }
 
-    private void syncReady() {
+    private final void syncReady() {
     	npp.writeLineToProcess("isready");
     	while (true) {
     		String s = npp.readLineFromProcess(1000);
@@ -81,11 +82,18 @@ public class ComputerPlayer {
     }
 
     /** Clear transposition table. */
-	public void clearTT() {
-		npp.writeLineToProcess("ucinewgame");
-		syncReady();
+	public final void clearTT() {
+		newGame = true;
 	}
 
+	public final void maybeNewGame() {
+		if (newGame) {
+			newGame = false;
+			npp.writeLineToProcess("ucinewgame");
+			syncReady();
+		}
+	}
+	
 	/** Stop the engine process. */
     public final void shutdownEngine() {
     	if (npp != null) {
@@ -149,6 +157,7 @@ public class ComputerPlayer {
     			posStr.append(TextIO.moveToUCIString(mList.get(i)));
     		}
     	}
+    	maybeNewGame();
     	npp.writeLineToProcess(posStr.toString());
 //    	String goStr = String.format("go wtime %d btime %d movestogo 1", timeLimit, timeLimit);
     	String goStr = String.format("go movetime %d", timeLimit);
@@ -217,6 +226,7 @@ public class ComputerPlayer {
     			posStr.append(TextIO.moveToUCIString(mList.get(i)));
     		}
     	}
+    	maybeNewGame();
     	npp.writeLineToProcess(posStr.toString());
     	String goStr = String.format("go infinite");
     	npp.writeLineToProcess(goStr);

@@ -251,20 +251,23 @@ public class ChessController {
     }
 
     public final void setFENOrPGN(String fenPgn) throws ChessParseError {
+       	Game newGame = new Game(computerPlayer);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
-    		game.processString("new");
-    		game.pos = pos;
+    		newGame.pos = pos;
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
-    		setPGN(fenPgn);
+    		setPGN(newGame, fenPgn);
     	}
+    	game = newGame;
+    	stopAnalysis();
+    	stopComputerThinking();
+		updateComputeThreads();
 		gui.setSelection(-1);
 		updateGUI();
-		updateComputeThreads();
     }
 
-    public final void setPGN(String pgn) throws ChessParseError {
+    public final void setPGN(Game newGame, String pgn) throws ChessParseError {
     	// First pass, remove comments
     	{
     		StringBuilder out = new StringBuilder();
@@ -306,8 +309,7 @@ public class ChessController {
     			pos = TextIO.readFEN(tagValue);
     		}
     	}
-    	game.processString("new");
-    	game.pos = pos;
+    	newGame.pos = pos;
 
     	// Handle (ignore) recursive annotation variations
     	{
@@ -334,10 +336,10 @@ public class ChessController {
     		String strMove = sc.next();
     		strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
     		if (strMove.length() == 0) continue;
-    		Move m = TextIO.stringToMove(game.pos, strMove);
+    		Move m = TextIO.stringToMove(newGame.pos, strMove);
     		if (m == null)
     			break;
-    		game.processString(strMove);
+    		newGame.processString(strMove);
     	}
     }
 
