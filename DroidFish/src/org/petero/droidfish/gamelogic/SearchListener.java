@@ -12,4 +12,5 @@ public interface SearchListener {
     public void notifyPV(int depth, int score, int time, int nodes, int nps,
     		boolean isMate, boolean upperBound, boolean lowerBound, ArrayList<Move> pv);
     public void notifyStats(int nodes, int nps, int time);
+	public void notifyBookInfo(String bookInfo);
 }

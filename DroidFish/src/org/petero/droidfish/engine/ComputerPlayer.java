@@ -105,6 +105,9 @@ public class ComputerPlayer {
      *              the draw by repetition/50 moves rule.
      */
     public String getCommand(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    	if (listener != null) 
+    		listener.notifyBookInfo("");
+
     	// If we have a book move, play it.
     	Move bookMove = book.getBookMove(currPos);
     	if (bookMove != null) {
@@ -148,12 +151,24 @@ public class ComputerPlayer {
     	}
     	npp.writeLineToProcess(posStr.toString());
 //    	String goStr = String.format("go wtime %d btime %d movestogo 1", timeLimit, timeLimit);
-    	String goStr = String.format("go movetime %d", timeLimit, timeLimit);
+    	String goStr = String.format("go movetime %d", timeLimit);
     	npp.writeLineToProcess(goStr);
 
-    	// Monitor engine response
+    	String bestMove = monitorEngine();
+
+        // Claim draw if appropriate
+        if (statScore <= 0) {
+        	String drawClaim = canClaimDraw(currPos, posHashList, posHashListSize, TextIO.UCIstringToMove(bestMove));
+        	if (drawClaim != "")
+        		bestMove = drawClaim;
+        }
+        return bestMove;
+    }
+
+    /** Wait for engine to respond with "bestmove". While waiting, monitor and report search info. */
+	private final String monitorEngine() {
+		// Monitor engine response
     	clearInfo();
-    	String bestMove = null;
     	while (true) {
 			int timeout = 2000;
     		while (true) {
@@ -164,31 +179,49 @@ public class ComputerPlayer {
     			if (tokens[0].equals("info")) {
     				parseInfoCmd(tokens);
     			} else if (tokens[0].equals("bestmove")) {
-    				bestMove = tokens[1];
-    				break;
+    				return tokens[1];
     			}
     			timeout = 0;
     		}
-    		if (bestMove != null)
-    			break;
     		notifyGUI();
 			try {
 				Thread.sleep(100); // 10 GUI updates per second is enough
 			} catch (InterruptedException e) {
 			}
     	}
-
-        // Claim draw if appropriate
-        if (statScore <= 0) {
-        	String drawClaim = canClaimDraw(currPos, posHashList, posHashListSize, TextIO.UCIstringToMove(bestMove));
-        	if (drawClaim != "")
-        		bestMove = drawClaim;
-        }
-        return bestMove;
-    }
+	}
     
-    public void analyse(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
-    	getCommand(prevPos, mList, currPos, drawOffer);
+    public void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    	if (listener != null) {
+    		String bookInfo = "";
+    		if (book.getBookMove(currPos) != null) {
+    			bookInfo = String.format("Book: %s", book.getAllBookMoves(currPos));
+    		}
+    		listener.notifyBookInfo(bookInfo);
+    	}
+
+    	// If no legal moves, there is nothing to analyze
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(currPos);
+        moves = MoveGen.removeIllegal(currPos, moves);
+        if (moves.size() == 0)
+        	return;
+
+    	StringBuilder posStr = new StringBuilder();
+    	posStr.append("position fen ");
+    	posStr.append(TextIO.toFEN(prevPos));
+    	int nMoves = mList.size();
+    	if (nMoves > 0) {
+    		posStr.append(" moves");
+    		for (int i = 0; i < nMoves; i++) {
+    			posStr.append(" ");
+    			posStr.append(TextIO.moveToUCIString(mList.get(i)));
+    		}
+    	}
+    	npp.writeLineToProcess(posStr.toString());
+    	String goStr = String.format("go infinite");
+    	npp.writeLineToProcess(goStr);
+
+    	monitorEngine();
     }
 
     /** Check if a draw claim is allowed, possibly after playing "move".

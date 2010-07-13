@@ -46,6 +46,7 @@ public class ChessController {
         private boolean pvIsMate = false;
         private boolean pvUpperBound = false;
         private boolean pvLowerBound = false;
+        private String bookInfo = "";
         private String pvStr = "";
 
         private final void setSearchInfo() {
@@ -62,9 +63,13 @@ public class ChessController {
                 buf.append(String.format("%.2f", pvScore / 100.0));
             }
             buf.append(pvStr);
-            buf.append(String.format("%n"));
+            buf.append("\n");
             buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d", currDepth,
                     currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
+            if (bookInfo.length() > 0) {
+            	buf.append("\n");
+            	buf.append(bookInfo);
+            }
             final String newPV = buf.toString();
             gui.runOnUIThread(new Runnable() {
                 public void run() {
@@ -113,6 +118,12 @@ public class ChessController {
             currTime = time;
             setSearchInfo();
         }
+
+		@Override
+		public void notifyBookInfo(String bookInfo) {
+			this.bookInfo = bookInfo;
+			setSearchInfo();
+		}
     }
     SearchListener listener;
     
@@ -518,7 +529,7 @@ public class ChessController {
             			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
             			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
             			final Game g = game;
-            			computerPlayer.analyse(ph.first, ph.second, new Position(g.pos),
+            			computerPlayer.analyze(ph.first, ph.second, new Position(g.pos),
             								   g.haveDrawOffer());
             		}
             	});

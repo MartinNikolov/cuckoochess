@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
+	// FIXME!!! Make analysis window scrollable
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
