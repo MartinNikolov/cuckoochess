@@ -33,7 +33,6 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
-	// FIXME!!! Add about/help window
 	// FIXME!!! Should react faster in analysis mode, if possible
 
 	private ChessBoard cb;
