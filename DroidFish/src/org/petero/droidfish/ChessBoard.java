@@ -70,8 +70,10 @@ public class ChessBoard extends View {
      * @param pos
      */
     final public void setPosition(Position pos) {
-        this.pos = pos;
-        invalidate();
+    	if (!this.pos.equals(pos)) {
+    		this.pos = new Position(pos);
+    		invalidate();
+    	}
     }
 
     /**
@@ -79,8 +81,10 @@ public class ChessBoard extends View {
      * @param flipped
      */
     final public void setFlipped(boolean flipped) {
-        this.flipped = flipped;
-        invalidate();
+    	if (this.flipped != flipped) {
+    		this.flipped = flipped;
+    		invalidate();
+    	}
     }
 
     /**
@@ -262,7 +266,7 @@ public class ChessBoard extends View {
 	public static class OnTrackballListener {
     	public void onTrackballEvent(MotionEvent event) { }
 	}
-	OnTrackballListener otbl = null;
+	private OnTrackballListener otbl = null;
 	public void setOnTrackballListener(OnTrackballListener onTrackballListener) {
 		otbl = onTrackballListener;
 	}
