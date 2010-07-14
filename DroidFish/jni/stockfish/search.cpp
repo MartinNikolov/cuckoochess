@@ -274,7 +274,7 @@ namespace {
   // Node counters, used only by thread[0] but try to keep in different cache
   // lines (64 bytes each) from the heavy multi-thread read accessed variables.
   int NodesSincePoll;
-  int NodesBetweenPolls = 30000;
+  int NodesBetweenPolls = 3000;
 
   // History table
   History H;
@@ -535,13 +535,13 @@ bool think(const Position& pos, bool infinite, bool ponder, int side_to_move,
   // Set best NodesBetweenPolls interval to avoid lagging under
   // heavy time pressure.
   if (MaxNodes)
-      NodesBetweenPolls = Min(MaxNodes, 30000);
+      NodesBetweenPolls = Min(MaxNodes, 3000);
   else if (myTime && myTime < 1000)
       NodesBetweenPolls = 1000;
   else if (myTime && myTime < 5000)
-      NodesBetweenPolls = 5000;
+      NodesBetweenPolls = 2000;
   else
-      NodesBetweenPolls = 30000;
+      NodesBetweenPolls = 3000;
 
   // Write search information to log file
   if (UseLogFile)
