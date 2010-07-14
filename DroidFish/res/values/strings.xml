@@ -58,6 +58,10 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 * Long press chess board to activate copy/paste menu.\n\
 \n\
 <b>License</b>\n\
-GNU GPL v3\
+GNU GPL v3\n\
+\n\
+<b>Developers</b>\n\
+* <i>Stockfish</i> is developed by Tord Romstad, Marco Costalba and Joona Kiiski.\n\
+* <i>Droidfish</i> is developed by Peter Österlund.\n\
   </string>
 </resources>
