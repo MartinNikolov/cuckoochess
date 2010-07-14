@@ -76,7 +76,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		ctrl = new ChessController(this);
         readPrefs();
 
-        Typeface chessFont = Typeface.createFromAsset(getAssets(), "casefont.ttf");
+        Typeface chessFont = Typeface.createFromAsset(getAssets(), "ChessCases.ttf");
         cb.setFont(chessFont);
         cb.setFocusable(true);
         cb.requestFocus();

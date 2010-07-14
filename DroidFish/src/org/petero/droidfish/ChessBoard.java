@@ -54,9 +54,11 @@ public class ChessBoard extends View {
         
         whitePiecePaint = new Paint();
         whitePiecePaint.setARGB(255, 255, 255, 255);
+        whitePiecePaint.setAntiAlias(true);
         
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
+        blackPiecePaint.setAntiAlias(true);
 	}
 
 	public void setFont(Typeface tf) {
@@ -146,59 +148,34 @@ public class ChessBoard extends View {
     }
 
     private final void drawPiece(Canvas canvas, int xCrd, int yCrd, int p) {
-        String ps;
+        char c = 0;
         switch (p) {
-            case Piece.EMPTY:
-                ps = "";
-                break;
-            case Piece.WKING:
-                ps = "k";
-                break;
-            case Piece.WQUEEN:
-                ps = "q";
-                break;
-            case Piece.WROOK:
-                ps = "r";
-                break;
-            case Piece.WBISHOP:
-                ps = "b";
-                break;
-            case Piece.WKNIGHT:
-                ps = "n";
-                break;
-            case Piece.WPAWN:
-                ps = "p";
-                break;
-            case Piece.BKING:
-                ps = "l";
-                break;
-            case Piece.BQUEEN:
-                ps = "w";
-                break;
-            case Piece.BROOK:
-                ps = "t";
-                break;
-            case Piece.BBISHOP:
-                ps = "v";
-                break;
-            case Piece.BKNIGHT:
-                ps = "m";
-                break;
-            case Piece.BPAWN:
-                ps = "o";
-                break;
-            default:
-                ps = "?";
-                break;
+        	default:
+            case Piece.EMPTY:   c = 0;   break;
+            case Piece.WKING:   c = 'H'; break;
+            case Piece.WQUEEN:  c = 'I'; break;
+            case Piece.WROOK:   c = 'J'; break;
+            case Piece.WBISHOP: c = 'K'; break;
+            case Piece.WKNIGHT: c = 'L'; break;
+            case Piece.WPAWN:   c = 'M'; break;
+            case Piece.BKING:   c = 'N'; break;
+            case Piece.BQUEEN:  c = 'O'; break;
+            case Piece.BROOK:   c = 'P'; break;
+            case Piece.BBISHOP: c = 'Q'; break;
+            case Piece.BKNIGHT: c = 'R'; break;
+            case Piece.BPAWN:   c = 'S'; break;
         }
-        if (ps.length() > 0) {
-        	Paint paint = Piece.isWhite(p) ? whitePiecePaint : blackPiecePaint;
-        	paint.setTextSize(sqSize);
+        if (c != 0) {
+            String psb = Character.toString(c);
+            String psw = Character.toString((char)(c + 'k' - 'H'));
+        	blackPiecePaint.setTextSize(sqSize);
+        	whitePiecePaint.setTextSize(sqSize);
             Rect bounds = new Rect();
-            paint.getTextBounds(ps, 0, ps.length(), bounds);
+            blackPiecePaint.getTextBounds("H", 0, 1, bounds);
             int xCent = bounds.centerX();
             int yCent = bounds.centerY();
-            canvas.drawText(ps, xCrd - xCent, yCrd - yCent, paint);
+            canvas.drawText(psw, xCrd - xCent, yCrd - yCent, whitePiecePaint);
+            canvas.drawText(psb, xCrd - xCent, yCrd - yCent, blackPiecePaint);
         }
     }
 
