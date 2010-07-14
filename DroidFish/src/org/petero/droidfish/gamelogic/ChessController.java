@@ -133,7 +133,13 @@ public class ChessController {
         thinkingPV = "";
     }
 
+    private final static class SearchStatus {
+    	boolean searchResultWanted = true;
+    }
+    SearchStatus ss = new SearchStatus();
+    
     public final void newGame(GameMode gameMode) {
+        ss.searchResultWanted = false;
         stopComputerThinking();
         stopAnalysis();
         this.gameMode = gameMode;
@@ -147,16 +153,18 @@ public class ChessController {
     public final void startGame() {
         gui.setSelection(-1);
         updateGUI();
-        updateComputeThreads();
+        updateComputeThreads(true);
     }
     
-    private final void updateComputeThreads() {
+    private final void updateComputeThreads(boolean clearPV) {
     	boolean analysis = gameMode.analysisMode();
     	boolean computersTurn = !gameMode.humansTurn(game.pos.whiteMove);
     	if (!analysis)
     		stopAnalysis();
     	if (!computersTurn)
     		stopComputerThinking();
+    	if (clearPV)
+			thinkingPV = "";
         if (analysis)
         	startAnalysis();
         if (computersTurn)
@@ -165,9 +173,13 @@ public class ChessController {
 
     /** Set game mode. */
 	public final void setGameMode(GameMode newMode) {
-		gameMode = newMode;
-		updateComputeThreads();
-        updateGUI();
+		if (!gameMode.equals(newMode)) {
+			if (newMode.humansTurn(game.pos.whiteMove))
+				ss.searchResultWanted = false;
+			gameMode = newMode;
+			updateComputeThreads(true);
+			updateGUI();
+		}
 	}
 
 	public final void setPosHistory(List<String> posHistStr) {
@@ -259,10 +271,11 @@ public class ChessController {
     		// Try read as PGN instead
     		setPGN(newGame, fenPgn);
     	}
+    	ss.searchResultWanted = false;
     	game = newGame;
     	stopAnalysis();
     	stopComputerThinking();
-		updateComputeThreads();
+		updateComputeThreads(true);
 		gui.setSelection(-1);
 		updateGUI();
     }
@@ -368,7 +381,7 @@ public class ChessController {
                 setSelection();
                 if (gameMode.analysisMode())
                 	stopAnalysis();
-                updateComputeThreads();
+                updateComputeThreads(true);
             }
         }
     }
@@ -383,7 +396,7 @@ public class ChessController {
         		setSelection();
         		if (gameMode.analysisMode())
         			stopAnalysis();
-        		updateComputeThreads();
+        		updateComputeThreads(true);
         	}
         }
     }
@@ -394,7 +407,7 @@ public class ChessController {
                 updateGUI();
                 if (gameMode.analysisMode())
                 	stopAnalysis();
-                updateComputeThreads();
+                updateComputeThreads(true);
             } else {
                 gui.setSelection(-1);
             }
@@ -483,6 +496,7 @@ public class ChessController {
     	if (analysisThread != null) return;
     	if (game.getGameState() != GameState.ALIVE) return;
     	if (computerThread == null) {
+    		ss = new SearchStatus();
     		computerThread = new Thread(new Runnable() {
     			public void run() {
     				computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
@@ -490,8 +504,11 @@ public class ChessController {
     				final Game g = game;
     				final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(g.pos),
     															 g.haveDrawOffer());
+    				final SearchStatus localSS = ss;
     				gui.runOnUIThread(new Runnable() {
     					public void run() {
+    						if (!localSS.searchResultWanted)
+    							return;
     						g.processString(cmd);
     						thinkingPV = "";
     						updateGUI();
@@ -500,7 +517,7 @@ public class ChessController {
     						if (gameMode.analysisMode()) {
     							stopAnalysis(); // To force analysis to restart for new position
     						}
-    						updateComputeThreads();
+    						updateComputeThreads(true);
     					}
     				});
     			}

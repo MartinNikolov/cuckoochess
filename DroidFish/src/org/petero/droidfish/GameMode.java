@@ -46,4 +46,18 @@ public class GameMode {
 	public boolean humansTurn(boolean whiteMove) {
         return (whiteMove ? playerWhite : playerBlack) || analysisMode;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if ((o == null) || (o.getClass() != this.getClass()))
+			return false;
+		GameMode other = (GameMode)o;
+		if (playerWhite != other.playerWhite)
+			return false;
+		if (playerBlack != other.playerBlack)
+			return false;
+		if (analysisMode != other.analysisMode)
+			return false;
+		return true;
+	}
 }
