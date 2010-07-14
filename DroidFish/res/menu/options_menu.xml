@@ -3,6 +3,7 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/item_new_game" android:title="New Game"></item>
   <item android:id="@+id/item_settings" android:title="Settings"></item>
+  <item android:id="@+id/item_about" android:title="About"></item>
   <item android:id="@+id/item_undo" android:title="Undo"></item>
   <item android:id="@+id/item_redo" android:title="Redo"></item>
 </menu>

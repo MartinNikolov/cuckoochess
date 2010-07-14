@@ -34,6 +34,7 @@ import android.widget.Toast;
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "edit board"
 	// FIXME!!! Add about/help window
+	// FIXME!!! Should react faster in analysis mode, if possible
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -219,6 +220,9 @@ public class DroidFish extends Activity implements GUIInterface {
 			startActivityForResult(i, 0);
 			return true;
 		}
+		case R.id.item_about:
+        	showDialog(ABOUT_DIALOG);
+        	return true;
 		}
 		return false;
 	}
@@ -274,6 +278,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	static final int PROMOTE_DIALOG = 0; 
 	static final int CLIPBOARD_DIALOG = 1;
+	static final int ABOUT_DIALOG = 2;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -324,6 +329,12 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 			    }
 			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case ABOUT_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("DroidFish").setMessage(R.string.about_info);
 			AlertDialog alert = builder.create();
 			return alert;
 		}
