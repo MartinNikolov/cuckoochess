@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -61,26 +62,10 @@ public class DroidFish extends Activity implements GUIInterface {
 			}
 		});
 
-        setContentView(R.layout.main);
-        status = (TextView)findViewById(R.id.status);
-        moveListScroll = (ScrollView)findViewById(R.id.scrollView);
-        moveList = (TextView)findViewById(R.id.moveList);
-        thinking = (TextView)findViewById(R.id.thinking);
-		cb = (ChessBoard)findViewById(R.id.chessboard);
-		status.setFocusable(false);
-		moveListScroll.setFocusable(false);
-		moveList.setFocusable(false);
-		thinking.setFocusable(false);
+        initUI();
 
-		ctrl = new ChessController(this);
+        ctrl = new ChessController(this);
         readPrefs();
-
-        Typeface chessFont = Typeface.createFromAsset(getAssets(), "ChessCases.ttf");
-        cb.setFont(chessFont);
-        cb.setFocusable(true);
-        cb.requestFocus();
-        cb.setClickable(true);
-
         ctrl.newGame(gameMode);
         {
         	String fen = "";
@@ -109,7 +94,44 @@ public class DroidFish extends Activity implements GUIInterface {
         	ctrl.setPosHistory(posHistStr);
         }
         ctrl.startGame();
-        
+    }
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		ChessBoard oldCB = cb;
+		String statusStr = status.getText().toString();
+		String moveListStr = moveList.getText().toString();
+		String thinkingStr = thinking.getText().toString();
+        initUI();
+        readPrefs();
+        cb.cursorX = oldCB.cursorX;
+        cb.cursorY = oldCB.cursorY;
+        cb.cursorVisible = oldCB.cursorVisible;
+        setPosition(oldCB.pos);
+        setSelection(oldCB.selectedSquare);
+        setStatusString(statusStr);
+        setMoveListString(moveListStr);
+        setThinkingString(thinkingStr);
+	}
+
+	private final void initUI() {
+		setContentView(R.layout.main);
+        status = (TextView)findViewById(R.id.status);
+        moveListScroll = (ScrollView)findViewById(R.id.scrollView);
+        moveList = (TextView)findViewById(R.id.moveList);
+        thinking = (TextView)findViewById(R.id.thinking);
+		status.setFocusable(false);
+		moveListScroll.setFocusable(false);
+		moveList.setFocusable(false);
+		thinking.setFocusable(false);
+
+		cb = (ChessBoard)findViewById(R.id.chessboard);
+        Typeface chessFont = Typeface.createFromAsset(getAssets(), "ChessCases.ttf");
+        cb.setFont(chessFont);
+        cb.setFocusable(true);
+        cb.requestFocus();
+        cb.setClickable(true);
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -124,7 +146,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		        return false;
 			}
 		});
-        
         cb.setOnTrackballListener(new ChessBoard.OnTrackballListener() {
         	public void onTrackballEvent(MotionEvent event) {
 		        if (ctrl.humansTurn()) {
@@ -142,7 +163,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				return true;
 			}
 		});
-    }
+	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {

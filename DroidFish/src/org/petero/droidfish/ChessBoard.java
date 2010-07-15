@@ -14,12 +14,12 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class ChessBoard extends View {
-	private Position pos;
-    private int selectedSquare;
-    private float cursorX, cursorY;
-    private boolean cursorVisible;
+	Position pos;
+    int selectedSquare;
+    float cursorX, cursorY;
+    boolean cursorVisible;
     private int x0, y0, sqSize;
-    private boolean flipped;
+    boolean flipped;
 
     private Paint darkPaint;
     private Paint brightPaint;
