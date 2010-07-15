@@ -511,7 +511,7 @@ public class ChessController {
 			final Position currPos = new Position(g.pos);
     		computerThread = new Thread(new Runnable() {
     			public void run() {
-    				computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
+    				computerPlayer.timeLimit(gui.timeLimit());
     				final String cmd = computerPlayer.getCommand(ph.first, ph.second, currPos, haveDrawOffer);
     				final SearchStatus localSS = ss;
     				gui.runOnUIThread(new Runnable() {
@@ -537,7 +537,7 @@ public class ChessController {
 
     private final synchronized void stopComputerThinking() {
         if (computerThread != null) {
-            computerPlayer.timeLimit(0, false);
+            computerPlayer.timeLimit(0);
             try {
                 computerThread.join();
             } catch (InterruptedException ex) {
@@ -554,7 +554,7 @@ public class ChessController {
             if (analysisThread == null) {
             	analysisThread = new Thread(new Runnable() {
             		public void run() {
-            			computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
+            			computerPlayer.timeLimit(gui.timeLimit());
             			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
             			final Game g = game;
             			computerPlayer.analyze(ph.first, ph.second, new Position(g.pos),
@@ -569,7 +569,7 @@ public class ChessController {
     }
     private final synchronized void stopAnalysis() {
         if (analysisThread != null) {
-            computerPlayer.timeLimit(0, false);
+            computerPlayer.timeLimit(0);
             try {
                 analysisThread.join();
             } catch (InterruptedException ex) {
@@ -583,7 +583,7 @@ public class ChessController {
 
     public final synchronized void setTimeLimit() {
         if (computerThread != null) {
-            computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
+            computerPlayer.timeLimit(gui.timeLimit());
         }
     }
 

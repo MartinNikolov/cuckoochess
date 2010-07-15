@@ -265,11 +265,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	@Override
-	public boolean randomMode() {
-		return mTimeLimit == -1;
-	}
-
-	@Override
 	public boolean showThinking() {
 		return mShowThinking || gameMode.analysisMode();
 	}

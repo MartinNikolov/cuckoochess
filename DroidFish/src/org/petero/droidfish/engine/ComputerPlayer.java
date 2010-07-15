@@ -384,7 +384,7 @@ public class ComputerPlayer {
     }
 
     /** Set max allowed thinking time per move. */
-    public void timeLimit(int timeLimit, boolean randomMode) {
+    public void timeLimit(int timeLimit) {
     	if (timeLimit < this.timeLimit)
         	npp.writeLineToProcess("stop");
     	this.timeLimit = timeLimit;
