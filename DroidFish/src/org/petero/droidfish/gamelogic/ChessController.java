@@ -41,8 +41,6 @@ public class ChessController {
 
         private int pvDepth = 0;
         private int pvScore = 0;
-        private int pvTime = 0;
-        private int pvNodes = 0;
         private boolean pvIsMate = false;
         private boolean pvUpperBound = false;
         private boolean pvLowerBound = false;
@@ -94,8 +92,8 @@ public class ChessController {
                 boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             pvDepth = depth;
             pvScore = score;
-            pvTime = currTime = time;
-            pvNodes = currNodes = nodes;
+            currTime = time;
+            currNodes = nodes;
             currNps = nps;
             pvIsMate = isMate;
             pvUpperBound = upperBound;
