@@ -380,16 +380,16 @@ public class Game {
      */
     public final TwoReturnValues<Position, ArrayList<Move>> getUCIHistory() {
         ArrayList<Move> mList = new ArrayList<Move>();
-        Position pos = new Position(this.pos);
+        Position prevPos = new Position(pos);
         for (int i = currentMove; i > 0; i--) {
-            if (pos.halfMoveClock == 0)
+            if (prevPos.halfMoveClock == 0)
                 break;
             Move m = moveList.get(i - 1);
-            pos.unMakeMove(m, uiInfoList.get(i- 1));
+            prevPos.unMakeMove(m, uiInfoList.get(i- 1));
             mList.add(new Move(m));
         }
         Collections.reverse(mList);
-        return new TwoReturnValues<Position, ArrayList<Move>>(pos, mList);
+        return new TwoReturnValues<Position, ArrayList<Move>>(prevPos, mList);
     }
 
     private final boolean handleDrawCmd(String drawCmd) {

@@ -151,7 +151,7 @@ public class ChessController {
     }
 
     public final void startGame() {
-        gui.setSelection(-1);
+        setSelection(); 
         updateGUI();
         updateComputeThreads(true);
     }
@@ -366,48 +366,56 @@ public class ChessController {
     	return computerThread != null;
     }
 
-    public final void takeBackMove() {
-        if (humansTurn() || (game.getGameState() != Game.GameState.ALIVE)) {
-            if (game.getLastMove() != null) {
-                game.processString("undo");
-                if (!humansTurn()) {
-                	if (game.getLastMove() != null) {
-                		game.processString("undo");
-                	} else {
-                		game.processString("redo");
-                	}
-                }
-                updateGUI();
-                setSelection();
-                if (gameMode.analysisMode())
-                	stopAnalysis();
-                updateComputeThreads(true);
-            }
-        }
+    public final void undoMove() {
+    	if (game.getLastMove() != null) {
+    		ss.searchResultWanted = false;
+    		game.processString("undo");
+    		if (!humansTurn()) {
+    			if (game.getLastMove() != null) {
+    				game.processString("undo");
+    				if (!humansTurn()) {
+    					game.processString("redo");
+    				}
+    			} else {
+    				// Don't undo first white move if playing black vs computer,
+    				// because that would cause computer to immediately make
+    				// a new move and the whole redo history will be lost.
+    				game.processString("redo");
+    			}
+    		}
+    		stopAnalysis();
+			stopComputerThinking();
+    		updateComputeThreads(true);
+    		setSelection();
+    		updateGUI();
+    	}
     }
 
     public final void redoMove() {
-        if (humansTurn()) {
-        	if (game.canRedoMove()) {
-        		game.processString("redo");
-        		if (!humansTurn())
-        			game.processString("redo");
-        		updateGUI();
-        		setSelection();
-        		if (gameMode.analysisMode())
-        			stopAnalysis();
-        		updateComputeThreads(true);
-        	}
-        }
+    	if (game.canRedoMove()) {
+    		ss.searchResultWanted = false;
+    		game.processString("redo");
+    		if (!humansTurn() && game.canRedoMove()) {
+    			game.processString("redo");
+    			if (!humansTurn())
+    				game.processString("undo");
+    		}
+    		stopAnalysis();
+			stopComputerThinking();
+    		updateComputeThreads(true);
+    		setSelection();
+    		updateGUI();
+    	}
     }
 
     public final void makeHumanMove(Move m) {
         if (humansTurn()) {
             if (doMove(m)) {
-                updateGUI();
-                if (gameMode.analysisMode())
-                	stopAnalysis();
+            	ss.searchResultWanted = false;
+                stopAnalysis();
+    			stopComputerThinking();
                 updateComputeThreads(true);
+                updateGUI();
             } else {
                 gui.setSelection(-1);
             }
@@ -497,13 +505,14 @@ public class ChessController {
     	if (game.getGameState() != GameState.ALIVE) return;
     	if (computerThread == null) {
     		ss = new SearchStatus();
+			final TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+			final Game g = game;
+			final boolean haveDrawOffer = g.haveDrawOffer();
+			final Position currPos = new Position(g.pos);
     		computerThread = new Thread(new Runnable() {
     			public void run() {
     				computerPlayer.timeLimit(gui.timeLimit(), gui.randomMode());
-    				TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
-    				final Game g = game;
-    				final String cmd = computerPlayer.getCommand(ph.first, ph.second, new Position(g.pos),
-    															 g.haveDrawOffer());
+    				final String cmd = computerPlayer.getCommand(ph.first, ph.second, currPos, haveDrawOffer);
     				final SearchStatus localSS = ss;
     				gui.runOnUIThread(new Runnable() {
     					public void run() {
@@ -511,13 +520,11 @@ public class ChessController {
     							return;
     						g.processString(cmd);
     						thinkingPV = "";
-    						updateGUI();
-    						setSelection();
     						stopComputerThinking();
-    						if (gameMode.analysisMode()) {
-    							stopAnalysis(); // To force analysis to restart for new position
-    						}
+    						stopAnalysis(); // To force analysis to restart for new position
     						updateComputeThreads(true);
+    						setSelection();
+    						updateGUI();
     					}
     				});
     			}

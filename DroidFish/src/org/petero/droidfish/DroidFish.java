@@ -207,7 +207,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	        ctrl.startGame();
 			return true;
 		case R.id.item_undo:
-			ctrl.takeBackMove();
+			ctrl.undoMove();
 			return true;
 		case R.id.item_redo:
 			ctrl.redoMove();
