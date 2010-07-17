@@ -6,7 +6,7 @@
       android:installLocation="auto">
     <application android:icon="@drawable/icon"
     			 android:label="@string/app_name"
-    			 android:debuggable="false">
+    			 android:debuggable="true">
         <activity android:name=".DroidFish"
                   android:label="@string/app_name"
                   android:configChanges="orientation">
