@@ -587,7 +587,7 @@ public class ChessController {
     }
 
     public final void shutdownEngine() {
-    	gameMode = new GameMode(3); // Set two player mode
+    	gameMode = new GameMode(GameMode.TWO_PLAYERS);
     	stopComputerThinking();
     	stopAnalysis();
     	computerPlayer.shutdownEngine();

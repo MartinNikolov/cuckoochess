@@ -2,39 +2,51 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 <ListPreference
-	android:title="Game Mode"
 	android:key="gameMode"
+	android:title="Game Mode"
+	android:summary="Select opponent, analysis mode or computer match"
 	android:entryValues="@array/game_mode_values"
 	android:entries="@array/game_mode_texts"
 	android:defaultValue="1">
 </ListPreference>
 <CheckBoxPreference
-	android:title="Flip Board"
 	android:key="boardFlipped"
+	android:title="Flip Board"
+	android:summary="View board from black side"
+	android:defaultValue="false">
+</CheckBoxPreference>
+<CheckBoxPreference
+	android:key="autoSwapSides"
+	android:title="Auto Swap Sides"
+	android:summary="Automatically swap sides when new game started"
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
-	android:title="Thinking Time"
 	android:key="timeLimit"
+	android:title="Thinking Time"
+	android:summary="Set computer thinking time"
 	android:entryValues="@array/thinking_times_values"
 	android:entries="@array/thinking_times_texts"
 	android:defaultValue="5000">
 </ListPreference>
 <CheckBoxPreference
-	android:title="Show Computer Thinking"
 	android:key="showThinking"
+	android:title="Show Computer Thinking"
+	android:summary="Display computer algorithm information during search"
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
-	android:title="Text Size"
 	android:key="fontSize"
+	android:title="Text Size"
+	android:summary="Font size for move list and game information"
 	android:entryValues="@array/font_size_values"
 	android:entries="@array/font_size_texts"
 	android:defaultValue="12">
 </ListPreference>
 <CheckBoxPreference
-	android:title="Enable Sounds"
 	android:key="soundEnabled"
+	android:title="Enable Sounds"
+	android:summary="Play sound when computer makes a move"
 	android:defaultValue="false">
 </CheckBoxPreference>
 </PreferenceScreen>

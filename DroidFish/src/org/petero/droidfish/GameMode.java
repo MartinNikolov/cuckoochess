@@ -5,29 +5,36 @@ public class GameMode {
 	private final boolean playerBlack;
 	private final boolean analysisMode;
 
+	public static final int PLAYER_WHITE  = 1;
+	public static final int PLAYER_BLACK  = 2;
+	public static final int TWO_PLAYERS   = 3;
+	public static final int ANALYSIS      = 4;
+	public static final int TWO_COMPUTERS = 5;
+	
+	
 	public GameMode(int modeNr) {
 		switch (modeNr) {
-		case 1: default: // Player white
+		case PLAYER_WHITE: default:
 			playerWhite = true;
 			playerBlack = false;
 			analysisMode = false;
 			break;
-		case 2: // Player black
+		case PLAYER_BLACK:
 			playerWhite = false;
 			playerBlack = true;
 			analysisMode = false;
 			break;
-		case 3: // Two players
+		case TWO_PLAYERS:
 			playerWhite = true;
 			playerBlack = true;
 			analysisMode = false;
 			break;
-		case 4: // Analysis mode
+		case ANALYSIS:
 			playerWhite = true;
 			playerBlack = true;
 			analysisMode = true;
 			break;
-		case 5: // Computer vs Computer
+		case TWO_COMPUTERS:
 			playerWhite = false;
 			playerBlack = false;
 			analysisMode = false;

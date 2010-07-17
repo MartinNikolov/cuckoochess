@@ -38,7 +38,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Analysis "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPPQ1PPP/3RR1K1 w kq - 0 1" crashes
-	// FIXME!!! Implement "auto swap side on new game" flag.
 	// FIXME!!! Disable virtual keyboard.
 	// FIXME!!! Edit board, implement move counters and ep square.
 
@@ -47,6 +46,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean mShowThinking;
 	private int mTimeLimit;
 	private GameMode gameMode;
+	private boolean autoSwapSides;
 
 	private TextView status;
 	private ScrollView moveListScroll;
@@ -208,6 +208,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private void readPrefs() {
 		String gameModeStr = settings.getString("gameMode", "1");
         int modeNr = Integer.parseInt(gameModeStr);
+        autoSwapSides = settings.getBoolean("autoSwapSides", false);
         gameMode = new GameMode(modeNr);
         mShowThinking = settings.getBoolean("showThinking", false);
         String timeLimitStr = settings.getString("timeLimit", "5000");
@@ -236,6 +237,24 @@ public class DroidFish extends Activity implements GUIInterface {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.item_new_game:
+			if (autoSwapSides && (gameMode.playerWhite() != gameMode.playerBlack())) {
+				boolean boardFlipped;
+				int gameModeType;
+				if (gameMode.playerWhite()) {
+					gameModeType = GameMode.PLAYER_BLACK;
+					boardFlipped = true;
+				} else {
+					gameModeType = GameMode.PLAYER_WHITE;
+					boardFlipped = false;
+				}
+				Editor editor = settings.edit();
+				editor.putBoolean("boardFlipped", boardFlipped);
+				String gameModeStr = String.format("%d", gameModeType);
+				editor.putString("gameMode", gameModeStr);
+				editor.commit();
+				gameMode = new GameMode(gameModeType);
+		        cb.setFlipped(boardFlipped);
+			}
 	        ctrl.newGame(gameMode);
 	        ctrl.startGame();
 			return true;
