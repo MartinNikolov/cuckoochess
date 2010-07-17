@@ -517,6 +517,7 @@ public class ChessController {
     						if (!localSS.searchResultWanted)
     							return;
     						g.processString(cmd);
+    						gui.computerMoveMade();
     						thinkingPV = "";
     						stopComputerThinking();
     						stopAnalysis(); // To force analysis to restart for new position

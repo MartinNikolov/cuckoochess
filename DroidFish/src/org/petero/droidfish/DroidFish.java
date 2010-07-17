@@ -19,6 +19,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
@@ -47,6 +48,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	private TextView thinking;
 
 	SharedPreferences settings;
+
+	private boolean soundEnabled;
+	private MediaPlayer moveSound;
 
     /** Called when the activity is first created. */
     @Override
@@ -205,6 +209,7 @@ public class DroidFish extends Activity implements GUIInterface {
         String timeLimitStr = settings.getString("timeLimit", "5000");
         mTimeLimit = Integer.parseInt(timeLimitStr);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
+        soundEnabled = settings.getBoolean("soundEnabled", false);
         cb.setFlipped(boardFlipped);
         ctrl.setTimeLimit();
         String fontSizeStr = settings.getString("fontSize", "12");
@@ -369,6 +374,16 @@ public class DroidFish extends Activity implements GUIInterface {
 	public void reportInvalidMove(Move m) {
 		String msg = String.format("Invalid move %s-%s", TextIO.squareToString(m.from), TextIO.squareToString(m.to));
 		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void computerMoveMade() {
+		if (soundEnabled) {
+			if (moveSound != null)
+				moveSound.release();
+			moveSound = MediaPlayer.create(this, R.raw.movesound);
+			moveSound.start();
+		}
 	}
 
 	@Override
