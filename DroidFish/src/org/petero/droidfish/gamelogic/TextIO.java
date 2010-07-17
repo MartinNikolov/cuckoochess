@@ -54,11 +54,11 @@ public class TextIO {
 		case 'r': safeSetPiece(pos, col, row, Piece.BROOK);   col++; break;
 		case 'q': safeSetPiece(pos, col, row, Piece.BQUEEN);  col++; break;
 		case 'k': safeSetPiece(pos, col, row, Piece.BKING);   col++; break;
-                default: throw new ChessParseError("Invalid piece");
+                default: throw new ChessParseError("Invalid piece", pos);
             }
         }
         if (words[1].length() == 0) {
-            throw new ChessParseError("Invalid side");
+            throw new ChessParseError("Invalid side", pos);
         }
         pos.setWhiteMove(words[1].charAt(0) == 'w');
 
@@ -83,7 +83,7 @@ public class TextIO {
                     case '-':
                         break;
                     default:
-                        throw new ChessParseError("Invalid castling flags");
+                        throw new ChessParseError("Invalid castling flags", pos);
                 }
             }
         }
@@ -94,7 +94,7 @@ public class TextIO {
             String epString = words[3];
             if (!epString.equals("-")) {
                 if (epString.length() < 2) {
-                    throw new ChessParseError("Invalid en passant square");
+                    throw new ChessParseError("Invalid en passant square", pos);
                 }
                 pos.setEpSquare(getSquare(epString));
             }
@@ -125,17 +125,17 @@ public class TextIO {
             }
         }
         if (wKings != 1) {
-            throw new ChessParseError("White must have exactly one king");
+            throw new ChessParseError("White must have exactly one king", pos);
         }
         if (bKings != 1) {
-            throw new ChessParseError("Black must have exactly one king");
+            throw new ChessParseError("Black must have exactly one king", pos);
         }
 
         // Make sure king can not be captured
         Position pos2 = new Position(pos);
         pos2.setWhiteMove(!pos.whiteMove);
         if (MoveGen.inCheck(pos2)) {
-            throw new ChessParseError("King capture possible");
+            throw new ChessParseError("King capture possible", pos);
         }
         
         // Remove bogus epSquare

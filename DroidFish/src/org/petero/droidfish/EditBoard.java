@@ -22,6 +22,7 @@ import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class EditBoard extends Activity {
 	private ChessBoard cb;
@@ -178,58 +179,67 @@ public class EditBoard extends Activity {
 			builder.setTitle("Edit Board");
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
-					try {
-						switch (item) {
-						case 0:  addPiece(Piece.WKING);   break;
-						case 1:  addPiece(Piece.WQUEEN);  break;
-						case 2:  addPiece(Piece.WROOK);   break;
-						case 3:  addPiece(Piece.WBISHOP); break;
-						case 4:  addPiece(Piece.WKNIGHT); break;
-						case 5:  addPiece(Piece.WPAWN);   break;
-						case 6:  addPiece(Piece.BKING);   break;
-						case 7:  addPiece(Piece.BQUEEN);  break;
-						case 8:  addPiece(Piece.BROOK);   break;
-						case 9:  addPiece(Piece.BBISHOP); break;
-						case 10: addPiece(Piece.BKNIGHT); break;
-						case 11: addPiece(Piece.BPAWN);   break;
-						case 12: addPiece(Piece.EMPTY);   break;
-						case 13: { // Clear board
-							Position pos = new Position();
-							cb.setPosition(pos);
-							cb.setSelection(-1);
-							checkValid();
-							break;
-						}
-						case 14: { // Set initial position
-							Position pos = TextIO.readFEN(TextIO.startPosFEN);
-							cb.setPosition(pos);
-							cb.setSelection(-1);
-							checkValid();
-							break;
-						}
-						case 15: // Edit castling flags, en passant and move counters
-							showDialog(FIELDS_DIALOG);
-							checkValid();
-							break;
-						case 16: { // Copy position
-							String fen = TextIO.toFEN(cb.pos) + "\n";
-							ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-							clipboard.setText(fen);
-							break;
-						}
-						case 17: { // Paste position
-							ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-							if (clipboard.hasText()) {
-								String fen = clipboard.getText().toString();
-								Position pos = TextIO.readFEN(fen);
-								cb.setPosition(pos);
-								checkValid();
-							}
-							break;
-						}
-						}
-					} catch (ChessParseError e) {
-					}
+			    	switch (item) {
+			    	case 0:  addPiece(Piece.WKING);   break;
+			    	case 1:  addPiece(Piece.WQUEEN);  break;
+			    	case 2:  addPiece(Piece.WROOK);   break;
+			    	case 3:  addPiece(Piece.WBISHOP); break;
+			    	case 4:  addPiece(Piece.WKNIGHT); break;
+			    	case 5:  addPiece(Piece.WPAWN);   break;
+			    	case 6:  addPiece(Piece.BKING);   break;
+			    	case 7:  addPiece(Piece.BQUEEN);  break;
+			    	case 8:  addPiece(Piece.BROOK);   break;
+			    	case 9:  addPiece(Piece.BBISHOP); break;
+			    	case 10: addPiece(Piece.BKNIGHT); break;
+			    	case 11: addPiece(Piece.BPAWN);   break;
+			    	case 12: addPiece(Piece.EMPTY);   break;
+			    	case 13: { // Clear board
+			    		Position pos = new Position();
+			    		cb.setPosition(pos);
+			    		cb.setSelection(-1);
+			    		checkValid();
+			    		break;
+			    	}
+			    	case 14: { // Set initial position
+			    		try {
+			    			Position pos = TextIO.readFEN(TextIO.startPosFEN);
+			    			cb.setPosition(pos);
+			    			cb.setSelection(-1);
+			    			checkValid();
+			    		} catch (ChessParseError e) {
+			    		}
+			    		break;
+			    	}
+			    	case 15: // Edit castling flags, en passant and move counters
+			    		showDialog(FIELDS_DIALOG);
+			    		cb.setSelection(-1);
+			    		checkValid();
+			    		break;
+			    	case 16: { // Copy position
+			    		String fen = TextIO.toFEN(cb.pos) + "\n";
+			    		ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+			    		clipboard.setText(fen);
+			    		cb.setSelection(-1);
+			    		break;
+			    	}
+			    	case 17: { // Paste position
+			    		ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+			    		if (clipboard.hasText()) {
+			    			String fen = clipboard.getText().toString();
+			    			try {
+			    				Position pos = TextIO.readFEN(fen);
+			    				cb.setPosition(pos);
+			    			} catch (ChessParseError e) {
+			    				if (e.pos != null)
+					    			cb.setPosition(e.pos);
+								Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+			    			}
+			    			cb.setSelection(-1);
+			    			checkValid();
+			    		}
+			    		break;
+			    	}
+			    	}
 			    }
 			});
 			AlertDialog alert = builder.create();
@@ -268,6 +278,7 @@ public class EditBoard extends Activity {
 					if (h8Castle) castleMask |= 1 << Position.H8_CASTLE;
 					pos.setCastleMask(castleMask);
 					cb.setPosition(pos);
+					checkValid();
 				}
 			});
 			AlertDialog alert = builder.create();

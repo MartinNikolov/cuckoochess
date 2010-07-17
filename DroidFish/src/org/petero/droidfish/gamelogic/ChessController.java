@@ -267,7 +267,9 @@ public class ChessController {
     		newGame.pos = pos;
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
-    		setPGN(newGame, fenPgn);
+    		if (!setPGN(newGame, fenPgn)) {
+    			throw e;
+    		}
     	}
     	ss.searchResultWanted = false;
     	game = newGame;
@@ -278,7 +280,8 @@ public class ChessController {
 		updateGUI();
     }
 
-    public final void setPGN(Game newGame, String pgn) throws ChessParseError {
+    private final boolean setPGN(Game newGame, String pgn) throws ChessParseError {
+    	boolean anythingParsed = false;
     	// First pass, remove comments
     	{
     		StringBuilder out = new StringBuilder();
@@ -302,6 +305,7 @@ public class ChessController {
     	Scanner sc = new Scanner(pgn);
     	sc.useDelimiter("\\s+");
     	while (sc.hasNext("\\[.*")) {
+    		anythingParsed = true;
     		String tagName = sc.next();
     		if (tagName.length() > 1) {
     			tagName = tagName.substring(1);
@@ -351,7 +355,9 @@ public class ChessController {
     		if (m == null)
     			break;
     		newGame.processString(strMove);
+    		anythingParsed = true;
     	}
+    	return anythingParsed;
     }
 
     /** True if human's turn to make a move. (True in analysis mode.) */
