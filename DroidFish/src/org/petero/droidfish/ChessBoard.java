@@ -14,7 +14,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class ChessBoard extends View {
-	Position pos;
+	Position pos; // FIXME!!! Make private
+	boolean editMode;
+
     int selectedSquare;
     float cursorX, cursorY;
     boolean cursorVisible;
@@ -58,12 +60,14 @@ public class ChessBoard extends View {
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
         blackPiecePaint.setAntiAlias(true);
+
+        Typeface chessFont = Typeface.createFromAsset(getContext().getAssets(), "ChessCases.ttf");
+		whitePiecePaint.setTypeface(chessFont);
+		blackPiecePaint.setTypeface(chessFont);
 	}
 
-	public void setFont(Typeface tf) {
-		whitePiecePaint.setTypeface(tf);
-		blackPiecePaint.setTypeface(tf);
-		invalidate();
+	public final void setEditMode(boolean editMode) {
+		this.editMode = editMode;
 	}
 
 	/**
@@ -209,13 +213,17 @@ public class ChessBoard extends View {
         return sq;
     }
 
+    final private boolean myColor(int piece) {
+    	return (piece != Piece.EMPTY) && (Piece.isWhite(piece) == pos.whiteMove);
+    }
+
 	final Move mousePressed(int sq) {
 		if (sq < 0)
 			return null;
     	cursorVisible = false;
-        if (selectedSquare >= 0) {
+        if (!editMode && (selectedSquare >= 0)) {
         	int p = pos.getPiece(selectedSquare);
-        	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
+        	if (!myColor(p)) {
         		setSelection(-1); // Remove selection of opponents last moving piece
         	}
         }
@@ -223,7 +231,7 @@ public class ChessBoard extends View {
         int p = pos.getPiece(sq);
         if (selectedSquare >= 0) {
             if (sq != selectedSquare) {
-                if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
+            	if (!myColor(p) || editMode) {
                     Move m = new Move(selectedSquare, sq, Piece.EMPTY);
                     setSelection(sq);
                     return m;
@@ -231,8 +239,7 @@ public class ChessBoard extends View {
             }
             setSelection(-1);
         } else {
-            boolean myColor = (p != Piece.EMPTY) && (Piece.isWhite(p) == pos.whiteMove);
-        	if (myColor) {
+        	if (myColor(p) || editMode) {
         		setSelection(sq);
         	}
         }

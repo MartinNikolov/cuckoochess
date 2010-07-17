@@ -18,7 +18,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
-import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -34,7 +33,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-	// FIXME!!! Implement "edit board"
+	// FIXME!!! Implement chess clocks
+	// FIXME!!! Implement database support
+	// FIXME!!! Implement pondering
+	// FIXME!!! Implement multi-variation analysis mode
+	// FIXME!!! Analysis "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPPQ1PPP/3RR1K1 w kq - 0 1" crashes
+	// FIXME!!! Implement "auto swap side on new game" flag.
+	// FIXME!!! Disable virtual keyboard.
+	// FIXME!!! Edit board, implement move counters and ep square.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -131,8 +137,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		thinking.setFocusable(false);
 
 		cb = (ChessBoard)findViewById(R.id.chessboard);
-        Typeface chessFont = Typeface.createFromAsset(getAssets(), "ChessCases.ttf");
-        cb.setFont(chessFont);
         cb.setFocusable(true);
         cb.requestFocus();
         cb.setClickable(true);
@@ -225,6 +229,9 @@ public class DroidFish extends Activity implements GUIInterface {
 		return true;
 	}
 	
+	static private final int RESULT_EDITBOARD = 0;
+	static private final int RESULT_SETTINGS = 1;
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -232,30 +239,46 @@ public class DroidFish extends Activity implements GUIInterface {
 	        ctrl.newGame(gameMode);
 	        ctrl.startGame();
 			return true;
+		case R.id.item_editboard: {
+			Intent i = new Intent(DroidFish.this, EditBoard.class);
+			i.setAction(ctrl.getFEN());
+			startActivityForResult(i, RESULT_EDITBOARD);
+			return true;
+		}
+		case R.id.item_settings: {
+			Intent i = new Intent(DroidFish.this, Preferences.class);
+			startActivityForResult(i, RESULT_SETTINGS);
+			return true;
+		}
+		case R.id.item_about:
+        	showDialog(ABOUT_DIALOG);
+        	return true;
 		case R.id.item_undo:
 			ctrl.undoMove();
 			return true;
 		case R.id.item_redo:
 			ctrl.redoMove();
 			return true;
-		case R.id.item_settings:
-		{
-			Intent i = new Intent(DroidFish.this, Preferences.class);
-			startActivityForResult(i, 0);
-			return true;
-		}
-		case R.id.item_about:
-        	showDialog(ABOUT_DIALOG);
-        	return true;
 		}
 		return false;
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == 0) {
+		switch (requestCode) {
+		case RESULT_SETTINGS:
 			readPrefs();
 			ctrl.setGameMode(gameMode);
+			break;
+		case RESULT_EDITBOARD:
+			if (resultCode == RESULT_OK) {
+				try {
+					String fen = data.getAction();
+					ctrl.setFENOrPGN(fen);
+				} catch (ChessParseError e) {
+				}
+			}
+			break;
 		}
 	}
 
