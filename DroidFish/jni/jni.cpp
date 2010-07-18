@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <deque>
+#include <vector>
+#include <sys/time.h>
 
 int main(int argc, char* argv[]);
 
@@ -43,9 +46,40 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
     	close(fd2[1]);
     	fdFromChild = fd2[0];
     	fdToChild = fd1[1];
+	    fcntl(fdFromChild, F_SETFL, O_NONBLOCK);
     }
 }
 
+
+static std::deque<char> inBuf;
+
+static bool getNextChar(int& c, int timeoutMillis) {
+	if (inBuf.empty()) {
+	    fd_set readfds, writefds;
+		FD_ZERO(&readfds);
+		FD_SET(fdFromChild, &readfds);
+		struct timeval tv;
+		tv.tv_sec = timeoutMillis / 1000;
+		tv.tv_usec = (timeoutMillis % 1000) * 1000;
+		int ret = select(fdFromChild + 1, &readfds, NULL, NULL, &tv);
+		if (ret < 0)
+			return false;
+
+		static char buf[4096];
+		int len = read(fdFromChild, &buf[0], sizeof(buf));
+		for (int i = 0; i < len; i++)
+			inBuf.push_back(buf[i]);
+	}
+	if (inBuf.empty()) {
+		c = -1;
+		return true;
+	}
+	c = inBuf.front();
+	inBuf.pop_front();
+	return true;
+}
+
+static std::vector<char> lineBuf;
 /*
  * Class:     org_petero_droidfish_engine_NativePipedProcess
  * Method:    readFromProcess
@@ -54,38 +88,33 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
 extern "C" JNIEXPORT jstring JNICALL Java_org_petero_droidfish_engine_NativePipedProcess_readFromProcess
 		(JNIEnv* env, jobject obj, jint timeoutMillis)
 {
-    fd_set readfds, writefds;
-	FD_ZERO(&readfds);
-	FD_SET(fdFromChild, &readfds);
-	struct timeval tv;
-	tv.tv_sec = timeoutMillis / 1000;
-	tv.tv_usec = (timeoutMillis % 1000) * 1000;
-	int ret = select(fdFromChild + 1, &readfds, NULL, NULL, &tv);
-	if (ret < 0)
-		return 0;
-
-    fcntl(fdFromChild, F_SETFL, O_NONBLOCK);
-
-    const int bufSize = 32768;
-	static char buf[bufSize+1];
-	int bufLen = 0;
-	bool didWait = false;
-	while (bufLen < bufSize) {
-		int len = read(fdFromChild, &buf[bufLen], bufSize - bufLen);
-		if (len > 0) {
-			didWait = false;
-			bufLen += len;
-		} else {
-			if (didWait) {
-				break;
-			} else {
-				usleep(10000);
-				didWait = true;
+	struct timeval tv0, tv1;
+	while (true) {
+		int c;
+		gettimeofday(&tv0, NULL);
+		if (!getNextChar(c, timeoutMillis))
+			return 0; // Error
+		gettimeofday(&tv1, NULL);
+		int elapsedMillis = (tv1.tv_sec - tv0.tv_sec) * 1000 + (tv1.tv_usec - tv0.tv_usec) / 1000;
+		if (elapsedMillis > 0) {
+			timeoutMillis -= elapsedMillis;
+			if (timeoutMillis < 0) timeoutMillis = 0;
+		}
+		if (c == -1) { // Timeout
+			static char emptyString = 0;
+			return (*env).NewStringUTF(&emptyString);
+		}
+		if (c == '\n' || (c == '\r')) {
+			if (lineBuf.size() > 0) {
+				lineBuf.push_back(0);
+				jstring ret = (*env).NewStringUTF(&lineBuf[0]);
+				lineBuf.clear();
+				return ret;
 			}
+		} else {
+			lineBuf.push_back((char)c);
 		}
 	}
-	buf[bufLen] = 0;
-    return (*env).NewStringUTF(buf);
 }
 
 /*
