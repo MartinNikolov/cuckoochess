@@ -261,7 +261,7 @@ public class ChessController {
     }
 
     public final void setFENOrPGN(String fenPgn) throws ChessParseError {
-       	Game newGame = new Game(computerPlayer);
+       	Game newGame = new Game(null);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
     		newGame.pos = pos;
@@ -273,8 +273,10 @@ public class ChessController {
     	}
     	ss.searchResultWanted = false;
     	game = newGame;
+    	game.setComputerPlayer(computerPlayer);
     	stopAnalysis();
     	stopComputerThinking();
+    	computerPlayer.clearTT();
 		updateComputeThreads(true);
 		gui.setSelection(-1);
 		updateGUI();
@@ -557,13 +559,13 @@ public class ChessController {
     	if (gameMode.analysisMode()) {
     		if (computerThread != null) return;
             if (analysisThread == null) {
+    			final TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+    			final boolean haveDrawOffer = game.haveDrawOffer();
+    			final Position currPos = new Position(game.pos);
             	analysisThread = new Thread(new Runnable() {
             		public void run() {
             			computerPlayer.timeLimit(gui.timeLimit());
-            			TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
-            			final Game g = game;
-            			computerPlayer.analyze(ph.first, ph.second, new Position(g.pos),
-            								   g.haveDrawOffer());
+            			computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
             		}
             	});
             	thinkingPV = "";

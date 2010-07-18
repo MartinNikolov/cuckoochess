@@ -32,6 +32,10 @@ public class Game {
         handleCommand("new");
     }
 
+    public final void setComputerPlayer(ComputerPlayer computerPlayer) {
+    	this.computerPlayer = computerPlayer;
+	}
+
     /**
      * Update the game state according to move/command string from a player.
      * @param str The move or command to process.
