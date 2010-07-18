@@ -14,8 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class ChessBoard extends View {
-	Position pos; // FIXME!!! Make private
-	boolean editMode;
+	Position pos;
 
     int selectedSquare;
     float cursorX, cursorY;
@@ -64,10 +63,6 @@ public class ChessBoard extends View {
         Typeface chessFont = Typeface.createFromAsset(getContext().getAssets(), "ChessCases.ttf");
 		whitePiecePaint.setTypeface(chessFont);
 		blackPiecePaint.setTypeface(chessFont);
-	}
-
-	public final void setEditMode(boolean editMode) {
-		this.editMode = editMode;
 	}
 
 	/**
@@ -217,11 +212,11 @@ public class ChessBoard extends View {
     	return (piece != Piece.EMPTY) && (Piece.isWhite(piece) == pos.whiteMove);
     }
 
-	final Move mousePressed(int sq) {
+	Move mousePressed(int sq) {
 		if (sq < 0)
 			return null;
     	cursorVisible = false;
-        if (!editMode && (selectedSquare >= 0)) {
+        if (selectedSquare >= 0) {
         	int p = pos.getPiece(selectedSquare);
         	if (!myColor(p)) {
         		setSelection(-1); // Remove selection of opponents last moving piece
@@ -231,7 +226,7 @@ public class ChessBoard extends View {
         int p = pos.getPiece(sq);
         if (selectedSquare >= 0) {
             if (sq != selectedSquare) {
-            	if (!myColor(p) || editMode) {
+            	if (!myColor(p)) {
                     Move m = new Move(selectedSquare, sq, Piece.EMPTY);
                     setSelection(sq);
                     return m;
@@ -239,7 +234,7 @@ public class ChessBoard extends View {
             }
             setSelection(-1);
         } else {
-        	if (myColor(p) || editMode) {
+        	if (myColor(p)) {
         		setSelection(sq);
         	}
         }

@@ -25,7 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EditBoard extends Activity {
-	private ChessBoard cb;
+	private ChessBoardEdit cb;
 	private TextView status;
 	private Button okButton;
 	private Button cancelButton;
@@ -48,7 +48,7 @@ public class EditBoard extends Activity {
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		ChessBoard oldCB = cb;
+		ChessBoardEdit oldCB = cb;
 		String statusStr = status.getText().toString();
         initUI();
         cb.cursorX = oldCB.cursorX;
@@ -61,7 +61,7 @@ public class EditBoard extends Activity {
 
 	private final void initUI() {
 		setContentView(R.layout.editboard);
-		cb = (ChessBoard)findViewById(R.id.eb_chessboard);
+		cb = (ChessBoardEdit)findViewById(R.id.eb_chessboard);
         status = (TextView)findViewById(R.id.eb_status);
 		okButton = (Button)findViewById(R.id.eb_ok);
 		cancelButton = (Button)findViewById(R.id.eb_cancel);
@@ -82,7 +82,6 @@ public class EditBoard extends Activity {
         cb.setFocusable(true);
         cb.requestFocus();
         cb.setClickable(true);
-        cb.setEditMode(true);
         cb.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
