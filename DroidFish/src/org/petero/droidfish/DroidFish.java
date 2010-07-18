@@ -37,7 +37,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement database support
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Analysis "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPPQ1PPP/3RR1K1 w kq - 0 1" crashes
 	// FIXME!!! Disable virtual keyboard.
 	// FIXME!!! Edit board, implement move counters and ep square.
 	// FIXME!!! Implement "limit strength" option.

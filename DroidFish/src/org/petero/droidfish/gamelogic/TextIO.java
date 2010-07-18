@@ -86,6 +86,16 @@ public class TextIO {
                         throw new ChessParseError("Invalid castling flags", pos);
                 }
             }
+            int validCastle = 0;
+            if (pos.getPiece(4) == Piece.WKING) {
+            	if (pos.getPiece(0) == Piece.WROOK) validCastle |= (1 << Position.A1_CASTLE);
+            	if (pos.getPiece(7) == Piece.WROOK) validCastle |= (1 << Position.H1_CASTLE);
+            }
+            if (pos.getPiece(60) == Piece.BKING) {
+            	if (pos.getPiece(56) == Piece.BROOK) validCastle |= (1 << Position.A8_CASTLE);
+            	if (pos.getPiece(63) == Piece.BROOK) validCastle |= (1 << Position.H8_CASTLE);
+            }
+            castleMask &= validCastle;
         }
         pos.setCastleMask(castleMask);
 

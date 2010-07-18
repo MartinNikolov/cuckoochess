@@ -105,6 +105,18 @@ public class TextIOTest {
         assertEquals(26, pos.fullMoveCounter);
     }
 
+    /**
+     * Test that readFEN removes bogus castle flags.
+     */
+    @Test
+    public void testReadFENCastleFlags() throws ChessParseError {
+        System.out.println("readFEN");
+        String fenBogus = "rnbqk2r/1p3ppp/p7/1NpPp3/QPP1P1n1/P4N2/4KbPP/R1B2B1R w KQkq - 0 1";
+        Position pos = TextIO.readFEN(fenBogus);
+        String fenCorrect = "rnbqk2r/1p3ppp/p7/1NpPp3/QPP1P1n1/P4N2/4KbPP/R1B2B1R w kq - 0 1";
+        assertEquals(fenCorrect, TextIO.toFEN(pos));
+    }
+
     /** Tests if trying to parse a FEN string causes an error. */
     private boolean testFENParseError(String fen) {
         boolean wasError;

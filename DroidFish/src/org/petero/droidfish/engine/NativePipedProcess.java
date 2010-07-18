@@ -66,7 +66,7 @@ public class NativePipedProcess {
 		writeToProcess(data + "\n");
 	}
 
-	private int findNewLine() {
+	private final int findNewLine() {
 		int idx1 = inBuf.indexOf("\n");
 		int idx2 = inBuf.indexOf("\r");
 		if (idx1 < 0)
