@@ -9,7 +9,6 @@ import org.petero.droidfish.gamelogic.TextIO;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -27,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EditBoard extends Activity {
-	// FIXME!!! Requires tall screen.
 	private ChessBoardEdit cb;
 	private TextView status;
 	private Button okButton;
