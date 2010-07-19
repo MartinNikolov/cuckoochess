@@ -41,6 +41,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Edit board, implement move counters and ep square.
 	// FIXME!!! Implement "limit strength" option.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
+	// FIXME!!! Implement "claim draw".
+	// FIXME!!! Include draw claim in save/restore state.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

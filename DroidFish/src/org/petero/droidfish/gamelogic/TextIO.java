@@ -147,7 +147,14 @@ public class TextIO {
         if (MoveGen.inCheck(pos2)) {
             throw new ChessParseError("King capture possible", pos);
         }
-        
+
+        fixupEPSquare(pos);
+
+        return pos;
+    }
+
+    /** Remove pseudo-legal EP square if it is not legal, ie would leave king in check. */
+    public static final void fixupEPSquare(Position pos) {
         // Remove bogus epSquare
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
@@ -166,10 +173,8 @@ public class TextIO {
                 pos.setEpSquare(-1);
             }
         }
-        
-        return pos;
     }
-        
+
     private static void safeSetPiece(Position pos, int col, int row, int p) throws ChessParseError {
         if (row < 0) throw new ChessParseError("Too many rows");
         if (col > 7) throw new ChessParseError("Too many columns");
