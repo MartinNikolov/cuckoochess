@@ -69,8 +69,11 @@ public class ChessController {
             	buf.append(bookInfo);
             }
             final String newPV = buf.toString();
+			final SearchStatus localSS = ss;
             gui.runOnUIThread(new Runnable() {
                 public void run() {
+                	if (!localSS.searchResultWanted)
+                		return;
                     thinkingPV = newPV;
                     setThinkingPV();
                 }
@@ -559,6 +562,7 @@ public class ChessController {
     	if (gameMode.analysisMode()) {
     		if (computerThread != null) return;
             if (analysisThread == null) {
+        		ss = new SearchStatus();
     			final TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
     			final boolean haveDrawOffer = game.haveDrawOffer();
     			final Position currPos = new Position(game.pos);

@@ -37,7 +37,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement database support
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Disable virtual keyboard.
+	// FIXME!!! Disable soft keyboard.
 	// FIXME!!! Implement "limit strength" option.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 	// FIXME!!! Include draw claim in save/restore state.
