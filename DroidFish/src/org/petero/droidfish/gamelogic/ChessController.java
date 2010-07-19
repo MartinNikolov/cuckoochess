@@ -216,7 +216,7 @@ public class ChessController {
     	StringBuilder pgn = new StringBuilder();
     	List<String> posHist = getPosHistory();
     	String fen = posHist.get(0);
-        String moves = game.getMoveListString(true);
+        String moves = game.getMoveListString();
         if (game.getGameState() == GameState.ALIVE)
         	moves += " *";
     	int year, month, day;
@@ -490,7 +490,7 @@ public class ChessController {
             str = game.getGameStateString();
         }
         gui.setStatusString(str);
-        gui.setMoveListString(game.getMoveListString(true));
+        gui.setMoveListString(game.getMoveListString());
         setThinkingPV();
         gui.setPosition(game.pos);
     }

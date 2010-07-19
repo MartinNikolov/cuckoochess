@@ -293,7 +293,7 @@ public class Game {
         return ret;
 	}
 
-    public final String getMoveListString(boolean compressed) {
+    public final String getMoveListString() {
         StringBuilder ret = new StringBuilder();
 
         // Undo all moves in move history.
@@ -318,13 +318,8 @@ public class Game {
                 if (whiteMove.length() == 0) {
                     whiteMove = "...";
                 }
-                if (compressed) {
-                    ret.append(String.format("%d. %s %s ",
-                            pos.fullMoveCounter, whiteMove, blackMove));
-                } else {
-                    ret.append(String.format("%3d.  %-10s %-10s%n",
-                            pos.fullMoveCounter, whiteMove, blackMove));
-                }
+                ret.append(String.format("%d. %s %s ",
+                						 pos.fullMoveCounter, whiteMove, blackMove));
                 whiteMove = "";
                 blackMove = "";
             }
@@ -335,21 +330,12 @@ public class Game {
             if (whiteMove.length() == 0) {
                 whiteMove = "...";
             }
-            if (compressed) {
-                ret.append(String.format("%d. %s %s ",
-                        pos.fullMoveCounter, whiteMove, blackMove));
-            } else {
-                ret.append(String.format("%3d.  %-8s %-8s%n",
-                        pos.fullMoveCounter, whiteMove, blackMove));
-            }
+            ret.append(String.format("%d. %s %s ",
+            						 pos.fullMoveCounter, whiteMove, blackMove));
         }
         String gameResult = getPGNResultString();
         if (!gameResult.equals("*")) {
-            if (compressed) {
-                ret.append(gameResult);
-            } else {
-                ret.append(String.format("%s%n", gameResult));
-            }
+        	ret.append(gameResult);
         }
         return ret.toString();
     }
