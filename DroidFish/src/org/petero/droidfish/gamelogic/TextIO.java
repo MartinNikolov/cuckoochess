@@ -86,18 +86,9 @@ public class TextIO {
                         throw new ChessParseError("Invalid castling flags", pos);
                 }
             }
-            int validCastle = 0;
-            if (pos.getPiece(4) == Piece.WKING) {
-            	if (pos.getPiece(0) == Piece.WROOK) validCastle |= (1 << Position.A1_CASTLE);
-            	if (pos.getPiece(7) == Piece.WROOK) validCastle |= (1 << Position.H1_CASTLE);
-            }
-            if (pos.getPiece(60) == Piece.BKING) {
-            	if (pos.getPiece(56) == Piece.BROOK) validCastle |= (1 << Position.A8_CASTLE);
-            	if (pos.getPiece(63) == Piece.BROOK) validCastle |= (1 << Position.H8_CASTLE);
-            }
-            castleMask &= validCastle;
         }
         pos.setCastleMask(castleMask);
+        removeBogusCastleFlags(pos);
 
         if (words.length > 3) {
             // En passant target square
@@ -153,9 +144,23 @@ public class TextIO {
         return pos;
     }
 
+    public static final void removeBogusCastleFlags(Position pos) {
+    	int castleMask = pos.getCastleMask();
+    	int validCastle = 0;
+    	if (pos.getPiece(4) == Piece.WKING) {
+    		if (pos.getPiece(0) == Piece.WROOK) validCastle |= (1 << Position.A1_CASTLE);
+    		if (pos.getPiece(7) == Piece.WROOK) validCastle |= (1 << Position.H1_CASTLE);
+    	}
+    	if (pos.getPiece(60) == Piece.BKING) {
+    		if (pos.getPiece(56) == Piece.BROOK) validCastle |= (1 << Position.A8_CASTLE);
+    		if (pos.getPiece(63) == Piece.BROOK) validCastle |= (1 << Position.H8_CASTLE);
+    	}
+    	castleMask &= validCastle;
+    	pos.setCastleMask(castleMask);
+    }
+
     /** Remove pseudo-legal EP square if it is not legal, ie would leave king in check. */
     public static final void fixupEPSquare(Position pos) {
-        // Remove bogus epSquare
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
             ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);

@@ -115,9 +115,11 @@ public class EditBoard extends Activity {
 	}
 	
 	private void doMove(Move m) {
-		if ((m.from < 0) && (m.to < 0)) {
-			cb.setSelection(m.to);
-			return;
+		if (m.to < 0) {
+			if ((m.from < 0) || (cb.pos.getPiece(m.from) == Piece.EMPTY)) {
+				cb.setSelection(m.to);
+				return;
+			}
 		}
 		Position pos = new Position(cb.pos);
 		int piece = Piece.EMPTY;
@@ -146,12 +148,34 @@ public class EditBoard extends Activity {
 
 	private final void sendBackResult() {
 		if (checkValid()) {
+			setPosFields();
 			String fen = TextIO.toFEN(cb.pos);
 			setResult(RESULT_OK, (new Intent()).setAction(fen));
 		} else {
 			setResult(RESULT_CANCELED);
 		}
 		finish();
+	}
+
+	private final void setPosFields() {
+		setEPFile(getEPFile()); // To handle sideToMove change
+		TextIO.fixupEPSquare(cb.pos);
+		TextIO.removeBogusCastleFlags(cb.pos);
+	}
+	
+	private final int getEPFile() {
+		int epSquare = cb.pos.getEpSquare();
+		if (epSquare < 0) return 8;
+		return Position.getX(epSquare);
+	}
+	
+	private final void setEPFile(int epFile) {
+		int epSquare = -1;
+		if ((epFile >= 0) && (epFile < 8)) {
+			int epRank = cb.pos.whiteMove ? 5 : 2;
+			epSquare = Position.getSquare(epFile, epRank);
+		}
+		cb.pos.setEpSquare(epSquare);
 	}
 
 	/** Test if a position is valid. */
@@ -168,28 +192,38 @@ public class EditBoard extends Activity {
 	}
 
 	static final int EDIT_DIALOG = 0; 
-	static final int FIELDS_DIALOG = 1; 
+	static final int SIDE_DIALOG = 1; 
+	static final int CASTLE_DIALOG = 2; 
+	static final int EP_DIALOG = 3;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case EDIT_DIALOG: {
 			final CharSequence[] items = {
-					"Clear Board", "Initial position", "Edit fields","Copy Position", "Paste Position"
+					"Side to Move",
+					"Clear Board", "Initial position", 
+					"Castling Flags", "En Passant File", "Move Counters",
+					"Copy Position", "Paste Position"
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Edit Board");
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 			    	switch (item) {
-			    	case 0: { // Clear board
+			    	case 0: // Edit side to move
+			    		showDialog(SIDE_DIALOG);
+			    		cb.setSelection(-1);
+			    		checkValid();
+			    		break;
+			    	case 1: { // Clear board
 			    		Position pos = new Position();
 			    		cb.setPosition(pos);
 			    		cb.setSelection(-1);
 			    		checkValid();
 			    		break;
 			    	}
-			    	case 1: { // Set initial position
+			    	case 2: { // Set initial position
 			    		try {
 			    			Position pos = TextIO.readFEN(TextIO.startPosFEN);
 			    			cb.setPosition(pos);
@@ -199,19 +233,27 @@ public class EditBoard extends Activity {
 			    		}
 			    		break;
 			    	}
-			    	case 2: // Edit castling flags, en passant and move counters
-			    		showDialog(FIELDS_DIALOG);
+			    	case 3: // Edit castling flags
+			    		showDialog(CASTLE_DIALOG);
 			    		cb.setSelection(-1);
 			    		checkValid();
 			    		break;
-			    	case 3: { // Copy position
+			    	case 4: // Edit en passant file
+			    		showDialog(EP_DIALOG);
+			    		cb.setSelection(-1);
+			    		checkValid();
+			    		break;
+			    	case 5: // Edit move counters
+			    		break;
+			    	case 6: { // Copy position
+						setPosFields();
 			    		String fen = TextIO.toFEN(cb.pos) + "\n";
 			    		ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 			    		clipboard.setText(fen);
 			    		cb.setSelection(-1);
 			    		break;
 			    	}
-			    	case 4: { // Paste position
+			    	case 7: { // Paste position
 			    		ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 			    		if (clipboard.hasText()) {
 			    			String fen = clipboard.getText().toString();
@@ -234,17 +276,37 @@ public class EditBoard extends Activity {
 			AlertDialog alert = builder.create();
 			return alert;
 		}
-		case FIELDS_DIALOG: {
+		case SIDE_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Select side to move first")
+			       .setPositiveButton("White", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			        	   cb.pos.setWhiteMove(true);
+			        	   checkValid();
+			        	   dialog.cancel();
+			           }
+			       })
+			       .setNegativeButton("Black", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			        	   cb.pos.setWhiteMove(false);
+			        	   checkValid();
+			        	   dialog.cancel();
+			           }
+			       });
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case CASTLE_DIALOG: {
 			final CharSequence[] items = {
-					"White to move", "White king castle", "White queen castle",
+					"White king castle", "White queen castle",
 					"Black king castle", "Black queen castle"
 			};
 			boolean[] checkedItems = {
-					cb.pos.whiteMove, cb.pos.h1Castle(), cb.pos.a1Castle(),
+					cb.pos.h1Castle(), cb.pos.a1Castle(), // FIXME!!! Init every time
 					cb.pos.h8Castle(), cb.pos.a8Castle()
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Edit Fields");
+			builder.setTitle("Castling Flags");
 			builder.setMultiChoiceItems(items, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -254,11 +316,10 @@ public class EditBoard extends Activity {
 					boolean a8Castle = pos.a8Castle();
 					boolean h8Castle = pos.h8Castle();
 					switch (which) {
-					case 0: pos.whiteMove = isChecked; break;
-					case 1: h1Castle = isChecked; break;
-					case 2: a1Castle = isChecked; break;
-					case 3: h8Castle = isChecked; break;
-					case 4: a8Castle = isChecked; break;
+					case 0: h1Castle = isChecked; break;
+					case 1: a1Castle = isChecked; break;
+					case 2: h8Castle = isChecked; break;
+					case 3: a8Castle = isChecked; break;
 					}
 					int castleMask = 0;
 					if (a1Castle) castleMask |= 1 << Position.A1_CASTLE;
@@ -269,6 +330,20 @@ public class EditBoard extends Activity {
 					cb.setPosition(pos);
 					checkValid();
 				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case EP_DIALOG: { // FIXME!!! Init every time
+			final CharSequence[] items = {
+					"A", "B", "C", "D", "E", "F", "G", "H", "None"
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Select En Passant File");
+			builder.setSingleChoiceItems(items, getEPFile(), new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int item) {
+			    	setEPFile(item);
+			    }
 			});
 			AlertDialog alert = builder.create();
 			return alert;
