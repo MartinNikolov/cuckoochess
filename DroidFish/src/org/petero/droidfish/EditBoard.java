@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EditBoard extends Activity {
+	// FIXME!!! Requires tall screen.
 	private ChessBoardEdit cb;
 	private TextView status;
 	private Button okButton;

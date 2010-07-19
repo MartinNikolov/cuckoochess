@@ -23,6 +23,7 @@ import java.util.Random;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
+import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
@@ -32,8 +33,6 @@ import org.petero.droidfish.gamelogic.UndoInfo;
  * @author petero
  */
 public class Book {
-	// FIXME!!! Change book so that only whiteToMove positions are stored. Handle black moves with mirroring.
-	
     public static class BookEntry {
         Move move;
         int count;
@@ -99,6 +98,10 @@ public class Book {
 
     /** Add a move to a position in the opening book. */
     private final void addToBook(Position pos, Move moveToAdd) {
+    	if (!pos.whiteMove) {
+    		pos = mirrorPos(pos);
+    		moveToAdd = mirrorMove(moveToAdd);
+    	}
         List<BookEntry> ent = bookMap.get(pos.zobristHash());
         if (ent == null) {
             ent = new ArrayList<BookEntry>();
@@ -118,6 +121,13 @@ public class Book {
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
+    	if (!pos.whiteMove) {
+    		pos = mirrorPos(pos);
+    		Move m = getBookMove(pos);
+    		m = mirrorMove(m);
+    		return m;
+    	}
+
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
         if (bookMoves == null) {
             return null;
@@ -154,7 +164,12 @@ public class Book {
     }
 
     /** Return a string describing all book moves. */
-    public final String getAllBookMoves(Position pos) {
+    public final String getAllBookMoves(Position origPos) {
+    	Position pos = origPos;
+    	boolean mirror = !pos.whiteMove;
+    	if (mirror) {
+    		pos = mirrorPos(pos);
+    	}
         StringBuilder ret = new StringBuilder();
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
         Collections.sort(bookMoves, new Comparator<BookEntry>() {
@@ -167,7 +182,9 @@ public class Book {
 			}});
         if (bookMoves != null) {
             for (BookEntry be : bookMoves) {
-                String moveStr = TextIO.moveToString(pos, be.move, false);
+            	Move m = be.move;
+            	if (mirror) m = mirrorMove(m);
+                String moveStr = TextIO.moveToString(origPos, m, false);
                 ret.append(moveStr);
                 ret.append("(");
                 ret.append(be.count);
@@ -235,5 +252,53 @@ public class Book {
         binBook.add((byte)0);
         binBook.add((byte)0);
         return true;
+    }
+
+    private final int mirrorSquare(int sq) {
+    	int x = Position.getX(sq);
+    	int y = 7 - Position.getY(sq);
+    	return Position.getSquare(x, y);
+    }
+    private final int mirrorPiece(int piece) {
+		if (Piece.isWhite(piece)) {
+			piece = Piece.makeBlack(piece);
+		} else {
+			piece = Piece.makeWhite(piece);
+		}
+		return piece;
+    }
+
+    private final Position mirrorPos(Position pos) {
+    	Position ret = new Position(pos);
+    	for (int sq = 0; sq < 64; sq++) {
+    		int mSq = mirrorSquare(sq);
+    		int piece = pos.getPiece(sq);
+    		int mPiece = mirrorPiece(piece);
+    		ret.setPiece(mSq, mPiece);
+    	}
+    	ret.setWhiteMove(!pos.whiteMove);
+    	int castleMask = 0;
+    	if (pos.a1Castle()) castleMask |= (1 << Position.A8_CASTLE);
+    	if (pos.h1Castle()) castleMask |= (1 << Position.H8_CASTLE);
+    	if (pos.a8Castle()) castleMask |= (1 << Position.A1_CASTLE);
+    	if (pos.h8Castle()) castleMask |= (1 << Position.H1_CASTLE);
+    	ret.setCastleMask(castleMask);
+    	int epSquare = pos.getEpSquare();
+    	if (epSquare >= 0) {
+    		int mEpSquare = mirrorSquare(epSquare);
+    		ret.setEpSquare(mEpSquare);
+    	}
+    	ret.halfMoveClock = pos.halfMoveClock;
+    	ret.fullMoveCounter = pos.fullMoveCounter;
+    	return ret;
+	}
+
+    private Move mirrorMove(Move m) {
+    	if (m == null) return null;
+    	Move ret = new Move(m);
+    	ret.from = mirrorSquare(m.from);
+    	ret.to = mirrorSquare(m.to);
+    	ret.promoteTo = mirrorPiece(m.promoteTo);
+    	return ret;
     }
 }
