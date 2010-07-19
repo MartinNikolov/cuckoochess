@@ -16,15 +16,16 @@ import org.petero.droidfish.engine.ComputerPlayer;
  * @author petero
  */
 public class Game {
-    protected List<Move> moveList = null;
-    protected List<UndoInfo> uiInfoList = null;
-    List<Boolean> drawOfferList = null;
-    protected int currentMove;
+    Position pos = null;
     boolean pendingDrawOffer;
     GameState drawState;
-    String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
-    GameState resignState;
-    public Position pos = null;
+    private List<Move> moveList = null;
+    private List<String> moveStrList = null; // Short algebraic move strings corresponding to moveList
+    private List<UndoInfo> uiInfoList = null;
+    private List<Boolean> drawOfferList = null;
+    private int currentMove;
+    private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
+    private GameState resignState;
     private ComputerPlayer computerPlayer;
 
     public Game(ComputerPlayer computerPlayer) {
@@ -71,14 +72,17 @@ public class Game {
         }
 
         UndoInfo ui = new UndoInfo();
+        String moveStr = TextIO.moveToString(pos, m, false);
         pos.makeMove(m, ui);
         TextIO.fixupEPSquare(pos);
         while (currentMove < moveList.size()) {
             moveList.remove(currentMove);
+            moveStrList.remove(currentMove);
             uiInfoList.remove(currentMove);
             drawOfferList.remove(currentMove);
         }
         moveList.add(m);
+        moveStrList.add(moveStr);
         uiInfoList.add(ui);
         drawOfferList.add(pendingDrawOffer);
         pendingDrawOffer = false;
@@ -198,6 +202,7 @@ public class Game {
     protected boolean handleCommand(String moveStr) {
         if (moveStr.equals("new")) {
             moveList = new ArrayList<Move>();
+            moveStrList = new ArrayList<String>();
             uiInfoList = new ArrayList<UndoInfo>();
             drawOfferList = new ArrayList<Boolean>();
             currentMove = 0;
@@ -294,7 +299,7 @@ public class Game {
 	}
 
     public final String getMoveListString() {
-        StringBuilder ret = new StringBuilder();
+        StringBuilder ret = new StringBuilder(2048);
 
         // Undo all moves in move history.
         Position pos = new Position(this.pos);
@@ -307,10 +312,8 @@ public class Game {
         String blackMove = "";
         for (int i = 0; i < currentMove; i++) {
             Move move = moveList.get(i);
-            String strMove = TextIO.moveToString(pos, move, false);
-            if (drawOfferList.get(i)) {
-//                strMove += " {d}";
-            }
+            String strMove = moveStrList.get(i);
+//            if (drawOfferList.get(i)) strMove += " {d}";
             if (pos.whiteMove) {
                 whiteMove = strMove;
             } else {
