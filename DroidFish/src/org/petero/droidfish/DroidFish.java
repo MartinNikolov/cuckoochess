@@ -40,10 +40,10 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Disable virtual keyboard.
 	// FIXME!!! Implement "limit strength" option.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
-	// FIXME!!! Implement "claim draw".
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Move strings to strings.xml
+	// FIXME!!! Make engine accept draw offer if far enough behind.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -273,15 +273,23 @@ public class DroidFish extends Activity implements GUIInterface {
 			startActivityForResult(i, RESULT_SETTINGS);
 			return true;
 		}
-		case R.id.item_about:
-        	showDialog(ABOUT_DIALOG);
-        	return true;
 		case R.id.item_undo:
 			ctrl.undoMove();
 			return true;
 		case R.id.item_redo:
 			ctrl.redoMove();
 			return true;
+		case R.id.item_draw: {
+			if (ctrl.humansTurn()) {
+				if (!ctrl.claimDrawIfPossible()) {
+					Toast.makeText(getApplicationContext(), "Draw claim not valid", Toast.LENGTH_SHORT).show();
+				}
+			}
+			return true;
+		}
+		case R.id.item_about:
+        	showDialog(ABOUT_DIALOG);
+        	return true;
 		}
 		return false;
 	}

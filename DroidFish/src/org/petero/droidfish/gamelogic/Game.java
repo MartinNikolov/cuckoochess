@@ -309,7 +309,7 @@ public class Game {
             Move move = moveList.get(i);
             String strMove = TextIO.moveToString(pos, move, false);
             if (drawOfferList.get(i)) {
-                strMove += " (d)";
+//                strMove += " {d}";
             }
             if (pos.whiteMove) {
                 whiteMove = strMove;

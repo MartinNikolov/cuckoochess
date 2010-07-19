@@ -601,4 +601,22 @@ public class ChessController {
     	computerPlayer.shutdownEngine();
     }
 
+	/** Help human to claim a draw by trying to find and execute a valid draw claim. */
+    public final boolean claimDrawIfPossible() {
+    	if (!findValidDrawClaim())
+    		return false;
+    	updateGUI();
+    	return true;
+    }
+
+    private final boolean findValidDrawClaim() {
+    	if (game.getGameState() != GameState.ALIVE) return true;
+		game.processString("draw accept");
+		if (game.getGameState() != GameState.ALIVE) return true;
+		game.processString("draw rep");
+		if (game.getGameState() != GameState.ALIVE) return true;
+		game.processString("draw 50");
+		if (game.getGameState() != GameState.ALIVE) return true;
+        return false;
+	}
 }
