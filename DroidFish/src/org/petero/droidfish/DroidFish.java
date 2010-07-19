@@ -42,8 +42,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
+	// FIXME!!! Try to parse redo info in PGN import
 	// FIXME!!! Move strings to strings.xml
-	// FIXME!!! Incremental update of move list. Slow for long games.
 	// FIXME!!! Implement "go to move" in game history
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book

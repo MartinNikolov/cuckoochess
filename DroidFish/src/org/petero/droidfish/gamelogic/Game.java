@@ -321,8 +321,11 @@ public class Game {
         	}
             String strMove = moveStrList.get(i);
 //            if (drawOfferList.get(i)) strMove += " {d}";
-            if (pos.whiteMove)
-            	ret.append(String.format("%d. ", pos.fullMoveCounter));
+            if (pos.whiteMove) {
+            	ret.append(pos.fullMoveCounter);
+            	ret.append('.');
+            	ret.append(' ');
+            }
             ret.append(strMove);
             ret.append(' ');
             Move move = moveList.get(i);
