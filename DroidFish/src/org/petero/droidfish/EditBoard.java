@@ -234,11 +234,13 @@ public class EditBoard extends Activity {
 			    		break;
 			    	}
 			    	case 3: // Edit castling flags
+			    		removeDialog(CASTLE_DIALOG);
 			    		showDialog(CASTLE_DIALOG);
 			    		cb.setSelection(-1);
 			    		checkValid();
 			    		break;
 			    	case 4: // Edit en passant file
+			    		removeDialog(EP_DIALOG);
 			    		showDialog(EP_DIALOG);
 			    		cb.setSelection(-1);
 			    		checkValid();
@@ -302,7 +304,7 @@ public class EditBoard extends Activity {
 					"Black king castle", "Black queen castle"
 			};
 			boolean[] checkedItems = {
-					cb.pos.h1Castle(), cb.pos.a1Castle(), // FIXME!!! Init every time
+					cb.pos.h1Castle(), cb.pos.a1Castle(),
 					cb.pos.h8Castle(), cb.pos.a8Castle()
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -334,7 +336,7 @@ public class EditBoard extends Activity {
 			AlertDialog alert = builder.create();
 			return alert;
 		}
-		case EP_DIALOG: { // FIXME!!! Init every time
+		case EP_DIALOG: {
 			final CharSequence[] items = {
 					"A", "B", "C", "D", "E", "F", "G", "H", "None"
 			};
