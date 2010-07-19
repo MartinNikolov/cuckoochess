@@ -295,7 +295,7 @@ public class ChessController {
     		while (sc.hasNext()) {
     			String c = sc.next();
     			if (c.equals("{")) {
-    				sc.skip("[^}]*}");
+    				sc.skip("[^}]*\\}");
     			} else if (c.equals(";")) {
     				sc.skip("[^\n]*\n");
     			} else {

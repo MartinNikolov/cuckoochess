@@ -308,41 +308,35 @@ public class Game {
         }
 
         // Print all moves
-        String whiteMove = "";
-        String blackMove = "";
-        for (int i = 0; i < currentMove; i++) {
-            Move move = moveList.get(i);
+        int size = moveList.size();
+        boolean haveRedoPart = false;
+        if (!pos.whiteMove && (size > 0)) {
+        	ret.append(String.format("%d. ... ", pos.fullMoveCounter));
+        }
+        UndoInfo ui = new UndoInfo();
+        for (int i = 0; i < size; i++) {
+        	if (i == currentMove) {
+        		ret.append("{ ");
+        		haveRedoPart = true;
+        	}
             String strMove = moveStrList.get(i);
 //            if (drawOfferList.get(i)) strMove += " {d}";
-            if (pos.whiteMove) {
-                whiteMove = strMove;
-            } else {
-                blackMove = strMove;
-                if (whiteMove.length() == 0) {
-                    whiteMove = "...";
-                }
-                ret.append(String.format("%d. %s %s ",
-                						 pos.fullMoveCounter, whiteMove, blackMove));
-                whiteMove = "";
-                blackMove = "";
-            }
-            UndoInfo ui = new UndoInfo();
+            if (pos.whiteMove)
+            	ret.append(String.format("%d. ", pos.fullMoveCounter));
+            ret.append(strMove);
+            ret.append(' ');
+            Move move = moveList.get(i);
             pos.makeMove(move, ui);
-        }
-        if ((whiteMove.length() > 0) || (blackMove.length() > 0)) {
-            if (whiteMove.length() == 0) {
-                whiteMove = "...";
-            }
-            ret.append(String.format("%d. %s %s ",
-            						 pos.fullMoveCounter, whiteMove, blackMove));
         }
         String gameResult = getPGNResultString();
         if (!gameResult.equals("*")) {
         	ret.append(gameResult);
         }
+        if (haveRedoPart)
+        	ret.append("}");
         return ret.toString();
     }
-    
+
     public final String getPGNResultString() {
         String gameResult = "*";
         switch (getGameState()) {

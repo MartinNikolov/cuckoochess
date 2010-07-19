@@ -43,9 +43,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Move strings to strings.xml
-	// FIXME!!! Incremental update of move list. Very slow for long games.
+	// FIXME!!! Incremental update of move list. Slow for long games.
 	// FIXME!!! Implement "go to move" in game history
-	// FIXME!!! Show "redo" moves in move list
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
 
