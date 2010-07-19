@@ -38,11 +38,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Disable virtual keyboard.
-	// FIXME!!! Edit board, implement move counters
 	// FIXME!!! Implement "limit strength" option.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 	// FIXME!!! Implement "claim draw".
 	// FIXME!!! Include draw claim in save/restore state.
+	// FIXME!!! Implement fully standard-compliant PGN parser.
+	// FIXME!!! Move strings to strings.xml
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

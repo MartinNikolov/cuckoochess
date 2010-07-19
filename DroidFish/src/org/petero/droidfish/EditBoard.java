@@ -9,6 +9,7 @@ import org.petero.droidfish.gamelogic.TextIO;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -21,6 +22,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -195,6 +197,7 @@ public class EditBoard extends Activity {
 	static final int SIDE_DIALOG = 1; 
 	static final int CASTLE_DIALOG = 2; 
 	static final int EP_DIALOG = 3;
+	static final int MOVCNT_DIALOG = 4;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -246,6 +249,10 @@ public class EditBoard extends Activity {
 			    		checkValid();
 			    		break;
 			    	case 5: // Edit move counters
+			    		removeDialog(MOVCNT_DIALOG);
+			    		showDialog(MOVCNT_DIALOG);
+			    		cb.setSelection(-1);
+			    		checkValid();
 			    		break;
 			    	case 6: { // Copy position
 						setPosFields();
@@ -349,6 +356,36 @@ public class EditBoard extends Activity {
 			});
 			AlertDialog alert = builder.create();
 			return alert;
+		}
+		case MOVCNT_DIALOG: {
+			final Dialog dialog = new Dialog(this);
+			dialog.setContentView(R.layout.edit_move_counters);
+			dialog.setTitle("Edit move counters");
+			final EditText halfMoveClock = (EditText)dialog.findViewById(R.id.ed_cnt_halfmove);
+			final EditText fullMoveCounter = (EditText)dialog.findViewById(R.id.ed_cnt_fullmove);
+			Button ok = (Button)dialog.findViewById(R.id.ed_cnt_ok);
+			Button cancel = (Button)dialog.findViewById(R.id.ed_cnt_cancel);
+			halfMoveClock.setText(String.format("%d", cb.pos.halfMoveClock));
+			fullMoveCounter.setText(String.format("%d", cb.pos.fullMoveCounter));
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					try {
+				        int halfClock = Integer.parseInt(halfMoveClock.getText().toString());
+				        int fullCount = Integer.parseInt(fullMoveCounter.getText().toString());
+				        cb.pos.halfMoveClock = halfClock;
+				        cb.pos.fullMoveCounter = fullCount;
+						dialog.cancel();
+					} catch (NumberFormatException nfe) {
+						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+			cancel.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					dialog.cancel();
+				}
+			});
+			return dialog;
 		}
 		}
 		return null;
