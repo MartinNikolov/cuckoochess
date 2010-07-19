@@ -43,7 +43,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Move strings to strings.xml
-	// FIXME!!! Make engine accept draw offer if far enough behind.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

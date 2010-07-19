@@ -171,6 +171,10 @@ public class ComputerPlayer {
         	if (drawClaim != "")
         		bestMove = drawClaim;
         }
+        // Accept draw offer if engine is losing
+        if (drawOffer && !statIsMate && (statScore <= -300)) {
+        	bestMove = "draw accept";
+        }
         return bestMove;
     }
 
