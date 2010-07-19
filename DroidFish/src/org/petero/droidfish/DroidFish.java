@@ -40,7 +40,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Disable virtual keyboard.
 	// FIXME!!! Edit board, implement move counters and ep square.
 	// FIXME!!! Implement "limit strength" option.
-	// FIXME!!! Add piece in edit mode looks ugly and is not user friendly.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 
 	private ChessBoard cb;

@@ -19,11 +19,11 @@ public class ChessBoard extends View {
     int selectedSquare;
     float cursorX, cursorY;
     boolean cursorVisible;
-    private int x0, y0, sqSize;
+    protected int x0, y0, sqSize;
     boolean flipped;
 
-    private Paint darkPaint;
-    private Paint brightPaint;
+    protected Paint darkPaint;
+    protected Paint brightPaint;
     private Paint redOutline;
     private Paint greenOutline;
     private Paint whitePiecePaint;
@@ -98,23 +98,41 @@ public class ChessBoard extends View {
         }
     }
 
+	protected int getWidth(int sqSize) { return sqSize * 8 + 4; }
+	protected int getHeight(int sqSize) { return sqSize * 8 + 4; }
+	protected int getSqSizeW(int width) { return (width - 4) / 8; }
+	protected int getSqSizeH(int height) { return (height - 4) / 8; }
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		int width = getMeasuredWidth();
 		int height = getMeasuredHeight();
-		int minSize = Math.min(width, height);
-		setMeasuredDimension(minSize, minSize);
+		int sqSizeW = getSqSizeW(width);
+		int sqSizeH = getSqSizeH(height);
+		int sqSize = Math.min(sqSizeW, sqSizeH);
+		if (sqSizeH > sqSizeW) {
+			height = getHeight(sqSize);
+		} else {
+			width = getWidth(sqSize);
+		}
+		setMeasuredDimension(width, height);
 	}
+
+	protected void computeOrigin(int width, int height) {
+        x0 = (width - sqSize * 8) / 2;
+        y0 = (height - sqSize * 8) / 2;
+	}
+
+	protected int getXFromSq(int sq) { return Position.getX(sq); }
+	protected int getYFromSq(int sq) { return Position.getY(sq); }
 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		final int width = getWidth();
 		final int height = getHeight();
-        sqSize = (Math.min(width, height) - 4) / 8;
-        x0 = (width - sqSize * 8) / 2;
-        y0 = (height - sqSize * 8) / 2;
-
+        sqSize = Math.min(getSqSizeW(width), getSqSizeH(height));
+		computeOrigin(width, height);
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 final int xCrd = getXCrd(x);
@@ -127,9 +145,10 @@ public class ChessBoard extends View {
                 drawPiece(canvas, xCrd + sqSize / 2, yCrd + sqSize / 2, p);
             }
         }
-        if (selectedSquare >= 0) {
-            int selX = Position.getX(selectedSquare);
-            int selY = Position.getY(selectedSquare);
+        drawExtraSquares(canvas);
+        if (selectedSquare != -1) {
+            int selX = getXFromSq(selectedSquare);
+            int selY = getYFromSq(selectedSquare);
             redOutline.setStrokeWidth(sqSize/(float)16);
             int x0 = getXCrd(selX);
             int y0 = getYCrd(selY);
@@ -145,7 +164,10 @@ public class ChessBoard extends View {
         }
     }
 
-    private final void drawPiece(Canvas canvas, int xCrd, int yCrd, int p) {
+    protected void drawExtraSquares(Canvas canvas) {
+	}
+
+	protected final void drawPiece(Canvas canvas, int xCrd, int yCrd, int p) {
         char c = 0;
         switch (p) {
         	default:
@@ -177,31 +199,25 @@ public class ChessBoard extends View {
         }
     }
 
-    private final int getXCrd(int x) {
-        return x0 + sqSize * (flipped ? 7 - x : x);
-    }
-    private final int getYCrd(int y) {
-        return y0 + sqSize * (flipped ? y : (7 - y));
-    }
+    protected int getXCrd(int x) { return x0 + sqSize * (flipped ? 7 - x : x); }
+    protected int getYCrd(int y) { return y0 + sqSize * (flipped ? y : 7 - y); }
+    protected int getXSq(int xCrd) { int t = (xCrd - x0) / sqSize; return flipped ? 7 - t : t; }
+    protected int getYSq(int yCrd) { int t = (yCrd - y0) / sqSize; return flipped ? t : 7 - t; }
 
     /**
      * Compute the square corresponding to the coordinates of a mouse event.
      * @param evt Details about the mouse event.
      * @return The square corresponding to the mouse event, or -1 if outside board.
      */
-    final int eventToSquare(MotionEvent evt) {
+    int eventToSquare(MotionEvent evt) {
         int xCrd = (int)(evt.getX());
         int yCrd = (int)(evt.getY());
 
         int sq = -1;
-        if ((xCrd >= x0) && (yCrd >= y0) && (sqSize > 0)) {
-            int x = (xCrd - x0) / sqSize;
-            int y = 7 - (yCrd - y0) / sqSize;
+        if (sqSize > 0) {
+            int x = getXSq(xCrd);
+            int y = getYSq(yCrd);
             if ((x >= 0) && (x < 8) && (y >= 0) && (y < 8)) {
-                if (flipped) {
-                    x = 7 - x;
-                    y = 7 - y;
-                }
                 sq = Position.getSquare(x, y);
             }
         }
@@ -216,7 +232,7 @@ public class ChessBoard extends View {
 		if (sq < 0)
 			return null;
     	cursorVisible = false;
-        if (selectedSquare >= 0) {
+        if (selectedSquare != -1) {
         	int p = pos.getPiece(selectedSquare);
         	if (!myColor(p)) {
         		setSelection(-1); // Remove selection of opponents last moving piece
@@ -224,7 +240,7 @@ public class ChessBoard extends View {
         }
 
         int p = pos.getPiece(sq);
-        if (selectedSquare >= 0) {
+        if (selectedSquare != -1) {
             if (sq != selectedSquare) {
             	if (!myColor(p)) {
                     Move m = new Move(selectedSquare, sq, Piece.EMPTY);
@@ -256,6 +272,9 @@ public class ChessBoard extends View {
 		}
 		return false;
 	}
+
+	protected int minValidY() { return 0; }
+	protected int getSquare(int x, int y) { return Position.getSquare(x, y); }
 	
 	public Move handleTrackballEvent(MotionEvent event) {
 		switch (event.getAction()) {
@@ -266,7 +285,7 @@ public class ChessBoard extends View {
 				int y = Math.round(cursorY);
 				cursorX = x;
 				cursorY = y;
-				int sq = Position.getSquare(x, y);
+				int sq = getSquare(x, y);
 				return mousePressed(sq);
 			}
 			return null;
@@ -277,7 +296,7 @@ public class ChessBoard extends View {
 		cursorY -= c * event.getY();
 		if (cursorX < 0) cursorX = 0;
 		if (cursorX > 7) cursorX = 7;
-		if (cursorY < 0) cursorY = 0;
+		if (cursorY < minValidY()) cursorY = minValidY();
 		if (cursorY > 7) cursorY = 7;
 		invalidate();
 		return null;

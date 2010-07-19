@@ -32,6 +32,8 @@ import org.petero.droidfish.gamelogic.UndoInfo;
  * @author petero
  */
 public class Book {
+	// FIXME!!! Change book so that only whiteToMove positions are stored. Handle black moves with mirroring.
+	
     public static class BookEntry {
         Move move;
         int count;
