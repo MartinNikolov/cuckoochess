@@ -26,8 +26,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +47,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Try to parse redo info in PGN import
 	// FIXME!!! Move strings to strings.xml
-	// FIXME!!! Implement "go to move" in game history
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
 
@@ -282,6 +284,10 @@ public class DroidFish extends Activity implements GUIInterface {
 		case R.id.item_redo:
 			ctrl.redoMove();
 			return true;
+		case R.id.item_goto_move: {
+			showDialog(SELECT_MOVE_DIALOG);
+			return true;
+		}
 		case R.id.item_draw: {
 			if (ctrl.humansTurn()) {
 				if (!ctrl.claimDrawIfPossible()) {
@@ -355,6 +361,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int PROMOTE_DIALOG = 0; 
 	static final int CLIPBOARD_DIALOG = 1;
 	static final int ABOUT_DIALOG = 2;
+	static final int SELECT_MOVE_DIALOG = 3;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -413,6 +420,32 @@ public class DroidFish extends Activity implements GUIInterface {
 			builder.setTitle("DroidFish").setMessage(R.string.about_info);
 			AlertDialog alert = builder.create();
 			return alert;
+		}
+		case SELECT_MOVE_DIALOG: {
+			final Dialog dialog = new Dialog(this);
+			dialog.setContentView(R.layout.select_move_number);
+			dialog.setTitle("Goto move");
+			final EditText moveNrView = (EditText)dialog.findViewById(R.id.selmove_number);
+			Button ok = (Button)dialog.findViewById(R.id.selmove_ok);
+			Button cancel = (Button)dialog.findViewById(R.id.selmove_cancel);
+			moveNrView.setText("1");
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					try {
+				        int moveNr = Integer.parseInt(moveNrView.getText().toString());
+				        ctrl.gotoMove(moveNr);
+						dialog.cancel();
+					} catch (NumberFormatException nfe) {
+						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+			cancel.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					dialog.cancel();
+				}
+			});
+			return dialog;
 		}
 		}
 		return null;

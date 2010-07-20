@@ -375,7 +375,7 @@ public class ChessController {
     	return computerThread != null;
     }
 
-    public final void undoMove() {
+    private final void undoMoveNoUpdate() {
     	if (game.getLastMove() != null) {
     		ss.searchResultWanted = false;
     		game.processString("undo");
@@ -392,6 +392,12 @@ public class ChessController {
     				game.processString("redo");
     			}
     		}
+    	}
+    }
+    
+    public final void undoMove() {
+    	if (game.getLastMove() != null) {
+        	undoMoveNoUpdate();
     		stopAnalysis();
 			stopComputerThinking();
     		updateComputeThreads(true);
@@ -400,7 +406,7 @@ public class ChessController {
     	}
     }
 
-    public final void redoMove() {
+    private final void redoMoveNoUpdate() {
     	if (game.canRedoMove()) {
     		ss.searchResultWanted = false;
     		game.processString("redo");
@@ -409,6 +415,12 @@ public class ChessController {
     			if (!humansTurn())
     				game.processString("undo");
     		}
+    	}
+    }
+
+    public final void redoMove() {
+    	if (game.canRedoMove()) {
+    		redoMoveNoUpdate();
     		stopAnalysis();
 			stopComputerThinking();
     		updateComputeThreads(true);
@@ -416,6 +428,34 @@ public class ChessController {
     		updateGUI();
     	}
     }
+
+	public void gotoMove(int moveNr) {
+		boolean needUpdate = false;
+		while (game.pos.fullMoveCounter > moveNr) { // Go backward
+			int before = game.currentMove;
+			undoMoveNoUpdate();
+			int after = game.currentMove;
+			if (after >= before)
+				break;
+			needUpdate = true;
+		}
+		while (game.pos.fullMoveCounter < moveNr) { // Go forward
+			int before = game.currentMove;
+			redoMoveNoUpdate();
+			int after = game.currentMove;
+			if (after <= before)
+				break;
+			needUpdate = true;
+		}
+		if (needUpdate) {
+    		stopAnalysis();
+			stopComputerThinking();
+    		updateComputeThreads(true);
+    		setSelection();
+    		updateGUI();
+		}
+	}
+
 
     public final void makeHumanMove(Move m) {
         if (humansTurn()) {

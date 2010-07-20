@@ -23,7 +23,7 @@ public class Game {
     private List<String> moveStrList = null; // Short algebraic move strings corresponding to moveList
     private List<UndoInfo> uiInfoList = null;
     private List<Boolean> drawOfferList = null;
-    private int currentMove;
+    int currentMove;
     private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
     private GameState resignState;
     private ComputerPlayer computerPlayer;
