@@ -418,8 +418,12 @@ public class ChessController {
     	}
     }
 
+    public final boolean canRedoMove() {
+    	return game.canRedoMove();
+    }
+    
     public final void redoMove() {
-    	if (game.canRedoMove()) {
+    	if (canRedoMove()) {
     		redoMoveNoUpdate();
     		stopAnalysis();
 			stopComputerThinking();

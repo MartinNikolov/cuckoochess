@@ -341,7 +341,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void setMoveListString(String str) {
 		moveList.setText(str);
-		moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
+		if (!ctrl.canRedoMove())
+			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 	
 	@Override
