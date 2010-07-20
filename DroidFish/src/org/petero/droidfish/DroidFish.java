@@ -22,11 +22,13 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
@@ -40,7 +42,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement database support
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Disable soft keyboard.
 	// FIXME!!! Implement "limit strength" option.
 	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 	// FIXME!!! Include draw claim in save/restore state.
@@ -49,7 +50,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Move strings to strings.xml
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
-	// FIXME!!! Save analysis as PGN comments
+	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -431,8 +432,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			Button ok = (Button)dialog.findViewById(R.id.selmove_ok);
 			Button cancel = (Button)dialog.findViewById(R.id.selmove_cancel);
 			moveNrView.setText("1");
-			ok.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
+			final Runnable gotoMove = new Runnable() {
+				public void run() {
 					try {
 				        int moveNr = Integer.parseInt(moveNrView.getText().toString());
 				        ctrl.gotoMove(moveNr);
@@ -440,6 +441,20 @@ public class DroidFish extends Activity implements GUIInterface {
 					} catch (NumberFormatException nfe) {
 						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
 					}
+				}
+			};
+			moveNrView.setOnKeyListener(new OnKeyListener() {
+				public boolean onKey(View v, int keyCode, KeyEvent event) {
+					if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+						gotoMove.run();
+						return true;
+					}
+					return false;
+				}
+	        });
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					gotoMove.run();
 				}
 			});
 			cancel.setOnClickListener(new OnClickListener() {

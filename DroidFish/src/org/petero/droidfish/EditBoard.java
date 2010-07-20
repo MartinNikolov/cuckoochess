@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
@@ -365,8 +366,8 @@ public class EditBoard extends Activity {
 			Button cancel = (Button)dialog.findViewById(R.id.ed_cnt_cancel);
 			halfMoveClock.setText(String.format("%d", cb.pos.halfMoveClock));
 			fullMoveCounter.setText(String.format("%d", cb.pos.fullMoveCounter));
-			ok.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
+			final Runnable setCounters = new Runnable() {
+				public void run() {
 					try {
 				        int halfClock = Integer.parseInt(halfMoveClock.getText().toString());
 				        int fullCount = Integer.parseInt(fullMoveCounter.getText().toString());
@@ -376,6 +377,20 @@ public class EditBoard extends Activity {
 					} catch (NumberFormatException nfe) {
 						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
 					}
+				}
+			};
+			fullMoveCounter.setOnKeyListener(new OnKeyListener() {
+				public boolean onKey(View v, int keyCode, KeyEvent event) {
+					if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+						setCounters.run();
+						return true;
+					}
+					return false;
+				}
+	        });
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					setCounters.run();
 				}
 			});
 			cancel.setOnClickListener(new OnClickListener() {
