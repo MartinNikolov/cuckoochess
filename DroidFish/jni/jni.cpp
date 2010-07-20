@@ -135,5 +135,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
     			break;
     		written += n;
     	}
+    	(*env).ReleaseStringUTFChars(msg, str);
     }
 }

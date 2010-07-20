@@ -433,7 +433,7 @@ public class ChessController {
     	}
     }
 
-	public void gotoMove(int moveNr) {
+	public final void gotoMove(int moveNr) {
 		boolean needUpdate = false;
 		while (game.pos.fullMoveCounter > moveNr) { // Go backward
 			int before = game.currentMove;
