@@ -49,13 +49,16 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 \n\
 <b>Features</b>\n\
 * Opening book\n\
+* Unlimited undo/redo\n\
 * Copy/paste to/from clipboard\n\
 * Analysis mode\n\
 * Two player mode\n\
 * Computer vs computer mode\n\
+* Edit board\n\
 \n\
 <b>Hints</b>\n\
-* Long press chess board to activate copy/paste menu.\n\
+* In game mode, long press chess board to activate copy/paste menu.\n\
+* In edit board mode, long press chess board to activate edit menu.\n\
 \n\
 <b>License</b>\n\
 GNU GPL v3\n\
