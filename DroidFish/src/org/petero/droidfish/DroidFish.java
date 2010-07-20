@@ -43,7 +43,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option.
-	// FIXME!!! Add icons to options menu (new game, edit board, about, etc)
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Try to parse redo info in PGN import

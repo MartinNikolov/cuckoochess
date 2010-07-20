@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
-  xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:id="@+id/item_new_game" android:title="New Game"></item>
-  <item android:id="@+id/item_undo" android:title="Undo"></item>
-  <item android:id="@+id/item_redo" android:title="Redo"></item>
-  <item android:id="@+id/item_editboard" android:title="Edit Board"></item>
-  <item android:id="@+id/item_settings" android:title="Settings"></item>
-  <item android:id="@+id/item_goto_move" android:title="Goto Move"></item>
-  <item android:id="@+id/item_draw" android:title="Claim Draw"></item>
-  <item android:id="@+id/item_about" android:title="About"></item>
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<item
+  		android:id="@+id/item_new_game"
+	  	android:title="New Game"
+  		android:icon="@drawable/start">
+	</item>
+	<item
+	  	android:id="@+id/item_undo"
+  		android:title="Undo"
+	  	android:icon="@drawable/left">
+	</item>
+	<item
+  		android:id="@+id/item_redo"
+	  	android:title="Redo"
+  		android:icon="@drawable/right">
+	</item>
+	<item
+  		android:id="@+id/item_editboard"
+	  	android:title="Edit Board"
+  		android:icon="@drawable/edit">
+	</item>
+	<item
+	 	android:id="@+id/item_settings"
+	  	android:title="Settings"
+  		android:icon="@android:drawable/ic_menu_preferences">
+	</item>
+	<item
+		android:id="@+id/item_goto_move"
+		android:title="Goto Move">
+	</item>
+	<item
+		android:id="@+id/item_draw"
+		android:title="Claim Draw">
+	</item>
+	<item
+		android:id="@+id/item_about"
+		android:title="About">
+	</item>
 </menu>
