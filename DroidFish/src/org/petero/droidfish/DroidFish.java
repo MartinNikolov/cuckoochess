@@ -49,6 +49,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Move strings to strings.xml
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
+	// FIXME!!! Save analysis as PGN comments
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
