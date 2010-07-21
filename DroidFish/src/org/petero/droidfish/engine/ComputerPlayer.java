@@ -46,6 +46,10 @@ public class ComputerPlayer {
         this.listener = listener;
     }
 
+	public final void setBookFileName(String bookFileName) {
+		book.setBookFileName(bookFileName);
+	}
+	
     private void readUCIOptions() {
     	int timeout = 1000;
     	while (true) {

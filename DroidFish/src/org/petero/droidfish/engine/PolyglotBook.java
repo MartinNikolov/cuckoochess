@@ -16,8 +16,11 @@ public class PolyglotBook {
 	File bookFile;
 
 	PolyglotBook() {
-		String bookFileName = "/sdcard/DroidFish/stockfish-18.bin"; // FIXME!!!
-		bookFile = new File(bookFileName);
+		bookFile = new File("");
+	}
+
+	final void setBookFileName(String fileName) {
+		bookFile = new File(fileName);
 	}
 
 	/** Compute a polyglot hash key corresponding to a position. */

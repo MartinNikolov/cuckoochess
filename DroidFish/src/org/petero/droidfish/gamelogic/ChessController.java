@@ -22,6 +22,7 @@ import org.petero.droidfish.gamelogic.Game.GameState;
  */
 public class ChessController {
     private ComputerPlayer computerPlayer = null;
+    private String bookFileName = "";
     private Game game;
     private GUIInterface gui;
     private GameMode gameMode;
@@ -134,6 +135,14 @@ public class ChessController {
         thinkingPV = "";
     }
 
+	public final void setBookFileName(String bookFileName) {
+		if (!this.bookFileName.equals(bookFileName)) {
+			this.bookFileName = bookFileName;
+			if (computerPlayer != null)
+				computerPlayer.setBookFileName(bookFileName);
+		}
+	}
+    
     private final static class SearchStatus {
     	boolean searchResultWanted = true;
     }
@@ -147,6 +156,7 @@ public class ChessController {
         if (computerPlayer == null) {
         	computerPlayer = new ComputerPlayer();
         	computerPlayer.setListener(listener);
+        	computerPlayer.setBookFileName(bookFileName);
         }
        	game = new Game(computerPlayer);
     }

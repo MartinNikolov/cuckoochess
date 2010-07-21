@@ -1,5 +1,6 @@
 package org.petero.droidfish;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.view.KeyEvent;
@@ -49,7 +51,6 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement PGN database support (and FEN?)
 
-	// FIXME!!! Handle opening book loops
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
 	// FIXME!!! Implement pondering
@@ -237,8 +238,17 @@ public class DroidFish extends Activity implements GUIInterface {
         status.setTextSize(fontSize);
         moveList.setTextSize(fontSize);
         thinking.setTextSize(fontSize);
+
+        String bookFile = settings.getString("bookFile", "");
+        if (bookFile.length() > 0) {
+        	File extDir = Environment.getExternalStorageDirectory();
+        	String bookDir = "DroidFish";
+        	String sep = File.separator;
+        	bookFile = extDir.getAbsolutePath() + sep + bookDir + sep + bookFile;
+        }
+        ctrl.setBookFileName(bookFile);
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.options_menu, menu);

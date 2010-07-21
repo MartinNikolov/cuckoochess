@@ -53,6 +53,10 @@ public class Book {
         }
     }
 
+	public final void setBookFileName(String bookFileName) {
+		externalBook.setBookFileName(bookFileName);
+	}
+    
     private final void initBook(boolean verbose) {
         long t0 = System.currentTimeMillis();
         bookMap = new HashMap<Long, List<BookEntry>>();

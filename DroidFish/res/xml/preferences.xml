@@ -49,4 +49,10 @@
 	android:summary="Play sound when computer makes a move"
 	android:defaultValue="false">
 </CheckBoxPreference>
+<EditTextPreference
+	android:key="bookFile"
+	android:title="Book Filename"
+	android:summary="Polyglot book file in DroidFish directory on SD Card"
+	android:defaultValue="">
+</EditTextPreference>
 </PreferenceScreen>
