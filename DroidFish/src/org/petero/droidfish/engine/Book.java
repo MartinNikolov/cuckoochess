@@ -23,7 +23,6 @@ import java.util.Random;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
-import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
@@ -33,7 +32,7 @@ import org.petero.droidfish.gamelogic.UndoInfo;
  * @author petero
  */
 public class Book {
-    public static class BookEntry {
+    static class BookEntry {
         Move move;
         int count;
         BookEntry(Move move) {
@@ -44,10 +43,13 @@ public class Book {
     private static Map<Long, List<BookEntry>> bookMap;
     private static Random rndGen;
     private static int numBookMoves = -1;
+    
+    static PolyglotBook externalBook;
 
     public Book(boolean verbose) {
         if (numBookMoves < 0) {
             initBook(verbose);
+            externalBook = new PolyglotBook(); 
         }
     }
 
@@ -98,10 +100,6 @@ public class Book {
 
     /** Add a move to a position in the opening book. */
     private final void addToBook(Position pos, Move moveToAdd) {
-    	if (!pos.whiteMove) {
-    		pos = mirrorPos(pos);
-    		moveToAdd = mirrorMove(moveToAdd);
-    	}
         List<BookEntry> ent = bookMap.get(pos.zobristHash());
         if (ent == null) {
             ent = new ArrayList<BookEntry>();
@@ -121,25 +119,19 @@ public class Book {
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
-    	if (!pos.whiteMove) {
-    		pos = mirrorPos(pos);
-    		Move m = getBookMove(pos);
-    		m = mirrorMove(m);
-    		return m;
-    	}
-
-        List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
+    	List<BookEntry> bookMoves = getBookEntries(pos);
         if (bookMoves == null) {
             return null;
         }
-        
+
         ArrayList<Move> legalMoves = new MoveGen().pseudoLegalMoves(pos);
         legalMoves = MoveGen.removeIllegal(pos, legalMoves);
         int sum = 0;
         for (int i = 0; i < bookMoves.size(); i++) {
             BookEntry be = bookMoves.get(i);
             if (!legalMoves.contains(be.move)) {
-                // If an illegal move was found, it means there was a hash collision.
+                // If an illegal move was found, it means there was a hash collision,
+            	// or a corrupt external book file.
                 return null;
             }
             sum += getWeight(bookMoves.get(i).count);
@@ -160,18 +152,17 @@ public class Book {
     }
 
     final private int getWeight(int count) {
-        return (int)(Math.sqrt(count) * 100 + 1);
+    	if (externalBook.enabled()) {
+    		return count;
+    	} else {
+    		return (int)(Math.sqrt(count) * 100 + 1);
+    	}
     }
 
     /** Return a string describing all book moves. */
-    public final String getAllBookMoves(Position origPos) {
-    	Position pos = origPos;
-    	boolean mirror = !pos.whiteMove;
-    	if (mirror) {
-    		pos = mirrorPos(pos);
-    	}
+    public final String getAllBookMoves(Position pos) {
         StringBuilder ret = new StringBuilder();
-        List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
+        List<BookEntry> bookMoves = getBookEntries(pos);
         if (bookMoves != null) {
         	Collections.sort(bookMoves, new Comparator<BookEntry>() {
         		public int compare(BookEntry arg0, BookEntry arg1) {
@@ -187,8 +178,7 @@ public class Book {
         	if (totalCount <= 0) totalCount = 1;
             for (BookEntry be : bookMoves) {
             	Move m = be.move;
-            	if (mirror) m = mirrorMove(m);
-                String moveStr = TextIO.moveToString(origPos, m, false);
+                String moveStr = TextIO.moveToString(pos, m, false);
                 ret.append(moveStr);
                 ret.append(':');
                 int percent = (be.count * 100 + totalCount / 2) / totalCount;
@@ -259,51 +249,11 @@ public class Book {
         return true;
     }
 
-    private final int mirrorSquare(int sq) {
-    	int x = Position.getX(sq);
-    	int y = 7 - Position.getY(sq);
-    	return Position.getSquare(x, y);
-    }
-    private final int mirrorPiece(int piece) {
-		if (Piece.isWhite(piece)) {
-			piece = Piece.makeBlack(piece);
+	private final List<BookEntry> getBookEntries(Position pos) {
+		if (externalBook.enabled()) {
+			return externalBook.getBookEntries(pos);
 		} else {
-			piece = Piece.makeWhite(piece);
+			return bookMap.get(pos.zobristHash());
 		}
-		return piece;
-    }
-
-    private final Position mirrorPos(Position pos) {
-    	Position ret = new Position(pos);
-    	for (int sq = 0; sq < 64; sq++) {
-    		int mSq = mirrorSquare(sq);
-    		int piece = pos.getPiece(sq);
-    		int mPiece = mirrorPiece(piece);
-    		ret.setPiece(mSq, mPiece);
-    	}
-    	ret.setWhiteMove(!pos.whiteMove);
-    	int castleMask = 0;
-    	if (pos.a1Castle()) castleMask |= (1 << Position.A8_CASTLE);
-    	if (pos.h1Castle()) castleMask |= (1 << Position.H8_CASTLE);
-    	if (pos.a8Castle()) castleMask |= (1 << Position.A1_CASTLE);
-    	if (pos.h8Castle()) castleMask |= (1 << Position.H1_CASTLE);
-    	ret.setCastleMask(castleMask);
-    	int epSquare = pos.getEpSquare();
-    	if (epSquare >= 0) {
-    		int mEpSquare = mirrorSquare(epSquare);
-    		ret.setEpSquare(mEpSquare);
-    	}
-    	ret.halfMoveClock = pos.halfMoveClock;
-    	ret.fullMoveCounter = pos.fullMoveCounter;
-    	return ret;
 	}
-
-    private Move mirrorMove(Move m) {
-    	if (m == null) return null;
-    	Move ret = new Move(m);
-    	ret.from = mirrorSquare(m.from);
-    	ret.to = mirrorSquare(m.to);
-    	ret.promoteTo = mirrorPiece(m.promoteTo);
-    	return ret;
-    }
 }

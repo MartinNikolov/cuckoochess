@@ -46,11 +46,6 @@ public class BookTest {
         Move move = book.getBookMove(pos);
         checkValid(pos, move);
         
-        // Test mirrored position
-        pos.setWhiteMove(false);
-        move = book.getBookMove(pos);
-        checkValid(pos, move);
-        
         // Test "out of book" condition
         pos.setCastleMask(0);
         move = book.getBookMove(pos);

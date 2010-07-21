@@ -207,8 +207,9 @@ public class ComputerPlayer {
     public void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
     	if (listener != null) {
     		String bookInfo = "";
-    		if (book.getBookMove(currPos) != null) {
-    			bookInfo = String.format("Book: %s", book.getAllBookMoves(currPos));
+    		String bookMoves = book.getAllBookMoves(currPos);
+    		if (bookMoves.length() > 0) {
+    			bookInfo = String.format("Book: %s", bookMoves);
     		}
     		listener.notifyBookInfo(bookInfo);
     	}

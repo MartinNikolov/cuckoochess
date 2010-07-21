@@ -49,7 +49,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement PGN database support (and FEN?)
 
-	// FIXME!!! Support for polyglot books on SD card
+	// FIXME!!! Handle opening book loops
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
 	// FIXME!!! Implement pondering
