@@ -116,13 +116,6 @@ public class ComputerPlayer {
     	if (listener != null) 
     		listener.notifyBookInfo("");
 
-    	// If we have a book move, play it.
-    	Move bookMove = book.getBookMove(currPos);
-    	if (bookMove != null) {
-//    		System.out.printf("Book moves: %s\n", book.getAllBookMoves(currPos));
-    		return TextIO.moveToString(currPos, bookMove, false);
-        }
-
     	// Set up for draw detection
         long[] posHashList = new long[mList.size()+1];
         int posHashListSize = 0;
@@ -131,6 +124,14 @@ public class ComputerPlayer {
         for (int i = 0; i < mList.size(); i++) {
             posHashList[posHashListSize++] = p.zobristHash();
         	p.makeMove(mList.get(i), ui);
+        }
+
+    	// If we have a book move, play it.
+    	Move bookMove = book.getBookMove(currPos);
+    	if (bookMove != null) {
+        	if (canClaimDraw(currPos, posHashList, posHashListSize, bookMove) == "") {
+        		return TextIO.moveToString(currPos, bookMove, false);
+        	}
         }
 
     	// If only one legal move, play it without searching
