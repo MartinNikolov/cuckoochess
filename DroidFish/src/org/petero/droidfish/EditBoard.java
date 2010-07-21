@@ -203,13 +203,14 @@ public class EditBoard extends Activity {
 		switch (id) {
 		case EDIT_DIALOG: {
 			final CharSequence[] items = {
-					"Side to Move",
-					"Clear Board", "Initial position", 
-					"Castling Flags", "En Passant File", "Move Counters",
-					"Copy Position", "Paste Position"
+					getString(R.string.side_to_move),
+					getString(R.string.clear_board), getString(R.string.initial_position),
+					getString(R.string.castling_flags), getString(R.string.en_passant_file),
+					getString(R.string.move_counters),
+					getString(R.string.copy_position), getString(R.string.paste_position)
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Edit Board");
+			builder.setTitle(R.string.edit_board);
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 			    	switch (item) {
@@ -286,15 +287,15 @@ public class EditBoard extends Activity {
 		}
 		case SIDE_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Select side to move first")
-			       .setPositiveButton("White", new DialogInterface.OnClickListener() {
+			builder.setMessage(R.string.select_side_to_move_first)
+			       .setPositiveButton(R.string.white, new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			        	   cb.pos.setWhiteMove(true);
 			        	   checkValid();
 			        	   dialog.cancel();
 			           }
 			       })
-			       .setNegativeButton("Black", new DialogInterface.OnClickListener() {
+			       .setNegativeButton(R.string.black, new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			        	   cb.pos.setWhiteMove(false);
 			        	   checkValid();
@@ -306,15 +307,15 @@ public class EditBoard extends Activity {
 		}
 		case CASTLE_DIALOG: {
 			final CharSequence[] items = {
-					"White king castle", "White queen castle",
-					"Black king castle", "Black queen castle"
+				getString(R.string.white_king_castle), getString(R.string.white_queen_castle),
+				getString(R.string.black_king_castle), getString(R.string.black_queen_castle)
 			};
 			boolean[] checkedItems = {
 					cb.pos.h1Castle(), cb.pos.a1Castle(),
 					cb.pos.h8Castle(), cb.pos.a8Castle()
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Castling Flags");
+			builder.setTitle(R.string.castling_flags);
 			builder.setMultiChoiceItems(items, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -344,10 +345,10 @@ public class EditBoard extends Activity {
 		}
 		case EP_DIALOG: {
 			final CharSequence[] items = {
-					"A", "B", "C", "D", "E", "F", "G", "H", "None"
+					"A", "B", "C", "D", "E", "F", "G", "H", getString(R.string.none)
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Select En Passant File");
+			builder.setTitle(R.string.select_en_passant_file);
 			builder.setSingleChoiceItems(items, getEPFile(), new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 			    	setEPFile(item);
@@ -359,7 +360,7 @@ public class EditBoard extends Activity {
 		case MOVCNT_DIALOG: {
 			final Dialog dialog = new Dialog(this);
 			dialog.setContentView(R.layout.edit_move_counters);
-			dialog.setTitle("Edit move counters");
+			dialog.setTitle(R.string.edit_move_counters);
 			final EditText halfMoveClock = (EditText)dialog.findViewById(R.id.ed_cnt_halfmove);
 			final EditText fullMoveCounter = (EditText)dialog.findViewById(R.id.ed_cnt_fullmove);
 			Button ok = (Button)dialog.findViewById(R.id.ed_cnt_ok);
@@ -375,7 +376,7 @@ public class EditBoard extends Activity {
 				        cb.pos.fullMoveCounter = fullCount;
 						dialog.cancel();
 					} catch (NumberFormatException nfe) {
-						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
+						Toast.makeText(getApplicationContext(), R.string.invalid_number_format, Toast.LENGTH_SHORT).show();
 					}
 				}
 			};

@@ -46,7 +46,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Include draw claim in save/restore state.
 	// FIXME!!! Implement fully standard-compliant PGN parser.
 	// FIXME!!! Try to parse redo info in PGN import
-	// FIXME!!! Move strings to strings.xml
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
@@ -292,7 +291,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		case R.id.item_draw: {
 			if (ctrl.humansTurn()) {
 				if (!ctrl.claimDrawIfPossible()) {
-					Toast.makeText(getApplicationContext(), "Draw claim not valid", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(), R.string.draw_claim_not_valid, Toast.LENGTH_SHORT).show();
 				}
 			}
 			return true;
@@ -369,9 +368,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case PROMOTE_DIALOG: {
-			final CharSequence[] items = {"Queen", "Rook", "Bishop", "Knight"};
+			final CharSequence[] items = {
+				getString(R.string.queen), getString(R.string.rook),
+				getString(R.string.bishop), getString(R.string.knight)
+			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Promote pawn to?");
+			builder.setTitle(R.string.promote_pawn_to);
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 	        		ctrl.reportPromotePiece(item);
@@ -381,9 +383,11 @@ public class DroidFish extends Activity implements GUIInterface {
 			return alert;
 		}
 		case CLIPBOARD_DIALOG: {
-			final CharSequence[] items = {"Copy Game", "Copy Position", "Paste"};
+			final CharSequence[] items = {
+				getString(R.string.copy_game), getString(R.string.copy_position), getString(R.string.paste)
+			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Clipboard");
+			builder.setTitle(R.string.clipboard);
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 					switch (item) {
@@ -419,14 +423,14 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 		case ABOUT_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("DroidFish").setMessage(R.string.about_info);
+			builder.setTitle(R.string.app_name).setMessage(R.string.about_info);
 			AlertDialog alert = builder.create();
 			return alert;
 		}
 		case SELECT_MOVE_DIALOG: {
 			final Dialog dialog = new Dialog(this);
 			dialog.setContentView(R.layout.select_move_number);
-			dialog.setTitle("Goto move");
+			dialog.setTitle(R.string.goto_move);
 			final EditText moveNrView = (EditText)dialog.findViewById(R.id.selmove_number);
 			Button ok = (Button)dialog.findViewById(R.id.selmove_ok);
 			Button cancel = (Button)dialog.findViewById(R.id.selmove_cancel);
@@ -438,7 +442,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				        ctrl.gotoMove(moveNr);
 						dialog.cancel();
 					} catch (NumberFormatException nfe) {
-						Toast.makeText(getApplicationContext(), "Invalid number format", Toast.LENGTH_SHORT).show();
+						Toast.makeText(getApplicationContext(), R.string.invalid_number_format, Toast.LENGTH_SHORT).show();
 					}
 				}
 			};
