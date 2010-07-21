@@ -74,6 +74,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean soundEnabled;
 	private MediaPlayer moveSound;
 
+	final String bookDir = "DroidFish";
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -238,17 +240,19 @@ public class DroidFish extends Activity implements GUIInterface {
         status.setTextSize(fontSize);
         moveList.setTextSize(fontSize);
         thinking.setTextSize(fontSize);
-
         String bookFile = settings.getString("bookFile", "");
-        if (bookFile.length() > 0) {
-        	File extDir = Environment.getExternalStorageDirectory();
-        	String bookDir = "DroidFish";
-        	String sep = File.separator;
-        	bookFile = extDir.getAbsolutePath() + sep + bookDir + sep + bookFile;
-        }
-        ctrl.setBookFileName(bookFile);
+        setBookFile(bookFile);
 	}
 
+	private final void setBookFile(String bookFile) {
+		if (bookFile.length() > 0) {
+			File extDir = Environment.getExternalStorageDirectory();
+			String sep = File.separator;
+			bookFile = extDir.getAbsolutePath() + sep + bookDir + sep + bookFile;
+		}
+        ctrl.setBookFileName(bookFile);
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.options_menu, menu);
@@ -312,6 +316,10 @@ public class DroidFish extends Activity implements GUIInterface {
 			}
 			return true;
 		}
+		case R.id.select_book:
+			removeDialog(SELECT_BOOK_DIALOG);
+			showDialog(SELECT_BOOK_DIALOG);
+			return true;
 		case R.id.item_about:
         	showDialog(ABOUT_DIALOG);
         	return true;
@@ -379,6 +387,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int CLIPBOARD_DIALOG = 1;
 	static final int ABOUT_DIALOG = 2;
 	static final int SELECT_MOVE_DIALOG = 3;
+	static final int SELECT_BOOK_DIALOG = 4;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -482,6 +491,35 @@ public class DroidFish extends Activity implements GUIInterface {
 				}
 			});
 			return dialog;
+		}
+		case SELECT_BOOK_DIALOG: {
+        	File extDir = Environment.getExternalStorageDirectory();
+        	String sep = File.separator;
+        	File dir = new File(extDir.getAbsolutePath() + sep + bookDir);
+        	String[] files = dir.list();
+        	if (files == null)
+        		files = new String[0];
+        	final int numFiles = files.length;
+        	CharSequence[] items = new CharSequence[numFiles + 1];
+        	for (int i = 0; i < numFiles; i++)
+        		items[i] = files[i];
+        	items[numFiles] = getString(R.string.no_book);
+        	final CharSequence[] finalItems = items;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.select_opening_book_file);
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					Editor editor = settings.edit();
+					String bookFile = "";
+					if (item < numFiles)
+						bookFile = finalItems[item].toString();
+					editor.putString("bookFile", bookFile);
+					editor.commit();
+					setBookFile(bookFile);
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
 		}
 		}
 		return null;

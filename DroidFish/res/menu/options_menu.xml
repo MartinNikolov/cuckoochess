@@ -35,7 +35,11 @@
 		android:title="Claim Draw">
 	</item>
 	<item
+		android:id="@+id/select_book"
+		android:title="Select Opening Book">
+	</item>
+	<item
 		android:id="@+id/item_about"
-		android:title="About">
+		android:title="About / Help">
 	</item>
 </menu>

@@ -138,8 +138,13 @@ public class ChessController {
 	public final void setBookFileName(String bookFileName) {
 		if (!this.bookFileName.equals(bookFileName)) {
 			this.bookFileName = bookFileName;
-			if (computerPlayer != null)
+			if (computerPlayer != null) {
 				computerPlayer.setBookFileName(bookFileName);
+				if (analysisThread != null) {
+					stopAnalysis();
+					startAnalysis();
+				}
+			}
 		}
 	}
     
