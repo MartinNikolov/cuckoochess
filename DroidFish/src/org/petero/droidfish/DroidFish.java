@@ -39,16 +39,23 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement chess clocks
-	// FIXME!!! Implement database support
-	// FIXME!!! Implement pondering
-	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Implement "limit strength" option.
-	// FIXME!!! Include draw claim in save/restore state.
-	// FIXME!!! Implement fully standard-compliant PGN parser.
+	// FIXME!!! User defined time controls
+	// FIXME!!! Implement "limit strength" option
+
+	// FIXME!!! Include draw claim in save/restore state
+	// FIXME!!! Implement fully standard-compliant PGN parser
 	// FIXME!!! Try to parse redo info in PGN import
+	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
+
+	// FIXME!!! Implement PGN database support (and FEN?)
+
 	// FIXME!!! New binary book format that doesn't need parsing at run-time
 	// FIXME!!! Much larger opening book
-	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
+	// FIXME!!! book.txt should not be included in apk
+
+	// FIXME!!! Implement pondering
+	// FIXME!!! Implement multi-variation analysis mode
+
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

@@ -172,23 +172,28 @@ public class Book {
     	}
         StringBuilder ret = new StringBuilder();
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
-        Collections.sort(bookMoves, new Comparator<BookEntry>() {
-			public int compare(BookEntry arg0, BookEntry arg1) {
-				if (arg1.count != arg0.count)
-					return arg1.count - arg0.count;
-				String str0 = TextIO.moveToUCIString(arg0.move);
-				String str1 = TextIO.moveToUCIString(arg1.move);
-				return str0.compareTo(str1);
-			}});
         if (bookMoves != null) {
+        	Collections.sort(bookMoves, new Comparator<BookEntry>() {
+        		public int compare(BookEntry arg0, BookEntry arg1) {
+        			if (arg1.count != arg0.count)
+        				return arg1.count - arg0.count;
+        			String str0 = TextIO.moveToUCIString(arg0.move);
+        			String str1 = TextIO.moveToUCIString(arg1.move);
+        			return str0.compareTo(str1);
+        		}});
+        	int totalCount = 0;
+        	for (BookEntry be : bookMoves)
+        		totalCount += be.count;
+        	if (totalCount <= 0) totalCount = 1;
             for (BookEntry be : bookMoves) {
             	Move m = be.move;
             	if (mirror) m = mirrorMove(m);
                 String moveStr = TextIO.moveToString(origPos, m, false);
                 ret.append(moveStr);
-                ret.append("(");
-                ret.append(be.count);
-                ret.append(") ");
+                ret.append(':');
+                int percent = (be.count * 100 + totalCount / 2) / totalCount;
+                ret.append(percent);
+                ret.append(' ');
             }
         }
         return ret.toString();
