@@ -49,9 +49,8 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement PGN database support (and FEN?)
 
-	// FIXME!!! New binary book format that doesn't need parsing at run-time
-	// FIXME!!! Much larger opening book
-	// FIXME!!! book.txt should not be included in apk
+	// FIXME!!! Support for polyglot books on SD card
+	// FIXME!!! book.txt (and test classes) should not be included in apk
 
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode

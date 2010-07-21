@@ -66,7 +66,7 @@ public class BookTest {
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         Book book = new Book(true);
         String moveListString = book.getAllBookMoves(pos);
-        String[] strMoves = moveListString.split("\\([0-9]*\\) ");
+        String[] strMoves = moveListString.split(":[0-9]* ");
         assertTrue(strMoves.length > 1);
         for (String strMove : strMoves) {
             Move m = TextIO.stringToMove(pos, strMove);
