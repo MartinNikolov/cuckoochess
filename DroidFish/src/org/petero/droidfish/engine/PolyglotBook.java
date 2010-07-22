@@ -329,9 +329,9 @@ public class PolyglotBook {
 			Move m = new Move(from, to, promoteTo);
 			return m;
 		}
-		final short getWeight() { return (short)getBytes(10, 2); }
+		final int getWeight() { return (int)getBytes(10, 2); }
 	}
-	
+
 	final void readEntry(RandomAccessFile f, long entNo, PGBookEntry ent) throws IOException {
 		f.seek(entNo * 16);
 		if (f.read(ent.data) != 16) {

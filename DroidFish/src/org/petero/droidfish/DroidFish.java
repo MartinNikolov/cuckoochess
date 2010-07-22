@@ -2,6 +2,7 @@ package org.petero.droidfish;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.petero.droidfish.gamelogic.ChessController;
@@ -52,6 +53,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement PGN database support (and FEN?)
 
 	// FIXME!!! book.txt (and test classes) should not be included in apk
+	// FIXME!!! Notification icon when computer is thinking in background
 
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
@@ -499,6 +501,7 @@ public class DroidFish extends Activity implements GUIInterface {
         	String[] files = dir.list();
         	if (files == null)
         		files = new String[0];
+        	Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
         	final int numFiles = files.length;
         	CharSequence[] items = new CharSequence[numFiles + 1];
         	for (int i = 0; i < numFiles; i++)
