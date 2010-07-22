@@ -76,7 +76,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean soundEnabled;
 	private MediaPlayer moveSound;
 
-	final String bookDir = "DroidFish";
+	private final String bookDir = "DroidFish";
+	private String currentBookFile = "";
 
     /** Called when the activity is first created. */
     @Override
@@ -247,6 +248,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void setBookFile(String bookFile) {
+		currentBookFile = bookFile;
 		if (bookFile.length() > 0) {
 			File extDir = Environment.getExternalStorageDirectory();
 			String sep = File.separator;
@@ -506,11 +508,18 @@ public class DroidFish extends Activity implements GUIInterface {
         	CharSequence[] items = new CharSequence[numFiles + 1];
         	for (int i = 0; i < numFiles; i++)
         		items[i] = files[i];
-        	items[numFiles] = getString(R.string.no_book);
+        	items[numFiles] = getString(R.string.internal_book);
         	final CharSequence[] finalItems = items;
+			int defaultItem = numFiles;
+			for (int i = 0; i < numFiles; i++) {
+				if (currentBookFile.equals(items[i])) {
+					defaultItem = i;
+					break;
+				}
+			}
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.select_opening_book_file);
-			builder.setItems(items, new DialogInterface.OnClickListener() {
+			builder.setSingleChoiceItems(items, defaultItem, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					Editor editor = settings.edit();
 					String bookFile = "";
