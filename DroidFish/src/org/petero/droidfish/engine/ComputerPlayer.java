@@ -42,7 +42,7 @@ public class ComputerPlayer {
     	book = new Book(false);
     }
 
-	public void setListener(SearchListener listener) {
+	public final void setListener(SearchListener listener) {
         this.listener = listener;
     }
 
@@ -116,7 +116,7 @@ public class ComputerPlayer {
      *              This makes it possible for the player to correctly handle
      *              the draw by repetition/50 moves rule.
      */
-    public String getCommand(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    public final String getCommand(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
     	if (listener != null) 
     		listener.notifyBookInfo("");
 
@@ -208,14 +208,19 @@ public class ComputerPlayer {
 			}
     	}
 	}
-    
-    public void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+
+	public final String getBookHints(Position pos) {
+		String bookInfo = "";
+		String bookMoves = book.getAllBookMoves(pos);
+		if (bookMoves.length() > 0) {
+			bookInfo = String.format("Book: %s", bookMoves);
+		}
+		return bookInfo;
+	}
+
+    public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
     	if (listener != null) {
-    		String bookInfo = "";
-    		String bookMoves = book.getAllBookMoves(currPos);
-    		if (bookMoves.length() > 0) {
-    			bookInfo = String.format("Book: %s", bookMoves);
-    		}
+    		String bookInfo = getBookHints(currPos);
     		listener.notifyBookInfo(bookInfo);
     	}
 

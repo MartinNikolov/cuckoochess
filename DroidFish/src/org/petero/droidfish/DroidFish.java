@@ -62,6 +62,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private ChessBoard cb;
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
+	private boolean mShowBookHints;
 	private int mTimeLimit;
 	private GameMode gameMode;
 	private boolean autoSwapSides;
@@ -232,6 +233,7 @@ public class DroidFish extends Activity implements GUIInterface {
         autoSwapSides = settings.getBoolean("autoSwapSides", false);
         gameMode = new GameMode(modeNr);
         mShowThinking = settings.getBoolean("showThinking", false);
+        mShowBookHints = settings.getBoolean("bookHints", false);
         String timeLimitStr = settings.getString("timeLimit", "5000");
         mTimeLimit = Integer.parseInt(timeLimitStr);
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
@@ -245,6 +247,7 @@ public class DroidFish extends Activity implements GUIInterface {
         thinking.setTextSize(fontSize);
         String bookFile = settings.getString("bookFile", "");
         setBookFile(bookFile);
+        ctrl.updateBookHints();
 	}
 
 	private final void setBookFile(String bookFile) {
@@ -384,7 +387,12 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	@Override
 	public boolean showThinking() {
-		return mShowThinking || gameMode.analysisMode();
+		return mShowThinking || gameMode.analysisMode() || (mShowBookHints && ctrl.humansTurn());
+	}
+
+	@Override
+	public boolean showBookHints() {
+		return mShowBookHints;
 	}
 
 	static final int PROMOTE_DIALOG = 0; 

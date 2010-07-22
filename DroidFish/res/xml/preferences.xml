@@ -35,6 +35,12 @@
 	android:summary="Display computer algorithm information during search"
 	android:defaultValue="false">
 </CheckBoxPreference>
+<CheckBoxPreference
+	android:key="bookHints"
+	android:title="Show Book Hints"
+	android:summary="Display opening book move hints for human player"
+	android:defaultValue="false">
+</CheckBoxPreference>
 <ListPreference
 	android:key="fontSize"
 	android:title="Text Size"

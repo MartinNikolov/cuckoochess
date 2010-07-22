@@ -144,10 +144,23 @@ public class ChessController {
 					stopAnalysis();
 					startAnalysis();
 				}
+				updateBookHints();
 			}
 		}
 	}
-    
+	
+	public final void updateBookHints() {
+		if (gameMode != null) {
+			boolean analysis = gameMode.analysisMode();
+			boolean computersTurn = !gameMode.humansTurn(game.pos.whiteMove);
+			thinkingPV = "";
+			if (!analysis && !computersTurn && gui.showBookHints()) {
+				thinkingPV = computerPlayer.getBookHints(game.pos);
+			}
+			setThinkingPV();
+		}
+	}
+
     private final static class SearchStatus {
     	boolean searchResultWanted = true;
     }
@@ -167,9 +180,9 @@ public class ChessController {
     }
 
     public final void startGame() {
+        updateComputeThreads(true);
         setSelection(); 
         updateGUI();
-        updateComputeThreads(true);
     }
     
     private final void updateComputeThreads(boolean clearPV) {
@@ -179,8 +192,12 @@ public class ChessController {
     		stopAnalysis();
     	if (!computersTurn)
     		stopComputerThinking();
-    	if (clearPV)
+    	if (clearPV) {
 			thinkingPV = "";
+    		if (!analysis && !computersTurn && gui.showBookHints()) {
+    			thinkingPV = computerPlayer.getBookHints(game.pos);
+    		}
+    	}
         if (analysis)
         	startAnalysis();
         if (computersTurn)

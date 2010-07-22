@@ -28,6 +28,9 @@ public interface GUIInterface {
 	/** Return true if "show thinking" is enabled. */
 	public boolean showThinking();
 
+	/** Return true if "opening book hints" is enabled. */
+	public boolean showBookHints();
+
 	/** Ask what to promote a pawn to. Should call reportPromotePiece() when done. */
 	public void requestPromotePiece();
 
