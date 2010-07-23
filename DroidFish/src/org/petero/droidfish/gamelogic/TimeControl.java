@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TimeControl {
-	// FIXME!!! Implement save/restore of time state
-
 	private long timeControl;
 	private int movesPerSession;
 	private long increment;
@@ -121,5 +119,49 @@ public class TimeControl {
 		while (nextTC <= currentMove)
 			nextTC += movesPerSession;
 		return nextTC - currentMove;
+	}
+
+	public final String saveState() {
+		StringBuilder ret = new StringBuilder(4096);
+		ret.append(timeControl); ret.append(' ');
+		ret.append(movesPerSession); ret.append(' ');
+		ret.append(increment); ret.append(' ');
+		ret.append(whiteTimes.size()); ret.append(' ');
+		for (int i = 0; i < whiteTimes.size(); i++) {
+			ret.append(whiteTimes.get(i)); ret.append(' ');
+		}
+		ret.append(blackTimes.size()); ret.append(' ');
+		for (int i = 0; i < blackTimes.size(); i++) {
+			ret.append(blackTimes.get(i)); ret.append(' ');
+		}
+		ret.append(currentMove); ret.append(' ');
+		ret.append(whiteToMove ? 1 : 0); ret.append(' ');
+		ret.append(elapsed); ret.append(' ');
+		ret.append(timerT0);
+		return ret.toString();
+	}
+
+	public final void restoreState(String state) {
+		String[] tokens = state.split(" ");
+		try {
+			int idx = 0;
+			timeControl = Long.parseLong(tokens[idx++]);
+			movesPerSession = Integer.parseInt(tokens[idx++]);
+			increment = Long.parseLong(tokens[idx++]);
+			int len = Integer.parseInt(tokens[idx++]);
+			whiteTimes.clear();
+			for (int i = 0; i < len; i++)
+				whiteTimes.add(Long.parseLong(tokens[idx++]));
+			len = Integer.parseInt(tokens[idx++]);
+			blackTimes.clear();
+			for (int i = 0; i < len; i++)
+				blackTimes.add(Long.parseLong(tokens[idx++]));
+			currentMove = Integer.parseInt(tokens[idx++]);
+			whiteToMove = (Integer.parseInt(tokens[idx++]) != 0);
+			elapsed = Long.parseLong(tokens[idx++]);
+			timerT0 = Long.parseLong(tokens[idx++]);
+		} catch (NumberFormatException nfe) {
+        } catch (ArrayIndexOutOfBoundsException aioob) {
+        }
 	}
 }

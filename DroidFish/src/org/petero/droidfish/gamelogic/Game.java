@@ -53,20 +53,12 @@ public class Game {
         updateTimeControl(false);
 	}
 
-    public final boolean processString(String str) {
-    	boolean ret = processStringInternal(str);
-        if (getGameState() != GameState.ALIVE) {
-        	timeControl.stopTimer(System.currentTimeMillis());
-        }
-    	return ret;
-    }
-
     /**
      * Update the game state according to move/command string from a player.
      * @param str The move or command to process.
      * @return True if str was understood, false otherwise.
      */
-    private final boolean processStringInternal(String str) {
+    public final boolean processString(String str) {
         if (handleCommand(str)) {
             return true;
         }
@@ -123,7 +115,7 @@ public class Game {
 			timeControl.setCurrentMove(move, wtm);
 		}
 		long now = System.currentTimeMillis();
-		if (gamePaused) {
+		if (gamePaused || (getGameState() != GameState.ALIVE)) {
 			timeControl.stopTimer(now);
 		} else {
 			timeControl.startTimer(now);

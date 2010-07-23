@@ -184,6 +184,7 @@ public class ChessController {
         updateComputeThreads(true);
         setSelection(); 
         updateGUI();
+       	updateGamePaused();
     }
     
     private boolean guiPaused = false;
@@ -246,13 +247,17 @@ public class ChessController {
 			for (int i = 0; i < numUndo; i++) {
 				game.processString("undo");
 			}
+			String clockState = posHistStr.get(3);
+			game.timeControl.restoreState(clockState);
 		} catch (ChessParseError e) {
 			// Just ignore invalid positions
 		}
     }
     
     public final List<String> getPosHistory() {
-    	return game.getPosHistory();
+    	List<String> ret = game.getPosHistory();
+    	ret.add(game.timeControl.saveState());
+    	return ret;
     }
     
     public final String getFEN() {

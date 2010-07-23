@@ -48,7 +48,8 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! User defined time controls (also set ponder flag in engine)
-	// FIXME!!! Implement "limit strength" option
+	// FIXME!!! Computer engine ignores clock.
+	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 
 	// FIXME!!! Include draw claim in save/restore state
 	// FIXME!!! Implement fully standard-compliant PGN parser
@@ -62,6 +63,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
+	// FIXME!!! Implement "limit strength" option
 
 
 	private ChessBoard cb;
@@ -112,6 +114,7 @@ public class DroidFish extends Activity implements GUIInterface {
         	String fen = "";
         	String moves = "";
         	String numUndo = "0";
+        	String clockState = "";
     		String tmp;
         	if (savedInstanceState != null) {
         		tmp = savedInstanceState.getString("startFEN");
@@ -120,6 +123,8 @@ public class DroidFish extends Activity implements GUIInterface {
         		if (tmp != null) moves = tmp;
         		tmp = savedInstanceState.getString("numUndo");
         		if (tmp != null) numUndo = tmp;
+        		tmp = savedInstanceState.getString("clockState");
+        		if (tmp != null) clockState = tmp;
         	} else {
         		tmp = settings.getString("startFEN", null);
         		if (tmp != null) fen = tmp;
@@ -127,13 +132,18 @@ public class DroidFish extends Activity implements GUIInterface {
         		if (tmp != null) moves = tmp;
         		tmp = settings.getString("numUndo", null);
         		if (tmp != null) numUndo = tmp;
+        		tmp = settings.getString("clockState", null);
+        		if (tmp != null) clockState = tmp;
         	}
         	List<String> posHistStr = new ArrayList<String>();
         	posHistStr.add(fen);
         	posHistStr.add(moves);
         	posHistStr.add(numUndo);
+        	posHistStr.add(clockState);
         	ctrl.setPosHistory(posHistStr);
         }
+    	ctrl.setGuiPaused(true);
+    	ctrl.setGuiPaused(false);
         ctrl.startGame();
     }
 
@@ -219,6 +229,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			outState.putString("startFEN", posHistStr.get(0));
 			outState.putString("moves", posHistStr.get(1));
 			outState.putString("numUndo", posHistStr.get(2));
+			outState.putString("clockState", posHistStr.get(3));
 		}
 	}
 
@@ -235,13 +246,14 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	protected void onPause() {
 		if (ctrl != null) {
+			ctrl.setGuiPaused(true);
 			List<String> posHistStr = ctrl.getPosHistory();
 			Editor editor = settings.edit();
 			editor.putString("startFEN", posHistStr.get(0));
 			editor.putString("moves", posHistStr.get(1));
 			editor.putString("numUndo", posHistStr.get(2));
+			editor.putString("clockState", posHistStr.get(3));
 			editor.commit();
-			ctrl.setGuiPaused(true);
 		}
 		lastVisibleMillis = System.currentTimeMillis();
 		updateNotification();
