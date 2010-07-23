@@ -27,9 +27,13 @@ public class Game {
     private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
     private GameState resignState;
     private ComputerPlayer computerPlayer;
+    TimeControl timeControl;
+    private boolean gamePaused;
 
     public Game(ComputerPlayer computerPlayer) {
         this.computerPlayer = computerPlayer;
+        timeControl = new TimeControl();
+        gamePaused = false;
         handleCommand("new");
     }
 
@@ -37,12 +41,32 @@ public class Game {
     	this.computerPlayer = computerPlayer;
 	}
 
+	public void setGamePaused(boolean gamePaused) {
+		if (gamePaused != this.gamePaused) {
+			this.gamePaused = gamePaused;
+	        updateTimeControl(false);
+		}
+	}
+
+	final void setPos(Position pos) {
+		this.pos = pos;
+        updateTimeControl(false);
+	}
+
+    public final boolean processString(String str) {
+    	boolean ret = processStringInternal(str);
+        if (getGameState() != GameState.ALIVE) {
+        	timeControl.stopTimer(System.currentTimeMillis());
+        }
+    	return ret;
+    }
+
     /**
      * Update the game state according to move/command string from a player.
      * @param str The move or command to process.
      * @return True if str was understood, false otherwise.
      */
-    public final boolean processString(String str) {
+    private final boolean processStringInternal(String str) {
         if (handleCommand(str)) {
             return true;
         }
@@ -74,6 +98,8 @@ public class Game {
         UndoInfo ui = new UndoInfo();
         String moveStr = TextIO.moveToString(pos, m, false);
         pos.makeMove(m, ui);
+        timeControl.moveMade(System.currentTimeMillis());
+        updateTimeControl(true);
         TextIO.fixupEPSquare(pos);
         while (currentMove < moveList.size()) {
             moveList.remove(currentMove);
@@ -89,6 +115,20 @@ public class Game {
         currentMove++;
         return true;
     }
+
+	private void updateTimeControl(boolean discardElapsed) {
+		int move = pos.fullMoveCounter;
+		boolean wtm = pos.whiteMove;
+		if (discardElapsed || (move != timeControl.currentMove) || (wtm != timeControl.whiteToMove)) {
+			timeControl.setCurrentMove(move, wtm);
+		}
+		long now = System.currentTimeMillis();
+		if (gamePaused) {
+			timeControl.stopTimer(now);
+		} else {
+			timeControl.startTimer(now);
+		}
+	}
 
     public final String getGameStateString() {
         switch (getGameState()) {
@@ -216,6 +256,8 @@ public class Game {
             }
             if (computerPlayer != null)
             	computerPlayer.clearTT();
+            timeControl.reset();
+            updateTimeControl(true);
             return true;
         } else if (moveStr.equals("undo")) {
             if (currentMove > 0) {
@@ -224,6 +266,7 @@ public class Game {
                 pendingDrawOffer = false;
                 drawState = GameState.ALIVE;
                 resignState = GameState.ALIVE;
+                updateTimeControl(true);
                 return true;
             } else {
                 System.out.println("Nothing to undo");
@@ -234,6 +277,7 @@ public class Game {
                 pos.makeMove(moveList.get(currentMove), uiInfoList.get(currentMove));
                 currentMove++;
                 pendingDrawOffer = false;
+                updateTimeControl(true);
                 return true;
             } else {
                 System.out.println("Nothing to redo");
@@ -265,6 +309,7 @@ public class Game {
                 handleCommand("new");
                 pos = newPos;
             }
+            updateTimeControl(true);
             return true;
         } else {
             return false;

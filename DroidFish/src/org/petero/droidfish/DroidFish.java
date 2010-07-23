@@ -27,6 +27,7 @@ import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.view.KeyEvent;
@@ -34,6 +35,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
@@ -45,20 +47,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-	// FIXME!!! Implement chess clocks
-	// FIXME!!! User defined time controls
+	// FIXME!!! User defined time controls (also set ponder flag in engine)
 	// FIXME!!! Implement "limit strength" option
 
 	// FIXME!!! Include draw claim in save/restore state
 	// FIXME!!! Implement fully standard-compliant PGN parser
 	// FIXME!!! Try to parse redo info in PGN import
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
+	// FIXME!!! Redo moves should be displayed in grey on screen
 
 	// FIXME!!! Implement PGN database support (and FEN?)
 
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
-	// FIXME!!! Implement pondering
+	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 
 
@@ -74,6 +76,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private ScrollView moveListScroll;
 	private TextView moveList;
 	private TextView thinking;
+	private TextView whiteClock, blackClock;
 
 	SharedPreferences settings;
 
@@ -100,7 +103,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			}
 		});
 
-        initUI();
+        initUI(true);
 
         ctrl = new ChessController(this);
         readPrefs();
@@ -141,7 +144,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		String statusStr = status.getText().toString();
 		String moveListStr = moveList.getText().toString();
 		String thinkingStr = thinking.getText().toString();
-        initUI();
+        initUI(false);
         readPrefs();
         cb.cursorX = oldCB.cursorX;
         cb.cursorY = oldCB.cursorY;
@@ -153,8 +156,15 @@ public class DroidFish extends Activity implements GUIInterface {
         setThinkingString(thinkingStr);
 	}
 
-	private final void initUI() {
-		setContentView(R.layout.main);
+	private final void initUI(boolean initTitle) {
+		if (initTitle)
+			requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        setContentView(R.layout.main);
+        if (initTitle) {
+        	getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title);
+    		whiteClock = (TextView)findViewById(R.id.white_clock);
+    		blackClock = (TextView)findViewById(R.id.black_clock);
+        }
         status = (TextView)findViewById(R.id.status);
         moveListScroll = (ScrollView)findViewById(R.id.scrollView);
         moveList = (TextView)findViewById(R.id.moveList);
@@ -215,6 +225,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	protected void onResume() {
 		lastVisibleMillis = 0;
+		if (ctrl != null) {
+			ctrl.setGuiPaused(false);
+		}
 		updateNotification();
 		super.onResume();
 	}
@@ -228,6 +241,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			editor.putString("moves", posHistStr.get(1));
 			editor.putString("numUndo", posHistStr.get(2));
 			editor.commit();
+			ctrl.setGuiPaused(true);
 		}
 		lastVisibleMillis = System.currentTimeMillis();
 		updateNotification();
@@ -634,6 +648,41 @@ public class DroidFish extends Activity implements GUIInterface {
 			mNotificationManager.notify(cpuUsage, notification);
 		} else {
 			mNotificationManager.cancel(cpuUsage);
+		}
+	}
+
+	private String timeToString(long time) {
+		int secs = (int)Math.floor((time + 999) / 1000.0);
+		boolean neg = false;
+		if (secs < 0) {
+			neg = true;
+			secs = -secs;
+		}
+		int mins = secs / 60;
+		secs -= mins * 60;
+		StringBuilder ret = new StringBuilder();
+		if (neg) ret.append('-');
+		ret.append(mins);
+		ret.append(':');
+		if (secs < 10) ret.append('0');
+		ret.append(secs);
+		return ret.toString();
+	}
+
+	private Handler handlerTimer = new Handler();
+	private Runnable r = new Runnable() {
+		public void run() {
+			ctrl.updateRemainingTime();
+		}
+	};
+	
+	@Override
+	public void setRemainingTime(long wTime, long bTime, long nextUpdate) {
+		whiteClock.setText("White: " + timeToString(wTime));
+		blackClock.setText("Black: " + timeToString(bTime));
+		handlerTimer.removeCallbacks(r);
+		if (nextUpdate > 0) {
+			handlerTimer.postDelayed(r, nextUpdate);
 		}
 	}
 }

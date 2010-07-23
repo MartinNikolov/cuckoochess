@@ -42,4 +42,7 @@ public interface GUIInterface {
 
 	/** Called when computer made a move. GUI can notify user, for example by playing a sound. */
 	public void computerMoveMade();
+
+	/** Report remaining thinking time to GUI. */
+	public void setRemainingTime(long wTime, long bTime, long nextUpdate);
 }

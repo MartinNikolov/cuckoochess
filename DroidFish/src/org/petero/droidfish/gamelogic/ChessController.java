@@ -177,12 +177,27 @@ public class ChessController {
         	computerPlayer.setBookFileName(bookFileName);
         }
        	game = new Game(computerPlayer);
+       	updateGamePaused();
     }
 
     public final void startGame() {
         updateComputeThreads(true);
         setSelection(); 
         updateGUI();
+    }
+    
+    private boolean guiPaused = false;
+    public final void setGuiPaused(boolean paused) {
+    	guiPaused = paused;
+    	updateGamePaused();
+    }
+
+    private final void updateGamePaused() {
+    	if (game != null) {
+    		boolean gamePaused = gameMode.analysisMode() || (humansTurn() && guiPaused);
+    		game.setGamePaused(gamePaused);
+    		updateRemainingTime();
+    	}
     }
     
     private final void updateComputeThreads(boolean clearPV) {
@@ -210,6 +225,7 @@ public class ChessController {
 			if (newMode.humansTurn(game.pos.whiteMove))
 				ss.searchResultWanted = false;
 			gameMode = newMode;
+			updateGamePaused();
 			updateComputeThreads(true);
 			updateGUI();
 		}
@@ -220,7 +236,7 @@ public class ChessController {
 			String fen = posHistStr.get(0);
 			Position pos = TextIO.readFEN(fen);
 			game.processString("new");
-			game.pos = pos;
+			game.setPos(pos);
 			String[] strArr = posHistStr.get(1).split(" ");
 			final int arrLen = strArr.length;
 			for (int i = 0; i < arrLen; i++) {
@@ -299,7 +315,7 @@ public class ChessController {
        	Game newGame = new Game(null);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
-    		newGame.pos = pos;
+    		newGame.setPos(pos);
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
     		if (!setPGN(newGame, fenPgn)) {
@@ -309,6 +325,7 @@ public class ChessController {
     	ss.searchResultWanted = false;
     	game = newGame;
     	game.setComputerPlayer(computerPlayer);
+    	updateGamePaused();
     	stopAnalysis();
     	stopComputerThinking();
     	computerPlayer.clearTT();
@@ -361,7 +378,7 @@ public class ChessController {
     			pos = TextIO.readFEN(tagValue);
     		}
     	}
-    	newGame.pos = pos;
+    	newGame.setPos(pos);
 
     	// Handle (ignore) recursive annotation variations
     	{
@@ -571,6 +588,20 @@ public class ChessController {
         gui.setMoveListString(game.getMoveListString());
         setThinkingPV();
         gui.setPosition(game.pos);
+        updateRemainingTime();
+    }
+
+    final public void updateRemainingTime() {
+        // Update remaining time
+        long now = System.currentTimeMillis();
+        long wTime = game.timeControl.getRemainingTime(true, now);
+        long bTime = game.timeControl.getRemainingTime(false, now);
+        long nextUpdate = 0;
+        if (game.timeControl.clockRunning()) {
+        	long t = game.pos.whiteMove ? wTime : bTime;
+        	nextUpdate = (t % 1000) + 1;
+        }
+        gui.setRemainingTime(wTime, bTime, nextUpdate);
     }
 
     private final void setThinkingPV() {
@@ -606,6 +637,7 @@ public class ChessController {
     						if (!localSS.searchResultWanted)
     							return;
     						g.processString(cmd);
+    						updateGamePaused();
     						gui.computerMoveMade();
     						thinkingPV = "";
     						stopComputerThinking();
