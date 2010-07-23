@@ -632,10 +632,16 @@ public class ChessController {
 			final Game g = game;
 			final boolean haveDrawOffer = g.haveDrawOffer();
 			final Position currPos = new Position(g.pos);
+			long now = System.currentTimeMillis();
+			final int wTime = game.timeControl.getRemainingTime(true, now);
+			final int bTime = game.timeControl.getRemainingTime(false, now);
+			final int inc = game.timeControl.getIncrement();
+			final int movesToGo = game.timeControl.getMovesToTC();
     		computerThread = new Thread(new Runnable() {
     			public void run() {
     				computerPlayer.timeLimit(gui.timeLimit());
-    				final String cmd = computerPlayer.getCommand(ph.first, ph.second, currPos, haveDrawOffer);
+    				final String cmd = computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
+    														   wTime, bTime, inc, movesToGo);
     				final SearchStatus localSS = ss;
     				gui.runOnUIThread(new Runnable() {
     					public void run() {

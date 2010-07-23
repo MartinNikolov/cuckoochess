@@ -86,7 +86,7 @@ public class TimeControl {
 	}
 
 	/** Get remaining time */
-	public final long getRemainingTime(boolean whiteToMove, long now) {
+	public final int getRemainingTime(boolean whiteToMove, long now) {
 		List<Long> times = whiteToMove ? whiteTimes : blackTimes;
 		long remaining;
 		int idx = Math.max(currentMove, 1);
@@ -105,11 +105,11 @@ public class TimeControl {
 				remaining -= now - timerT0;
 			}
 		}
-		return remaining;
+		return (int)remaining;
 	}
 
-	public final long getIncrement() {
-		return increment;
+	public final int getIncrement() {
+		return (int)increment;
 	}
 	
 	public final int getMovesToTC() {

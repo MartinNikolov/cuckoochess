@@ -34,6 +34,7 @@ public class ComputerPlayer {
     		npp.writeLineToProcess("uci");
     		readUCIOptions();
     		npp.writeLineToProcess("setoption name Hash value 16");
+    		npp.writeLineToProcess("setoption name Ponder value false");
     		npp.writeLineToProcess("ucinewgame");
     		syncReady();
     	}
@@ -107,16 +108,18 @@ public class ComputerPlayer {
 	}
 
     /**
-     * Get a command from the computer player.
+     * Do a search and return a command from the computer player.
      * The command can be a valid move string, in which case the move is played
      * and the turn goes over to the other player. The command can also be a special
      * command, such as "draw" and "resign".
      * @param pos  An earlier position from the game
      * @param mList List of moves to go from the earlier position to the current position.
-     *              This makes it possible for the player to correctly handle
-     *              the draw by repetition/50 moves rule.
+     *              This list makes it possible for the computer to correctly handle draw
+     *              by repetition/50 moves.
      */
-    public final String getCommand(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    public final String doSearch(Position prevPos, ArrayList<Move> mList, Position currPos,
+    							 boolean drawOffer,
+    							 int wTime, int bTime, int inc, int movesToGo) {
     	if (listener != null) 
     		listener.notifyBookInfo("");
 
@@ -164,8 +167,12 @@ public class ComputerPlayer {
     	}
     	maybeNewGame();
     	npp.writeLineToProcess(posStr.toString());
-//    	String goStr = String.format("go wtime %d btime %d movestogo 1", timeLimit, timeLimit);
-    	String goStr = String.format("go movetime %d", timeLimit);
+    	String goStr = String.format("go wtime %d btime %d", wTime, bTime);
+    	if (inc > 0)
+    		goStr += String.format(" winc %d binc %d", inc, inc);
+    	if (movesToGo > 0) {
+    		goStr += String.format(" movestogo %d", movesToGo);
+    	}
     	npp.writeLineToProcess(goStr);
 
     	String bestMove = monitorEngine();
@@ -399,8 +406,8 @@ public class ComputerPlayer {
     }
 
     /** Set max allowed thinking time per move. */
-    public void timeLimit(int timeLimit) {
-    	if (timeLimit < this.timeLimit)
+    public void timeLimit(int timeLimit) { // FIXME!!! Rename to stopSearch
+    	if (timeLimit < this.timeLimit) // FIXME!!! Move test to gui or ctrl
         	npp.writeLineToProcess("stop");
     	this.timeLimit = timeLimit;
     }

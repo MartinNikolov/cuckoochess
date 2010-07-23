@@ -47,8 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-	// FIXME!!! User defined time controls (also set ponder flag in engine)
-	// FIXME!!! Computer engine ignores clock.
+	// FIXME!!! User defined time controls
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 
 	// FIXME!!! Include draw claim in save/restore state
@@ -58,6 +57,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Redo moves should be displayed in grey on screen
 
 	// FIXME!!! Implement PGN database support (and FEN?)
+	// FIXME!!! Implement support for PGN comments
+	// FIXME!!! Implement support for PGN variants
 
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
