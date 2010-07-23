@@ -14,6 +14,10 @@ import org.petero.droidfish.gamelogic.TextIO;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -53,7 +57,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement PGN database support (and FEN?)
 
 	// FIXME!!! book.txt (and test classes) should not be included in apk
-	// FIXME!!! Notification icon when computer is thinking in background
 
 	// FIXME!!! Implement pondering
 	// FIXME!!! Implement multi-variation analysis mode
@@ -79,6 +82,9 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	private final String bookDir = "DroidFish";
 	private String currentBookFile = "";
+
+	private long lastVisibleMillis; // Time when GUI became invisible. 0 if currently visible.
+	private long lastComputationMillis; // Time when engine last showed that it was computing.
 
     /** Called when the activity is first created. */
     @Override
@@ -205,7 +211,14 @@ public class DroidFish extends Activity implements GUIInterface {
 			outState.putString("numUndo", posHistStr.get(2));
 		}
 	}
-	
+
+	@Override
+	protected void onResume() {
+		lastVisibleMillis = 0;
+		updateNotification();
+		super.onResume();
+	}
+
 	@Override
 	protected void onPause() {
 		if (ctrl != null) {
@@ -216,6 +229,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			editor.putString("numUndo", posHistStr.get(2));
 			editor.commit();
 		}
+		lastVisibleMillis = System.currentTimeMillis();
+		updateNotification();
 		super.onPause();
 	}
 
@@ -224,6 +239,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		if (ctrl != null) {
 			ctrl.shutdownEngine();
 		}
+        setNotification(false);
 		super.onDestroy();
 	}
 
@@ -378,6 +394,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void setThinkingString(String str) {
 		thinking.setText(str);
+		if (ctrl.computerBusy()) {
+			lastComputationMillis = System.currentTimeMillis();
+		} else {
+			lastComputationMillis = 0;
+		}
+		updateNotification();
 	}
 
 	@Override
@@ -573,5 +595,45 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void runOnUIThread(Runnable runnable) {
 		runOnUiThread(runnable);
+	}
+
+	/** Decide if user should be warned about heavy CPU usage. */
+	public final void updateNotification() {
+		boolean warn = false;
+		if (lastVisibleMillis != 0) { // GUI not visible
+			warn = lastComputationMillis >= lastVisibleMillis + 90000;
+		}
+		setNotification(warn);
+	}
+
+	private boolean notificationActive = false;
+
+	/** Set/clear the "heavy CPU usage" notification. */
+	public final void setNotification(boolean show) {
+		if (notificationActive == show)
+			return;
+		notificationActive = show;
+		final int cpuUsage = 1;
+		String ns = Context.NOTIFICATION_SERVICE;
+		NotificationManager mNotificationManager = (NotificationManager)getSystemService(ns);
+		if (show) {
+			int icon = R.drawable.icon;
+			CharSequence tickerText = "Heavy CPU usage";
+			long when = System.currentTimeMillis();
+			Notification notification = new Notification(icon, tickerText, when);
+			notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+			Context context = getApplicationContext();
+			CharSequence contentTitle = "Background processing";
+			CharSequence contentText = "DroidFish is using a lot of CPU power";
+			Intent notificationIntent = new Intent(this, CPUWarning.class);
+
+			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+
+			mNotificationManager.notify(cpuUsage, notification);
+		} else {
+			mNotificationManager.cancel(cpuUsage);
+		}
 	}
 }

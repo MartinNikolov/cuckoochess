@@ -402,9 +402,11 @@ public class ChessController {
     	return gameMode.humansTurn(game.pos.whiteMove);
     }
 
-    /** True if the computer is thinking about next move. (False in analysis mode.) */
-    public final boolean computerThinking() {
-    	return computerThread != null;
+    /** Return true if computer player is using CPU power. */
+    public final boolean computerBusy() {
+    	if (game.getGameState() != GameState.ALIVE)
+    		return false;
+    	return gameMode.analysisMode() || !humansTurn();
     }
 
     private final void undoMoveNoUpdate() {

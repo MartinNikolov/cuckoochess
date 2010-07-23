@@ -22,6 +22,9 @@
         		  android:label="Edit Board"
                   android:configChanges="orientation">
         </activity>
+        <activity android:name="CPUWarning"
+        		  android:label="CPU Warning">
+        </activity>
     </application>
     <uses-sdk android:minSdkVersion="3"/>
 </manifest>

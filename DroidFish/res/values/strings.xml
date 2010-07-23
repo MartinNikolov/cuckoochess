@@ -75,6 +75,16 @@ GNU GPL v3\n\
 * <i>Stockfish</i> is developed by Tord Romstad, Marco Costalba and Joona Kiiski.\n\
 * <i>Droidfish</i> is developed by Peter Österlund.\n\
 	</string>
+	<string name="cpu_warning">\
+<b>CPU Usage</b>\n\
+If you leave DroidFish running in the background and the <i>GameMode</i> setting \
+is set to <i>Analysis</i> or <i>Computer vs Computer</i>, or if <i>Thinking Time</i> \
+is set to a large value, DroidFish can use a lot of CPU power.\n\
+\n\
+If you are running on battery power, it is recommended that you change settings to \
+conserve battery power, or that you exit <i>DroidFish</i> using the back button when \
+you are not actively using the program.\
+	</string>
 	<string name="draw_claim_not_valid">Draw claim not valid</string>
 	<string name="queen">Queen</string>
 	<string name="rook">Rook</string>
