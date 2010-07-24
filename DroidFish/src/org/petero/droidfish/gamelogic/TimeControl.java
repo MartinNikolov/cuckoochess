@@ -77,7 +77,7 @@ public class TimeControl {
 			remaining += timeControl;
 		}
 		List<Long> times = whiteToMove ? whiteTimes : blackTimes;
-		while (times.size() < currentMove + 2) // FIXME!!! OOM on evil FEN
+		while (times.size() < currentMove + 2)
 			times.add(prevRemaining);
 		while (times.size() > currentMove + 2)
 			times.remove(times.size() - 1);

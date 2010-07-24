@@ -107,6 +107,8 @@ public class TextIO {
             }
             if (words.length > 5) {
                 pos.fullMoveCounter = Integer.parseInt(words[5]);
+                // Don't accept insane values. Could cause problems for clock history.
+                pos.fullMoveCounter = Math.min(999, pos.fullMoveCounter);
             }
         } catch (NumberFormatException nfe) {
             // Ignore errors here, since the fields are optional
