@@ -364,6 +364,10 @@ public class DroidFish extends Activity implements GUIInterface {
 			showDialog(SELECT_MOVE_DIALOG);
 			return true;
 		}
+		case R.id.item_force_move: {
+			ctrl.stopSearch();
+			break;
+		}
 		case R.id.item_draw: {
 			if (ctrl.humansTurn()) {
 				if (!ctrl.claimDrawIfPossible()) {

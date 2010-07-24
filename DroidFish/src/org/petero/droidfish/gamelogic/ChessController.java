@@ -703,6 +703,7 @@ public class ChessController {
             }
         }
     }
+    
     private final synchronized void stopAnalysis() {
         if (analysisThread != null) {
             computerPlayer.stopSearch();
@@ -723,6 +724,12 @@ public class ChessController {
     	timeIncrement = inc;
     	if (game != null)
     		game.timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
+    }
+
+    public final void stopSearch() {
+        if (computerThread != null) {
+        	computerPlayer.stopSearch();
+        }
     }
 
     public final void shutdownEngine() {

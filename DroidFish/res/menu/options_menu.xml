@@ -31,6 +31,10 @@
 		android:title="Goto Move">
 	</item>
 	<item
+		android:id="@+id/item_force_move"
+		android:title="Force Computer Move">
+	</item>
+	<item
 		android:id="@+id/item_draw"
 		android:title="Claim Draw">
 	</item>
