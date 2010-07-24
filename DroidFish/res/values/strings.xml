@@ -3,6 +3,7 @@
 	<string name="app_name">DroidFish</string>
 	<string-array name="moves_per_session_texts">
 	    <item>Whole Game</item>
+	    <item>1 move</item>
 	    <item>10 moves</item>
 	    <item>20 moves</item>
     	<item>30 moves</item>
@@ -12,6 +13,7 @@
 	</string-array>
 	<string-array name="moves_per_session_values">
 	    <item>0</item>
+	    <item>1</item>
 	    <item>10</item>
 	    <item>20</item>
     	<item>30</item>

@@ -61,6 +61,7 @@ public class Game {
      */
     public final boolean processString(String str) {
         if (handleCommand(str)) {
+        	updateTimeControl(true);
             return true;
         }
         if (getGameState() != GameState.ALIVE) {

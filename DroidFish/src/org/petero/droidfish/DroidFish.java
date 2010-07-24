@@ -48,7 +48,6 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
-	// FIXME!!! Clock doesn't stop after draw by repetition
 
 	// FIXME!!! Include draw claim in save/restore state
 	// FIXME!!! Implement fully standard-compliant PGN parser
