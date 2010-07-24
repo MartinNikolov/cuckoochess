@@ -167,6 +167,8 @@ public class ComputerPlayer {
     	}
     	maybeNewGame();
     	npp.writeLineToProcess(posStr.toString());
+    	if (wTime < 1) wTime = 1;
+    	if (bTime < 1) bTime = 1;
     	String goStr = String.format("go wtime %d btime %d", wTime, bTime);
     	if (inc > 0)
     		goStr += String.format(" winc %d binc %d", inc, inc);
@@ -405,10 +407,7 @@ public class ComputerPlayer {
         }
     }
 
-    /** Set max allowed thinking time per move. */
-    public void timeLimit(int timeLimit) { // FIXME!!! Rename to stopSearch
-    	if (timeLimit < this.timeLimit) // FIXME!!! Move test to gui or ctrl
-        	npp.writeLineToProcess("stop");
-    	this.timeLimit = timeLimit;
+    public void stopSearch() {
+    	npp.writeLineToProcess("stop");
     }
 }

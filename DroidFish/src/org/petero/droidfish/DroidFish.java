@@ -47,8 +47,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-	// FIXME!!! User defined time controls
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
+	// FIXME!!! Clock doesn't stop after draw by repetition
+	// FIXME!!! Implement "move now" menu item
 
 	// FIXME!!! Include draw claim in save/restore state
 	// FIXME!!! Implement fully standard-compliant PGN parser
@@ -71,7 +72,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
 	private boolean mShowBookHints;
-	private int mTimeLimit;
 	private GameMode gameMode;
 	private boolean autoSwapSides;
 
@@ -277,12 +277,18 @@ public class DroidFish extends Activity implements GUIInterface {
         gameMode = new GameMode(modeNr);
         mShowThinking = settings.getBoolean("showThinking", false);
         mShowBookHints = settings.getBoolean("bookHints", false);
-        String timeLimitStr = settings.getString("timeLimit", "5000");
-        mTimeLimit = Integer.parseInt(timeLimitStr);
+
+		String tmp = settings.getString("timeControl", "300000");
+		int timeControl = Integer.parseInt(tmp);
+		tmp = settings.getString("movesPerSession", "60");
+		int movesPerSession = Integer.parseInt(tmp);
+		tmp = settings.getString("timeIncrement", "0");
+		int timeIncrement = Integer.parseInt(tmp);
+        ctrl.setTimeLimit(timeControl, movesPerSession, timeIncrement);
+
         boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         soundEnabled = settings.getBoolean("soundEnabled", false);
         cb.setFlipped(boardFlipped);
-        ctrl.setTimeLimit();
         String fontSizeStr = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(fontSizeStr);
         status.setTextSize(fontSize);
@@ -427,11 +433,6 @@ public class DroidFish extends Activity implements GUIInterface {
 			lastComputationMillis = 0;
 		}
 		updateNotification();
-	}
-
-	@Override
-	public int timeLimit() {
-		return mTimeLimit;
 	}
 
 	@Override

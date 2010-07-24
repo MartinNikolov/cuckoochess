@@ -27,12 +27,13 @@ public class Game {
     private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50
     private GameState resignState;
     private ComputerPlayer computerPlayer;
-    TimeControl timeControl;
+    TimeControl timeController;
     private boolean gamePaused;
 
-    public Game(ComputerPlayer computerPlayer) {
+    public Game(ComputerPlayer computerPlayer, int timeControl, int movesPerSession, int timeIncrement) {
         this.computerPlayer = computerPlayer;
-        timeControl = new TimeControl();
+        timeController = new TimeControl();
+        timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
         gamePaused = false;
         handleCommand("new");
     }
@@ -90,7 +91,7 @@ public class Game {
         UndoInfo ui = new UndoInfo();
         String moveStr = TextIO.moveToString(pos, m, false);
         pos.makeMove(m, ui);
-        timeControl.moveMade(System.currentTimeMillis());
+        timeController.moveMade(System.currentTimeMillis());
         updateTimeControl(true);
         TextIO.fixupEPSquare(pos);
         while (currentMove < moveList.size()) {
@@ -111,14 +112,14 @@ public class Game {
 	private void updateTimeControl(boolean discardElapsed) {
 		int move = pos.fullMoveCounter;
 		boolean wtm = pos.whiteMove;
-		if (discardElapsed || (move != timeControl.currentMove) || (wtm != timeControl.whiteToMove)) {
-			timeControl.setCurrentMove(move, wtm);
+		if (discardElapsed || (move != timeController.currentMove) || (wtm != timeController.whiteToMove)) {
+			timeController.setCurrentMove(move, wtm);
 		}
 		long now = System.currentTimeMillis();
 		if (gamePaused || (getGameState() != GameState.ALIVE)) {
-			timeControl.stopTimer(now);
+			timeController.stopTimer(now);
 		} else {
-			timeControl.startTimer(now);
+			timeController.startTimer(now);
 		}
 	}
 
@@ -248,7 +249,7 @@ public class Game {
             }
             if (computerPlayer != null)
             	computerPlayer.clearTT();
-            timeControl.reset();
+            timeController.reset();
             updateTimeControl(true);
             return true;
         } else if (moveStr.equals("undo")) {

@@ -22,12 +22,28 @@
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
-	android:key="timeLimit"
-	android:title="Thinking Time"
-	android:summary="Set computer thinking time"
-	android:entryValues="@array/thinking_times_values"
-	android:entries="@array/thinking_times_texts"
-	android:defaultValue="5000">
+	android:key="movesPerSession"
+	android:title="Time Control Moves"
+	android:summary="Number of moves between time controls"
+	android:entryValues="@array/moves_per_session_values"
+	android:entries="@array/moves_per_session_texts"
+	android:defaultValue="60">
+</ListPreference>
+<ListPreference
+	android:key="timeControl"
+	android:title="Time Control"
+	android:summary="Maximum thinking time between time controls"
+	android:entryValues="@array/time_control_values"
+	android:entries="@array/time_control_texts"
+	android:defaultValue="300000">
+</ListPreference>
+<ListPreference
+	android:key="timeIncrement"
+	android:title="Time Increment"
+	android:summary="Extra thinking time for each completed move"
+	android:entryValues="@array/time_increment_values"
+	android:entries="@array/time_increment_texts"
+	android:defaultValue="0">
 </ListPreference>
 <CheckBoxPreference
 	android:key="showThinking"

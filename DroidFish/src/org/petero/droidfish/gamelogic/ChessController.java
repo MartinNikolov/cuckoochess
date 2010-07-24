@@ -29,6 +29,10 @@ public class ChessController {
     private Thread computerThread;
     private Thread analysisThread;
 
+    private int timeControl;
+	private int movesPerSession;
+	private int timeIncrement;
+    
     // Search statistics
     private String thinkingPV;
 
@@ -176,7 +180,7 @@ public class ChessController {
         	computerPlayer.setListener(listener);
         	computerPlayer.setBookFileName(bookFileName);
         }
-       	game = new Game(computerPlayer);
+       	game = new Game(computerPlayer, timeControl, movesPerSession, timeIncrement);
        	updateGamePaused();
     }
 
@@ -248,7 +252,7 @@ public class ChessController {
 				game.processString("undo");
 			}
 			String clockState = posHistStr.get(3);
-			game.timeControl.restoreState(clockState);
+			game.timeController.restoreState(clockState);
 		} catch (ChessParseError e) {
 			// Just ignore invalid positions
 		}
@@ -256,7 +260,7 @@ public class ChessController {
     
     public final List<String> getPosHistory() {
     	List<String> ret = game.getPosHistory();
-    	ret.add(game.timeControl.saveState());
+    	ret.add(game.timeController.saveState());
     	return ret;
     }
     
@@ -317,7 +321,7 @@ public class ChessController {
     }
 
     public final void setFENOrPGN(String fenPgn) throws ChessParseError {
-       	Game newGame = new Game(null);
+       	Game newGame = new Game(null, timeControl, movesPerSession, timeIncrement);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
     		newGame.setPos(pos);
@@ -599,12 +603,14 @@ public class ChessController {
     final public void updateRemainingTime() {
         // Update remaining time
         long now = System.currentTimeMillis();
-        long wTime = game.timeControl.getRemainingTime(true, now);
-        long bTime = game.timeControl.getRemainingTime(false, now);
+        long wTime = game.timeController.getRemainingTime(true, now);
+        long bTime = game.timeController.getRemainingTime(false, now);
         long nextUpdate = 0;
-        if (game.timeControl.clockRunning()) {
+        if (game.timeController.clockRunning()) {
         	long t = game.pos.whiteMove ? wTime : bTime;
-        	nextUpdate = (t % 1000) + 1;
+        	nextUpdate = (t % 1000);
+        	if (nextUpdate < 0) nextUpdate += 1000;
+        	nextUpdate += 1;
         }
         gui.setRemainingTime(wTime, bTime, nextUpdate);
     }
@@ -633,13 +639,12 @@ public class ChessController {
 			final boolean haveDrawOffer = g.haveDrawOffer();
 			final Position currPos = new Position(g.pos);
 			long now = System.currentTimeMillis();
-			final int wTime = game.timeControl.getRemainingTime(true, now);
-			final int bTime = game.timeControl.getRemainingTime(false, now);
-			final int inc = game.timeControl.getIncrement();
-			final int movesToGo = game.timeControl.getMovesToTC();
+			final int wTime = game.timeController.getRemainingTime(true, now);
+			final int bTime = game.timeController.getRemainingTime(false, now);
+			final int inc = game.timeController.getIncrement();
+			final int movesToGo = game.timeController.getMovesToTC();
     		computerThread = new Thread(new Runnable() {
     			public void run() {
-    				computerPlayer.timeLimit(gui.timeLimit());
     				final String cmd = computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
     														   wTime, bTime, inc, movesToGo);
     				final SearchStatus localSS = ss;
@@ -668,7 +673,7 @@ public class ChessController {
 
     private final synchronized void stopComputerThinking() {
         if (computerThread != null) {
-            computerPlayer.timeLimit(0);
+            computerPlayer.stopSearch();
             try {
                 computerThread.join();
             } catch (InterruptedException ex) {
@@ -689,7 +694,6 @@ public class ChessController {
     			final Position currPos = new Position(game.pos);
             	analysisThread = new Thread(new Runnable() {
             		public void run() {
-            			computerPlayer.timeLimit(gui.timeLimit());
             			computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
             		}
             	});
@@ -701,7 +705,7 @@ public class ChessController {
     }
     private final synchronized void stopAnalysis() {
         if (analysisThread != null) {
-            computerPlayer.timeLimit(0);
+            computerPlayer.stopSearch();
             try {
                 analysisThread.join();
             } catch (InterruptedException ex) {
@@ -713,10 +717,12 @@ public class ChessController {
         }
     }
 
-    public final synchronized void setTimeLimit() {
-        if (computerThread != null) {
-            computerPlayer.timeLimit(gui.timeLimit());
-        }
+    public final synchronized void setTimeLimit(int time, int moves, int inc) {
+    	timeControl = time;
+    	movesPerSession = moves;
+    	timeIncrement = inc;
+    	if (game != null)
+    		game.timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
     }
 
     public final void shutdownEngine() {
