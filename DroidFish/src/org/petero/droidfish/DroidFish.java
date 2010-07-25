@@ -71,6 +71,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean mShowThinking;
 	private boolean mShowBookHints;
 	private GameMode gameMode;
+	private boolean boardFlipped;
 	private boolean autoSwapSides;
 
 	private TextView status;
@@ -271,8 +272,11 @@ public class DroidFish extends Activity implements GUIInterface {
 	private void readPrefs() {
 		String gameModeStr = settings.getString("gameMode", "1");
         int modeNr = Integer.parseInt(gameModeStr);
-        autoSwapSides = settings.getBoolean("autoSwapSides", false);
         gameMode = new GameMode(modeNr);
+        boardFlipped = settings.getBoolean("boardFlipped", false);
+        autoSwapSides = settings.getBoolean("autoSwapSides", false);
+        setBoardFlip();
+
         mShowThinking = settings.getBoolean("showThinking", false);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
@@ -284,9 +288,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		int timeIncrement = Integer.parseInt(tmp);
         ctrl.setTimeLimit(timeControl, movesPerSession, timeIncrement);
 
-        boolean boardFlipped = settings.getBoolean("boardFlipped", false);
         soundEnabled = settings.getBoolean("soundEnabled", false);
-        cb.setFlipped(boardFlipped);
         String fontSizeStr = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(fontSizeStr);
         status.setTextSize(fontSize);
@@ -321,22 +323,17 @@ public class DroidFish extends Activity implements GUIInterface {
 		switch (item.getItemId()) {
 		case R.id.item_new_game:
 			if (autoSwapSides && (gameMode.playerWhite() != gameMode.playerBlack())) {
-				boolean boardFlipped;
 				int gameModeType;
 				if (gameMode.playerWhite()) {
 					gameModeType = GameMode.PLAYER_BLACK;
-					boardFlipped = true;
 				} else {
 					gameModeType = GameMode.PLAYER_WHITE;
-					boardFlipped = false;
 				}
 				Editor editor = settings.edit();
-				editor.putBoolean("boardFlipped", boardFlipped);
 				String gameModeStr = String.format("%d", gameModeType);
 				editor.putString("gameMode", gameModeStr);
 				editor.commit();
 				gameMode = new GameMode(gameModeType);
-		        cb.setFlipped(boardFlipped);
 			}
 	        ctrl.newGame(gameMode);
 	        ctrl.startGame();
@@ -407,6 +404,25 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void setPosition(Position pos) {
 		cb.setPosition(pos);
+		setBoardFlip();
+	}
+	
+	private final void setBoardFlip() {
+		boolean flipped = boardFlipped;
+		if (autoSwapSides) {
+			if (gameMode.analysisMode()) {
+				flipped = !cb.pos.whiteMove;
+			} else if (gameMode.playerWhite() && gameMode.playerBlack()) {
+				flipped = !cb.pos.whiteMove;
+			} else if (gameMode.playerWhite()) {
+				flipped = false;
+			} else if (gameMode.playerBlack()) {
+				flipped = true;
+			} else { // two computers
+				flipped = !cb.pos.whiteMove;
+			}
+		}
+		cb.setFlipped(flipped);
 	}
 
 	@Override
