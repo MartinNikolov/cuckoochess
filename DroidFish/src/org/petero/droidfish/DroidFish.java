@@ -269,7 +269,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		super.onDestroy();
 	}
 
-	private void readPrefs() {
+	private final void readPrefs() {
 		String gameModeStr = settings.getString("gameMode", "1");
         int modeNr = Integer.parseInt(gameModeStr);
         gameMode = new GameMode(modeNr);
@@ -683,7 +683,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 	}
 
-	private String timeToString(long time) {
+	private final String timeToString(long time) {
 		int secs = (int)Math.floor((time + 999) / 1000.0);
 		boolean neg = false;
 		if (secs < 0) {
