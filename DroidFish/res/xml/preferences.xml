@@ -18,7 +18,7 @@
 <CheckBoxPreference
 	android:key="autoSwapSides"
 	android:title="Auto Swap Sides"
-	android:summary="Automatically swap sides when new game started. Overrides Flip Board setting"
+	android:summary="Automatically swap sides when new game started. Also overrides Flip Board setting"
 	android:defaultValue="false">
 </CheckBoxPreference>
 <ListPreference
