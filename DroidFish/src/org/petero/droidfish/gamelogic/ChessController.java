@@ -156,9 +156,8 @@ public class ChessController {
 	public final void updateBookHints() {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
-			boolean computersTurn = !gameMode.humansTurn(game.pos.whiteMove);
 			thinkingPV = "";
-			if (!analysis && !computersTurn && gui.showBookHints()) {
+			if (!analysis && humansTurn() && gui.showBookHints()) {
 				thinkingPV = computerPlayer.getBookHints(game.pos);
 			}
 			setThinkingPV();

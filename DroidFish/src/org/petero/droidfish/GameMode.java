@@ -50,7 +50,7 @@ public class GameMode {
 	public final boolean analysisMode() {
 		return analysisMode;
 	}
-	public boolean humansTurn(boolean whiteMove) {
+	public final boolean humansTurn(boolean whiteMove) {
         return (whiteMove ? playerWhite : playerBlack) || analysisMode;
 	}
 
