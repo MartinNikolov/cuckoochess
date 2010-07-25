@@ -29,6 +29,8 @@ public class ChessBoardEdit extends ChessBoard {
 	protected int getSqSizeW(int width) { return (width - 4) / 8; }
 	@Override
 	protected int getSqSizeH(int height) { return (height - 4 - gap) / 10; }
+	@Override
+	protected int getMaxHeightPercentage() { return 85; }
 
 	@Override
 	protected void computeOrigin(int width, int height) {

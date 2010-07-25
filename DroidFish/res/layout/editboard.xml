@@ -7,7 +7,6 @@
     <view
     	class="org.petero.droidfish.ChessBoardEdit"
         android:id="@+id/eb_chessboard"
-        android:layout_weight="1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"/>
 	<TextView

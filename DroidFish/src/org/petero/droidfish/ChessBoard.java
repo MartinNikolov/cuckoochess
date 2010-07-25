@@ -103,6 +103,8 @@ public class ChessBoard extends View {
 	protected int getSqSizeW(int width) { return (width - 4) / 8; }
 	protected int getSqSizeH(int height) { return (height - 4) / 8; }
 
+	protected int getMaxHeightPercentage() { return 75; }
+	
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -111,10 +113,11 @@ public class ChessBoard extends View {
 		int sqSizeW = getSqSizeW(width);
 		int sqSizeH = getSqSizeH(height);
 		int sqSize = Math.min(sqSizeW, sqSizeH);
-		if (sqSizeH > sqSizeW) {
-			height = getHeight(sqSize);
+		if (height > width) {
+			int p = getMaxHeightPercentage();
+			height = Math.min(getHeight(sqSize), height * p / 100);
 		} else {
-			width = getWidth(sqSize);
+			width = Math.min(getWidth(sqSize), width * 65 / 100);
 		}
 		setMeasuredDimension(width, height);
 	}
