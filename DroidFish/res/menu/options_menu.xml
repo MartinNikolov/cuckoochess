@@ -36,7 +36,7 @@
 	</item>
 	<item
 		android:id="@+id/item_draw"
-		android:title="Claim Draw">
+		android:title="Claim/Offer/Accept Draw">
 	</item>
 	<item
 		android:id="@+id/select_book"

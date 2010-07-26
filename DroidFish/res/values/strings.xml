@@ -145,7 +145,7 @@ If you are running on battery power, it is recommended that you change settings 
 conserve battery power, or that you exit <i>DroidFish</i> using the back button when \
 you are not actively using the program.\
 	</string>
-	<string name="draw_claim_not_valid">Draw claim not valid</string>
+	<string name="offer_draw">Offer Draw</string>
 	<string name="queen">Queen</string>
 	<string name="rook">Rook</string>
 	<string name="bishop">Bishop</string>

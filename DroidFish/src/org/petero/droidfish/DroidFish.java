@@ -54,6 +54,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Try to parse redo info in PGN import
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 	// FIXME!!! Redo moves should be displayed in grey on screen
+	// FIXME!!! PGN export: "2..." not "2. ..."
 
 	// FIXME!!! Implement PGN database support (and FEN?)
 	// FIXME!!! Implement support for PGN comments
@@ -65,6 +66,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
 
+	// FIXME!!! Use arrows to show 2 first moves in PV
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -366,7 +368,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		case R.id.item_draw: {
 			if (ctrl.humansTurn()) {
 				if (!ctrl.claimDrawIfPossible()) {
-					Toast.makeText(getApplicationContext(), R.string.draw_claim_not_valid, Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(), R.string.offer_draw, Toast.LENGTH_SHORT).show();
 				}
 			}
 			return true;
