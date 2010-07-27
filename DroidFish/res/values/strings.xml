@@ -101,6 +101,24 @@
     	<item>4</item>
 	    <item>5</item>
 	</string-array>
+	<string-array name="thinking_arrows_texts">
+	    <item>0</item>
+	    <item>1</item>
+	    <item>2</item>
+	    <item>3</item>
+	    <item>4</item>
+	    <item>5</item>
+	    <item>6</item>
+	</string-array>
+	<string-array name="thinking_arrows_values">
+	    <item>0</item>
+	    <item>1</item>
+	    <item>2</item>
+	    <item>3</item>
+	    <item>4</item>
+	    <item>5</item>
+	    <item>6</item>
+	</string-array>
 	<string name="about_info">\
 <b>About</b>\n\
 <i>DroidFish</i> is an Android port of the famous <i>stockfish</i> chess engine. \

@@ -12,6 +12,7 @@ import org.petero.droidfish.gamelogic.MoveGen;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.SearchListener;
 import org.petero.droidfish.gamelogic.TextIO;
+import org.petero.droidfish.gamelogic.TwoReturnValues;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 /**
@@ -218,18 +219,19 @@ public class ComputerPlayer {
     	}
 	}
 
-	public final String getBookHints(Position pos) {
+	public final TwoReturnValues<String, ArrayList<Move>> getBookHints(Position pos) {
 		String bookInfo = "";
-		String bookMoves = book.getAllBookMoves(pos);
+		TwoReturnValues<String, ArrayList<Move>> bi = book.getAllBookMoves(pos);
+		String bookMoves = bi.first;
 		if (bookMoves.length() > 0) {
 			bookInfo = String.format("Book: %s", bookMoves);
 		}
-		return bookInfo;
+		return new TwoReturnValues<String, ArrayList<Move>>(bookInfo, bi.second);
 	}
 
     public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
     	if (listener != null) {
-    		String bookInfo = getBookHints(currPos);
+    		String bookInfo = getBookHints(currPos).first;
     		listener.notifyBookInfo(bookInfo);
     	}
 

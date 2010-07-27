@@ -51,6 +51,14 @@
 	android:summary="Display computer algorithm information during search"
 	android:defaultValue="false">
 </CheckBoxPreference>
+<ListPreference
+	android:key="thinkingArrows"
+	android:title="Thinking Arrows"
+	android:summary="Show thinking with a number of arrows on the chess board"
+	android:entryValues="@array/thinking_arrows_values"
+	android:entries="@array/thinking_arrows_texts"
+	android:defaultValue="2">
+</ListPreference>
 <CheckBoxPreference
 	android:key="bookHints"
 	android:title="Show Book Hints"

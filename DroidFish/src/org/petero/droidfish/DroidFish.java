@@ -66,12 +66,11 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
 
-	// FIXME!!! Use arrows to show 2 first moves in PV
-
 	private ChessBoard cb;
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
 	private boolean mShowBookHints;
+	private int thinkingArrows;
 	private GameMode gameMode;
 	private boolean boardFlipped;
 	private boolean autoSwapSides;
@@ -165,7 +164,7 @@ public class DroidFish extends Activity implements GUIInterface {
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
         setMoveListString(moveListStr);
-        setThinkingString(thinkingStr);
+        setThinkingString(thinkingStr, oldCB.moveHints);
 	}
 
 	private final void initUI(boolean initTitle) {
@@ -272,17 +271,19 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void readPrefs() {
-		String gameModeStr = settings.getString("gameMode", "1");
-        int modeNr = Integer.parseInt(gameModeStr);
+		String tmp = settings.getString("gameMode", "1");
+        int modeNr = Integer.parseInt(tmp);
         gameMode = new GameMode(modeNr);
         boardFlipped = settings.getBoolean("boardFlipped", false);
         autoSwapSides = settings.getBoolean("autoSwapSides", false);
         setBoardFlip();
 
         mShowThinking = settings.getBoolean("showThinking", false);
+        tmp = settings.getString("thinkingArrows", "2");
+        thinkingArrows = Integer.parseInt(tmp);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
-		String tmp = settings.getString("timeControl", "300000");
+        tmp = settings.getString("timeControl", "300000");
 		int timeControl = Integer.parseInt(tmp);
 		tmp = settings.getString("movesPerSession", "60");
 		int movesPerSession = Integer.parseInt(tmp);
@@ -445,8 +446,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 	
 	@Override
-	public void setThinkingString(String str) {
+	public void setThinkingString(String str, List<Move> moveHints) {
 		thinking.setText(str);
+		if ((moveHints != null) && (moveHints.size() > thinkingArrows)) {
+			moveHints = moveHints.subList(0, thinkingArrows);
+		}
+		cb.setMoveHints(str.length() > 0 ? moveHints : null);
 		if (ctrl.computerBusy()) {
 			lastComputationMillis = System.currentTimeMillis();
 		} else {

@@ -1,5 +1,7 @@
 package org.petero.droidfish;
 
+import java.util.List;
+
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Position;
 
@@ -20,7 +22,7 @@ public interface GUIInterface {
 	public void setMoveListString(String str);
 
 	/** Update the computer thinking information. */
-	public void setThinkingString(String str);
+	public void setThinkingString(String str, List<Move> moveHints);
 	
 	/** Return true if "show thinking" is enabled. */
 	public boolean showThinking();

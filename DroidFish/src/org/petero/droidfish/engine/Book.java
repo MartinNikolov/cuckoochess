@@ -25,6 +25,7 @@ import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.TextIO;
+import org.petero.droidfish.gamelogic.TwoReturnValues;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 /**
@@ -164,8 +165,9 @@ public class Book {
     }
 
     /** Return a string describing all book moves. */
-    public final String getAllBookMoves(Position pos) {
+    public final TwoReturnValues<String,ArrayList<Move>> getAllBookMoves(Position pos) {
         StringBuilder ret = new StringBuilder();
+        ArrayList<Move> bookMoveList = new ArrayList<Move>();
         List<BookEntry> bookMoves = getBookEntries(pos);
         if (bookMoves != null) {
         	Collections.sort(bookMoves, new Comparator<BookEntry>() {
@@ -182,6 +184,7 @@ public class Book {
         	if (totalCount <= 0) totalCount = 1;
             for (BookEntry be : bookMoves) {
             	Move m = be.move;
+            	bookMoveList.add(m);
                 String moveStr = TextIO.moveToString(pos, m, false);
                 ret.append(moveStr);
                 ret.append(':');
@@ -190,7 +193,7 @@ public class Book {
                 ret.append(' ');
             }
         }
-        return ret.toString();
+        return new TwoReturnValues<String, ArrayList<Move>>(ret.toString(), bookMoveList);
     }
 
     /** Creates the book.bin file. */

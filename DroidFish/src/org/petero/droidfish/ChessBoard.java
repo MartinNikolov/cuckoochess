@@ -1,12 +1,17 @@
 package org.petero.droidfish;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -21,6 +26,8 @@ public class ChessBoard extends View {
     boolean cursorVisible;
     protected int x0, y0, sqSize;
     boolean flipped;
+    
+    List<Move> moveHints; // FIXME!!! Sometimes draws obsolete arrows
 
     protected Paint darkPaint;
     protected Paint brightPaint;
@@ -28,6 +35,7 @@ public class ChessBoard extends View {
     private Paint greenOutline;
     private Paint whitePiecePaint;
     private Paint blackPiecePaint;
+    private ArrayList<Paint> moveMarkPaint;
     
 	public ChessBoard(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -59,6 +67,22 @@ public class ChessBoard extends View {
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
         blackPiecePaint.setAntiAlias(true);
+        
+        moveMarkPaint = new ArrayList<Paint>();
+        for (int i = 0; i < 6; i++) {
+        	Paint p = new Paint();
+        	switch (i) {
+        	case 0: p.setARGB(160,  31, 31, 255);  break;
+        	case 1: p.setARGB(160, 255, 31,  31);  break;
+        	case 2: p.setARGB( 80,  31, 31, 255);  break;
+        	case 3: p.setARGB( 80, 255, 31,  31);  break;
+        	case 4: p.setARGB( 30,  31, 31, 255);  break;
+        	case 5: p.setARGB( 40, 255, 31,  31);  break;
+        	}
+        	p.setStyle(Paint.Style.FILL);
+        	p.setAntiAlias(true);
+        	moveMarkPaint.add(p);
+        }
 
         Typeface chessFont = Typeface.createFromAsset(getContext().getAssets(), "ChessCases.ttf");
 		whitePiecePaint.setTypeface(chessFont);
@@ -165,8 +189,56 @@ public class ChessBoard extends View {
             greenOutline.setStrokeWidth(sqSize/(float)16);
             canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
         }
+        drawMoveHints(canvas);
     }
 
+	private final void drawMoveHints(Canvas canvas) {
+		if (moveHints == null)
+			return;
+		float h = (float)(sqSize / 2.0);
+		float d = (float)(sqSize / 8.0);
+		double v = 35 * Math.PI / 180;
+		double cosv = Math.cos(v);
+		double sinv = Math.sin(v);
+		double tanv = Math.tan(v);
+        int n = Math.min(moveMarkPaint.size(), moveHints.size());
+		for (int i = 0; i < n; i++) {
+			Move m = moveHints.get(i);
+			float x0 = getXCrd(Position.getX(m.from)) + h;
+			float y0 = getYCrd(Position.getY(m.from)) + h;
+			float x1 = getXCrd(Position.getX(m.to)) + h;
+			float y1 = getYCrd(Position.getY(m.to)) + h;
+
+			float x2 = (float)(Math.hypot(x1 - x0, y1 - y0) + d);
+			float y2 = 0;
+			float x3 = (float)(x2 - h * cosv);
+			float y3 = (float)(y2 - h * sinv);
+			float x4 = (float)(x3 - d * sinv);
+			float y4 = (float)(y3 + d * cosv);
+			float x5 = (float)(x4 + (-d/2 - y4) / tanv);
+			float y5 = (float)(-d / 2);
+			float x6 = 0;
+			float y6 = y5;
+			Path path = new Path();
+			path.moveTo(x2, y2);
+			path.lineTo(x3, y3);
+//			path.lineTo(x4, y4);
+			path.lineTo(x5, y5);
+			path.lineTo(x6, y6);
+			path.lineTo(x6, -y6);
+			path.lineTo(x5, -y5);
+//			path.lineTo(x4, -y4);
+			path.lineTo(x3, -y3);
+			path.close();
+			Matrix mtx = new Matrix();
+			mtx.postRotate((float)(Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI));
+			mtx.postTranslate(x0, y0);
+			path.transform(mtx);
+			Paint p = moveMarkPaint.get(i);
+			canvas.drawPath(path, p);
+		}
+	}
+	
     protected void drawExtraSquares(Canvas canvas) {
 	}
 
@@ -303,5 +375,18 @@ public class ChessBoard extends View {
 		if (cursorY > 7) cursorY = 7;
 		invalidate();
 		return null;
+	}
+
+	public final void setMoveHints(List<Move> moveHints) {
+		boolean equal = false;
+		if ((this.moveHints == null) || (moveHints == null)) {
+			equal = this.moveHints == moveHints;
+		} else {
+			equal = this.moveHints.equals(moveHints);
+		}
+		if (!equal) {
+			this.moveHints = moveHints;
+			invalidate();
+		}
 	}
 }

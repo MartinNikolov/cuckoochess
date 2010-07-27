@@ -35,6 +35,7 @@ public class ChessController {
     
     // Search statistics
     private String thinkingPV;
+    private ArrayList<Move> thinkingPVList;
 
     class SearchListener implements org.petero.droidfish.gamelogic.SearchListener {
         private int currDepth = 0;
@@ -51,6 +52,7 @@ public class ChessController {
         private boolean pvLowerBound = false;
         private String bookInfo = "";
         private String pvStr = "";
+        private ArrayList<Move> pvList;
 
         private final void setSearchInfo() {
             StringBuilder buf = new StringBuilder();
@@ -80,6 +82,7 @@ public class ChessController {
                 	if (!localSS.searchResultWanted)
                 		return;
                     thinkingPV = newPV;
+                    thinkingPVList = pvList;
                     setThinkingPV();
                 }
             });
@@ -115,6 +118,7 @@ public class ChessController {
                 pos.makeMove(m, ui);
             }
             pvStr = buf.toString();
+            pvList = pv;
             setSearchInfo();
         }
 
@@ -137,6 +141,7 @@ public class ChessController {
         this.gui = gui;
         listener = new SearchListener();
         thinkingPV = "";
+        thinkingPVList = null;
     }
 
 	public final void setBookFileName(String bookFileName) {
@@ -157,8 +162,11 @@ public class ChessController {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
 			thinkingPV = "";
+			thinkingPVList = null;
 			if (!analysis && humansTurn() && gui.showBookHints()) {
-				thinkingPV = computerPlayer.getBookHints(game.pos);
+				TwoReturnValues<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
+				thinkingPV = bi.first;
+				thinkingPVList = bi.second;
 			}
 			setThinkingPV();
 		}
@@ -213,8 +221,11 @@ public class ChessController {
     		stopComputerThinking();
     	if (clearPV) {
 			thinkingPV = "";
+			thinkingPVList = null;
     		if (!analysis && !computersTurn && gui.showBookHints()) {
-    			thinkingPV = computerPlayer.getBookHints(game.pos);
+    			TwoReturnValues<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
+    			thinkingPV = bi.first;
+    			thinkingPVList = bi.second;
     		}
     	}
         if (analysis)
@@ -619,7 +630,7 @@ public class ChessController {
     	if (gui.showThinking()) {
             str = thinkingPV;
         }
-        gui.setThinkingString(str);
+        gui.setThinkingString(str, thinkingPVList);
     }
 
     final private void setSelection() {
@@ -655,6 +666,7 @@ public class ChessController {
     						updateGamePaused();
     						gui.computerMoveMade();
     						thinkingPV = "";
+    						thinkingPVList = null;
     						stopComputerThinking();
     						stopAnalysis(); // To force analysis to restart for new position
     						updateComputeThreads(true);
@@ -665,6 +677,7 @@ public class ChessController {
     			}
     		});
     		thinkingPV = "";
+    		thinkingPVList = null;
     		computerThread.start();
     		updateGUI();
         }
@@ -697,6 +710,7 @@ public class ChessController {
             		}
             	});
             	thinkingPV = "";
+            	thinkingPVList = null;
                 analysisThread.start();
                 updateGUI();
             }
@@ -713,6 +727,7 @@ public class ChessController {
             }
             analysisThread = null;
             thinkingPV = "";
+            thinkingPVList = null;
             updateGUI();
         }
     }
