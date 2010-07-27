@@ -61,7 +61,7 @@ public class ChessController {
         private final void setSearchInfo() {
             StringBuilder buf = new StringBuilder();
             if (pvDepth > 0) {
-            	buf.append(String.format("%n[%d] ", pvDepth));
+            	buf.append(String.format("[%d] ", pvDepth));
             	if (pvUpperBound) {
             		buf.append("<=");
             	} else if (pvLowerBound) {
