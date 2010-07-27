@@ -24,9 +24,6 @@ public interface GUIInterface {
 	/** Update the computer thinking information. */
 	public void setThinkingString(String str, List<Move> moveHints);
 	
-	/** Return true if "show thinking" is enabled. */
-	public boolean showThinking();
-
 	/** Return true if "opening book hints" is enabled. */
 	public boolean showBookHints();
 

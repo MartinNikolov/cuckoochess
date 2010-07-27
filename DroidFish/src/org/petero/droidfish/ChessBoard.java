@@ -27,7 +27,7 @@ public class ChessBoard extends View {
     protected int x0, y0, sqSize;
     boolean flipped;
     
-    List<Move> moveHints; // FIXME!!! Sometimes draws obsolete arrows
+    List<Move> moveHints;
 
     protected Paint darkPaint;
     protected Paint brightPaint;

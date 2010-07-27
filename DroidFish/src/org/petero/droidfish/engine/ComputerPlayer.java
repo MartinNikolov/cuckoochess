@@ -6,7 +6,6 @@
 package org.petero.droidfish.engine;
 
 import java.util.ArrayList;
-
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
 import org.petero.droidfish.gamelogic.Position;
@@ -122,7 +121,7 @@ public class ComputerPlayer {
     							 boolean drawOffer,
     							 int wTime, int bTime, int inc, int movesToGo) {
     	if (listener != null) 
-    		listener.notifyBookInfo("");
+    		listener.notifyBookInfo("", null);
 
     	// Set up for draw detection
         long[] posHashList = new long[mList.size()+1];
@@ -231,8 +230,8 @@ public class ComputerPlayer {
 
     public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
     	if (listener != null) {
-    		String bookInfo = getBookHints(currPos).first;
-    		listener.notifyBookInfo(bookInfo);
+    		TwoReturnValues<String, ArrayList<Move>> bi = getBookHints(currPos);
+    		listener.notifyBookInfo(bi.first, bi.second);
     	}
 
     	// If no legal moves, there is nothing to analyze

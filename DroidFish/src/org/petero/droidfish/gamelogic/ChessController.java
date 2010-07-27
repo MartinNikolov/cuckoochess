@@ -33,10 +33,6 @@ public class ChessController {
 	private int movesPerSession;
 	private int timeIncrement;
     
-    // Search statistics
-    private String thinkingPV;
-    private ArrayList<Move> thinkingPVList;
-
     class SearchListener implements org.petero.droidfish.gamelogic.SearchListener {
         private int currDepth = 0;
         private int currMoveNr = 0;
@@ -52,25 +48,37 @@ public class ChessController {
         private boolean pvLowerBound = false;
         private String bookInfo = "";
         private String pvStr = "";
-        private ArrayList<Move> pvList;
+        private List<Move> arrowMoves = null;
+
+        public final void clearSearchInfo() {
+        	pvDepth = 0;
+        	currDepth = 0;
+        	bookInfo = "";
+        	arrowMoves = null;
+        	setSearchInfo();
+        }
 
         private final void setSearchInfo() {
             StringBuilder buf = new StringBuilder();
-            buf.append(String.format("%n[%d] ", pvDepth));
-            if (pvUpperBound) {
-                buf.append("<=");
-            } else if (pvLowerBound) {
-                buf.append(">=");
+            if (pvDepth > 0) {
+            	buf.append(String.format("%n[%d] ", pvDepth));
+            	if (pvUpperBound) {
+            		buf.append("<=");
+            	} else if (pvLowerBound) {
+            		buf.append(">=");
+            	}
+            	if (pvIsMate) {
+            		buf.append(String.format("m%d", pvScore));
+            	} else {
+            		buf.append(String.format("%.2f", pvScore / 100.0));
+            	}
+            	buf.append(pvStr);
+            	buf.append("\n");
             }
-            if (pvIsMate) {
-                buf.append(String.format("m%d", pvScore));
-            } else {
-                buf.append(String.format("%.2f", pvScore / 100.0));
+            if (currDepth > 0) {
+            	buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d", currDepth,
+            			currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
             }
-            buf.append(pvStr);
-            buf.append("\n");
-            buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d", currDepth,
-                    currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
             if (bookInfo.length() > 0) {
             	buf.append("\n");
             	buf.append(bookInfo);
@@ -81,9 +89,7 @@ public class ChessController {
                 public void run() {
                 	if (!localSS.searchResultWanted)
                 		return;
-                    thinkingPV = newPV;
-                    thinkingPVList = pvList;
-                    setThinkingPV();
+                	gui.setThinkingString(newPV, arrowMoves);
                 }
             });
         }
@@ -118,7 +124,7 @@ public class ChessController {
                 pos.makeMove(m, ui);
             }
             pvStr = buf.toString();
-            pvList = pv;
+            arrowMoves = pv;
             setSearchInfo();
         }
 
@@ -130,8 +136,9 @@ public class ChessController {
         }
 
 		@Override
-		public void notifyBookInfo(String bookInfo) {
+		public void notifyBookInfo(String bookInfo, List<Move> moveList) {
 			this.bookInfo = bookInfo;
+			arrowMoves = moveList;
 			setSearchInfo();
 		}
     }
@@ -140,8 +147,6 @@ public class ChessController {
     public ChessController(GUIInterface gui) {
         this.gui = gui;
         listener = new SearchListener();
-        thinkingPV = "";
-        thinkingPVList = null;
     }
 
 	public final void setBookFileName(String bookFileName) {
@@ -161,14 +166,11 @@ public class ChessController {
 	public final void updateBookHints() {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
-			thinkingPV = "";
-			thinkingPVList = null;
 			if (!analysis && humansTurn() && gui.showBookHints()) {
+	    		ss = new SearchStatus();
 				TwoReturnValues<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
-				thinkingPV = bi.first;
-				thinkingPVList = bi.second;
+				listener.notifyBookInfo(bi.first, bi.second);
 			}
-			setThinkingPV();
 		}
 	}
 
@@ -220,13 +222,8 @@ public class ChessController {
     	if (!computersTurn)
     		stopComputerThinking();
     	if (clearPV) {
-			thinkingPV = "";
-			thinkingPVList = null;
-    		if (!analysis && !computersTurn && gui.showBookHints()) {
-    			TwoReturnValues<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
-    			thinkingPV = bi.first;
-    			thinkingPVList = bi.second;
-    		}
+	        listener.clearSearchInfo();
+    		updateBookHints();
     	}
         if (analysis)
         	startAnalysis();
@@ -605,7 +602,6 @@ public class ChessController {
         }
         gui.setStatusString(str);
         gui.setMoveListString(game.getMoveListString());
-        setThinkingPV();
         gui.setPosition(game.pos);
         updateRemainingTime();
     }
@@ -623,14 +619,6 @@ public class ChessController {
         	nextUpdate += 1;
         }
         gui.setRemainingTime(wTime, bTime, nextUpdate);
-    }
-
-    private final void setThinkingPV() {
-    	String str = "";
-    	if (gui.showThinking()) {
-            str = thinkingPV;
-        }
-        gui.setThinkingString(str, thinkingPVList);
     }
 
     final private void setSelection() {
@@ -665,8 +653,7 @@ public class ChessController {
     						g.processString(cmd);
     						updateGamePaused();
     						gui.computerMoveMade();
-    						thinkingPV = "";
-    						thinkingPVList = null;
+    						listener.clearSearchInfo();
     						stopComputerThinking();
     						stopAnalysis(); // To force analysis to restart for new position
     						updateComputeThreads(true);
@@ -676,8 +663,7 @@ public class ChessController {
     				});
     			}
     		});
-    		thinkingPV = "";
-    		thinkingPVList = null;
+    		listener.clearSearchInfo();
     		computerThread.start();
     		updateGUI();
         }
@@ -709,8 +695,7 @@ public class ChessController {
             			computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
             		}
             	});
-            	thinkingPV = "";
-            	thinkingPVList = null;
+            	listener.clearSearchInfo();
                 analysisThread.start();
                 updateGUI();
             }
@@ -726,8 +711,7 @@ public class ChessController {
                 System.out.printf("Could not stop analysis thread%n");
             }
             analysisThread = null;
-            thinkingPV = "";
-            thinkingPVList = null;
+            listener.clearSearchInfo();
             updateGUI();
         }
     }

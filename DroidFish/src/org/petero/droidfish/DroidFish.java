@@ -300,6 +300,7 @@ public class DroidFish extends Activity implements GUIInterface {
         String bookFile = settings.getString("bookFile", "");
         setBookFile(bookFile);
         ctrl.updateBookHints();
+		updateThinkingInfo();
 	}
 
 	private final void setBookFile(String bookFile) {
@@ -445,13 +446,15 @@ public class DroidFish extends Activity implements GUIInterface {
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 	
+	private String thinkingStr = "";
+	private List<Move> moveHints = null;
+
 	@Override
 	public void setThinkingString(String str, List<Move> moveHints) {
-		thinking.setText(str);
-		if ((moveHints != null) && (moveHints.size() > thinkingArrows)) {
-			moveHints = moveHints.subList(0, thinkingArrows);
-		}
-		cb.setMoveHints(str.length() > 0 ? moveHints : null);
+		thinkingStr = str;
+		this.moveHints = moveHints;
+		updateThinkingInfo();
+
 		if (ctrl.computerBusy()) {
 			lastComputationMillis = System.currentTimeMillis();
 		} else {
@@ -460,8 +463,21 @@ public class DroidFish extends Activity implements GUIInterface {
 		updateNotification();
 	}
 
-	@Override
-	public boolean showThinking() {
+	private final void updateThinkingInfo() {
+		if (showThinking()) {
+			thinking.setText(thinkingStr);
+			List<Move> hints = moveHints;
+			if ((hints != null) && (hints.size() > thinkingArrows)) {
+				hints = hints.subList(0, thinkingArrows);
+			}
+			cb.setMoveHints(hints);
+		} else {
+			thinking.setText("");
+			cb.setMoveHints(null);
+		}
+	}
+
+	private final boolean showThinking() {
 		return mShowThinking || gameMode.analysisMode() || (mShowBookHints && ctrl.humansTurn());
 	}
 
