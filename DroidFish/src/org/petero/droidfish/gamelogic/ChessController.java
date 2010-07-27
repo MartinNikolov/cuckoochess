@@ -168,7 +168,7 @@ public class ChessController {
 			boolean analysis = gameMode.analysisMode();
 			if (!analysis && humansTurn() && gui.showBookHints()) {
 	    		ss = new SearchStatus();
-				TwoReturnValues<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
+				Pair<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.pos);
 				listener.notifyBookInfo(bi.first, bi.second);
 			}
 		}
@@ -632,7 +632,7 @@ public class ChessController {
     	if (game.getGameState() != GameState.ALIVE) return;
     	if (computerThread == null) {
     		ss = new SearchStatus();
-			final TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+			final Pair<Position, ArrayList<Move>> ph = game.getUCIHistory();
 			final Game g = game;
 			final boolean haveDrawOffer = g.haveDrawOffer();
 			final Position currPos = new Position(g.pos);
@@ -687,7 +687,7 @@ public class ChessController {
     		if (computerThread != null) return;
             if (analysisThread == null) {
         		ss = new SearchStatus();
-    			final TwoReturnValues<Position, ArrayList<Move>> ph = game.getUCIHistory();
+    			final Pair<Position, ArrayList<Move>> ph = game.getUCIHistory();
     			final boolean haveDrawOffer = game.haveDrawOffer();
     			final Position currPos = new Position(game.pos);
             	analysisThread = new Thread(new Runnable() {

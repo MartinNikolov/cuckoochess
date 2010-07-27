@@ -408,7 +408,7 @@ public class Game {
      * Return the last zeroing position and a list of moves
      * to go from that position to the current position.
      */
-    public final TwoReturnValues<Position, ArrayList<Move>> getUCIHistory() {
+    public final Pair<Position, ArrayList<Move>> getUCIHistory() {
         ArrayList<Move> mList = new ArrayList<Move>();
         Position prevPos = new Position(pos);
         for (int i = currentMove; i > 0; i--) {
@@ -419,7 +419,7 @@ public class Game {
             mList.add(new Move(m));
         }
         Collections.reverse(mList);
-        return new TwoReturnValues<Position, ArrayList<Move>>(prevPos, mList);
+        return new Pair<Position, ArrayList<Move>>(prevPos, mList);
     }
 
     private final boolean handleDrawCmd(String drawCmd) {
