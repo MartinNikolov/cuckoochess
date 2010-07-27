@@ -218,7 +218,7 @@ public class ChessBoard extends View {
 			float x5 = (float)(x4 + (-d/2 - y4) / tanv);
 			float y5 = (float)(-d / 2);
 			float x6 = 0;
-			float y6 = y5;
+			float y6 = y5 / 2;
 			Path path = new Path();
 			path.moveTo(x2, y2);
 			path.lineTo(x3, y3);
