@@ -456,7 +456,8 @@ public class ChessController {
     				// Don't undo first white move if playing black vs computer,
     				// because that would cause computer to immediately make
     				// a new move and the whole redo history will be lost.
-    				game.processString("redo");
+    				if (gameMode.playerWhite() || gameMode.playerBlack())
+    					game.processString("redo");
     			}
     		}
     	}
