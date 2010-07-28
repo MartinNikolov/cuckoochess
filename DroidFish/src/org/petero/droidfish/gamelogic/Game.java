@@ -42,7 +42,7 @@ public class Game {
     	this.computerPlayer = computerPlayer;
 	}
 
-	public void setGamePaused(boolean gamePaused) {
+	public final void setGamePaused(boolean gamePaused) {
 		if (gamePaused != this.gamePaused) {
 			this.gamePaused = gamePaused;
 	        updateTimeControl(false);
@@ -110,7 +110,7 @@ public class Game {
         return true;
     }
 
-	private void updateTimeControl(boolean discardElapsed) {
+	private final void updateTimeControl(boolean discardElapsed) {
 		int move = pos.fullMoveCounter;
 		boolean wtm = pos.whiteMove;
 		if (discardElapsed || (move != timeController.currentMove) || (wtm != timeController.whiteToMove)) {
@@ -180,7 +180,7 @@ public class Game {
     	return currentMove < moveList.size();
     }
 
-    public enum GameState {
+    public static enum GameState {
         ALIVE,
         WHITE_MATE,         // White mates
         BLACK_MATE,         // Black mates
@@ -233,7 +233,7 @@ public class Game {
      * @param moveStr  The command to handle
      * @return  True if command handled, false otherwise.
      */
-    protected boolean handleCommand(String moveStr) {
+    private final boolean handleCommand(String moveStr) {
         if (moveStr.equals("new")) {
             moveList = new ArrayList<Move>();
             moveStrList = new ArrayList<String>();
@@ -494,7 +494,7 @@ public class Game {
         }
     }
 
-     private boolean insufficientMaterial() {
+    private final boolean insufficientMaterial() {
         if (pos.nPieces(Piece.WQUEEN) > 0) return false;
         if (pos.nPieces(Piece.WROOK)  > 0) return false;
         if (pos.nPieces(Piece.WPAWN)  > 0) return false;

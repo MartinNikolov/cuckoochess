@@ -408,7 +408,7 @@ public class ComputerPlayer {
         }
     }
 
-    public void stopSearch() {
+    public final void stopSearch() {
     	npp.writeLineToProcess("stop");
     }
 }

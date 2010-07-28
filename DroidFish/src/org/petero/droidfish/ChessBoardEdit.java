@@ -167,6 +167,7 @@ public class ChessBoardEdit extends ChessBoard {
      * @param evt Details about the mouse event.
      * @return The square corresponding to the mouse event, or -1 if outside board.
      */
+	@Override
     int eventToSquare(MotionEvent evt) {
     	int sq = super.eventToSquare(evt);
     	if (sq != -1)

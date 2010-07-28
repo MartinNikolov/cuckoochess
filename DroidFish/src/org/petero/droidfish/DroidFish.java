@@ -65,6 +65,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
+	// FIXME!!! Implement undo/redo via scroll events on chess board
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -667,7 +668,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	/** Decide if user should be warned about heavy CPU usage. */
-	public final void updateNotification() {
+	private final void updateNotification() {
 		boolean warn = false;
 		if (lastVisibleMillis != 0) { // GUI not visible
 			warn = lastComputationMillis >= lastVisibleMillis + 90000;
@@ -678,7 +679,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean notificationActive = false;
 
 	/** Set/clear the "heavy CPU usage" notification. */
-	public final void setNotification(boolean show) {
+	private final void setNotification(boolean show) {
 		if (notificationActive == show)
 			return;
 		notificationActive = show;

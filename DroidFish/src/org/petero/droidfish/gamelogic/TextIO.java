@@ -182,7 +182,7 @@ public class TextIO {
         }
     }
 
-    private static void safeSetPiece(Position pos, int col, int row, int p) throws ChessParseError {
+    private static final void safeSetPiece(Position pos, int col, int row, int p) throws ChessParseError {
         if (row < 0) throw new ChessParseError("Too many rows");
         if (col > 7) throw new ChessParseError("Too many columns");
         if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
@@ -377,7 +377,7 @@ public class TextIO {
         return ret.toString();
     }
 
-    private static boolean isCapture(Position pos, Move move) {
+    private static final boolean isCapture(Position pos, Move move) {
         if (pos.getPiece(move.to) == Piece.EMPTY) {
             int p = pos.getPiece(move.from);
             if ((p == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) && (move.to == pos.getEpSquare())) {
@@ -547,7 +547,7 @@ public class TextIO {
      * Convert a string, such as "e4" to a square number.
      * @return The square number, or -1 if not a legal square.
      */
-    public static int getSquare(String s) {
+    public static final int getSquare(String s) {
         int x = s.charAt(0) - 'a';
         int y = s.charAt(1) - '1';
         if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
@@ -558,7 +558,7 @@ public class TextIO {
     /**
      * Convert a square number to a string, such as "e4".
      */
-    public static String squareToString(int square) {
+    public static final String squareToString(int square) {
         StringBuilder ret = new StringBuilder();
         int x = Position.getX(square);
         int y = Position.getY(square);
@@ -601,7 +601,7 @@ public class TextIO {
     /**
      * Convert move string to lower case and remove special check/mate symbols.
      */
-    private static String normalizeMoveString(String str) {
+    private static final String normalizeMoveString(String str) {
         if (str.length() > 0) {
             char lastChar = str.charAt(str.length() - 1);
             if ((lastChar == '#') || (lastChar == '+')) {

@@ -336,7 +336,7 @@ public class ChessBoard extends View {
     	public void onTrackballEvent(MotionEvent event) { }
 	}
 	private OnTrackballListener otbl = null;
-	public void setOnTrackballListener(OnTrackballListener onTrackballListener) {
+	public final void setOnTrackballListener(OnTrackballListener onTrackballListener) {
 		otbl = onTrackballListener;
 	}
 	@Override
@@ -351,7 +351,7 @@ public class ChessBoard extends View {
 	protected int minValidY() { return 0; }
 	protected int getSquare(int x, int y) { return Position.getSquare(x, y); }
 	
-	public Move handleTrackballEvent(MotionEvent event) {
+	public final Move handleTrackballEvent(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			invalidate();
