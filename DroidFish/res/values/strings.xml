@@ -153,6 +153,7 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 <b>Hints</b>\n\
 * In game mode, long press chess board to activate copy/paste menu.\n\
 * In edit board mode, long press chess board to activate edit menu.\n\
+* Scroll left/right on the chess board to undo/redo moves.\n\
 \n\
 <b>Opening book</b>\n\
 DroidFish contains a small internal opening book. If you want to use \
