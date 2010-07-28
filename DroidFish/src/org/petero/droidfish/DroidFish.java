@@ -30,6 +30,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,7 +66,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
-	// FIXME!!! Implement undo/redo via scroll events on chess board
+	// FIXME!!! Configurable scrolling speed
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -190,18 +191,47 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.setFocusable(true);
         cb.requestFocus();
         cb.setClickable(true);
-        cb.setOnTouchListener(new OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-		        if (ctrl.humansTurn() && (event.getAction() == MotionEvent.ACTION_UP)) {
-		            int sq = cb.eventToSquare(event);
-		            Move m = cb.mousePressed(sq);
-		            if (m != null) {
-		                ctrl.makeHumanMove(m);
-		            }
-		            return false;
+        
+        final GestureDetector gd = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+        	private float scrollX = 0;
+        	public boolean onDown(MotionEvent e) {
+        		scrollX = 0;
+        		return false;
+        	}
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+				cb.cancelLongPress();
+				scrollX += distanceX;
+				float scrollUnit = cb.sqSize;
+				int nRedo = 0, nUndo = 0;
+				while (scrollX > scrollUnit) {
+					nRedo++;
+					scrollX -= scrollUnit;
+				}
+				while (scrollX < -scrollUnit) {
+					nUndo++;
+					scrollX += scrollUnit;
+				}
+				if (nRedo + nUndo > 1)
+					ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
+				for (int i = 0; i < nRedo; i++) ctrl.redoMove();
+				for (int i = 0; i < nUndo; i++) ctrl.undoMove();
+				ctrl.setGameMode(gameMode);
+				return true;
+			}
+			public boolean onSingleTapUp(MotionEvent e) {
+	        	cb.cancelLongPress();
+		        if (ctrl.humansTurn()) {
+		        	int sq = cb.eventToSquare(e);
+		        	Move m = cb.mousePressed(sq);
+		        	if (m != null)
+		        		ctrl.makeHumanMove(m);
 		        }
-		        return false;
+	        	return true;
+			}
+        });
+        cb.setOnTouchListener(new OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				return gd.onTouchEvent(event);
 			}
 		});
         cb.setOnTrackballListener(new ChessBoard.OnTrackballListener() {
@@ -215,7 +245,6 @@ public class DroidFish extends Activity implements GUIInterface {
         	}
         });
         cb.setOnLongClickListener(new OnLongClickListener() {
-			@Override
 			public boolean onLongClick(View v) {
 				showDialog(CLIPBOARD_DIALOG);
 				return true;

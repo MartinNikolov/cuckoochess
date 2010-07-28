@@ -464,9 +464,10 @@ public class ChessController {
     
     public final void undoMove() {
     	if (game.getLastMove() != null) {
-        	undoMoveNoUpdate();
+    		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
+        	undoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
     		updateGUI();
@@ -491,9 +492,10 @@ public class ChessController {
     
     public final void redoMove() {
     	if (canRedoMove()) {
-    		redoMoveNoUpdate();
+    		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
+    		redoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
     		updateGUI();
@@ -664,6 +666,7 @@ public class ChessController {
     			}
     		});
     		listener.clearSearchInfo();
+        	computerPlayer.shouldStop = false;
     		computerThread.start();
     		updateGUI();
         }
@@ -696,6 +699,7 @@ public class ChessController {
             		}
             	});
             	listener.clearSearchInfo();
+            	computerPlayer.shouldStop = false;
                 analysisThread.start();
                 updateGUI();
             }

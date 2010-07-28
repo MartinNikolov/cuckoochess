@@ -196,9 +196,14 @@ public class ComputerPlayer {
 	private final String monitorEngine() {
 		// Monitor engine response
     	clearInfo();
+    	boolean stopSent = false;
     	while (true) {
 			int timeout = 2000;
     		while (true) {
+    			if (shouldStop && !stopSent) {
+    		    	npp.writeLineToProcess("stop");
+    		    	stopSent = true;
+    			}
     			String s = npp.readLineFromProcess(timeout);
     			if (s.length() == 0)
     				break;
@@ -228,7 +233,11 @@ public class ComputerPlayer {
 		return new Pair<String, ArrayList<Move>>(bookInfo, bi.second);
 	}
 
-    public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+	public boolean shouldStop = false;
+
+	public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    	if (shouldStop)
+    		return;
     	if (listener != null) {
     		Pair<String, ArrayList<Move>> bi = getBookHints(currPos);
     		listener.notifyBookInfo(bi.first, bi.second);
@@ -409,6 +418,7 @@ public class ComputerPlayer {
     }
 
     public final void stopSearch() {
+    	shouldStop = true;
     	npp.writeLineToProcess("stop");
     }
 }
