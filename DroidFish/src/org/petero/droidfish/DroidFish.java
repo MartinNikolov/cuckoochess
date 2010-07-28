@@ -67,6 +67,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
 	// FIXME!!! Configurable scrolling speed
+	
+	// FIXME!!! Fast taps not working
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -211,8 +213,12 @@ public class DroidFish extends Activity implements GUIInterface {
 					nUndo++;
 					scrollX += scrollUnit;
 				}
-				if (nRedo + nUndo > 1)
-					ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
+				if (nRedo + nUndo > 1) {
+					boolean analysis = gameMode.analysisMode();
+					boolean human = gameMode.playerWhite() || gameMode.playerBlack();
+					if (analysis || !human)
+						ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
+				}
 				for (int i = 0; i < nRedo; i++) ctrl.redoMove();
 				for (int i = 0; i < nUndo; i++) ctrl.undoMove();
 				ctrl.setGameMode(gameMode);
