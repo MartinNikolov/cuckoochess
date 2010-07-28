@@ -67,8 +67,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
 	// FIXME!!! Configurable scrolling speed
-	
-	// FIXME!!! Fast taps not working
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -225,14 +223,22 @@ public class DroidFish extends Activity implements GUIInterface {
 				return true;
 			}
 			public boolean onSingleTapUp(MotionEvent e) {
-	        	cb.cancelLongPress();
+				cb.cancelLongPress();
+				handleClick(e);
+	        	return true;
+			}
+			public boolean onDoubleTapEvent(MotionEvent e) {
+				if (e.getAction() == MotionEvent.ACTION_UP)
+					handleClick(e);
+				return true;
+			}
+			private final void handleClick(MotionEvent e) {
 		        if (ctrl.humansTurn()) {
 		        	int sq = cb.eventToSquare(e);
 		        	Move m = cb.mousePressed(sq);
 		        	if (m != null)
 		        		ctrl.makeHumanMove(m);
 		        }
-	        	return true;
 			}
         });
         cb.setOnTouchListener(new OnTouchListener() {
