@@ -119,6 +119,22 @@
 	    <item>5</item>
 	    <item>6</item>
 	</string-array>
+	<string-array name="scroll_sensitivity_texts">
+    	<item>Off</item>
+    	<item>Slowest</item>
+    	<item>Slow</item>
+    	<item>Normal</item>
+    	<item>Fast</item>
+	    <item>Fastest</item>
+	</string-array>
+	<string-array name="scroll_sensitivity_values">
+    	<item>0</item>
+    	<item>6</item>
+    	<item>3</item>
+    	<item>2</item>
+    	<item>1</item>
+	    <item>0.5</item>
+	</string-array>
 	<string name="about_info">\
 <b>About</b>\n\
 <i>DroidFish</i> is an Android port of the famous <i>stockfish</i> chess engine. \

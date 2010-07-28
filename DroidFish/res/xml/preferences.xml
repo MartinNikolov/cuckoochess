@@ -77,6 +77,14 @@
 <PreferenceCategory
 	android:title="Other">
 	<ListPreference
+		android:key="scrollSensitivity"
+		android:title="Scrolling Speed"
+		android:summary="Scrolling speed for game navigation"
+		android:entryValues="@array/scroll_sensitivity_values"
+		android:entries="@array/scroll_sensitivity_texts"
+		android:defaultValue="2">
+	</ListPreference>
+	<ListPreference
 		android:key="fontSize"
 		android:title="Text Size"
 		android:summary="Font size for move list and game information"

@@ -55,6 +55,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Try to parse redo info in PGN import
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 	// FIXME!!! Redo moves should be displayed in grey on screen
+	// FIXME!!! Current position in game should be highlighted in move list.
 	// FIXME!!! PGN export: "2..." not "2. ..."
 
 	// FIXME!!! Implement PGN database support (and FEN?)
@@ -66,7 +67,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Implement "limit strength" option
-	// FIXME!!! Configurable scrolling speed
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -85,6 +85,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	SharedPreferences settings;
 
+	private float scrollSensitivity;
 	private boolean soundEnabled;
 	private MediaPlayer moveSound;
 
@@ -200,26 +201,28 @@ public class DroidFish extends Activity implements GUIInterface {
         	}
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 				cb.cancelLongPress();
-				scrollX += distanceX;
-				float scrollUnit = cb.sqSize;
-				int nRedo = 0, nUndo = 0;
-				while (scrollX > scrollUnit) {
-					nRedo++;
-					scrollX -= scrollUnit;
+				if (scrollSensitivity > 0) {
+					scrollX += distanceX;
+					float scrollUnit = cb.sqSize * scrollSensitivity;
+					int nRedo = 0, nUndo = 0;
+					while (scrollX > scrollUnit) {
+						nRedo++;
+						scrollX -= scrollUnit;
+					}
+					while (scrollX < -scrollUnit) {
+						nUndo++;
+						scrollX += scrollUnit;
+					}
+					if (nRedo + nUndo > 1) {
+						boolean analysis = gameMode.analysisMode();
+						boolean human = gameMode.playerWhite() || gameMode.playerBlack();
+						if (analysis || !human)
+							ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
+					}
+					for (int i = 0; i < nRedo; i++) ctrl.redoMove();
+					for (int i = 0; i < nUndo; i++) ctrl.undoMove();
+					ctrl.setGameMode(gameMode);
 				}
-				while (scrollX < -scrollUnit) {
-					nUndo++;
-					scrollX += scrollUnit;
-				}
-				if (nRedo + nUndo > 1) {
-					boolean analysis = gameMode.analysisMode();
-					boolean human = gameMode.playerWhite() || gameMode.playerBlack();
-					if (analysis || !human)
-						ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
-				}
-				for (int i = 0; i < nRedo; i++) ctrl.redoMove();
-				for (int i = 0; i < nUndo; i++) ctrl.undoMove();
-				ctrl.setGameMode(gameMode);
 				return true;
 			}
 			public boolean onSingleTapUp(MotionEvent e) {
@@ -333,12 +336,17 @@ public class DroidFish extends Activity implements GUIInterface {
 		int timeIncrement = Integer.parseInt(tmp);
         ctrl.setTimeLimit(timeControl, movesPerSession, timeIncrement);
 
-        soundEnabled = settings.getBoolean("soundEnabled", false);
-        String fontSizeStr = settings.getString("fontSize", "12");
-        int fontSize = Integer.parseInt(fontSizeStr);
+
+        tmp = settings.getString("scrollSensitivity", "2");
+        scrollSensitivity = Float.parseFloat(tmp);
+
+        tmp = settings.getString("fontSize", "12");
+        int fontSize = Integer.parseInt(tmp);
         status.setTextSize(fontSize);
         moveList.setTextSize(fontSize);
         thinking.setTextSize(fontSize);
+        soundEnabled = settings.getBoolean("soundEnabled", false);
+
         String bookFile = settings.getString("bookFile", "");
         setBookFile(bookFile);
         ctrl.updateBookHints();
