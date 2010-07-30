@@ -455,4 +455,43 @@ public class GameTreeTest {
 		assertEquals(true, res);
 		assertEquals("test \"x\"", gt.white);
 	}
+
+	@Test
+	public final void testNAG() throws ChessParseError {
+		GameTree gt = new GameTree();
+		PGNOptions options = new PGNOptions();
+		options.imp.variations = true;
+		options.imp.comments = true;
+		options.imp.nag = true;
+		boolean res = gt.readPGN("e4! e5 ? Nf3?! Nc6 !? Bb5!! a6?? Ba4 $14", options);
+		assertEquals(true, res);
+
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(1, gt.currentNode.nag);
+
+		assertEquals("e5", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(2, gt.currentNode.nag);
+
+		assertEquals("Nf3", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(6, gt.currentNode.nag);
+
+		assertEquals("Nc6", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(5, gt.currentNode.nag);
+
+		assertEquals("Bb5", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(3, gt.currentNode.nag);
+
+		assertEquals("a6", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(4, gt.currentNode.nag);
+
+		assertEquals("Ba4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(14, gt.currentNode.nag);
+	}	
 }

@@ -902,14 +902,37 @@ public class GameTree {
     					if (moveAdded) node.addChild(nodeToAdd);
     					return;
     				}
-    				if (moveAdded) {
-    					node = node.addChild(nodeToAdd);
-    					nodeToAdd = new Node();
-    					moveAdded = false;
+    				char lastChar = tok.token.charAt(tok.token.length() - 1);
+    				if ((lastChar == '!') || (lastChar == '?')) {
+    					int movLen = tok.token.length() - 1;
+    					while (movLen > 0) {
+    						char c = tok.token.charAt(movLen - 1);
+    						if ((c == '!') || (c == '?'))
+    							movLen--;
+    						else
+    							break;
+    					}
+    					String ann = tok.token.substring(movLen);
+    					tok.token = tok.token.substring(0, movLen);
+    					int nag = 0;
+    					if      (ann.equals("!"))  nag = 1;
+    					else if (ann.equals("?"))  nag = 2;
+    					else if (ann.equals("!!")) nag = 3;
+    					else if (ann.equals("??")) nag = 4;
+    					else if (ann.equals("!?")) nag = 5;
+    					else if (ann.equals("?!")) nag = 6;
+    					if (nag > 0)
+    						scanner.putBack(new PgnToken(PgnToken.NAG, new Integer(nag).toString()));
     				}
-    				// FIXME!!! Convert e4! to e4 + NAG (and handle nag option)
-    				nodeToAdd.moveStr = tok.token;
-    				moveAdded = true;
+    				if (tok.token.length() > 0) {
+    					if (moveAdded) {
+    						node = node.addChild(nodeToAdd);
+    						nodeToAdd = new Node();
+    						moveAdded = false;
+    					}
+    					nodeToAdd.moveStr = tok.token;
+    					moveAdded = true;
+    				}
     				break;
     			case PgnToken.COMMENT:
     				// FIXME!!! Handle [%clk and [%usercmd
