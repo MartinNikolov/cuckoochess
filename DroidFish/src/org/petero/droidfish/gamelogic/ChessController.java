@@ -625,4 +625,11 @@ public class ChessController {
 		if (game.getGameState() != GameState.ALIVE) return true;
         return false;
 	}
+
+    public final void resignGame() {
+    	if (game.getGameState() == GameState.ALIVE) {
+    		game.processString("resign");
+    		updateGUI();
+    	}
+    }
 }

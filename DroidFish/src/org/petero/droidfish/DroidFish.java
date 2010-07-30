@@ -414,13 +414,19 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 		case R.id.item_force_move: {
 			ctrl.stopSearch();
-			break;
+			return true;
 		}
 		case R.id.item_draw: {
 			if (ctrl.humansTurn()) {
 				if (!ctrl.claimDrawIfPossible()) {
 					Toast.makeText(getApplicationContext(), R.string.offer_draw, Toast.LENGTH_SHORT).show();
 				}
+			}
+			return true;
+		}
+		case R.id.item_resign: {
+			if (ctrl.humansTurn()) {
+				ctrl.resignGame();
 			}
 			return true;
 		}

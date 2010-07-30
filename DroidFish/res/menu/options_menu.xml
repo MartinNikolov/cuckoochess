@@ -39,6 +39,10 @@
 		android:title="Claim/Offer/Accept Draw">
 	</item>
 	<item
+		android:id="@+id/item_resign"
+		android:title="Resign game">
+	</item>
+	<item
 		android:id="@+id/select_book"
 		android:title="Select Opening Book">
 	</item>
