@@ -100,7 +100,7 @@ public class GameTree {
 
     	// Write moveText section
     	StringBuilder moveText = new StringBuilder(4096);
-    	Node.MoveNumber mn = new Node.MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
+    	MoveNumber mn = new MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
     	Node.addPgnData(pgn, rootNode, mn.prev(), options);
     	moveText.append(' ');
     	moveText.append(pgnResultString);
@@ -402,6 +402,25 @@ public class GameTree {
 		return remainingTime;
 	}
 
+	
+	/** Keep track of current move and side to move. Used for move number printing. */
+	private static final class MoveNumber {
+		final int moveNo;
+		final boolean wtm; // White to move
+		MoveNumber(int moveNo, boolean wtm) {
+			this.moveNo = moveNo;
+			this.wtm = wtm;
+		}
+		public final MoveNumber next() {
+			if (wtm) return new MoveNumber(moveNo, false);
+			else     return new MoveNumber(moveNo + 1, true);
+		}
+		public final MoveNumber prev() {
+			if (wtm) return new MoveNumber(moveNo - 1, false);
+			else     return new MoveNumber(moveNo, true);
+		}
+	}
+
 	/**
      *  A node object represents a position in the game tree.
      *  The position is defined by the move that leads to the position from the parent position.
@@ -546,23 +565,6 @@ public class GameTree {
 				node = child;
 			}
 		}
-
-    	static class MoveNumber {
-    		final int moveNo;
-    		final boolean wtm; // White to move
-    		MoveNumber(int moveNo, boolean wtm) {
-    			this.moveNo = moveNo;
-    			this.wtm = wtm;
-    		}
-    		public final MoveNumber next() {
-    			if (wtm) return new MoveNumber(moveNo, false);
-    			else     return new MoveNumber(moveNo + 1, true);
-    		}
-    		public final MoveNumber prev() {
-    			if (wtm) return new MoveNumber(moveNo - 1, false);
-    			else     return new MoveNumber(moveNo, true);
-    		}
-    	}
 
 		/** Export whole tree rooted at "node" in PGN format. */ 
     	public static final void addPgnData(StringBuilder pgn, Node node, MoveNumber moveNum, PGNOptions options) {

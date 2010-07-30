@@ -65,6 +65,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
+	
+	// FIXME!!! Create PGN view options (comments, nag, variations, future)
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -351,14 +353,14 @@ public class DroidFish extends Activity implements GUIInterface {
         ctrl.updateBookHints();
 		updateThinkingInfo();
 
+		pgnOptions.imp.variations = settings.getBoolean("importVariations", true);
+		pgnOptions.imp.comments   = settings.getBoolean("importComments",   true);
+		pgnOptions.imp.nag        = settings.getBoolean("importNAG", 		true);
 		pgnOptions.exp.variations = settings.getBoolean("exportVariations", true);
 		pgnOptions.exp.comments   = settings.getBoolean("exportComments",   true);
 		pgnOptions.exp.nag        = settings.getBoolean("exportNAG",        true);
 		pgnOptions.exp.userCmd    = settings.getBoolean("exportUserCmd",    false);
 		pgnOptions.exp.clockInfo  = settings.getBoolean("exportTime",       false);
-		pgnOptions.imp.variations = settings.getBoolean("importVariations", true);
-		pgnOptions.imp.comments   = settings.getBoolean("importComments",   true);
-		pgnOptions.imp.nag        = settings.getBoolean("importNAG", 		true);
 	}
 
 	private final void setBookFile(String bookFile) {
