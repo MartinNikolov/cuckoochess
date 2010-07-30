@@ -1,7 +1,6 @@
 package org.petero.droidfish;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,24 +48,24 @@ import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
-
-	// FIXME!!! Include draw claim in save/restore state
-	// FIXME!!! Implement fully standard-compliant PGN parser
-	// FIXME!!! Try to parse redo info in PGN import
-	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
-	// FIXME!!! Redo moves should be displayed in grey on screen
-	// FIXME!!! Current position in game should be highlighted in move list.
-	// FIXME!!! PGN export: "2..." not "2. ..."
-
-	// FIXME!!! Implement PGN database support (and FEN?)
-	// FIXME!!! Implement support for PGN comments
-	// FIXME!!! Implement support for PGN variants
-
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
+	// FIXME!!! Implement fully standard-compliant PGN parser
+
+	// FIXME!!! Include draw claim in save/restore state
+
+	// FIXME!!! Current position in game should be highlighted in move list
+
+	// FIXME!!! Implement support for PGN comments
+	// FIXME!!! Implement support for PGN variants
+	// FIXME!!! User setting to control what to include in PGN export. (time, comments, variations, etc)
+
+	// FIXME!!! Handle more move formats in PGN import. 0-0, long form, extra characters in short form, e1=Q+
+	// FIXME!!! Implement "limit strength" option
+	// FIXME!!! Implement PGN database support (and FEN?)
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Implement "limit strength" option
+	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -115,41 +114,46 @@ public class DroidFish extends Activity implements GUIInterface {
         readPrefs();
         ctrl.newGame(gameMode);
         {
-        	String fen = "";
-        	String moves = "";
-        	String numUndo = "0";
-        	String clockState = "";
-    		String tmp;
+    		byte[] data = null;
         	if (savedInstanceState != null) {
-        		tmp = savedInstanceState.getString("startFEN");
-        		if (tmp != null) fen = tmp;
-        		tmp = savedInstanceState.getString("moves");
-        		if (tmp != null) moves = tmp;
-        		tmp = savedInstanceState.getString("numUndo");
-        		if (tmp != null) numUndo = tmp;
-        		tmp = savedInstanceState.getString("clockState");
-        		if (tmp != null) clockState = tmp;
+        		data = savedInstanceState.getByteArray("gameState");
         	} else {
-        		tmp = settings.getString("startFEN", null);
-        		if (tmp != null) fen = tmp;
-        		tmp = settings.getString("moves", null);
-        		if (tmp != null) moves = tmp;
-        		tmp = settings.getString("numUndo", null);
-        		if (tmp != null) numUndo = tmp;
-        		tmp = settings.getString("clockState", null);
-        		if (tmp != null) clockState = tmp;
+        		String dataStr = settings.getString("gameState", null);
+        		if (dataStr != null)
+        			data = strToByteArr(dataStr);
         	}
-        	List<String> posHistStr = new ArrayList<String>();
-        	posHistStr.add(fen);
-        	posHistStr.add(moves);
-        	posHistStr.add(numUndo);
-        	posHistStr.add(clockState);
-        	ctrl.setPosHistory(posHistStr);
+        	if (data != null)
+        		ctrl.fromByteArray(data);
         }
     	ctrl.setGuiPaused(true);
     	ctrl.setGuiPaused(false);
         ctrl.startGame();
     }
+    
+    private final byte[] strToByteArr(String str) {
+    	int nBytes = str.length() / 2;
+    	byte[] ret = new byte[nBytes];
+    	for (int i = 0; i < nBytes; i++) {
+    		int c1 = str.charAt(i * 2) - 'A';
+    		int c2 = str.charAt(i * 2 + 1) - 'A';
+    		ret[i] = (byte)(c1 * 16 + c2);
+    	}
+    	return ret;
+    }
+    
+    private final String byteArrToString(byte[] data) {
+    	StringBuilder ret = new StringBuilder(32768);
+    	int nBytes = data.length;
+    	for (int i = 0; i < nBytes; i++) {
+    		int b = data[i]; if (b < 0) b += 256;
+    		char c1 = (char)('A' + (b / 16));
+    		char c2 = (char)('A' + (b & 15));
+    		ret.append(c1);
+    		ret.append(c2);
+    	}
+    	return ret.toString();
+    }
+    
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -271,11 +275,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		if (ctrl != null) {
-			List<String> posHistStr = ctrl.getPosHistory();
-			outState.putString("startFEN", posHistStr.get(0));
-			outState.putString("moves", posHistStr.get(1));
-			outState.putString("numUndo", posHistStr.get(2));
-			outState.putString("clockState", posHistStr.get(3));
+			byte[] data = ctrl.toByteArray();
+			outState.putByteArray("gameState", data);
 		}
 	}
 
@@ -293,12 +294,10 @@ public class DroidFish extends Activity implements GUIInterface {
 	protected void onPause() {
 		if (ctrl != null) {
 			ctrl.setGuiPaused(true);
-			List<String> posHistStr = ctrl.getPosHistory();
+			byte[] data = ctrl.toByteArray();
 			Editor editor = settings.edit();
-			editor.putString("startFEN", posHistStr.get(0));
-			editor.putString("moves", posHistStr.get(1));
-			editor.putString("numUndo", posHistStr.get(2));
-			editor.putString("clockState", posHistStr.get(3));
+			String dataStr = byteArrToString(data);
+			editor.putString("gameState", dataStr);
 			editor.commit();
 		}
 		lastVisibleMillis = System.currentTimeMillis();

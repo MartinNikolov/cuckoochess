@@ -1,15 +1,13 @@
 package org.petero.droidfish.gamelogic;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TimeControl {
 	private long timeControl;
 	private int movesPerSession;
 	private long increment;
 
-	List<Long> whiteTimes; // Remaining time before making move "n".
-	List<Long> blackTimes;
+	private long whiteBaseTime;
+	private long blackBaseTime;
+
 	int currentMove;
 	boolean whiteToMove;
 
@@ -24,8 +22,6 @@ public class TimeControl {
 	}
 
 	public final void reset() {
-		whiteTimes = new ArrayList<Long>(0);
-		blackTimes = new ArrayList<Long>(0);
 		currentMove = 1;
 		whiteToMove = true;
 		elapsed = 0;
@@ -39,9 +35,11 @@ public class TimeControl {
 		increment = inc;
 	}
 
-	public final void setCurrentMove(int move, boolean whiteToMove) {
+	public final void setCurrentMove(int move, boolean whiteToMove, long whiteBaseTime, long blackBaseTime) {
 		currentMove = move;
 		this.whiteToMove = whiteToMove;
+		this.whiteBaseTime = whiteBaseTime;
+		this.blackBaseTime = blackBaseTime;
 		timerT0 = 0;
 		elapsed = 0;
 	}
@@ -67,38 +65,21 @@ public class TimeControl {
 		}
 	}
 
-	/** Update remaining time when a move is made. */
-	public final void moveMade(long now) {
+	/** Compute new remaining time after a move is made. */
+	public final int moveMade(long now) {
 		stopTimer(now);
 		long remaining = getRemainingTime(whiteToMove, now);
-		long prevRemaining = remaining + elapsed;
 		remaining += increment;
 		if (getMovesToTC() == 1) {
 			remaining += timeControl;
 		}
-		List<Long> times = whiteToMove ? whiteTimes : blackTimes;
-		while (times.size() < currentMove + 2)
-			times.add(prevRemaining);
-		while (times.size() > currentMove + 2)
-			times.remove(times.size() - 1);
-		times.set(currentMove + 1, remaining);
 		elapsed = 0;
+		return (int)remaining;
 	}
 
 	/** Get remaining time */
 	public final int getRemainingTime(boolean whiteToMove, long now) {
-		List<Long> times = whiteToMove ? whiteTimes : blackTimes;
-		long remaining;
-		int idx = Math.max(currentMove, 1);
-		if (whiteToMove && !this.whiteToMove)
-			idx++;
-		if (times.size() == 0) {
-			remaining = timeControl; // No moves made, use initial time
-		} else if (idx < times.size()) {
-			remaining = times.get(idx); // Take time from undo history
-		} else {
-			remaining = times.get(times.size() - 1); // Take last known time
-		}
+		long remaining = whiteToMove ? whiteBaseTime : blackBaseTime;
 		if (whiteToMove == this.whiteToMove) { 
 			remaining -= elapsed;
 			if (timerT0 != 0) {
@@ -106,6 +87,10 @@ public class TimeControl {
 			}
 		}
 		return (int)remaining;
+	}
+
+	public final int getInitialTime() {
+		return (int)timeControl;
 	}
 
 	public final int getIncrement() {
@@ -119,49 +104,5 @@ public class TimeControl {
 		while (nextTC <= currentMove)
 			nextTC += movesPerSession;
 		return nextTC - currentMove;
-	}
-
-	public final String saveState() {
-		StringBuilder ret = new StringBuilder(4096);
-		ret.append(timeControl); ret.append(' ');
-		ret.append(movesPerSession); ret.append(' ');
-		ret.append(increment); ret.append(' ');
-		ret.append(whiteTimes.size()); ret.append(' ');
-		for (int i = 0; i < whiteTimes.size(); i++) {
-			ret.append(whiteTimes.get(i)); ret.append(' ');
-		}
-		ret.append(blackTimes.size()); ret.append(' ');
-		for (int i = 0; i < blackTimes.size(); i++) {
-			ret.append(blackTimes.get(i)); ret.append(' ');
-		}
-		ret.append(currentMove); ret.append(' ');
-		ret.append(whiteToMove ? 1 : 0); ret.append(' ');
-		ret.append(elapsed); ret.append(' ');
-		ret.append(timerT0);
-		return ret.toString();
-	}
-
-	public final void restoreState(String state) {
-		String[] tokens = state.split(" ");
-		try {
-			int idx = 0;
-			timeControl = Long.parseLong(tokens[idx++]);
-			movesPerSession = Integer.parseInt(tokens[idx++]);
-			increment = Long.parseLong(tokens[idx++]);
-			int len = Integer.parseInt(tokens[idx++]);
-			whiteTimes.clear();
-			for (int i = 0; i < len; i++)
-				whiteTimes.add(Long.parseLong(tokens[idx++]));
-			len = Integer.parseInt(tokens[idx++]);
-			blackTimes.clear();
-			for (int i = 0; i < len; i++)
-				blackTimes.add(Long.parseLong(tokens[idx++]));
-			currentMove = Integer.parseInt(tokens[idx++]);
-			whiteToMove = (Integer.parseInt(tokens[idx++]) != 0);
-			elapsed = Long.parseLong(tokens[idx++]);
-			timerT0 = Long.parseLong(tokens[idx++]);
-		} catch (NumberFormatException nfe) {
-        } catch (ArrayIndexOutOfBoundsException aioob) {
-        }
 	}
 }

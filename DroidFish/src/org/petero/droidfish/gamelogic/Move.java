@@ -49,4 +49,9 @@ public class Move {
     public int hashCode() {
         return (from * 64 + to) * 16 + promoteTo;
     }
+
+    /** Useful for debugging. */
+    public final String toString() {
+    	return TextIO.moveToUCIString(this);
+    }
 }

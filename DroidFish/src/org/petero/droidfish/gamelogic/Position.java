@@ -39,7 +39,7 @@ public class Position {
 
     private long hashKey;           // Cached Zobrist hash key
     private int wKingSq, bKingSq;   // Cached king positions
-    
+
     /** Initialize board to empty position. */
     public Position() {
         squares = new int[64];
@@ -405,5 +405,10 @@ public class Position {
         } catch (NoSuchAlgorithmException ex) {
             throw new UnsupportedOperationException("SHA-1 not available");
         }
+    }
+
+    /** Useful for debugging. */
+    public final String toString() {
+    	return TextIO.asciiBoard(this);
     }
 }

@@ -45,25 +45,25 @@ public class GameTest {
         assertEquals(true, res);
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Draw offer does not imply draw
-        assertEquals(Piece.BPAWN, game.pos.getPiece(Position.getSquare(4, 4))); // e5 move made
+        assertEquals(Piece.BPAWN, game.currPos().getPiece(Position.getSquare(4, 4))); // e5 move made
 
         res = game.processString("draw offer Nf3");
         assertEquals(true, res);
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Draw offer does not imply draw
-        assertEquals(Piece.WKNIGHT, game.pos.getPiece(Position.getSquare(5, 2))); // Nf3 move made
+        assertEquals(Piece.WKNIGHT, game.currPos().getPiece(Position.getSquare(5, 2))); // Nf3 move made
 
         res = game.processString("Nc6");
         assertEquals(true, res);
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        assertEquals(Piece.BKNIGHT, game.pos.getPiece(Position.getSquare(2, 5))); // Nc6 move made
+        assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move made
         
         res = game.processString("draw offer Bb5");
         assertEquals(true, res);
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        assertEquals(Piece.WBISHOP, game.pos.getPiece(Position.getSquare(1, 4))); // Bb5 move made
+        assertEquals(Piece.WBISHOP, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move made
         
         res = game.processString("draw accept");
         assertEquals(true, res);
@@ -71,23 +71,23 @@ public class GameTest {
 
         res = game.processString("undo");
         assertEquals(true, res);
-        assertEquals(Piece.EMPTY, game.pos.getPiece(Position.getSquare(1, 4))); // Bb5 move undone
+        assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move undone
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         res = game.processString("undo");
         assertEquals(true, res);
-        assertEquals(Piece.EMPTY, game.pos.getPiece(Position.getSquare(2, 5))); // Nc6 move undone
+        assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move undone
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(Piece.BKNIGHT, game.pos.getPiece(Position.getSquare(2, 5))); // Nc6 move redone
+        assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move redone
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(Piece.WBISHOP, game.pos.getPiece(Position.getSquare(1, 4))); // Bb5 move redone
+        assertEquals(Piece.WBISHOP, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move redone
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         res = game.processString("redo");
@@ -103,11 +103,11 @@ public class GameTest {
         
         res = game.processString("draw offer e5");
         assertEquals(true, res);
-        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.pos));   // Move invalid, not executed
+        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));   // Move invalid, not executed
         res = game.processString("e4");
         assertEquals(true, res);
         assertEquals(true, game.haveDrawOffer());   // Previous draw offer still valid
-        assertEquals(Piece.WPAWN, game.pos.getPiece(Position.getSquare(4, 3))); // e4 move made
+        assertEquals(Piece.WPAWN, game.currPos().getPiece(Position.getSquare(4, 3))); // e4 move made
 
         // Undo/redo shall clear "pendingDrawOffer".
         game.processString("new");
@@ -117,7 +117,7 @@ public class GameTest {
         game.processString("undo");
         game.processString("redo");
         game.processString("e5");
-        assertEquals(true,game.pos.whiteMove);
+        assertEquals(true,game.currPos().whiteMove);
         assertEquals(false, game.haveDrawOffer());
     }
     
@@ -149,7 +149,7 @@ public class GameTest {
         game.processString(cmd);
         game.processString("draw 50 a6");
         assertEquals(Game.GameState.ALIVE, game.getGameState());      // Pawn move resets counter
-        assertEquals(Piece.WPAWN, game.pos.getPiece(Position.getSquare(0, 5))); // Move a6 made
+        assertEquals(Piece.WPAWN, game.currPos().getPiece(Position.getSquare(0, 5))); // Move a6 made
         
         game.processString(cmd);
         game.processString("draw 50 O-O");
@@ -162,7 +162,7 @@ public class GameTest {
         game.processString(cmd);
         game.processString("draw 50 Ke3");
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Ke3 is invalid
-        assertEquals(true,game.pos.whiteMove);
+        assertEquals(true, game.currPos().whiteMove);
         game.processString("a6");
         assertEquals(true, game.haveDrawOffer());   // Previous invalid claim converted to offer
         game.processString("draw 50");
@@ -200,14 +200,14 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Claim not valid, one more move needed
         game.processString("draw rep Nc6");
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Claim not valid, wrong move claimed
-        assertEquals(Piece.BKNIGHT, game.pos.getPiece(Position.getSquare(2, 5)));   // Move Nc6 made
+        assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5)));   // Move Nc6 made
         assertEquals(true, game.haveDrawOffer());
         game.processString("undo");
         assertEquals(false, game.haveDrawOffer());
-        assertEquals(Piece.EMPTY, game.pos.getPiece(Position.getSquare(2, 5)));
+        assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(2, 5)));
         game.processString("draw rep Ng8");
         assertEquals(Game.GameState.DRAW_REP, game.getGameState());
-        assertEquals(Piece.EMPTY, game.pos.getPiece(Position.getSquare(6, 7))); // Ng8 not played
+        assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(6, 7))); // Ng8 not played
         
         // Test draw by repetition when a "potential ep square but not real ep square" position is present.
         game.processString("new");
@@ -288,49 +288,49 @@ public class GameTest {
     public void testProcessString() throws ChessParseError {
         System.out.println("processString");
         Game game = new Game(null, 0, 0, 0);
-        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.pos));
+        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
         boolean res = game.processString("Nf3");
         assertEquals(true, res);
-        assertEquals(1, game.pos.halfMoveClock);
-        assertEquals(1, game.pos.fullMoveCounter);
+        assertEquals(1, game.currPos().halfMoveClock);
+        assertEquals(1, game.currPos().fullMoveCounter);
         res = game.processString("d5");
         assertEquals(true, res);
-        assertEquals(0, game.pos.halfMoveClock);
-        assertEquals(2, game.pos.fullMoveCounter);
+        assertEquals(0, game.currPos().halfMoveClock);
+        assertEquals(2, game.currPos().fullMoveCounter);
 
         res = game.processString("undo");
         assertEquals(true, res);
-        assertEquals(1, game.pos.halfMoveClock);
-        assertEquals(1, game.pos.fullMoveCounter);
+        assertEquals(1, game.currPos().halfMoveClock);
+        assertEquals(1, game.currPos().fullMoveCounter);
         res = game.processString("undo");
         assertEquals(true, res);
-        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.pos));
+        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
         res = game.processString("undo");
         assertEquals(true, res);
-        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.pos));
+        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
 
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(1, game.pos.halfMoveClock);
-        assertEquals(1, game.pos.fullMoveCounter);
+        assertEquals(1, game.currPos().halfMoveClock);
+        assertEquals(1, game.currPos().fullMoveCounter);
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(0, game.pos.halfMoveClock);
-        assertEquals(2, game.pos.fullMoveCounter);
+        assertEquals(0, game.currPos().halfMoveClock);
+        assertEquals(2, game.currPos().fullMoveCounter);
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(0, game.pos.halfMoveClock);
-        assertEquals(2, game.pos.fullMoveCounter);
+        assertEquals(0, game.currPos().halfMoveClock);
+        assertEquals(2, game.currPos().fullMoveCounter);
 
         res = game.processString("new");
         assertEquals(true, res);
-        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.pos));
+        assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
         
         String fen = "8/8/8/4k3/8/8/2p5/5K2 b - - 47 68";
         Position pos = TextIO.readFEN(fen);
         res = game.processString("setpos " + fen);
         assertEquals(true, res);
-        assertEquals(pos, game.pos);
+        assertEquals(pos, game.currPos());
         
         res = game.processString("junk");
         assertEquals(false, res);
@@ -370,33 +370,34 @@ public class GameTest {
         game.processString("setpos 4k3/8/8/8/8/8/8/4K3 w - - 0 1");
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
         final int a1 = Position.getSquare(0, 0);
-        game.pos.setPiece(a1, Piece.WROOK);
+        Position pos = new Position(game.currPos());
+        pos.setPiece(a1, Piece.WROOK); game.setPos(pos);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        game.pos.setPiece(a1, Piece.BQUEEN);
+        pos.setPiece(a1, Piece.BQUEEN); game.setPos(pos);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        game.pos.setPiece(a1, Piece.WPAWN);
+        pos.setPiece(a1, Piece.WPAWN); game.setPos(pos);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        game.pos.setPiece(a1, Piece.BKNIGHT);
+        pos.setPiece(a1, Piece.BKNIGHT); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
-        game.pos.setPiece(a1, Piece.WBISHOP);
+        pos.setPiece(a1, Piece.WBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
 
         final int c1 = Position.getSquare(2, 0);
-        game.pos.setPiece(c1, Piece.WKNIGHT);
+        pos.setPiece(c1, Piece.WKNIGHT); game.setPos(pos);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        game.pos.setPiece(c1, Piece.BBISHOP);
+        pos.setPiece(c1, Piece.BBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
-        game.pos.setPiece(c1, Piece.WBISHOP);
+        pos.setPiece(c1, Piece.WBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
 
         final int b2 = Position.getSquare(1, 1);
-        game.pos.setPiece(b2, Piece.WBISHOP);
+        pos.setPiece(b2, Piece.WBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
-        game.pos.setPiece(b2, Piece.BBISHOP);
+        pos.setPiece(b2, Piece.BBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
 
         final int b3 = Position.getSquare(1, 2);
-        game.pos.setPiece(b3, Piece.WBISHOP);
+        pos.setPiece(b3, Piece.WBISHOP); game.setPos(pos);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
 
         // Can't force mate with KNNK, but still not an automatic draw.
