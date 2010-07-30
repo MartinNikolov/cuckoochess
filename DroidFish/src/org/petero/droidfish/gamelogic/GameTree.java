@@ -10,7 +10,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Scanner;
 
 import org.petero.droidfish.PGNOptions;
 
@@ -68,6 +67,7 @@ public class GameTree {
 	}
 
 	private final void addTagPair(StringBuilder sb, String tagName, String tagValue) {
+		// FIXME!!! Escape strings
 		sb.append(String.format("[%s \"%s\"]\n", tagName, tagValue));
 	}
 
@@ -110,85 +110,258 @@ public class GameTree {
     	return pgn.toString();
     }
 
+    /** A token in a PGN data stream. Used by the PGN parser. */
+    final static class PgnToken {
+    	// These are tokens according to the PGN spec
+    	static final int STRING = 0;
+    	static final int INTEGER = 1;
+    	static final int PERIOD = 2;
+    	static final int ASTERISK = 3;
+    	static final int LEFT_BRACKET = 4;
+    	static final int RIGHT_BRACKET = 5;
+    	static final int LEFT_PAREN = 6;
+    	static final int RIGHT_PAREN = 7;
+    	static final int NAG = 8;
+    	static final int SYMBOL = 9;
+
+    	// These are not tokens according to the PGN spec, but the parser
+    	// extracts these anyway for convenience.
+    	static final int COMMENT = 10;
+    	static final int EOF = 11;
+
+    	// Actual token data
+    	int type;
+    	String token;
+
+    	PgnToken(int type, String token) {
+    		this.type = type;
+    		this.token = token;
+    	}
+    }
+
+    final static class PgnScanner {
+    	String data;
+    	int idx;
+    	List<PgnToken> savedTokens;
+
+    	PgnScanner(String pgn) {
+    		savedTokens = new ArrayList<PgnToken>();
+    		// Skip "escape" lines, ie lines starting with a '%' character
+    		StringBuilder sb = new StringBuilder();
+    		int len = pgn.length();
+    		boolean col0 = true;
+    		for (int i = 0; i < len; i++) {
+    			char c = pgn.charAt(i);
+    			if (c == '%' && col0) {
+    				while (i + 1 < len) {
+    					char nextChar = pgn.charAt(i + 1);
+    					if ((nextChar == '\n') || (nextChar == '\r'))
+    						break;
+    					i++;
+    				}
+    				col0 = true;
+    			} else {
+    				sb.append(c);
+    				col0 = ((c == '\n') || (c == '\r'));
+    			}
+    		}
+    		sb.append('\n'); // Terminating whitespace simplifies the tokenizer
+    		data = sb.toString();
+    		idx = 0;
+    	}
+
+    	final void putBack(PgnToken tok) {
+    		savedTokens.add(tok);
+		}
+    	
+    	final PgnToken nextToken() {
+    		if (savedTokens.size() > 0) {
+    			int len = savedTokens.size();
+    			PgnToken ret = savedTokens.get(len - 1);
+    			savedTokens.remove(len - 1);
+    			return ret;
+    		}
+
+    		PgnToken ret = new PgnToken(PgnToken.EOF, null);
+    		try {
+    			while (true) {
+    				char c = data.charAt(idx++);
+    				if (Character.isWhitespace(c)) {
+    					// Skip
+    				} else if (c == '.') {
+    					ret.type = PgnToken.PERIOD;
+    					break;
+    				} else if (c == '*') {
+    					ret.type = PgnToken.ASTERISK;
+    					break;
+    				} else if (c == '[') {
+    					ret.type = PgnToken.LEFT_BRACKET;
+    					break;
+    				} else if (c == ']') {
+    					ret.type = PgnToken.RIGHT_BRACKET;
+    					break;
+    				} else if (c == '(') {
+    					ret.type = PgnToken.LEFT_PAREN;
+    					break;
+    				} else if (c == ')') {
+    					ret.type = PgnToken.RIGHT_PAREN;
+    					break;
+    				} else if (c == '{') {
+    					ret.type = PgnToken.COMMENT;
+    					StringBuilder sb = new StringBuilder();;
+    					while ((c = data.charAt(idx++)) != '}') {
+    						sb.append(c);
+    					}
+    					ret.token = sb.toString();
+    					break;
+    				} else if (c == ';') {
+    					ret.type = PgnToken.COMMENT;
+    					StringBuilder sb = new StringBuilder();;
+    					while (true) {
+    						c = data.charAt(idx++);
+    						if ((c == '\n') || (c == '\r'))
+    							break;
+    						sb.append(c);
+    					}
+    					ret.token = sb.toString();
+    					break;
+    				} else if (c == '"') {
+    					ret.type = PgnToken.STRING;
+    					StringBuilder sb = new StringBuilder();;
+    					while (true) {
+    						c = data.charAt(idx++);
+    						if (c == '"') {
+    							break;
+    						} else if (c == '\\') {
+    							c = data.charAt(idx++);
+    						}
+    						sb.append(c);
+    					}
+    					ret.token = sb.toString();
+    					break;
+    				} else if (c == '$') {
+    					ret.type = PgnToken.NAG;
+    					StringBuilder sb = new StringBuilder();;
+    					while (true) {
+    						c = data.charAt(idx++);
+    						if (!Character.isDigit(c)) {
+    							idx--;
+    							break;
+    						}
+    						sb.append(c);
+    					}
+    					ret.token = sb.toString();
+    					break;
+    				} else { // Start of symbol or integer
+    					ret.type = PgnToken.SYMBOL;
+    					StringBuilder sb = new StringBuilder();
+        				sb.append(c);
+    					boolean onlyDigits = Character.isDigit(c);
+        				final String term = ".*[](){;\"$";
+    					while (true) {
+    						c = data.charAt(idx++);
+    						if (Character.isWhitespace(c) || (term.indexOf(c) >= 0)) {
+    							idx--;
+    							break;
+    						}
+    						sb.append(c);
+    						if (!Character.isDigit(c))
+    							onlyDigits = false;
+    					}
+    					if (onlyDigits) {
+    						ret.type = PgnToken.INTEGER;
+    					}
+    					ret.token = sb.toString();
+    					break;
+    				}
+    			}
+    		} catch (StringIndexOutOfBoundsException e) {
+    			ret.type = PgnToken.EOF;
+    		}
+    		return ret;
+    	}
+    	
+    	final PgnToken nextTokenDropComments() {
+    		while (true) {
+    			PgnToken tok = nextToken();
+    			if (tok.type != PgnToken.COMMENT)
+    				return tok;
+    		}
+    	}
+    }
+
     /** Import PGN data. */ 
     public final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
-    	boolean anythingParsed = false;
-    	// First pass, remove comments
-    	{
-    		StringBuilder out = new StringBuilder();
-    		Scanner sc = new Scanner(pgn);
-    		sc.useDelimiter("");
-    		while (sc.hasNext()) {
-    			String c = sc.next();
-    			if (c.equals("{")) {
-    				sc.skip("[^}]*\\}");
-    			} else if (c.equals(";")) {
-    				sc.skip("[^\n]*\n");
-    			} else {
-    				out.append(c);
-    			}
-    		}
-    		pgn = out.toString();
-    	}
+    	PgnScanner scanner = new PgnScanner(pgn);
+    	PgnToken tok = scanner.nextToken();
 
     	// Parse tag section
-    	Position pos = TextIO.readFEN(TextIO.startPosFEN);
-    	Scanner sc = new Scanner(pgn);
-    	sc.useDelimiter("\\s+");
-    	while (sc.hasNext("\\[.*")) {
-    		anythingParsed = true;
-    		String tagName = sc.next();
-    		if (tagName.length() > 1) {
-    			tagName = tagName.substring(1);
-    		} else {
-    			tagName = sc.next();
-    		}
-    		String tagValue = sc.findWithinHorizon(".*\\]", 0);
-    		tagValue = tagValue.trim();
-    		if (tagValue.charAt(0) == '"')
-    			tagValue = tagValue.substring(1);
-    		if (tagValue.charAt(tagValue.length()-1) == ']')
-    			tagValue = tagValue.substring(0, tagValue.length() - 1);
-    		if (tagValue.charAt(tagValue.length()-1) == '"')
-    			tagValue = tagValue.substring(0, tagValue.length() - 1);
-    		if (tagName.equals("FEN")) {
-    			pos = TextIO.readFEN(tagValue);
-    		}
-    	}
-    	setStartPos(pos);
-
-    	// Handle (ignore) recursive annotation variations
-    	{
-    		StringBuilder out = new StringBuilder();
-    		sc.useDelimiter("");
-    		int level = 0;
-    		while (sc.hasNext()) {
-    			String c = sc.next();
-    			if (c.equals("(")) {
-    				level++;
-    			} else if (c.equals(")")) {
-    				level--;
-    			} else if (level == 0) {
-    				out.append(c);
-    			}
-    		}
-    		pgn = out.toString();
-    	}
-
-    	// Parse move text section
-    	sc = new Scanner(pgn);
-    	sc.useDelimiter("\\s+");
-    	while (sc.hasNext()) {
-    		String strMove = sc.next();
-    		strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
-    		if (strMove.length() == 0) continue;
-    		int varNo = addMove(strMove, "", 0, "", "");
-    		if (varNo < 0)
+        List<TagPair> tagPairs = new ArrayList<TagPair>();
+    	while (tok.type == PgnToken.LEFT_BRACKET) {
+    		TagPair tp = new TagPair();
+    		tok = scanner.nextTokenDropComments();
+    		if (tok.type != PgnToken.SYMBOL)
     			break;
-    		goForward(varNo);
-    		anythingParsed = true;
+    		tp.tagName = tok.token;
+    		tok = scanner.nextTokenDropComments();
+    		if (tok.type != PgnToken.STRING)
+    			break;
+    		tp.tagValue = tok.token;
+    		tok = scanner.nextTokenDropComments();
+    		if (tok.type != PgnToken.RIGHT_BRACKET)
+    			break;
+    		tagPairs.add(tp);
+    		tok = scanner.nextToken();
     	}
-    	return anythingParsed;
+    	scanner.putBack(tok);
+
+    	// Parse move section
+    	Node gameRoot = new Node();
+    	Node.parsePgn(scanner, gameRoot, options);
+
+    	// Store parsed data in GameTree
+    	if ((tagPairs.size() == 0) && (gameRoot.children.size() == 0))
+    		return false;
+
+    	String fen = TextIO.startPosFEN;
+    	int nTags = tagPairs.size();
+    	for (int i = 0; i < nTags; i++) {
+    		if (tagPairs.get(i).tagName.equals("FEN")) {
+    			fen = tagPairs.get(i).tagValue;
+    		}
+    	}
+    	setStartPos(TextIO.readFEN(fen));
+    	
+    	for (int i = 0; i < nTags; i++) {
+    		String name = tagPairs.get(i).tagName;
+    		String val = tagPairs.get(i).tagValue;
+    		if (name.equals("FEN") || name.equals("Setup")) {
+    			// Already handled
+    		} else if (name.equals("Event")) {
+    			event = val;
+    		} else if (name.equals("Site")) {
+    			site = val;
+    		} else if (name.equals("Date")) {
+    			date = val;
+    		} else if (name.equals("Round")) {
+    			round = val;
+    		} else if (name.equals("White")) {
+    			white = val;
+    		} else if (name.equals("Black")) {
+    			black = val;
+    		} else if (name.equals("Result")) {
+    			// FIXME!!! Handle result somehow
+    		} else if (name.equals("TimeControl")) {
+    			timeControl = val;
+    		} else {
+    			this.tagPairs.add(tagPairs.get(i));
+    		}
+    	}
+
+    	rootNode = gameRoot;
+    	currentNode = rootNode;
+
+    	return true;
     }
 
     /** Serialize to byte array. */
@@ -669,6 +842,84 @@ public class GameTree {
     		if (secs < 10) ret.append('0');
     		ret.append(secs);
     		return ret.toString();
+    	}
+    	
+    	private final Node addChild(Node child) {
+    		child.parent = this;
+    		children.add(child);
+    		return child;
+    	}
+
+    	public static final void parsePgn(PgnScanner scanner, Node node, PGNOptions options) {
+    		Node nodeToAdd = new Node();
+    		boolean moveAdded = false;
+    		while (true) {
+    			PgnToken tok = scanner.nextToken();
+    			switch (tok.type) {
+    			case PgnToken.INTEGER:
+    			case PgnToken.PERIOD:
+    				break;
+    			case PgnToken.LEFT_PAREN:
+    				if (moveAdded) {
+    					node = node.addChild(nodeToAdd);
+    					nodeToAdd = new Node();
+    					moveAdded = false;
+    				}
+    				if ((node.parent != null) && options.imp.variations) {
+    					parsePgn(scanner, node.parent, options);
+    				} else {
+    					int nestLevel = 1;
+    					while (nestLevel > 0) {
+    						switch (scanner.nextToken().type) {
+    						case PgnToken.LEFT_PAREN: nestLevel++; break;
+    						case PgnToken.RIGHT_PAREN: nestLevel--; break;
+    						case PgnToken.EOF: return; // Broken PGN file. Just give up.
+    						}
+    					}
+    				}
+    				break;
+    			case PgnToken.NAG:
+    				if (moveAdded && options.imp.nag) { // NAG must be after move 
+    					try {
+    						nodeToAdd.nag = Integer.parseInt(tok.token);
+    					} catch (NumberFormatException e) {
+    						nodeToAdd.nag = 0;
+    					}
+    				}
+    				break;
+    			case PgnToken.SYMBOL:
+    				if (tok.token.equals("1-0") || tok.token.equals("0-1") || tok.token.equals("1/2-1/2")) {
+    					if (moveAdded) node.addChild(nodeToAdd);
+    					return;
+    				}
+    				if (moveAdded) {
+    					node = node.addChild(nodeToAdd);
+    					nodeToAdd = new Node();
+    					moveAdded = false;
+    				}
+    				// FIXME!!! Convert e4! to e4 + NAG (and handle nag option)
+    				nodeToAdd.moveStr = tok.token;
+    				moveAdded = true;
+    				break;
+    			case PgnToken.COMMENT:
+    				// FIXME!!! Handle [%clk and [%usercmd
+    				if (options.imp.comments) { 
+    					if (moveAdded)
+    						nodeToAdd.postComment += tok.token;
+    					else
+    						nodeToAdd.preComment += tok.token;
+    				}
+    				break;
+    			case PgnToken.ASTERISK:
+    			case PgnToken.LEFT_BRACKET:
+    			case PgnToken.RIGHT_BRACKET:
+    			case PgnToken.STRING:
+    			case PgnToken.RIGHT_PAREN:
+    			case PgnToken.EOF:
+    				if (moveAdded) node.addChild(nodeToAdd);
+    				return;
+    			}
+    		}
     	}
     }
 }

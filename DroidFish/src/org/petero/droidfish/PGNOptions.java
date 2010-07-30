@@ -18,7 +18,7 @@ public class PGNOptions {
 	public Import imp;
 	public Export exp;
 
-	PGNOptions() {
+	public PGNOptions() {
 		imp = new Import();
 		exp = new Export();
 	}

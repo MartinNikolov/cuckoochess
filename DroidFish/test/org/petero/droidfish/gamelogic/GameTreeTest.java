@@ -2,10 +2,14 @@ package org.petero.droidfish.gamelogic;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.gamelogic.GameTree.Node;
+import org.petero.droidfish.gamelogic.GameTree.PgnScanner;
+import org.petero.droidfish.gamelogic.GameTree.PgnToken;
 
 public class GameTreeTest {
 
@@ -267,5 +271,176 @@ public class GameTreeTest {
 		assertEquals(initialTime, gt.getRemainingTime(false, initialTime));
 	}
 
-	// FIXME!!! Test that invalid moves are automatically deleted when calling variations().
+	private final List<PgnToken> getAllTokens(String s) {
+		PgnScanner sc = new PgnScanner(s);
+		List<PgnToken> ret = new ArrayList<PgnToken>();
+		while (true) {
+			PgnToken tok = sc.nextToken();
+			if (tok.type == PgnToken.EOF)
+				break;
+			ret.add(tok);
+		}
+		return ret;
+	}
+
+	@Test
+	public final void testPgnScanner() throws ChessParseError {
+		List<PgnToken> lst = getAllTokens("a\nb\n%junk\nc3"); // a b c3
+		assertEquals(3, lst.size());
+		assertEquals(PgnToken.SYMBOL, lst.get(0).type);
+		assertEquals("a", lst.get(0).token);
+		assertEquals(PgnToken.SYMBOL, lst.get(1).type);
+		assertEquals("b", lst.get(1).token);
+		assertEquals(PgnToken.SYMBOL, lst.get(2).type);
+		assertEquals("c3", lst.get(2).token);
+
+		lst = getAllTokens("e2 ; e5\nc5"); // e2 comment c5
+		assertEquals(3, lst.size());
+		assertEquals("e2",			   lst.get(0).token);
+		assertEquals(PgnToken.COMMENT, lst.get(1).type);
+		assertEquals(" e5",			   lst.get(1).token);
+		assertEquals("c5",			   lst.get(2).token);
+
+		lst = getAllTokens("e4?? { comment ; } e5!?"); // e4?? comment e5!?
+		assertEquals(3, lst.size());
+		assertEquals("e4??",        lst.get(0).token);
+		assertEquals(" comment ; ", lst.get(1).token);
+		assertEquals("e5!?",        lst.get(2).token);
+
+		lst = getAllTokens("e4! { comment { } e5?"); // e4! comment e5?
+		assertEquals(3, lst.size());
+		assertEquals("e4!",         lst.get(0).token);
+		assertEquals(" comment { ", lst.get(1).token);
+		assertEquals("e5?",         lst.get(2).token);
+		
+		lst = getAllTokens("e4(c4 {(()\\} c5 ( e5))Nf6"); // e4 ( c4 comment c5 ( e5 ) ) Nf6
+		assertEquals(10, lst.size());
+		assertEquals("e4",                 lst.get(0).token);
+		assertEquals(PgnToken.LEFT_PAREN,  lst.get(1).type);
+		assertEquals("c4",                 lst.get(2).token);
+		assertEquals("(()\\",       	   lst.get(3).token);
+		assertEquals("c5",                 lst.get(4).token);
+		assertEquals(PgnToken.LEFT_PAREN,  lst.get(5).type);
+		assertEquals("e5",                 lst.get(6).token);
+		assertEquals(PgnToken.RIGHT_PAREN, lst.get(7).type);
+		assertEquals(PgnToken.RIGHT_PAREN, lst.get(8).type);
+		assertEquals("Nf6",                lst.get(9).token);
+
+		lst = getAllTokens("[a \"string\"]"); // [ a string ]
+		assertEquals(4, lst.size());
+		assertEquals(PgnToken.LEFT_BRACKET,  lst.get(0).type);
+		assertEquals("a",					 lst.get(1).token);
+		assertEquals(PgnToken.STRING,        lst.get(2).type);
+		assertEquals("string",               lst.get(2).token);
+		assertEquals(PgnToken.RIGHT_BRACKET, lst.get(3).type);
+		
+		lst = getAllTokens("[a \"str\\\"in\\\\g\"]"); // [ a str"in\g ]
+		assertEquals(4, lst.size());
+		assertEquals(PgnToken.LEFT_BRACKET,  lst.get(0).type);
+		assertEquals("a",					 lst.get(1).token);
+		assertEquals(PgnToken.STRING,        lst.get(2).type);
+		assertEquals("str\"in\\g",           lst.get(2).token);
+		assertEquals(PgnToken.RIGHT_BRACKET, lst.get(3).type);
+
+		lst = getAllTokens("1...Nf6$23Nf3 12 e4_+#=:-*"); // 1 . . . Nf6 $23 Nf3 12 e4_+#=:- *
+		assertEquals(10, lst.size());
+		assertEquals(PgnToken.INTEGER,  lst.get(0).type);
+		assertEquals("1",				lst.get(0).token);
+		assertEquals(PgnToken.PERIOD,   lst.get(1).type);
+		assertEquals(PgnToken.PERIOD,   lst.get(2).type);
+		assertEquals(PgnToken.PERIOD,   lst.get(3).type);
+		assertEquals("Nf6",             lst.get(4).token);
+		assertEquals(PgnToken.NAG,      lst.get(5).type);
+		assertEquals("23",				lst.get(5).token);
+		assertEquals("Nf3",             lst.get(6).token);
+		assertEquals(PgnToken.INTEGER,  lst.get(7).type);
+		assertEquals("12",				lst.get(7).token);
+		assertEquals("e4_+#=:-",        lst.get(8).token);
+		assertEquals(PgnToken.ASTERISK, lst.get(9).type);
+
+		lst = getAllTokens("1/2-1/2 1-0 0-1");
+		assertEquals(3, lst.size());
+		assertEquals(PgnToken.SYMBOL,   lst.get(0).type);
+		assertEquals("1/2-1/2",			lst.get(0).token);
+		assertEquals(PgnToken.SYMBOL,   lst.get(1).type);
+		assertEquals("1-0",				lst.get(1).token);
+		assertEquals(PgnToken.SYMBOL,   lst.get(2).type);
+		assertEquals("0-1",				lst.get(2).token);
+		
+		// Test invalid data, unterminated tokens
+		lst = getAllTokens("e4 e5 ; ( )"); // e4 e5 comment
+		assertEquals(3, lst.size());
+		assertEquals(PgnToken.SYMBOL,   lst.get(0).type);
+		assertEquals("e4",				lst.get(0).token);
+		assertEquals(PgnToken.SYMBOL,   lst.get(1).type);
+		assertEquals("e5",				lst.get(1).token);
+		assertEquals(PgnToken.COMMENT,  lst.get(2).type);
+		assertEquals(" ( )",			lst.get(2).token);
+		
+		lst = getAllTokens("e4 e5 {"); // e4 e5 ?
+		assertTrue(lst.size() >= 2);
+		assertEquals(PgnToken.SYMBOL,   lst.get(0).type);
+		assertEquals("e4",				lst.get(0).token);
+		assertEquals(PgnToken.SYMBOL,   lst.get(1).type);
+		assertEquals("e5",				lst.get(1).token);
+
+		lst = getAllTokens("e4 e5 \""); // e4 e5 ?
+		assertTrue(lst.size() >= 2);
+		assertEquals(PgnToken.SYMBOL,   lst.get(0).type);
+		assertEquals("e4",				lst.get(0).token);
+		assertEquals(PgnToken.SYMBOL,   lst.get(1).type);
+		assertEquals("e5",				lst.get(1).token);
+		
+		// Test that reading beyond EOF produces more EOF tokens
+		PgnScanner sc = new PgnScanner("e4 e5");
+		assertEquals(PgnToken.SYMBOL, sc.nextToken().type);
+		assertEquals(PgnToken.SYMBOL, sc.nextToken().type);
+		assertEquals(PgnToken.EOF,    sc.nextToken().type);
+		assertEquals(PgnToken.EOF,    sc.nextToken().type);
+		assertEquals(PgnToken.EOF,    sc.nextToken().type);
+	}
+
+	@Test
+	public final void testReadPGN() throws ChessParseError {
+		GameTree gt = new GameTree();
+		PGNOptions options = new PGNOptions();
+		options.imp.variations = true;
+		options.imp.comments = true;
+		options.imp.nag = true;
+		boolean res = gt.readPGN("", options);
+		assertEquals(false, res);
+
+		res = gt.readPGN("[White \"a\"][Black \"b\"] {comment} e4 {x}", options);
+		assertEquals(true, res);
+		assertEquals("a", gt.white);
+		assertEquals("b", gt.black);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("comment", gt.currentNode.preComment);
+		assertEquals("x", gt.currentNode.postComment);
+
+		res = gt.readPGN("e4 e5 Nf3", options);
+		assertEquals(true, res);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("e5", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("Nf3", getVariationsAsString(gt));
+
+		res = gt.readPGN("e4 e5 (c5 (c6) d4) (d5) Nf3", options);
+		assertEquals(true, res);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("e5 c5 c6 d5", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("Nf3", getVariationsAsString(gt));
+
+		res = gt.readPGN("e4 e5 (c5 (c3) d4 (Nc3)) (d5) Nf3", options); // c3 invalid, should be removed
+		assertEquals(true, res);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("e5 c5 d5", getVariationsAsString(gt));
+		gt.goForward(1);
+		assertEquals("d4 Nc3", getVariationsAsString(gt));
+	}
 }
