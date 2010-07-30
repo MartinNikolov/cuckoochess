@@ -58,7 +58,6 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	// FIXME!!! Implement support for PGN comments
 	// FIXME!!! Implement support for PGN variants
-	// FIXME!!! User setting to control what to include in PGN export. (time, comments, variations, etc)
 
 	// FIXME!!! Handle more move formats in PGN import. 0-0, long form, extra characters in short form, e1=Q+
 	// FIXME!!! Implement "limit strength" option
@@ -90,6 +89,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	private final String bookDir = "DroidFish";
 	private String currentBookFile = "";
+	private PGNOptions pgnOptions = new PGNOptions();
 
 	private long lastVisibleMillis; // Time when GUI became invisible. 0 if currently visible.
 	private long lastComputationMillis; // Time when engine last showed that it was computing.
@@ -350,6 +350,15 @@ public class DroidFish extends Activity implements GUIInterface {
         setBookFile(bookFile);
         ctrl.updateBookHints();
 		updateThinkingInfo();
+
+		pgnOptions.exp.variations = settings.getBoolean("exportVariations", true);
+		pgnOptions.exp.comments   = settings.getBoolean("exportComments",   true);
+		pgnOptions.exp.nag        = settings.getBoolean("exportNAG",        true);
+		pgnOptions.exp.userCmd    = settings.getBoolean("exportUserCmd",    false);
+		pgnOptions.exp.clockInfo  = settings.getBoolean("exportTime",       false);
+		pgnOptions.imp.variations = settings.getBoolean("importVariations", true);
+		pgnOptions.imp.comments   = settings.getBoolean("importComments",   true);
+		pgnOptions.imp.nag        = settings.getBoolean("importNAG", 		true);
 	}
 
 	private final void setBookFile(String bookFile) {
@@ -452,7 +461,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			if (resultCode == RESULT_OK) {
 				try {
 					String fen = data.getAction();
-					ctrl.setFENOrPGN(fen);
+					ctrl.setFENOrPGN(fen, pgnOptions);
 				} catch (ChessParseError e) {
 				}
 			}
@@ -575,7 +584,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			    public void onClick(DialogInterface dialog, int item) {
 					switch (item) {
 					case 0: {
-						String pgn = ctrl.getPGN();
+						String pgn = ctrl.getPGN(pgnOptions);
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						clipboard.setText(pgn);
 						break;
@@ -591,7 +600,7 @@ public class DroidFish extends Activity implements GUIInterface {
 						if (clipboard.hasText()) {
 							String fenPgn = clipboard.getText().toString();
 							try {
-								ctrl.setFENOrPGN(fenPgn);
+								ctrl.setFENOrPGN(fenPgn, pgnOptions);
 							} catch (ChessParseError e) {
 								Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 							}

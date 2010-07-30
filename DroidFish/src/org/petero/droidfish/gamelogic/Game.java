@@ -8,6 +8,7 @@ package org.petero.droidfish.gamelogic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 
 /**
@@ -49,13 +50,13 @@ public class Game {
         updateTimeControl(false);
 	}
 
-    public final String getPGN() {
+    public final String getPGN(PGNOptions options) {
     	String pgnResultString = getPGNResultString();
-    	return tree.toPGN(pgnResultString);
+    	return tree.toPGN(pgnResultString, options);
     }
 
-	final boolean readPGN(String pgn) throws ChessParseError {
-		boolean ret = tree.readPGN(pgn);
+	final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
+		boolean ret = tree.readPGN(pgn, options);
 		if (ret)
 			updateTimeControl(false);
 		return ret;

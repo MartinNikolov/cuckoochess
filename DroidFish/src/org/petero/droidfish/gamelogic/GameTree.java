@@ -12,6 +12,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Scanner;
 
+import org.petero.droidfish.PGNOptions;
+
 public class GameTree {
     // Data from the seven tag roster (STR) part of the PGN standard
     String event, site, date, round, white, black;
@@ -69,8 +71,8 @@ public class GameTree {
 		sb.append(String.format("[%s \"%s\"]\n", tagName, tagValue));
 	}
 
-    /** Export in PGN format. */
-    public final String toPGN(String pgnResultString) { // FIXME!!! Remove pgnResultString argument
+    /** Export in PGN format. */ 
+    public final String toPGN(String pgnResultString, PGNOptions options) { // FIXME!!! Remove pgnResultString argument
     	StringBuilder pgn = new StringBuilder();
 
     	// Write seven tag roster
@@ -88,8 +90,9 @@ public class GameTree {
     		addTagPair(pgn, "FEN", fen);
     		addTagPair(pgn, "Setup", "1");
     	}
-    	addTagPair(pgn, "TimeControl", timeControl);
-    	
+    	if (!timeControl.equals("?"))
+    		addTagPair(pgn, "TimeControl", timeControl);
+
     	// Write other non-standard tag pairs
     	for (int i = 0; i < tagPairs.size(); i++)
     		addTagPair(pgn, tagPairs.get(i).tagName, tagPairs.get(i).tagValue);
@@ -98,7 +101,7 @@ public class GameTree {
     	// Write moveText section
     	StringBuilder moveText = new StringBuilder(4096);
     	Node.MoveNumber mn = new Node.MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
-    	Node.addPgnData(pgn, rootNode, mn.prev());
+    	Node.addPgnData(pgn, rootNode, mn.prev(), options);
     	moveText.append(' ');
     	moveText.append(pgnResultString);
     	// FIXME!!! Add line breaks
@@ -107,8 +110,8 @@ public class GameTree {
     	return pgn.toString();
     }
 
-    /** Import PGN data. */
-    public final boolean readPGN(String pgn) throws ChessParseError {
+    /** Import PGN data. */ 
+    public final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
     	boolean anythingParsed = false;
     	// First pass, remove comments
     	{
@@ -561,22 +564,24 @@ public class GameTree {
     		}
     	}
 
-		/** Export whole tree rooted at "node" in PGN format. */
-    	public static final void addPgnData(StringBuilder pgn, Node node, MoveNumber moveNum) {
+		/** Export whole tree rooted at "node" in PGN format. */ 
+    	public static final void addPgnData(StringBuilder pgn, Node node, MoveNumber moveNum, PGNOptions options) {
     		int l0 = pgn.length();
-    		boolean needMoveNr = node.addPgnDataOneNode(pgn, moveNum, true);
+    		boolean needMoveNr = node.addPgnDataOneNode(pgn, moveNum, true, options);
     		while (true) {
     			int nChild = node.children.size();
     			if (nChild == 0)
     				break;
     			if (pgn.length() > l0) pgn.append(' ');
     			MoveNumber nextMN = moveNum.next();
-    			needMoveNr = node.children.get(0).addPgnDataOneNode(pgn, nextMN, needMoveNr);
-    			for (int i = 1; i < nChild; i++) {
-    				pgn.append(" (");
-    				addPgnData(pgn, node.children.get(i), nextMN);
-    				pgn.append(')');
-    				needMoveNr = true;
+    			needMoveNr = node.children.get(0).addPgnDataOneNode(pgn, nextMN, needMoveNr, options);
+    			if (options.exp.variations) {
+    				for (int i = 1; i < nChild; i++) {
+    					pgn.append(" (");
+    					addPgnData(pgn, node.children.get(i), nextMN, options);
+    					pgn.append(')');
+    					needMoveNr = true;
+    				}
     			}
     			node = node.children.get(0);
     			moveNum = moveNum.next();
@@ -584,9 +589,9 @@ public class GameTree {
     	}
 
     	/** Export this node in PGN format. */ 
-    	private final boolean addPgnDataOneNode(StringBuilder pgn, MoveNumber mn, boolean needMoveNr) {
+    	private final boolean addPgnDataOneNode(StringBuilder pgn, MoveNumber mn, boolean needMoveNr, PGNOptions options) {
     		int l0 = pgn.length();
-    		if (preComment.length() > 0) {
+    		if ((preComment.length() > 0) && options.exp.comments) {
     			pgn.append('{');
     			pgn.append(preComment);
     			pgn.append('}');
@@ -606,25 +611,25 @@ public class GameTree {
     			pgn.append(moveStr);
     			needMoveNr = false;
     		}
-    		if (nag > 0) {
+    		if ((nag > 0) && options.exp.nag) {
     			if (pgn.length() > l0) pgn.append(' ');
     			pgn.append('$');
     			pgn.append(nag);
     			needMoveNr = true;
     		}
-    		if (postComment.length() > 0) {
+    		if ((postComment.length() > 0) && options.exp.comments) {
     			if (pgn.length() > l0) pgn.append(' ');
     			pgn.append('{');
     			pgn.append(postComment);
     			pgn.append('}');
     			needMoveNr = true;
     		}
-    		if (userCmd.length() > 0) {
+    		if ((userCmd.length() > 0) && options.exp.userCmd) {
     			if (pgn.length() > l0) pgn.append(' ');
     			addExtendedInfo(pgn, "usercmd", userCmd);
     			needMoveNr = true;
     		}
-    		if (remainingTime != Integer.MIN_VALUE) {
+    		if ((remainingTime != Integer.MIN_VALUE) && options.exp.clockInfo) {
     			if (pgn.length() > l0) pgn.append(' ');
     			addExtendedInfo(pgn, "clk", getTimeStr(remainingTime));
     			needMoveNr = true;

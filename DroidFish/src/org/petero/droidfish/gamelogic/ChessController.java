@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.petero.droidfish.GUIInterface;
 import org.petero.droidfish.GameMode;
+import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.Game.GameState;
 
@@ -263,19 +264,19 @@ public class ChessController {
     	return TextIO.toFEN(game.tree.currentPos);
     }
     
-    /** Convert current game to PGN format. */
-    public final String getPGN() {
-    	return game.getPGN();
+    /** Convert current game to PGN format. */ 
+    public final String getPGN(PGNOptions options) {
+    	return game.getPGN(options);
     }
 
-    public final void setFENOrPGN(String fenPgn) throws ChessParseError {
+    public final void setFENOrPGN(String fenPgn, PGNOptions options) throws ChessParseError {
        	Game newGame = new Game(null, timeControl, movesPerSession, timeIncrement);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
     		newGame.setPos(pos);
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
-    		if (!setPGN(newGame, fenPgn)) {
+    		if (!newGame.readPGN(fenPgn, options)) {
     			throw e;
     		}
     	}
@@ -289,10 +290,6 @@ public class ChessController {
 		updateComputeThreads(true);
 		gui.setSelection(-1);
 		updateGUI();
-    }
-
-    private final boolean setPGN(Game newGame, String pgn) throws ChessParseError {
-    	return newGame.readPGN(pgn);
     }
 
     /** True if human's turn to make a move. (True in analysis mode.) */
