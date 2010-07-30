@@ -67,6 +67,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
+	// FIXME!!! Player names in PGN export are lost after edit board
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

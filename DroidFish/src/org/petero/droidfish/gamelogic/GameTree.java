@@ -67,8 +67,18 @@ public class GameTree {
 	}
 
 	private final void addTagPair(StringBuilder sb, String tagName, String tagValue) {
-		// FIXME!!! Escape strings
-		sb.append(String.format("[%s \"%s\"]\n", tagName, tagValue));
+		sb.append('[');
+		sb.append(tagName);
+		sb.append(" \"");
+		int len = tagValue.length();
+		for (int i = 0; i < len; i++) {
+			char c = tagValue.charAt(i);
+			if ((c == '\\') || (c == '"')) {
+				sb.append('\\');
+			}
+			sb.append(c);
+		}
+		sb.append("\"]\n");
 	}
 
     /** Export in PGN format. */ 
