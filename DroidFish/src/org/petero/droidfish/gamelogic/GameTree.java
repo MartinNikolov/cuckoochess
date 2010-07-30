@@ -111,11 +111,32 @@ public class GameTree {
     	// Write moveText section
     	StringBuilder moveText = new StringBuilder(4096);
     	MoveNumber mn = new MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
-    	Node.addPgnData(pgn, rootNode, mn.prev(), options);
+    	Node.addPgnData(moveText, rootNode, mn.prev(), options);
     	moveText.append(' ');
     	moveText.append(pgnResultString);
-    	// FIXME!!! Add line breaks
-    	pgn.append(moveText.toString());
+		String[] words = moveText.toString().split(" ");
+    	int currLineLength = 0;
+		final int arrLen = words.length;
+		for (int i = 0; i < arrLen; i++) {
+			String word = words[i].trim();
+			int wordLen = word.length();
+			if (wordLen > 0) {
+				if (currLineLength == 0) {
+					pgn.append(word);
+					currLineLength = wordLen;
+				} else if (currLineLength + 1 + wordLen >= 80) {
+					pgn.append('\n');
+					pgn.append(word);
+					currLineLength = wordLen;
+				} else {
+					pgn.append(' ');
+					currLineLength++;
+					pgn.append(word);
+					currLineLength += wordLen;
+				}
+			}
+		}
+
     	pgn.append("\n\n");
     	return pgn.toString();
     }
