@@ -455,7 +455,7 @@ public class GameTreeTest {
 		GameTree gt = new GameTree();
 		PGNOptions options = new PGNOptions();
 		gt.white = "test \"x\"";
-		String pgn = gt.toPGN("*", options);
+		String pgn = gt.toPGN(options);
 		gt.white = "";
 		boolean res = gt.readPGN(pgn, options);
 		assertEquals(true, res);

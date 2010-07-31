@@ -83,8 +83,10 @@ public class GameTree {
 	}
 
     /** Export in PGN format. */ 
-    public final String toPGN(String pgnResultString, PGNOptions options) { // FIXME!!! Remove pgnResultString argument
+    public final String toPGN(PGNOptions options) {
     	StringBuilder pgn = new StringBuilder();
+
+    	String pgnResultString = getPGNResultString(); // FIXME!!! Must evaluate result at end of mainline.
 
     	// Write seven tag roster
         addTagPair(pgn, "Event",  event);
@@ -652,6 +654,31 @@ public class GameTree {
         }
 		return ret;
 	}
+	
+    public final String getPGNResultString() {
+        String gameResult = "*";
+        switch (getGameState()) {
+            case ALIVE:
+                break;
+            case WHITE_MATE:
+            case RESIGN_BLACK:
+                gameResult = "1-0";
+                break;
+            case BLACK_MATE:
+            case RESIGN_WHITE:
+                gameResult = "0-1";
+                break;
+            case WHITE_STALEMATE:
+            case BLACK_STALEMATE:
+            case DRAW_REP:
+            case DRAW_50:
+            case DRAW_NO_MATE:
+            case DRAW_AGREE:
+                gameResult = "1/2-1/2";
+                break;
+        }
+        return gameResult;
+    }
 
     private static final boolean insufficientMaterial(Position pos) {
         if (pos.nPieces(Piece.WQUEEN) > 0) return false;

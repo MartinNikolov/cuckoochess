@@ -49,8 +49,7 @@ public class Game {
 	}
 
     public final String getPGN(PGNOptions options) {
-    	String pgnResultString = getPGNResultString(); // FIXME!!! Must evaluate result at end of mainline.
-    	return tree.toPGN(pgnResultString, options);
+    	return tree.toPGN(options);
     }
 
 	final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
@@ -326,38 +325,13 @@ public class Game {
             ret.append(' ');
             pos.makeMove(n.move, ui);
         }
-        String gameResult = getPGNResultString();
+        String gameResult = tree.getPGNResultString();
         if (!gameResult.equals("*")) {
         	ret.append(gameResult);
         }
         if (haveRedoPart)
         	ret.append("}");
         return ret.toString();
-    }
-
-    public final String getPGNResultString() {
-        String gameResult = "*";
-        switch (getGameState()) {
-            case ALIVE:
-                break;
-            case WHITE_MATE:
-            case RESIGN_BLACK:
-                gameResult = "1-0";
-                break;
-            case BLACK_MATE:
-            case RESIGN_WHITE:
-                gameResult = "0-1";
-                break;
-            case WHITE_STALEMATE:
-            case BLACK_STALEMATE:
-            case DRAW_REP:
-            case DRAW_50:
-            case DRAW_NO_MATE:
-            case DRAW_AGREE:
-                gameResult = "1/2-1/2";
-                break;
-        }
-        return gameResult;
     }
 
     /**
