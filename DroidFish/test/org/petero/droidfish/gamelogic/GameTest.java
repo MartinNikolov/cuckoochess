@@ -70,7 +70,12 @@ public class GameTest {
         assertEquals(true, res);
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Draw by agreement
 
-        res = game.processString("undo");
+        res = game.processString("undo"); // Undo "draw accept"
+        assertEquals(true, res);
+        assertEquals(Piece.WBISHOP, game.currPos().getPiece(TextIO.getSquare("b5")));
+        assertEquals(true, game.haveDrawOffer());
+        assertEquals(Game.GameState.ALIVE, game.getGameState());
+        res = game.processString("undo"); // Undo "Bb5"
         assertEquals(true, res);
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move undone
         assertEquals(false, game.haveDrawOffer());
@@ -93,9 +98,8 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         res = game.processString("redo");
         assertEquals(true, res);
-        assertEquals(true, game.haveDrawOffer());
-        assertEquals(Game.GameState.ALIVE, game.getGameState());    // Can't redo draw accept
-        
+        assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Can redo draw accept
+
         // Test draw offer in connection with invalid move
         res = game.processString("new");
         assertEquals(true, res);
@@ -177,7 +181,6 @@ public class GameTest {
         assertEquals(Game.GameState.WHITE_MATE, game.getGameState());
         game.processString("draw 50");
         assertEquals(Game.GameState.WHITE_MATE, game.getGameState()); // Can't claim draw when game over
-        assertEquals(Game.GameState.ALIVE, game.drawState);
     }
 
     /**

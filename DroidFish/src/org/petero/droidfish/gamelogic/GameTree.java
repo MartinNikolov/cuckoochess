@@ -12,6 +12,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.petero.droidfish.PGNOptions;
+import org.petero.droidfish.gamelogic.Game.GameState;
 
 public class GameTree {
     // Data from the seven tag roster (STR) part of the PGN standard
@@ -607,6 +608,88 @@ public class GameTree {
 		return remainingTime;
 	}
 
+	final GameState getGameState() {
+    	Position pos = currentPos;
+        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        moves = MoveGen.removeIllegal(pos, moves);
+        if (moves.size() == 0) {
+            if (MoveGen.inCheck(pos)) {
+                return pos.whiteMove ? GameState.BLACK_MATE : GameState.WHITE_MATE;
+            } else {
+                return pos.whiteMove ? GameState.WHITE_STALEMATE : GameState.BLACK_STALEMATE;
+            }
+        }
+        if (insufficientMaterial(pos)) {
+            return GameState.DRAW_NO_MATE;
+        }
+
+        String action = currentNode.playerAction;
+        if (action.equals("resign")) {
+        	// Player made null move to resign, causing whiteMove to toggle
+        	return pos.whiteMove ? GameState.RESIGN_BLACK : GameState.RESIGN_WHITE;
+        }
+        if (action.startsWith("draw accept")) {
+        	return GameState.DRAW_AGREE;
+        }
+        if (action.startsWith("draw rep")) {
+        	return GameState.DRAW_REP;
+        }
+        if (action.startsWith("draw 50")) {
+        	return GameState.DRAW_50;
+        }
+        return GameState.ALIVE;
+	}
+
+	/** Get additional info affecting gameState. A player "draw" or "resign" command. */
+	final String getGameStateInfo() {
+		String ret = "";
+        String action = currentNode.playerAction;
+        if (action.startsWith("draw rep ")) {
+        	ret = action.substring(9).trim();
+        }
+        if (action.startsWith("draw 50 ")) {
+        	ret = action.substring(8).trim();
+        }
+		return ret;
+	}
+
+    private static final boolean insufficientMaterial(Position pos) {
+        if (pos.nPieces(Piece.WQUEEN) > 0) return false;
+        if (pos.nPieces(Piece.WROOK)  > 0) return false;
+        if (pos.nPieces(Piece.WPAWN)  > 0) return false;
+        if (pos.nPieces(Piece.BQUEEN) > 0) return false;
+        if (pos.nPieces(Piece.BROOK)  > 0) return false;
+        if (pos.nPieces(Piece.BPAWN)  > 0) return false;
+        int wb = pos.nPieces(Piece.WBISHOP);
+        int wn = pos.nPieces(Piece.WKNIGHT);
+        int bb = pos.nPieces(Piece.BBISHOP);
+        int bn = pos.nPieces(Piece.BKNIGHT);
+        if (wb + wn + bb + bn <= 1) {
+            return true;    // King + bishop/knight vs king is draw
+        }
+        if (wn + bn == 0) {
+            // Only bishops. If they are all on the same color, the position is a draw.
+            boolean bSquare = false;
+            boolean wSquare = false;
+            for (int x = 0; x < 8; x++) {
+                for (int y = 0; y < 8; y++) {
+                    int p = pos.getPiece(Position.getSquare(x, y));
+                    if ((p == Piece.BBISHOP) || (p == Piece.WBISHOP)) {
+                        if (Position.darkSquare(x, y)) {
+                            bSquare = true;
+                        } else {
+                            wSquare = true;
+                        }
+                    }
+                }
+            }
+            if (!bSquare || !wSquare) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	
 	/** Keep track of current move and side to move. Used for move number printing. */
 	private static final class MoveNumber {
@@ -804,7 +887,7 @@ public class GameTree {
     			pgn.append('}');
     			needMoveNr = true;
     		}
-    		if (moveStr.length() > 0) {
+    		if (moveStr.length() > 0) { // FIXME!!! Don't print null move before playerAction
     			if (pgn.length() > l0) pgn.append(' ');
     			if (mn.wtm) {
     				pgn.append(mn.moveNo);
@@ -833,7 +916,8 @@ public class GameTree {
     		}
     		if ((playerAction.length() > 0) && options.exp.playerAction) {
     			if (pgn.length() > l0) pgn.append(' ');
-    			addExtendedInfo(pgn, "playeraction", playerAction);
+    			String color = mn.wtm ? "white" : "black";
+    			addExtendedInfo(pgn, "playeraction", color + "," + playerAction);
     			needMoveNr = true;
     		}
     		if ((remainingTime != Integer.MIN_VALUE) && options.exp.clockInfo) {
@@ -967,6 +1051,8 @@ public class GameTree {
     						nodeToAdd.remainingTime = parseTimeString(cmdPars);
     					}
     					while (true) {
+    						// FIXME!!! Remove color,
+    						// FIXME!!! Handle implicit null move
     						Pair<String,String> ret = extractExtInfo(tok.token, "playeraction");
     						tok.token = ret.first;
     						String cmdPars = ret.second;

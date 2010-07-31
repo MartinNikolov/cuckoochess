@@ -66,11 +66,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 
-	// FIXME!!! Include draw claim in save/restore state
-	// FIXME!!! Replay same move should clear playerAction
-	// FIXME!!! How to undo "resign" at root node.
-	// FIXME!!! Save PGN after undo gives wrong game result. Must evaluate result at end of mainline.
-	// FIXME!!! Should game tree be dropped if user action terminates game in the middle of the game tree?
+	// FIXME!!! Remove invalid playerActions in PGN import
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

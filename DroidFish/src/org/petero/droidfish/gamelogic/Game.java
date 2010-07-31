@@ -18,10 +18,7 @@ import org.petero.droidfish.gamelogic.GameTree.Node;
  */
 public class Game {
     boolean pendingDrawOffer;
-    GameState drawState; // FIXME Move to tree.playerAction
     GameTree tree;
-    private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50  FIXME!!! Move to tree.playerAction
-    private GameState resignState;  // FIXME!!! Move to tree.playerAction
     private ComputerPlayer computerPlayer;
     TimeControl timeController;
     private boolean gamePaused;
@@ -52,7 +49,7 @@ public class Game {
 	}
 
     public final String getPGN(PGNOptions options) {
-    	String pgnResultString = getPGNResultString();
+    	String pgnResultString = getPGNResultString(); // FIXME!!! Must evaluate result at end of mainline.
     	return tree.toPGN(pgnResultString, options);
     }
 
@@ -102,6 +99,20 @@ public class Game {
             return false;
         }
 
+        addToGameTree(m, pendingDrawOffer ? "draw offer" : "");
+        return true;
+    }
+    
+    private final void addToGameTree(Move m, String playerAction) {
+    	if (m.equals(new Move(0, 0, 0))) { // Don't create more than one null move at a node
+    		List<Move> varMoves = tree.variations();
+    		for (int i = varMoves.size() - 1; i >= 0; i--) {
+            	if (varMoves.get(i).equals(m)) {
+            		tree.deleteVariation(i);
+            	}
+    		}
+    	}
+
         List<Move> varMoves = tree.variations();
         boolean movePresent = false;
         int varNo;
@@ -113,7 +124,6 @@ public class Game {
         }
         if (!movePresent) {
         	String moveStr = TextIO.moveToUCIString(m);
-        	String playerAction = pendingDrawOffer ? "draw offer" : "";
         	varNo = tree.addMove(moveStr, playerAction, 0, "", "");
         }
         tree.reorderVariation(varNo, 0);
@@ -122,7 +132,6 @@ public class Game {
         tree.setRemainingTime(remaining);
         updateTimeControl(true);
     	pendingDrawOffer = false;
-        return true;
     }
 
 	private final void updateTimeControl(boolean discardElapsed) {
@@ -156,16 +165,18 @@ public class Game {
             case DRAW_REP:
             {
             	String ret = "Game over, draw by repetition!";
-            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
-            		ret = ret + " [" + drawStateMoveStr + "]";
+            	String drawInfo = tree.getGameStateInfo();
+            	if (drawInfo.length() > 0) {
+            		ret = ret + " [" + drawInfo+ "]";
             	}
             	return ret;
             }
             case DRAW_50:
             {
                 String ret = "Game over, draw by 50 move rule!";
-            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
-            		ret = ret + " [" + drawStateMoveStr + "]";  
+            	String drawInfo = tree.getGameStateInfo();
+            	if (drawInfo.length() > 0) {
+            		ret = ret + " [" + drawInfo + "]";  
             	}
             	return ret;
             }
@@ -213,23 +224,7 @@ public class Game {
      * Get the current state (draw, mate, ongoing, etc) of the game.
      */
     public final GameState getGameState() {
-    	Position pos = currPos();
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
-        if (moves.size() == 0) {
-            if (MoveGen.inCheck(pos)) {
-                return pos.whiteMove ? GameState.BLACK_MATE : GameState.WHITE_MATE;
-            } else {
-                return pos.whiteMove ? GameState.WHITE_STALEMATE : GameState.BLACK_STALEMATE;
-            }
-        }
-        if (insufficientMaterial()) {
-            return GameState.DRAW_NO_MATE;
-        }
-        if (resignState != GameState.ALIVE) {
-            return resignState;
-        }
-        return drawState;
+    	return tree.getGameState();
     }
 
     /**
@@ -249,8 +244,6 @@ public class Game {
         if (moveStr.equals("new")) {
         	tree = new GameTree();
             pendingDrawOffer = false;
-            drawState = GameState.ALIVE;
-            resignState = GameState.ALIVE;
             if (computerPlayer != null)
             	computerPlayer.clearTT();
             timeController.reset();
@@ -261,8 +254,6 @@ public class Game {
             if (m != null) {
             	tree.goBack();
                 pendingDrawOffer = false;
-                drawState = GameState.ALIVE;
-                resignState = GameState.ALIVE;
                 updateTimeControl(true);
                 return true;
             }
@@ -284,7 +275,7 @@ public class Game {
             }
         } else if (moveStr.equals("resign")) {
             if (getGameState()== GameState.ALIVE) {
-                resignState = currPos().whiteMove ? GameState.RESIGN_WHITE : GameState.RESIGN_BLACK;
+            	addToGameTree(new Move(0, 0, 0), "resign");
                 return true;
             } else {
                 return true;
@@ -436,11 +427,10 @@ public class Game {
                 valid = tmpPos.halfMoveClock >= 100;
             }
             if (valid) {
-                drawState = rep ? GameState.DRAW_REP : GameState.DRAW_50;
-                drawStateMoveStr = null;
-                if (m != null) {
-                	drawStateMoveStr = TextIO.moveToString(pos, m, false);
-                }
+            	String playerAction = rep ? "draw rep" : "draw 50";
+                if (m != null)
+                	playerAction += " " + TextIO.moveToString(pos, m, false);
+            	addToGameTree(new Move(0, 0, 0), playerAction);
             } else {
                 pendingDrawOffer = true;
                 if (m != null) {
@@ -456,50 +446,11 @@ public class Game {
             }
             return true;
         } else if (drawCmd.equals("accept")) {
-            if (haveDrawOffer()) {
-                drawState = GameState.DRAW_AGREE;
-            }
+            if (haveDrawOffer())
+            	addToGameTree(new Move(0, 0, 0), "draw accept");
             return true;
         } else {
             return false;
         }
-    }
-
-    private final boolean insufficientMaterial() {
-    	Position pos = currPos();
-        if (pos.nPieces(Piece.WQUEEN) > 0) return false;
-        if (pos.nPieces(Piece.WROOK)  > 0) return false;
-        if (pos.nPieces(Piece.WPAWN)  > 0) return false;
-        if (pos.nPieces(Piece.BQUEEN) > 0) return false;
-        if (pos.nPieces(Piece.BROOK)  > 0) return false;
-        if (pos.nPieces(Piece.BPAWN)  > 0) return false;
-        int wb = pos.nPieces(Piece.WBISHOP);
-        int wn = pos.nPieces(Piece.WKNIGHT);
-        int bb = pos.nPieces(Piece.BBISHOP);
-        int bn = pos.nPieces(Piece.BKNIGHT);
-        if (wb + wn + bb + bn <= 1) {
-            return true;    // King + bishop/knight vs king is draw
-        }
-        if (wn + bn == 0) {
-            // Only bishops. If they are all on the same color, the position is a draw.
-            boolean bSquare = false;
-            boolean wSquare = false;
-            for (int x = 0; x < 8; x++) {
-                for (int y = 0; y < 8; y++) {
-                    int p = pos.getPiece(Position.getSquare(x, y));
-                    if ((p == Piece.BBISHOP) || (p == Piece.WBISHOP)) {
-                        if (Position.darkSquare(x, y)) {
-                            bSquare = true;
-                        } else {
-                            wSquare = true;
-                        }
-                    }
-                }
-            }
-            if (!bSquare || !wSquare) {
-                return true;
-            }
-        }
-        return false;
     }
 }
