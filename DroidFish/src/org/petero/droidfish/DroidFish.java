@@ -50,8 +50,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
-	// FIXME!!! Include draw claim in save/restore state
-
 	// FIXME!!! Implement support for PGN comments
 	// FIXME!!! Implement support for PGN variants
 
@@ -67,9 +65,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
-	// FIXME!!! Player names in PGN export are lost after edit board
+
+	// FIXME!!! Include draw claim in save/restore state
 	// FIXME!!! Replay same move should clear playerAction
+	// FIXME!!! How to undo "resign" at root node.
 	// FIXME!!! Save PGN after undo gives wrong game result. Must evaluate result at end of mainline.
+	// FIXME!!! Should game tree be dropped if user action terminates game in the middle of the game tree?
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

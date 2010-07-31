@@ -187,7 +187,7 @@ public class ChessController {
         	computerPlayer.setBookFileName(bookFileName);
         }
        	game = new Game(computerPlayer, timeControl, movesPerSession, timeIncrement);
-		setPlayerNames();
+		setPlayerNames(game);
        	updateGamePaused();
     }
 
@@ -235,14 +235,15 @@ public class ChessController {
 			if (newMode.humansTurn(game.currPos().whiteMove))
 				ss.searchResultWanted = false;
 			gameMode = newMode;
-			setPlayerNames();
+			if (!gameMode.playerWhite() || !gameMode.playerBlack())
+				setPlayerNames(game); // If computer player involved, set player names
 			updateGamePaused();
 			updateComputeThreads(true);
 			updateGUI();
 		}
 	}
 
-	private final void setPlayerNames() {
+	private final void setPlayerNames(Game game) {
 		if (game != null) {
 			String engine = ComputerPlayer.engineName;
 			String white = gameMode.playerWhite() ? "Player" : engine;
@@ -274,6 +275,7 @@ public class ChessController {
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
     		newGame.setPos(pos);
+    		setPlayerNames(newGame);
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
     		if (!newGame.readPGN(fenPgn, options)) {
