@@ -204,6 +204,27 @@ public class Game {
     	int nVar = tree.variations().size();
     	return nVar > 0;
     }
+    
+    public final boolean canChangeVariation() {
+    	if (tree.currentNode == tree.rootNode)
+    		return false;
+    	tree.goBack();
+    	int nChildren = tree.variations().size();
+    	tree.goForward(-1);
+    	return nChildren > 1;
+    }
+
+    private final void changeVariation(int delta) {
+    	if (tree.currentNode == tree.rootNode)
+    		return;
+    	tree.goBack();
+    	int defChild = tree.currentNode.defaultChild;
+    	int nChildren = tree.variations().size();
+    	int newChild = defChild + delta;
+    	newChild = Math.max(newChild, 0);
+    	newChild = Math.min(newChild, nChildren - 1);
+    	tree.goForward(newChild);
+    }
 
     public static enum GameState {
         ALIVE,
@@ -265,6 +286,15 @@ public class Game {
                 return true;
             }
             return true;
+        } else if (moveStr.startsWith("changevariation ")) {
+        	if (canChangeVariation()) {
+        		String deltaStr = moveStr.substring(moveStr.indexOf(" ") + 1);
+        		int delta = Integer.parseInt(deltaStr);
+        		changeVariation(delta);
+                pendingDrawOffer = false;
+                updateTimeControl(true);
+        	}
+        	return true;
         } else if (moveStr.startsWith("draw ")) {
             if (getGameState() == GameState.ALIVE) {
                 String drawCmd = moveStr.substring(moveStr.indexOf(" ") + 1);

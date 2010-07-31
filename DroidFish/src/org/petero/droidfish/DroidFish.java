@@ -200,33 +200,55 @@ public class DroidFish extends Activity implements GUIInterface {
         
         final GestureDetector gd = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
         	private float scrollX = 0;
+        	private float scrollY = 0;
         	public boolean onDown(MotionEvent e) {
         		scrollX = 0;
+        		scrollY = 0;
         		return false;
         	}
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 				cb.cancelLongPress();
 				if (scrollSensitivity > 0) {
 					scrollX += distanceX;
+					scrollY += distanceY;
 					float scrollUnit = cb.sqSize * scrollSensitivity;
-					int nRedo = 0, nUndo = 0;
-					while (scrollX > scrollUnit) {
-						nRedo++;
-						scrollX -= scrollUnit;
+					if (Math.abs(scrollX) >= Math.abs(scrollY)) {
+						// Undo/redo
+						int nRedo = 0, nUndo = 0;
+						while (scrollX > scrollUnit) {
+							nRedo++;
+							scrollX -= scrollUnit;
+						}
+						while (scrollX < -scrollUnit) {
+							nUndo++;
+							scrollX += scrollUnit;
+						}
+						if (nUndo + nRedo > 0)
+							scrollY = 0;
+						if (nRedo + nUndo > 1) {
+							boolean analysis = gameMode.analysisMode();
+							boolean human = gameMode.playerWhite() || gameMode.playerBlack();
+							if (analysis || !human)
+								ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
+						}
+						for (int i = 0; i < nRedo; i++) ctrl.redoMove();
+						for (int i = 0; i < nUndo; i++) ctrl.undoMove();
+						ctrl.setGameMode(gameMode);
+					} else {
+						// Next/previous variation
+						int varDelta = 0;
+						while (scrollY > scrollUnit) {
+							varDelta++;
+							scrollY -= scrollUnit;
+						}
+						while (scrollY < -scrollUnit) {
+							varDelta--;
+							scrollY += scrollUnit;
+						}
+						if (varDelta != 0)
+							scrollX = 0;
+						ctrl.changeVariation(varDelta);
 					}
-					while (scrollX < -scrollUnit) {
-						nUndo++;
-						scrollX += scrollUnit;
-					}
-					if (nRedo + nUndo > 1) {
-						boolean analysis = gameMode.analysisMode();
-						boolean human = gameMode.playerWhite() || gameMode.playerBlack();
-						if (analysis || !human)
-							ctrl.setGameMode(new GameMode(GameMode.TWO_PLAYERS));
-					}
-					for (int i = 0; i < nRedo; i++) ctrl.redoMove();
-					for (int i = 0; i < nUndo; i++) ctrl.undoMove();
-					ctrl.setGameMode(gameMode);
 				}
 				return true;
 			}

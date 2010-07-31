@@ -97,7 +97,7 @@ public class ChessController {
         }
 
         public void notifyCurrMove(Move m, int moveNr) {
-            currMove = TextIO.moveToString(new Position(game.currPos()), m, false);
+            currMove = TextIO.moveToString(new Position(game.currPos()), m, false); // FIXME!!! Race to use game
             currMoveNr = moveNr;
             setSearchInfo();
         }
@@ -361,6 +361,18 @@ public class ChessController {
     		stopAnalysis();
 			stopComputerThinking();
     		redoMoveNoUpdate();
+    		updateComputeThreads(true);
+    		setSelection();
+    		updateGUI();
+    	}
+    }
+    
+    public final void changeVariation(int delta) {
+    	if (game.canChangeVariation()) {
+    		ss.searchResultWanted = false;
+    		stopAnalysis();
+			stopComputerThinking();
+    		game.processString(String.format("changevariation %d", delta));
     		updateComputeThreads(true);
     		setSelection();
     		updateGUI();
