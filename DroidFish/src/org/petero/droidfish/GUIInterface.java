@@ -22,11 +22,8 @@ public interface GUIInterface {
 	public void setMoveListString(String str);
 
 	/** Update the computer thinking information. */
-	public void setThinkingString(String str, List<Move> moveHints);
+	public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves);
 	
-	/** Return true if "opening book hints" is enabled. */
-	public boolean showBookHints();
-
 	/** Ask what to promote a pawn to. Should call reportPromotePiece() when done. */
 	public void requestPromotePiece();
 

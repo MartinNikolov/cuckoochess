@@ -65,13 +65,13 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
-	// FIXME!!! Remove invalid playerActions in PGN import
+	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
 	private boolean mShowBookHints;
-	private int thinkingArrows;
+	private int maxNumArrows;
 	private GameMode gameMode;
 	private boolean boardFlipped;
 	private boolean autoSwapSides;
@@ -112,6 +112,7 @@ public class DroidFish extends Activity implements GUIInterface {
         initUI(true);
 
         ctrl = new ChessController(this);
+        ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
         ctrl.newGame(gameMode);
         {
@@ -162,7 +163,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		ChessBoard oldCB = cb;
 		String statusStr = status.getText().toString();
 		String moveListStr = moveList.getText().toString();
-		String thinkingStr = thinking.getText().toString();
         initUI(false);
         readPrefs();
         cb.cursorX = oldCB.cursorX;
@@ -172,7 +172,7 @@ public class DroidFish extends Activity implements GUIInterface {
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
         setMoveListString(moveListStr);
-        setThinkingString(thinkingStr, oldCB.moveHints);
+		updateThinkingInfo();
 	}
 
 	private final void initUI(boolean initTitle) {
@@ -347,7 +347,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
         mShowThinking = settings.getBoolean("showThinking", false);
         tmp = settings.getString("thinkingArrows", "2");
-        thinkingArrows = Integer.parseInt(tmp);
+        maxNumArrows = Integer.parseInt(tmp);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
         tmp = settings.getString("timeControl", "300000");
@@ -376,7 +376,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 		pgnOptions.imp.variations   = settings.getBoolean("importVariations",   true);
 		pgnOptions.imp.comments     = settings.getBoolean("importComments",     true);
-		pgnOptions.imp.nag          = settings.getBoolean("importNAG", 		  true);
+		pgnOptions.imp.nag          = settings.getBoolean("importNAG", 		  	true);
 		pgnOptions.exp.variations   = settings.getBoolean("exportVariations",   true);
 		pgnOptions.exp.comments     = settings.getBoolean("exportComments",     true);
 		pgnOptions.exp.nag          = settings.getBoolean("exportNAG",          true);
@@ -534,12 +534,16 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 	
 	private String thinkingStr = "";
-	private List<Move> moveHints = null;
+	private String bookInfoStr = "";
+	private List<Move> pvMoves = null;
+	private List<Move> bookMoves = null;
 
 	@Override
-	public void setThinkingString(String str, List<Move> moveHints) {
-		thinkingStr = str;
-		this.moveHints = moveHints;
+	public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves) {
+		thinkingStr = pvStr;
+		bookInfoStr = bookInfo;
+		this.pvMoves = pvMoves;
+		this.bookMoves = bookMoves;
 		updateThinkingInfo();
 
 		if (ctrl.computerBusy()) {
@@ -551,26 +555,24 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void updateThinkingInfo() {
-		if (showThinking()) {
-			thinking.setText(thinkingStr);
-			List<Move> hints = moveHints;
-			if ((hints != null) && (hints.size() > thinkingArrows)) {
-				hints = hints.subList(0, thinkingArrows);
-			}
-			cb.setMoveHints(hints);
-		} else {
-			thinking.setText("");
-			cb.setMoveHints(null);
+		String str = "";
+		if (mShowThinking || gameMode.analysisMode()) {
+			str = thinkingStr;
 		}
-	}
+		if (mShowBookHints && (bookInfoStr.length() > 0)) {
+			str += "\n" + bookInfoStr;
+		}
+		thinking.setText(str);
 
-	private final boolean showThinking() {
-		return mShowThinking || gameMode.analysisMode() || (mShowBookHints && ctrl.humansTurn());
-	}
-
-	@Override
-	public boolean showBookHints() {
-		return mShowBookHints;
+		List<Move> hints = null;
+		if (mShowThinking || gameMode.analysisMode())
+			hints = pvMoves;
+		if ((hints == null) && mShowBookHints)
+			hints = bookMoves;
+		if ((hints != null) && (hints.size() > maxNumArrows)) {
+			hints = hints.subList(0, maxNumArrows);
+		}
+		cb.setMoveHints(hints);
 	}
 
 	static final int PROMOTE_DIALOG = 0; 

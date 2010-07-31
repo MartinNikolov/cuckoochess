@@ -45,13 +45,15 @@ public class ChessController {
         private boolean pvLowerBound = false;
         private String bookInfo = "";
         private String pvStr = "";
-        private List<Move> arrowMoves = null;
+        private List<Move> pvMoves = null;
+        private List<Move> bookMoves = null;
 
         public final void clearSearchInfo() {
         	pvDepth = 0;
         	currDepth = 0;
         	bookInfo = "";
-        	arrowMoves = null;
+        	pvMoves = null;
+        	bookMoves = null;
         	setSearchInfo();
         }
 
@@ -76,17 +78,14 @@ public class ChessController {
             	buf.append(String.format("d:%d %d:%s t:%.2f n:%d nps:%d", currDepth,
             			currMoveNr, currMove, currTime / 1000.0, currNodes, currNps));
             }
-            if (bookInfo.length() > 0) {
-            	buf.append("\n");
-            	buf.append(bookInfo);
-            }
             final String newPV = buf.toString();
+            final String newBookInfo = bookInfo;
 			final SearchStatus localSS = ss;
             gui.runOnUIThread(new Runnable() {
                 public void run() {
                 	if (!localSS.searchResultWanted)
                 		return;
-                	gui.setThinkingString(newPV, arrowMoves);
+                	gui.setThinkingInfo(newPV, newBookInfo, pvMoves, bookMoves);
                 }
             });
         }
@@ -121,7 +120,7 @@ public class ChessController {
                 tmpPos.makeMove(m, ui);
             }
             pvStr = buf.toString();
-            arrowMoves = pv;
+            pvMoves = pv;
             setSearchInfo();
         }
 
@@ -135,7 +134,7 @@ public class ChessController {
 		@Override
 		public void notifyBookInfo(String bookInfo, List<Move> moveList) {
 			this.bookInfo = bookInfo;
-			arrowMoves = moveList;
+			bookMoves = moveList;
 			setSearchInfo();
 		}
     }
@@ -163,7 +162,7 @@ public class ChessController {
 	public final void updateBookHints() {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
-			if (!analysis && humansTurn() && gui.showBookHints()) {
+			if (!analysis && humansTurn()) {
 	    		ss = new SearchStatus();
 				Pair<String, ArrayList<Move>> bi = computerPlayer.getBookHints(game.currPos());
 				listener.notifyBookInfo(bi.first, bi.second);
