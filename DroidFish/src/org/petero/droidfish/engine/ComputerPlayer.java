@@ -177,7 +177,7 @@ public class ComputerPlayer {
     	}
     	npp.writeLineToProcess(goStr);
 
-    	String bestMove = monitorEngine();
+    	String bestMove = monitorEngine(currPos);
 
         // Claim draw if appropriate
         if (statScore <= 0) {
@@ -193,7 +193,7 @@ public class ComputerPlayer {
     }
 
     /** Wait for engine to respond with "bestmove". While waiting, monitor and report search info. */
-	private final String monitorEngine() {
+	private final String monitorEngine(Position pos) {
 		// Monitor engine response
     	clearInfo();
     	boolean stopSent = false;
@@ -215,7 +215,7 @@ public class ComputerPlayer {
     			}
     			timeout = 0;
     		}
-    		notifyGUI();
+    		notifyGUI(pos);
 			try {
 				Thread.sleep(100); // 10 GUI updates per second is enough
 			} catch (InterruptedException e) {
@@ -265,7 +265,7 @@ public class ComputerPlayer {
     	String goStr = String.format("go infinite");
     	npp.writeLineToProcess(goStr);
 
-    	monitorEngine();
+    	monitorEngine(currPos);
     }
 
     /** Check if a draw claim is allowed, possibly after playing "move".
@@ -390,7 +390,7 @@ public class ComputerPlayer {
 	}
 
     /** Notify GUI about search statistics. */
-    private final void notifyGUI() {
+    private final void notifyGUI(Position pos) {
         if (listener == null)
     		return;
     	if (depthModified) {
@@ -399,7 +399,7 @@ public class ComputerPlayer {
     	}
         if (currMoveModified) {
         	Move m = TextIO.UCIstringToMove(statCurrMove);
-            listener.notifyCurrMove(m, statCurrMoveNr);
+            listener.notifyCurrMove(pos, m, statCurrMoveNr);
         	currMoveModified = false;
         }
         if (pvModified) {
@@ -407,7 +407,7 @@ public class ComputerPlayer {
         	int nMoves = statPV.size();
         	for (int i = 0; i < nMoves; i++)
         		moves.add(TextIO.UCIstringToMove(statPV.get(i)));
-            listener.notifyPV(statPVDepth, statScore, statTime, statNodes, statNps,
+            listener.notifyPV(pos, statPVDepth, statScore, statTime, statNodes, statNps,
             				  statIsMate, statUpperBound, statLowerBound, moves);
         	pvModified = false;
         }

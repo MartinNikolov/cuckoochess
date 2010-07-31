@@ -96,13 +96,13 @@ public class ChessController {
             setSearchInfo();
         }
 
-        public void notifyCurrMove(Move m, int moveNr) {
-            currMove = TextIO.moveToString(new Position(game.currPos()), m, false); // FIXME!!! Race to use game
+        public void notifyCurrMove(Position pos, Move m, int moveNr) {
+            currMove = TextIO.moveToString(pos, m, false);
             currMoveNr = moveNr;
             setSearchInfo();
         }
 
-        public void notifyPV(int depth, int score, int time, int nodes, int nps, boolean isMate,
+        public void notifyPV(Position pos, int depth, int score, int time, int nodes, int nps, boolean isMate,
                 boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             pvDepth = depth;
             pvScore = score;
@@ -114,11 +114,11 @@ public class ChessController {
             pvLowerBound = lowerBound;
 
             StringBuilder buf = new StringBuilder();
-            Position pos = new Position(game.currPos());
+            Position tmpPos = new Position(pos);
             UndoInfo ui = new UndoInfo();
             for (Move m : pv) {
-                buf.append(String.format(" %s", TextIO.moveToString(pos, m, false)));
-                pos.makeMove(m, ui);
+                buf.append(String.format(" %s", TextIO.moveToString(tmpPos, m, false)));
+                tmpPos.makeMove(m, ui);
             }
             pvStr = buf.toString();
             arrowMoves = pv;
