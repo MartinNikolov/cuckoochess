@@ -68,6 +68,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 	// FIXME!!! Player names in PGN export are lost after edit board
+	// FIXME!!! Replay same move should clear userCmd (maybe already works that way)
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;

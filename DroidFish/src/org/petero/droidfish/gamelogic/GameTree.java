@@ -956,7 +956,25 @@ public class GameTree {
     				}
     				break;
     			case PgnToken.COMMENT:
-    				// FIXME!!! Handle [%clk and [%usercmd
+    				try {
+    					while (true) {
+    						Pair<String,String> ret = extractExtInfo(tok.token, "clk");
+    						tok.token = ret.first;
+    						String cmdPars = ret.second;
+    						if (cmdPars == null)
+    							break;
+    						nodeToAdd.remainingTime = parseTimeString(cmdPars);
+    					}
+    					while (true) {
+    						Pair<String,String> ret = extractExtInfo(tok.token, "usercmd");
+    						tok.token = ret.first;
+    						String cmdPars = ret.second;
+    						if (cmdPars == null)
+    							break;
+    						nodeToAdd.userCmd = cmdPars;
+    					}
+    				} catch (IndexOutOfBoundsException e) {
+    				}
     				if (options.imp.comments) { 
     					if (moveAdded)
     						nodeToAdd.postComment += tok.token;
@@ -974,6 +992,51 @@ public class GameTree {
     				return;
     			}
     		}
+    	}
+    	
+    	private static final Pair<String, String> extractExtInfo(String comment, String cmd) {
+    		comment = comment.replaceAll("\n|\r|\t", " ");
+    		String remaining = comment;
+    		String param = null;
+    		String match = "[%" + cmd + " ";
+    		int start = comment.indexOf(match);
+    		if (start >= 0) {
+    			int end = comment.indexOf("]", start);
+    			if (end >= 0) {
+    				remaining = comment.substring(0, start) + comment.substring(end + 1);
+    				param = comment.substring(start + match.length(), end);
+    			}
+    		}
+    		return new Pair<String, String>(remaining, param);
+    	}
+    	
+    	/** Convert hh:mm:ss to milliseconds */
+    	private static final int parseTimeString(String str) {
+    		str = str.trim();
+    		int ret = 0;
+    		boolean neg = false;
+    		int i = 0;
+    		if (str.charAt(0) == '-') {
+    			neg = true;
+    			i++;
+    		}
+    		int num = 0;
+    		final int len = str.length();
+    		for ( ; i < len; i++) {
+    			char c = str.charAt(i);
+    			if ((c >= '0') && (c <= '9')) {
+    				num = num * 10 + c - '0';
+    			} else if (c == ':') {
+    				ret += num;
+    				num = 0;
+    				ret *= 60;
+    			}
+    		}
+    		ret += num;
+    		ret *= 1000;
+    		if (neg)
+    			ret = -ret;
+    		return ret;
     	}
     }
 }

@@ -493,5 +493,36 @@ public class GameTreeTest {
 		assertEquals("Ba4", getVariationsAsString(gt));
 		gt.goForward(0);
 		assertEquals(14, gt.currentNode.nag);
-	}	
+	}
+	
+	@Test
+	public final void testTime() throws ChessParseError {
+		GameTree gt = new GameTree();
+		PGNOptions options = new PGNOptions();
+		options.imp.variations = true;
+		options.imp.comments = true;
+		options.imp.nag = true;
+		boolean res = gt.readPGN("e4 { x [%clk 0:0:43] y} e5 {[%clk\n1:2:3]} Nf3 Nc6 {[%clk  -1:2 ]}", options);
+		assertEquals(true, res);
+
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(43000, gt.currentNode.remainingTime);
+		assertEquals(" x  y", gt.currentNode.postComment);
+		
+		assertEquals("e5", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(((1*60+2)*60+3)*1000, gt.currentNode.remainingTime);
+		assertEquals("", gt.currentNode.postComment);
+
+		assertEquals("Nf3", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(Integer.MIN_VALUE, gt.currentNode.remainingTime);
+		assertEquals("", gt.currentNode.postComment);
+
+		assertEquals("Nc6", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(-(1*60+2)*1000, gt.currentNode.remainingTime);
+		assertEquals("", gt.currentNode.postComment);
+	}
 }
