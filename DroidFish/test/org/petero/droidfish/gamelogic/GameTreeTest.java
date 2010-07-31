@@ -540,8 +540,12 @@ public class GameTreeTest {
 		assertEquals(0, varNo);
 
 		PGNOptions options = new PGNOptions();
-		options.exp.playerAction = true;
+
 		String pgn = gt.toPGN(options);
+		assertEquals(-1, pgn.indexOf("--"));
+		
+		options.exp.playerAction = true;
+		pgn = gt.toPGN(options);
 		assertTrue(pgn.indexOf("--") >= 0);
 
 		gt = new GameTree();
@@ -562,5 +566,20 @@ public class GameTreeTest {
 		assertEquals("--", getVariationsAsString(gt));
 		gt.goForward(0);
 		assertEquals(GameState.RESIGN_BLACK, gt.getGameState());
+
+		// Even if playerActions are not exported, moves corresponding
+		// to draw offers must still be exported
+		gt = new GameTree();
+		varNo = gt.addMove("e4", "draw offer", 0, "", "");
+		assertEquals(0, varNo);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		varNo = gt.addMove("e5", "", 0, "", "");
+		assertEquals(0, varNo);
+		assertEquals("e5", getVariationsAsString(gt));
+		gt.goForward(0);
+		options.exp.playerAction = false;
+		pgn = gt.toPGN(options);
+		assertTrue(pgn.indexOf("e4") >= 0);
 	}
 }

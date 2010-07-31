@@ -915,18 +915,21 @@ public class GameTree {
     			needMoveNr = true;
     		}
     		if (moveStr.length() > 0) {
-    			if (pgn.length() > l0) pgn.append(' ');
-    			if (mn.wtm) {
-    				pgn.append(mn.moveNo);
-    				pgn.append(". ");
-    			} else {
-    				if (needMoveNr) {
+    			boolean nullSkip = moveStr.equals("--") && (playerAction.length() > 0) && !options.exp.playerAction;
+    			if (!nullSkip) {
+    				if (pgn.length() > l0) pgn.append(' ');
+    				if (mn.wtm) {
     					pgn.append(mn.moveNo);
-    					pgn.append("... ");
+    					pgn.append(". ");
+    				} else {
+    					if (needMoveNr) {
+    						pgn.append(mn.moveNo);
+    						pgn.append("... ");
+    					}
     				}
+    				pgn.append(moveStr);
+    				needMoveNr = false;
     			}
-    			pgn.append(moveStr);
-    			needMoveNr = false;
     		}
     		if ((nag > 0) && options.exp.nag) {
     			if (pgn.length() > l0) pgn.append(' ');
