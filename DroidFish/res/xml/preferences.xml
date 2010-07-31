@@ -153,8 +153,8 @@
 					android:defaultValue="true">
 				</CheckBoxPreference>
 				<CheckBoxPreference
-					android:key="exportUserCmd"
-					android:title="User commands"
+					android:key="exportPlayerAction"
+					android:title="Player Actions"
 					android:summary="Include information about draw and resign actions"
 					android:defaultValue="false">
 				</CheckBoxPreference>

@@ -11,7 +11,7 @@ public class PGNOptions {
 		public boolean variations;
 		public boolean comments;
 		public boolean nag;
-		public boolean userCmd;
+		public boolean playerAction;
 		public boolean clockInfo;
 	}
 

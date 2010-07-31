@@ -68,7 +68,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 	// FIXME!!! Player names in PGN export are lost after edit board
-	// FIXME!!! Replay same move should clear userCmd (maybe already works that way)
+	// FIXME!!! Replay same move should clear playerAction
+	// FIXME!!! Save PGN after undo gives wrong game result. Must evaluate result at end of mainline.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -355,14 +356,14 @@ public class DroidFish extends Activity implements GUIInterface {
         ctrl.updateBookHints();
 		updateThinkingInfo();
 
-		pgnOptions.imp.variations = settings.getBoolean("importVariations", true);
-		pgnOptions.imp.comments   = settings.getBoolean("importComments",   true);
-		pgnOptions.imp.nag        = settings.getBoolean("importNAG", 		true);
-		pgnOptions.exp.variations = settings.getBoolean("exportVariations", true);
-		pgnOptions.exp.comments   = settings.getBoolean("exportComments",   true);
-		pgnOptions.exp.nag        = settings.getBoolean("exportNAG",        true);
-		pgnOptions.exp.userCmd    = settings.getBoolean("exportUserCmd",    false);
-		pgnOptions.exp.clockInfo  = settings.getBoolean("exportTime",       false);
+		pgnOptions.imp.variations   = settings.getBoolean("importVariations",   true);
+		pgnOptions.imp.comments     = settings.getBoolean("importComments",     true);
+		pgnOptions.imp.nag          = settings.getBoolean("importNAG", 		  true);
+		pgnOptions.exp.variations   = settings.getBoolean("exportVariations",   true);
+		pgnOptions.exp.comments     = settings.getBoolean("exportComments",     true);
+		pgnOptions.exp.nag          = settings.getBoolean("exportNAG",          true);
+		pgnOptions.exp.playerAction = settings.getBoolean("exportPlayerAction", false);
+		pgnOptions.exp.clockInfo    = settings.getBoolean("exportTime",         false);
 	}
 
 	private final void setBookFile(String bookFile) {

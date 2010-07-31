@@ -17,10 +17,10 @@ import org.petero.droidfish.engine.ComputerPlayer;
  */
 public class Game {
     boolean pendingDrawOffer;
-    GameState drawState; // FIXME Move to tree.userCmd
+    GameState drawState; // FIXME Move to tree.playerAction
     GameTree tree;
-    private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50  FIXME!!! Move to tree.userCmd
-    private GameState resignState;  // FIXME!!! Move to tree.userCmd
+    private String drawStateMoveStr; // Move required to claim DRAW_REP or DRAW_50  FIXME!!! Move to tree.playerAction
+    private GameState resignState;  // FIXME!!! Move to tree.playerAction
     private ComputerPlayer computerPlayer;
     TimeControl timeController;
     private boolean gamePaused;
@@ -112,8 +112,8 @@ public class Game {
         }
         if (!movePresent) {
         	String moveStr = TextIO.moveToUCIString(m);
-        	String userCmd = pendingDrawOffer ? "draw offer" : "";
-        	varNo = tree.addMove(moveStr, userCmd, 0, "", "");
+        	String playerAction = pendingDrawOffer ? "draw offer" : "";
+        	varNo = tree.addMove(moveStr, playerAction, 0, "", "");
         }
         tree.reorderVariation(varNo, 0);
         tree.goForward(0);
@@ -236,7 +236,7 @@ public class Game {
      * @return True if the current player has the option to accept a draw offer.
      */
     public final boolean haveDrawOffer() {
-    	return tree.currentNode.userCmd.equals("draw offer");
+    	return tree.currentNode.playerAction.equals("draw offer");
     }
 
     /**

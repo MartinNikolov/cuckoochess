@@ -504,10 +504,10 @@ public class GameTree {
     /** Add a move last in the list of variations.
      * @return Move number in variations list. -1 if moveStr is not a valid move
      */
-    public final int addMove(String moveStr, String userCmd, int nag, String preComment, String postComment) {
+    public final int addMove(String moveStr, String playerAction, int nag, String preComment, String postComment) {
     	currentNode.verifyChildren(currentPos);
     	int idx = currentNode.children.size();
-    	Node node = new Node(currentNode, moveStr, userCmd, Integer.MIN_VALUE, nag, preComment, postComment);
+    	Node node = new Node(currentNode, moveStr, playerAction, Integer.MIN_VALUE, nag, preComment, postComment);
     	Move move = TextIO.UCIstringToMove(moveStr);
     	if (move == null)
     		move = TextIO.stringToMove(currentPos, moveStr);
@@ -636,7 +636,7 @@ public class GameTree {
     								// Subtrees of invalid moves will be dropped when detected.
     								// Always valid for current node.
     	private UndoInfo ui;		// Computed when move is computed
-    	String userCmd;				// User action. Draw claim/offer/accept or resign.
+    	String playerAction;		// Player action. Draw claim/offer/accept or resign.
 
     	int remainingTime;			// Remaining time in ms for side that played moveStr, or INT_MIN if unknown.
     	int nag;					// Numeric annotation glyph
@@ -651,7 +651,7 @@ public class GameTree {
     		this.moveStr = "";
     		this.move = null;
     		this.ui = null;
-    		this.userCmd = "";
+    		this.playerAction = "";
     		this.remainingTime = Integer.MIN_VALUE;
     		this.parent = null;
     		this.children = new ArrayList<Node>();
@@ -661,12 +661,12 @@ public class GameTree {
     		this.postComment = "";
 		}
 
-		public Node(Node parent, String moveStr, String userCmd, int remainingTime, int nag,
+		public Node(Node parent, String moveStr, String playerAction, int remainingTime, int nag,
     				String preComment, String postComment) {
     		this.moveStr = moveStr;
     		this.move = null;
     		this.ui = null;
-    		this.userCmd = userCmd;
+    		this.playerAction = playerAction;
     		this.remainingTime = remainingTime;
     		this.parent = parent;
     		this.children = new ArrayList<Node>();
@@ -721,7 +721,7 @@ public class GameTree {
 				} else {
 					dos.writeByte(-1);
 				}
-				dos.writeUTF(node.userCmd);
+				dos.writeUTF(node.playerAction);
 				dos.writeInt(node.remainingTime);
 				dos.writeInt(node.nag);
 				dos.writeUTF(node.preComment);
@@ -748,7 +748,7 @@ public class GameTree {
 					node.move = new Move(from, to, prom);
 					node.ui = new UndoInfo();
 				}
-				node.userCmd = dis.readUTF();
+				node.playerAction = dis.readUTF();
 				node.remainingTime = dis.readInt();
 				node.nag = dis.readInt();
 				node.preComment = dis.readUTF();
@@ -830,9 +830,9 @@ public class GameTree {
     			pgn.append('}');
     			needMoveNr = true;
     		}
-    		if ((userCmd.length() > 0) && options.exp.userCmd) {
+    		if ((playerAction.length() > 0) && options.exp.playerAction) {
     			if (pgn.length() > l0) pgn.append(' ');
-    			addExtendedInfo(pgn, "usercmd", userCmd);
+    			addExtendedInfo(pgn, "playeraction", playerAction);
     			needMoveNr = true;
     		}
     		if ((remainingTime != Integer.MIN_VALUE) && options.exp.clockInfo) {
@@ -966,12 +966,12 @@ public class GameTree {
     						nodeToAdd.remainingTime = parseTimeString(cmdPars);
     					}
     					while (true) {
-    						Pair<String,String> ret = extractExtInfo(tok.token, "usercmd");
+    						Pair<String,String> ret = extractExtInfo(tok.token, "playeraction");
     						tok.token = ret.first;
     						String cmdPars = ret.second;
     						if (cmdPars == null)
     							break;
-    						nodeToAdd.userCmd = cmdPars;
+    						nodeToAdd.playerAction = cmdPars;
     					}
     				} catch (IndexOutOfBoundsException e) {
     				}
