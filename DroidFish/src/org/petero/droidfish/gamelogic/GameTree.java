@@ -384,7 +384,7 @@ public class GameTree {
     		} else if (name.equals("Black")) {
     			black = val;
     		} else if (name.equals("Result")) {
-    			// FIXME!!! Handle result somehow
+    			// FIXME!!! Handle result somehow (maybe create resign/draw playerAction)
     		} else if (name.equals("TimeControl")) {
     			timeControl = val;
     		} else {
@@ -914,7 +914,7 @@ public class GameTree {
     			pgn.append('}');
     			needMoveNr = true;
     		}
-    		if (moveStr.length() > 0) { // FIXME!!! Don't print null move before playerAction
+    		if (moveStr.length() > 0) {
     			if (pgn.length() > l0) pgn.append(' ');
     			if (mn.wtm) {
     				pgn.append(mn.moveNo);
@@ -943,8 +943,7 @@ public class GameTree {
     		}
     		if ((playerAction.length() > 0) && options.exp.playerAction) {
     			if (pgn.length() > l0) pgn.append(' ');
-    			String color = mn.wtm ? "white" : "black";
-    			addExtendedInfo(pgn, "playeraction", color + "," + playerAction);
+    			addExtendedInfo(pgn, "playeraction", playerAction);
     			needMoveNr = true;
     		}
     		if ((remainingTime != Integer.MIN_VALUE) && options.exp.clockInfo) {
@@ -1078,8 +1077,6 @@ public class GameTree {
     						nodeToAdd.remainingTime = parseTimeString(cmdPars);
     					}
     					while (true) {
-    						// FIXME!!! Remove color,
-    						// FIXME!!! Handle implicit null move
     						Pair<String,String> ret = extractExtInfo(tok.token, "playeraction");
     						tok.token = ret.first;
     						String cmdPars = ret.second;

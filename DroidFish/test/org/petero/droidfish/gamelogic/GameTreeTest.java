@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.petero.droidfish.PGNOptions;
+import org.petero.droidfish.gamelogic.Game.GameState;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 import org.petero.droidfish.gamelogic.GameTree.PgnScanner;
 import org.petero.droidfish.gamelogic.GameTree.PgnToken;
@@ -530,5 +531,36 @@ public class GameTreeTest {
 		gt.goForward(0);
 		assertEquals(-(1*60+2)*1000, gt.currentNode.remainingTime);
 		assertEquals("", gt.currentNode.postComment);
+	}
+
+	@Test
+	public final void testPlayerAction() throws ChessParseError {
+		GameTree gt = new GameTree();
+		int varNo = gt.addMove("--", "resign", 0, "", "");
+		assertEquals(0, varNo);
+
+		PGNOptions options = new PGNOptions();
+		options.exp.playerAction = true;
+		String pgn = gt.toPGN(options);
+		assertTrue(pgn.indexOf("--") >= 0);
+
+		gt = new GameTree();
+		gt.readPGN(pgn, options);
+		assertEquals("--", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(GameState.RESIGN_WHITE, gt.getGameState());
+		
+		gt = new GameTree();
+		gt.readPGN("1. -- {[%playeraction resign]}", options);
+		assertEquals("--", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(GameState.RESIGN_WHITE, gt.getGameState());
+		
+		gt.readPGN("1. e4 -- {[%playeraction resign]}", options);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("--", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals(GameState.RESIGN_BLACK, gt.getGameState());
 	}
 }
