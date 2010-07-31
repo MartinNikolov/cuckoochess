@@ -42,7 +42,6 @@ public class MoveTest {
      */
     @Test
     public void testMoveConstructor() {
-        System.out.println("MoveTest");
         int f = Position.getSquare(4, 1);
         int t = Position.getSquare(4, 3);
         int p = Piece.WROOK;
@@ -57,7 +56,6 @@ public class MoveTest {
      */
     @Test
     public void testEquals() {
-        System.out.println("equals");
         Move m1 = new Move(Position.getSquare(0, 6), Position.getSquare(1, 7), Piece.WROOK);
         Move m2 = new Move(Position.getSquare(0, 6), Position.getSquare(0, 7), Piece.WROOK);
         Move m3 = new Move(Position.getSquare(1, 6), Position.getSquare(1, 7), Piece.WROOK);

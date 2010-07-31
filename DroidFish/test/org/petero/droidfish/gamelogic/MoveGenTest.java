@@ -34,7 +34,6 @@ public class MoveGenTest {
      */
     @Test
     public void testPseudoLegalMoves() throws ChessParseError {
-        System.out.println("pseudoLegalMoves");
         String fen = "8/3k4/8/2n2pP1/1P6/1NB5/2QP4/R3K2R w KQ f6 0 2";
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
@@ -82,7 +81,6 @@ public class MoveGenTest {
      */
     @Test
     public void testPawnMoves() throws ChessParseError {
-        System.out.println("pawnMoves");
         String fen = "1r2k3/P1pppp1p/8/1pP3p1/1nPp2P1/n4p1P/1P2PP2/4KBNR w K b6 0 1";
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
@@ -124,7 +122,6 @@ public class MoveGenTest {
      */
     @Test
     public void testInCheck() {
-        System.out.println("inCheck");
         Position pos = new Position();
         pos.setPiece(Position.getSquare(4,2), Piece.WKING);
         pos.setPiece(Position.getSquare(4,7), Piece.BKING);
@@ -159,7 +156,6 @@ public class MoveGenTest {
      */
     @Test
     public void testRemoveIllegal() throws ChessParseError {
-        System.out.println("removeIllegal");
         Position pos = TextIO.readFEN("8/3k4/8/2n1rpP1/1P6/1NB5/2QP4/R3K2R w KQ f6 0 1");
         List<String> strMoves = getMoveList(pos, true);
         assertTrue(strMoves.contains("Qc2-e4"));
@@ -175,7 +171,6 @@ public class MoveGenTest {
      */
     @Test
     public void testKingCapture() throws ChessParseError {
-        System.out.println("kingCapture");
         Position pos = TextIO.readFEN("8/4k3/8/8/8/8/8/4RK2 b - - 0 1");
         pos.setWhiteMove(true);
         List<String> strMoves = getMoveList(pos, false);

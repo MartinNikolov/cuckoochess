@@ -32,7 +32,6 @@ public class PieceTest {
      */
     @Test
     public void testIsWhite() {
-        System.out.println("isWhite");
         assertEquals(false, Piece.isWhite(Piece.BBISHOP));
         assertEquals(true , Piece.isWhite(Piece.WBISHOP));
         assertEquals(true , Piece.isWhite(Piece.WKING));

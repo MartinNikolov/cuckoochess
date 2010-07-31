@@ -42,7 +42,6 @@ public class TextIOTest {
      */
     @Test
     public void testReadFEN() throws ChessParseError {
-        System.out.println("readFEN");
         String fen = "rnbqk2r/1p3ppp/p7/1NpPp3/QPP1P1n1/P4N2/4KbPP/R1B2B1R b kq - 0 1";
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
@@ -115,7 +114,6 @@ public class TextIOTest {
      */
     @Test
     public void testReadFENCastleFlags() throws ChessParseError {
-        System.out.println("readFEN");
         String fenBogus = "rnbqk2r/1p3ppp/p7/1NpPp3/QPP1P1n1/P4N2/4KbPP/R1B2B1R w KQkq - 0 1";
         Position pos = TextIO.readFEN(fenBogus);
         String fenCorrect = "rnbqk2r/1p3ppp/p7/1NpPp3/QPP1P1n1/P4N2/4KbPP/R1B2B1R w kq - 0 1";
@@ -139,7 +137,6 @@ public class TextIOTest {
      */
     @Test
     public void testMoveToString() throws ChessParseError {
-        System.out.println("moveToString");
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(pos));
         Move move = new Move(Position.getSquare(4, 1), Position.getSquare(4, 3),
@@ -178,7 +175,6 @@ public class TextIOTest {
      */
     @Test
     public void testMoveToStringMate() throws ChessParseError {
-        System.out.println("moveToStringMate");
         Position pos = TextIO.readFEN("3k4/1PR5/3N4/8/4K3/8/8/8 w - - 0 1");
         boolean longForm = true;
 
@@ -204,7 +200,6 @@ public class TextIOTest {
      */
     @Test
     public void testMoveToStringShortForm() throws ChessParseError {
-        System.out.println("moveToStringShortForm");
         String fen = "r4rk1/2pn3p/2q1q1n1/8/2q2p2/6R1/p4PPP/1R4K1 b - - 0 1";
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
@@ -256,7 +251,6 @@ public class TextIOTest {
      */
     @Test
     public void testStringToMove() throws ChessParseError {
-        System.out.println("stringToMove");
         Position pos = TextIO.readFEN("r4rk1/2pn3p/2q1q1n1/8/2q2p2/6R1/p4PPP/1R4K1 b - - 0 1");
 
         Move mNe5 = new Move(Position.getSquare(3, 6), Position.getSquare(4, 4), Piece.EMPTY);
@@ -340,7 +334,6 @@ public class TextIOTest {
      */
     @Test
     public void testGetSquare() throws ChessParseError {
-        System.out.println("getSquare");
         assertEquals(Position.getSquare(0, 0), TextIO.getSquare("a1"));
         assertEquals(Position.getSquare(1, 7), TextIO.getSquare("b8"));
         assertEquals(Position.getSquare(3, 3), TextIO.getSquare("d4"));
@@ -354,7 +347,6 @@ public class TextIOTest {
      */
     @Test
     public void testSquareToString() {
-        System.out.println("squareToString");
         assertEquals("a1", TextIO.squareToString(Position.getSquare(0, 0)));
         assertEquals("h6", TextIO.squareToString(Position.getSquare(7, 5)));
         assertEquals("e4", TextIO.squareToString(Position.getSquare(4, 3)));
@@ -365,7 +357,6 @@ public class TextIOTest {
      */
     @Test
     public void testAsciiBoard() throws ChessParseError {
-        System.out.println("asciiBoard");
         Position pos = TextIO.readFEN("r4rk1/2pn3p/2q1q1n1/8/2q2p2/6R1/p4PPP/1R4K1 b - - 0 1");
         String aBrd = TextIO.asciiBoard(pos);
 //        System.out.print(aBrd);
