@@ -51,11 +51,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
 	// FIXME!!! Implement support for PGN comments
-	// FIXME!!! Implement support for PGN variants
 
 	// FIXME!!! Current position in game should be highlighted in move list
 	// FIXME!!! Create PGN view options (comments, nag, variations, future)
-	// FIXME!!! Implement NAG decoding
 
 	// FIXME!!! Handle more move formats in PGN import. 0-0, long form, extra characters in short form
 	// FIXME!!! Implement "limit strength" option

@@ -339,7 +339,7 @@ public class Game {
         	ret.append(String.format("%d... ", pos.fullMoveCounter));
         }
         UndoInfo ui = new UndoInfo();
-        GameTree.Node n = tree.rootNode;
+        Node n = tree.rootNode;
         for (int i = 0; i < size; i++) {
         	n = moveList.get(i);
         	if (i == numMovesPlayed) {
@@ -352,6 +352,7 @@ public class Game {
             	ret.append(' ');
             }
             ret.append(n.moveStr);
+            ret.append(n.nagStr());
             ret.append(' ');
             pos.makeMove(n.move, ui);
         }
