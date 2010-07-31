@@ -86,12 +86,18 @@ public class GameTreeTest {
 
 	private final String getMoveListAsString(GameTree gt) {
 		StringBuilder ret = new StringBuilder();
-		List<Node> lst = gt.getMoveList();
+		Pair<List<Node>, Integer> ml = gt.getMoveList();
+		List<Node> lst = ml.first;
+		final int numMovesPlayed = ml.second;
 		for (int i = 0; i < lst.size(); i++) {
+			if (i == numMovesPlayed)
+				ret.append('*');
 			if (i > 0)
 				ret.append(' ');
 			ret.append(lst.get(i).moveStr);
 		}
+		if (lst.size() == numMovesPlayed)
+			ret.append('*');
 		return ret.toString();
 	}
 
@@ -100,42 +106,42 @@ public class GameTreeTest {
 		GameTree gt = new GameTree();
 		gt.addMove("e4", "", 0, "", "");
 		gt.addMove("d4", "", 0, "", "");
-		assertEquals("e4", getMoveListAsString(gt));
+		assertEquals("*e4", getMoveListAsString(gt));
 
 		gt.goForward(0);
-		assertEquals("e4", getMoveListAsString(gt));
+		assertEquals("e4*", getMoveListAsString(gt));
 
 		gt.addMove("e5", "", 0, "", "");
 		gt.addMove("c5", "", 0, "", "");
-		assertEquals("e4 e5", getMoveListAsString(gt));
+		assertEquals("e4* e5", getMoveListAsString(gt));
 
 		gt.goForward(1);
-		assertEquals("e4 c5", getMoveListAsString(gt));
+		assertEquals("e4 c5*", getMoveListAsString(gt));
 
 		gt.addMove("Nf3", "", 0, "", "");
 		gt.addMove("d4", "", 0, "", "");
-		assertEquals("e4 c5 Nf3", getMoveListAsString(gt));
+		assertEquals("e4 c5* Nf3", getMoveListAsString(gt));
 
 		gt.goForward(1);
-		assertEquals("e4 c5 d4", getMoveListAsString(gt));
+		assertEquals("e4 c5 d4*", getMoveListAsString(gt));
 		
 		gt.goBack();
-		assertEquals("e4 c5 d4", getMoveListAsString(gt));
+		assertEquals("e4 c5* d4", getMoveListAsString(gt));
 
 		gt.goBack();
-		assertEquals("e4 c5 d4", getMoveListAsString(gt));
+		assertEquals("e4* c5 d4", getMoveListAsString(gt));
 
 		gt.goBack();
-		assertEquals("e4 c5 d4", getMoveListAsString(gt));
+		assertEquals("*e4 c5 d4", getMoveListAsString(gt));
 
 		gt.goForward(1);
-		assertEquals("d4", getMoveListAsString(gt));
+		assertEquals("d4*", getMoveListAsString(gt));
 		
 		gt.goBack();
-		assertEquals("d4", getMoveListAsString(gt));
+		assertEquals("*d4", getMoveListAsString(gt));
 		
 		gt.goForward(0);
-		assertEquals("e4 c5 d4", getMoveListAsString(gt));
+		assertEquals("e4* c5 d4", getMoveListAsString(gt));
 	}
 
 	@Test

@@ -5,6 +5,8 @@
 
 package org.petero.droidfish.gamelogic;
 
+import java.util.ArrayList;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -396,5 +398,61 @@ public class GameTest {
         // Can't force mate with KNNK, but still not an automatic draw.
         game.processString("setpos 8/8/8/8/8/8/8/K3nnk1 w - - 0 1");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
+    }
+
+    /** Test that UCI history is not longer than necessary.
+     * We can't expect engines to handle null moves, for example. */
+    @Test
+    public void testUCIHistory() throws ChessParseError {
+        Game game = new Game(null, 0, 0, 0);
+
+        Pair<Position, ArrayList<Move>> hist = game.getUCIHistory();
+        assertEquals(0, hist.second.size());
+        Position expectedPos = new Position(game.currPos());
+        assertEquals(expectedPos, hist.first);
+        
+        game.processString("Nf3");
+        hist = game.getUCIHistory();
+        assertEquals(1, hist.second.size());
+        assertEquals(TextIO.UCIstringToMove("g1f3"), hist.second.get(0));
+        assertEquals(expectedPos, hist.first);
+        
+        game.processString("e5");
+        hist = game.getUCIHistory();
+        expectedPos = new Position(game.currPos());
+        assertEquals(0, hist.second.size());
+        assertEquals(expectedPos, hist.first);
+        
+        game.processString("Nc3");
+        hist = game.getUCIHistory();
+        assertEquals(1, hist.second.size());
+        assertEquals(TextIO.UCIstringToMove("b1c3"), hist.second.get(0));
+        assertEquals(expectedPos, hist.first);
+        
+        game.processString("Nc6");
+        hist = game.getUCIHistory();
+        assertEquals(2, hist.second.size());
+        assertEquals(TextIO.UCIstringToMove("b1c3"), hist.second.get(0));
+        assertEquals(TextIO.UCIstringToMove("b8c6"), hist.second.get(1));
+        assertEquals(expectedPos, hist.first);
+
+        game.processString("--");
+        hist = game.getUCIHistory();
+        expectedPos = new Position(game.currPos());
+        assertEquals(0, hist.second.size());
+        assertEquals(expectedPos, hist.first);
+        
+        game.processString("Nf6");
+        hist = game.getUCIHistory();
+        assertEquals(1, hist.second.size());
+        assertEquals(TextIO.UCIstringToMove("g8f6"), hist.second.get(0));
+        assertEquals(expectedPos, hist.first);
+        
+        for (int i = 0; i < 6; i++)
+        	game.processString("undo");
+        hist = game.getUCIHistory();
+        assertEquals(0, hist.second.size());
+        expectedPos = TextIO.readFEN(TextIO.startPosFEN);
+        assertEquals(expectedPos, hist.first);
     }
 }

@@ -290,6 +290,8 @@ public class TextIO {
         return moveToString(pos, move, longForm, moves);
     }
     private static final String moveToString(Position pos, Move move, boolean longForm, List<Move> moves) {
+    	if (move.equals(new Move(0, 0, 0)))
+    		return "--";
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -396,6 +398,8 @@ public class TextIO {
      * as long as the string only matches one valid move.
      */
     public static final Move stringToMove(Position pos, String strMove) {
+    	if (strMove.equals("--"))
+    		return new Move(0, 0, 0);
         strMove = strMove.replaceAll("=", "");
         Move move = null;
         if (strMove.length() == 0)

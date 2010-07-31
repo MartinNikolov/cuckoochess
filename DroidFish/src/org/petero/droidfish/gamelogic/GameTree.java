@@ -555,7 +555,7 @@ public class GameTree {
     }
     
     /* Get linear game history, using default variations at branch points. */
-    public final List<Node> getMoveList() {
+    public final Pair<List<Node>, Integer> getMoveList() {
     	List<Node> ret = new ArrayList<Node>();
     	Node node = currentNode;
     	while (node != rootNode) {
@@ -563,6 +563,7 @@ public class GameTree {
     		node = node.parent;
     	}
     	Collections.reverse(ret);
+    	int numMovesPlayed = ret.size();
     	node = currentNode;
     	Position pos = new Position(currentPos);
     	UndoInfo ui = new UndoInfo();
@@ -575,7 +576,7 @@ public class GameTree {
     		pos.makeMove(child.move, ui);
     		node = child;
     	}
-    	return ret;
+    	return new Pair<List<Node>, Integer>(ret, numMovesPlayed);
     }
 
 

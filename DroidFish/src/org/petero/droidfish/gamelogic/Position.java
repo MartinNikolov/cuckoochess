@@ -56,8 +56,7 @@ public class Position {
 
     public Position(Position other) {
         squares = new int[64];
-        for (int i = 0; i < 64; i++)
-            squares[i] = other.squares[i];
+        System.arraycopy(other.squares, 0, squares, 0, 64);
         whiteMove = other.whiteMove;
         castleMask = other.castleMask;
         epSquare = other.epSquare;
@@ -225,7 +224,9 @@ public class Position {
         int p = squares[move.from];
         int capP = squares[move.to];
 
-        if ((capP != Piece.EMPTY) || (p == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
+        boolean nullMove = (move.from == 0) && (move.to == 0);
+        
+        if (nullMove || (capP != Piece.EMPTY) || (p == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
             halfMoveClock = 0;
         } else {
             halfMoveClock++;
@@ -253,13 +254,15 @@ public class Position {
                 setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
             }
         }
-        int rook = wtm ? Piece.WROOK : Piece.BROOK;
-        if (p == rook) {
-            removeCastleRights(move.from);
-        }
-        int oRook = wtm ? Piece.BROOK : Piece.WROOK;
-        if (capP == oRook) {
-            removeCastleRights(move.to);
+        if (!nullMove) {
+        	int rook = wtm ? Piece.WROOK : Piece.BROOK;
+        	if (p == rook) {
+        		removeCastleRights(move.from);
+        	}
+        	int oRook = wtm ? Piece.BROOK : Piece.WROOK;
+        	if (capP == oRook) {
+        		removeCastleRights(move.to);
+        	}
         }
 
         // Handle en passant and epSquare

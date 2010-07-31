@@ -40,7 +40,6 @@ public class BookTest {
      */
     @Test
     public void testGetBookMove() throws ChessParseError {
-        System.out.println("getBookMove");
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         Book book = new Book(true);
         Move move = book.getBookMove(pos);
@@ -57,7 +56,6 @@ public class BookTest {
      */
     @Test
     public void testGetAllBookMoves() throws ChessParseError {
-        System.out.println("getAllBookMoves");
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         Book book = new Book(true);
         String moveListString = book.getAllBookMoves(pos).first;

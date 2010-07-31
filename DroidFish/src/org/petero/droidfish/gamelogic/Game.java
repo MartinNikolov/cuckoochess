@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
+import org.petero.droidfish.gamelogic.GameTree.Node;
 
 /**
  *
@@ -306,7 +307,9 @@ public class Game {
     public final String getMoveListString() {
         StringBuilder ret = new StringBuilder(2048);
 
-        List<GameTree.Node> moveList = tree.getMoveList();
+        Pair<List<Node>, Integer> ml = tree.getMoveList();
+        List<GameTree.Node> moveList = ml.first;
+        final int numMovesPlayed = ml.second;
         Position pos = new Position(tree.startPos);
 
         // Print all moves
@@ -316,11 +319,10 @@ public class Game {
         	ret.append(String.format("%d... ", pos.fullMoveCounter));
         }
         UndoInfo ui = new UndoInfo();
-        GameTree.Node n = tree.rootNode, prevN;
+        GameTree.Node n = tree.rootNode;
         for (int i = 0; i < size; i++) {
-        	prevN = n;
         	n = moveList.get(i);
-        	if (prevN == tree.currentNode) {
+        	if (i == numMovesPlayed) {
         		ret.append("{ ");
         		haveRedoPart = true;
         	}
@@ -372,15 +374,21 @@ public class Game {
      * to go from that position to the current position.
      */
     public final Pair<Position, ArrayList<Move>> getUCIHistory() {
-        List<GameTree.Node> moveList = tree.getMoveList();
+    	Pair<List<Node>, Integer> ml = tree.getMoveList();
+        List<Node> moveList = ml.first;
         Position pos = new Position(tree.startPos);
         ArrayList<Move> mList = new ArrayList<Move>();
-        int nMoves = moveList.size();
+        Position currPos = new Position(pos);
+        UndoInfo ui = new UndoInfo();
+        int nMoves = ml.second;
         for (int i = 0; i < nMoves; i++) {
-        	GameTree.Node n = moveList.get(i);
+        	Node n = moveList.get(i);
         	mList.add(n.move);
-        	if (n == tree.currentNode)
-        		break;
+        	currPos.makeMove(n.move, ui);
+        	if (currPos.halfMoveClock == 0) {
+        		pos = new Position(currPos);
+        		mList.clear();
+        	}
         }
         return new Pair<Position, ArrayList<Move>>(pos, mList);
     }
@@ -404,19 +412,18 @@ public class Game {
                     posToCompare.makeMove(m, ui);
                     repetitions = 1;
                 }
-                List<GameTree.Node> moveList = tree.getMoveList();
+                Pair<List<Node>, Integer> ml = tree.getMoveList();
+                List<Node> moveList = ml.first;
                 Position tmpPos = new Position(tree.startPos);
                 if (tmpPos.drawRuleEquals(posToCompare))
                 	repetitions++;
-                int nMoves = moveList.size();
+                int nMoves = ml.second;
                 for (int i = 0; i < nMoves; i++) {
-                	GameTree.Node n = moveList.get(i);
+                	Node n = moveList.get(i);
                 	tmpPos.makeMove(n.move, ui);
                 	TextIO.fixupEPSquare(tmpPos);
                     if (tmpPos.drawRuleEquals(posToCompare))
                     	repetitions++;
-                	if (n == tree.currentNode)
-                		break;
                 }
                 if (repetitions >= 3)
                     valid = true;

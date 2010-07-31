@@ -168,6 +168,14 @@ public class TextIOTest {
         move = new Move(Position.getSquare(2,6), Position.getSquare(2,7), Piece.WQUEEN);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("c7-c8Q+", result);
+        
+        // Test null move
+        pos = TextIO.readFEN(TextIO.startPosFEN);
+        Move nullMove = new Move(0, 0, 0);
+        result = TextIO.moveToString(pos, nullMove, false);
+        assertEquals("--", result);
+        result = TextIO.moveToString(pos, nullMove, true);
+        assertEquals("--", result);
     }
 
     /**
@@ -327,6 +335,12 @@ public class TextIOTest {
         m = TextIO.stringToMove(pos, "d8=Q+");
         Move m2 = TextIO.stringToMove(pos, "d8Q");
         assertEquals(m2, m);
+        
+        // Test null move
+        pos = TextIO.readFEN(TextIO.startPosFEN);
+        Move nullMove = new Move(0, 0, 0);
+        m = TextIO.stringToMove(pos, "--");
+        assertEquals(nullMove, m);
     }
 
     /**
