@@ -168,7 +168,8 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.cursorX = oldCB.cursorX;
         cb.cursorY = oldCB.cursorY;
         cb.cursorVisible = oldCB.cursorVisible;
-        setPosition(oldCB.pos);
+		cb.setPosition(oldCB.pos);
+		cb.setFlipped(oldCB.flipped);
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
         setMoveListString(moveListStr);
@@ -492,12 +493,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 	}
 
-	@Override
-	public void setPosition(Position pos) {
-		cb.setPosition(pos);
-		setBoardFlip();
-	}
-	
 	private final void setBoardFlip() {
 		boolean flipped = boardFlipped;
 		if (autoSwapSides) {
@@ -532,11 +527,22 @@ public class DroidFish extends Activity implements GUIInterface {
 		if (!ctrl.canRedoMove())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
-	
+
+	@Override
+	public void setPosition(Position pos, String variantInfo, List<Move> variantMoves) {
+		variantStr = variantInfo;
+		this.variantMoves = variantMoves;
+		cb.setPosition(pos);
+		setBoardFlip();
+		updateThinkingInfo();
+	}
+
 	private String thinkingStr = "";
 	private String bookInfoStr = "";
+	private String variantStr = "";
 	private List<Move> pvMoves = null;
 	private List<Move> bookMoves = null;
+	private List<Move> variantMoves = null;
 
 	@Override
 	public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves) {
@@ -555,20 +561,28 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void updateThinkingInfo() {
-		String str = "";
+		StringBuilder sb = new StringBuilder(256);
 		if (mShowThinking || gameMode.analysisMode()) {
-			str = thinkingStr;
+			sb.append(thinkingStr);
 		}
 		if (mShowBookHints && (bookInfoStr.length() > 0)) {
-			str += "\n" + bookInfoStr;
+			sb.append("\nBook: ");
+			sb.append(bookInfoStr);
 		}
-		thinking.setText(str);
+		if (variantStr.indexOf(' ') >= 0) {
+			sb.append("\nVar: ");
+			sb.append(variantStr);
+		}
+		thinking.setText(sb.toString());
 
 		List<Move> hints = null;
 		if (mShowThinking || gameMode.analysisMode())
 			hints = pvMoves;
 		if ((hints == null) && mShowBookHints)
 			hints = bookMoves;
+		if ((variantMoves != null) && variantMoves.size() > 1) {
+			hints = variantMoves;
+		}
 		if ((hints != null) && (hints.size() > maxNumArrows)) {
 			hints = hints.subList(0, maxNumArrows);
 		}

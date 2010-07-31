@@ -480,7 +480,20 @@ public class ChessController {
         }
         gui.setStatusString(str);
         gui.setMoveListString(game.getMoveListString());
-        gui.setPosition(game.currPos());
+
+        StringBuilder sb = new StringBuilder();
+        if (game.tree.currentNode != game.tree.rootNode) {
+        	game.tree.goBack();
+        	Position pos = game.currPos();
+        	List<Move> prevVarList = game.tree.variations();
+        	for (int i = 0; i < prevVarList.size(); i++) {
+        		if (i > 0) sb.append(' ');
+        		sb.append(TextIO.moveToString(pos, prevVarList.get(i), false));
+        	}
+        	game.tree.goForward(-1);
+        }
+        gui.setPosition(game.currPos(), sb.toString(), game.tree.variations());
+
         updateRemainingTime();
     }
 

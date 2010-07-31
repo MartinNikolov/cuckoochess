@@ -224,13 +224,8 @@ public class ComputerPlayer {
 	}
 
 	public final Pair<String, ArrayList<Move>> getBookHints(Position pos) {
-		String bookInfo = "";
 		Pair<String, ArrayList<Move>> bi = book.getAllBookMoves(pos);
-		String bookMoves = bi.first;
-		if (bookMoves.length() > 0) {
-			bookInfo = String.format("Book: %s", bookMoves);
-		}
-		return new Pair<String, ArrayList<Move>>(bookInfo, bi.second);
+		return new Pair<String, ArrayList<Move>>(bi.first, bi.second);
 	}
 
 	public boolean shouldStop = false;
