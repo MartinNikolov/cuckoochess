@@ -516,7 +516,7 @@ public class GameTree {
     		move = TextIO.stringToMove(currentPos, moveStr);
     	if (move == null)
     		return -1;
-    	node.moveStr = TextIO.moveToString(currentPos, move, false);
+    	node.moveStr = TextIO.moveToString(currentPos, move, false, false);
     	node.move = move;
     	node.ui = new UndoInfo();
     	currentNode.children.add(node);
@@ -794,7 +794,7 @@ public class GameTree {
         		if (child.move == null) {
         	    	Move move = TextIO.stringToMove(nodePos, child.moveStr);
         			if (move != null) {
-        				child.moveStr = TextIO.moveToString(nodePos, move, false);
+        				child.moveStr = TextIO.moveToString(nodePos, move, false, false);
         				child.move = move;
         				child.ui = new UndoInfo();
         			} else {
