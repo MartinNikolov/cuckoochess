@@ -95,8 +95,7 @@ public class GameTest {
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Can redo draw accept
 
         // Test draw offer in connection with invalid move
-        res = game.processString("new");
-        assertEquals(true, res);
+        game.newGame();
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         
@@ -109,7 +108,7 @@ public class GameTest {
         assertEquals(Piece.WPAWN, game.currPos().getPiece(Position.getSquare(4, 3))); // e4 move made
 
         // Undo/redo shall clear "pendingDrawOffer".
-        game.processString("new");
+        game.newGame();
         game.processString("e4");
         game.processString("draw offer e4");       // Invalid black move
         assertEquals(true, game.pendingDrawOffer);
@@ -124,7 +123,7 @@ public class GameTest {
      * Test of draw by 50 move rule, of class Game.
      */
     @Test
-    public void testDraw50() {
+    public void testDraw50() throws ChessParseError {
         Game game = new Game(null, 0, 0, 0);
         assertEquals(false, game.haveDrawOffer());
         boolean res = game.processString("draw 50");
@@ -133,31 +132,30 @@ public class GameTest {
         res = game.processString("e4");
         assertEquals(true, game.haveDrawOffer());   // Invalid claim converted to draw offer
         
-        String cmd = "setpos 8/4k3/8/P7/8/8/8/1N2K2R w K - 99 83";
-        res = game.processString(cmd);
-        assertEquals(true, res);
+        String fen = "8/4k3/8/P7/8/8/8/1N2K2R w K - 99 83";
+        game.setPos(TextIO.readFEN(fen));
         res = game.processString("draw 50");
         assertEquals(Game.GameState.ALIVE, game.getGameState());      // Draw claim invalid
 
-        game.processString(cmd);
+        game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 Nc3");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Draw claim valid
         assertEquals("Game over, draw by 50 move rule! [Nc3]", game.getGameStateString());
 
-        game.processString(cmd);
+        game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 a6");
         assertEquals(Game.GameState.ALIVE, game.getGameState());      // Pawn move resets counter
         assertEquals(Piece.WPAWN, game.currPos().getPiece(Position.getSquare(0, 5))); // Move a6 made
         
-        game.processString(cmd);
+        game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 O-O");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Castling doesn't reset counter
         
-        game.processString(cmd);
+        game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 Kf2");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Loss of castling right doesn't reset counter
         
-        game.processString(cmd);
+        game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 Ke3");
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Ke3 is invalid
         assertEquals(true, game.currPos().whiteMove);
@@ -169,8 +167,8 @@ public class GameTest {
         assertEquals(true, res);
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState()); // Can accept previous implicit offer
         
-        cmd = "setpos 3k4/R7/3K4/8/8/8/8/8 w - - 99 78";
-        game.processString(cmd);
+        fen = "3k4/R7/3K4/8/8/8/8/8 w - - 99 78";
+        game.setPos(TextIO.readFEN(fen));
         game.processString("Ra8");
         assertEquals(Game.GameState.WHITE_MATE, game.getGameState());
         game.processString("draw 50");
@@ -181,7 +179,7 @@ public class GameTest {
      * Test of draw by repetition, of class Game.
      */
     @Test
-    public void testDrawRep() {
+    public void testDrawRep() throws ChessParseError {
         Game game = new Game(null, 0, 0, 0);
         assertEquals(false, game.haveDrawOffer());
         game.processString("Nc3");
@@ -206,7 +204,7 @@ public class GameTest {
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(6, 7))); // Ng8 not played
         
         // Test draw by repetition when a "potential ep square but not real ep square" position is present.
-        game.processString("new");
+        game.newGame();
         game.processString("e4");   // e3 is not a real epSquare here
         game.processString("Nf6");
         game.processString("Nf3");
@@ -219,7 +217,7 @@ public class GameTest {
         assertEquals(Game.GameState.DRAW_REP, game.getGameState());
 
         // Now check the case when e3 *is* an epSquare
-        game.processString("new");
+        game.newGame();
         game.processString("Nf3");
         game.processString("d5");
         game.processString("Ng1");
@@ -237,7 +235,7 @@ public class GameTest {
         
         // EP capture not valid because it would leave the king in check. Therefore
         // the position has been repeated three times at the end of the move sequence.
-        game.processString("setpos 4k2n/8/8/8/4p3/8/3P4/3KR2N w - - 0 1");
+        game.setPos(TextIO.readFEN("4k2n/8/8/8/4p3/8/3P4/3KR2N w - - 0 1"));
         game.processString("d4");
         game.processString("Ng6");
         game.processString("Ng3");
@@ -310,21 +308,18 @@ public class GameTest {
         assertEquals(0, game.currPos().halfMoveClock);
         assertEquals(2, game.currPos().fullMoveCounter);
 
-        res = game.processString("new");
-        assertEquals(true, res);
+        game.newGame();
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
         
         String fen = "8/8/8/4k3/8/8/2p5/5K2 b - - 47 68";
         Position pos = TextIO.readFEN(fen);
-        res = game.processString("setpos " + fen);
-        assertEquals(true, res);
+        game.setPos(TextIO.readFEN(fen));
         assertEquals(pos, game.currPos());
         
         res = game.processString("junk");
         assertEquals(false, res);
         
-        res = game.processString("new");
-        assertEquals(true, res);
+        game.newGame();
         res = game.processString("e7e5");
         assertEquals(false, res);
     }
@@ -333,7 +328,7 @@ public class GameTest {
      * Test of getGameState method, of class Game.
      */
     @Test
-    public void testGetGameState() {
+    public void testGetGameState() throws ChessParseError {
         Game game = new Game(null, 0, 0, 0);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         game.processString("f3");
@@ -342,7 +337,7 @@ public class GameTest {
         game.processString("Qh4");
         assertEquals(Game.GameState.BLACK_MATE, game.getGameState());
         
-        game.processString("setpos 5k2/5P2/5K2/8/8/8/8/8 b - - 0 1");
+        game.setPos(TextIO.readFEN("5k2/5P2/5K2/8/8/8/8/8 b - - 0 1"));
         assertEquals(Game.GameState.BLACK_STALEMATE, game.getGameState());
     }
 
@@ -350,10 +345,10 @@ public class GameTest {
      * Test of insufficientMaterial method, of class Game.
      */
     @Test
-    public void testInsufficientMaterial() {
+    public void testInsufficientMaterial() throws ChessParseError {
         Game game = new Game(null, 0, 0, 0);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        game.processString("setpos 4k3/8/8/8/8/8/8/4K3 w - - 0 1");
+        game.setPos(TextIO.readFEN("4k3/8/8/8/8/8/8/4K3 w - - 0 1"));
         assertEquals(Game.GameState.DRAW_NO_MATE, game.getGameState());
         final int a1 = Position.getSquare(0, 0);
         Position pos = new Position(game.currPos());
@@ -387,7 +382,7 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());
 
         // Can't force mate with KNNK, but still not an automatic draw.
-        game.processString("setpos 8/8/8/8/8/8/8/K3nnk1 w - - 0 1");
+        game.setPos(TextIO.readFEN("8/8/8/8/8/8/8/K3nnk1 w - - 0 1"));
         assertEquals(Game.GameState.ALIVE, game.getGameState());
     }
 

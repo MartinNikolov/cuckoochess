@@ -29,7 +29,7 @@ public class Game {
         timeController = new TimeControl();
         timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
         gamePaused = false;
-        handleCommand("new");
+        newGame();
     }
 
     public final void setComputerPlayer(ComputerPlayer computerPlayer) {
@@ -285,21 +285,22 @@ public class Game {
         }
     }
 
+    public final void newGame() {
+    	tree = new GameTree();
+        if (computerPlayer != null)
+        	computerPlayer.clearTT();
+        timeController.reset();
+        pendingDrawOffer = false;
+        updateTimeControl(true);
+    }
+    
     /**
      * Handle a special command.
      * @param moveStr  The command to handle
      * @return  True if command handled, false otherwise.
      */
     private final boolean handleCommand(String moveStr) {
-        if (moveStr.equals("new")) {
-        	tree = new GameTree();
-            pendingDrawOffer = false;
-            if (computerPlayer != null)
-            	computerPlayer.clearTT();
-            timeController.reset();
-            updateTimeControl(true);
-            return true;
-        } else if (moveStr.startsWith("draw ")) {
+        if (moveStr.startsWith("draw ")) {
             if (getGameState() == GameState.ALIVE) {
                 String drawCmd = moveStr.substring(moveStr.indexOf(" ") + 1);
                 return handleDrawCmd(drawCmd);
@@ -313,16 +314,6 @@ public class Game {
             } else {
                 return true;
             }
-        } else if (moveStr.startsWith("setpos ")) {
-            try {
-                String fen = moveStr.substring(moveStr.indexOf(" ") + 1);
-                Position newPos = TextIO.readFEN(fen);
-                handleCommand("new");
-                setPos(newPos);
-                updateTimeControl(true);
-            } catch (ChessParseError ex) {
-            }
-            return true;
         } else {
             return false;
         }
