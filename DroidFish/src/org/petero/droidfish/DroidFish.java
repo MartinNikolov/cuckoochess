@@ -29,6 +29,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.text.Html;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -559,19 +560,21 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void updateThinkingInfo() {
-		StringBuilder sb = new StringBuilder(256);
-		if (mShowThinking || gameMode.analysisMode()) {
-			sb.append(thinkingStr);
+		{
+			String s = "";
+			if (mShowThinking || gameMode.analysisMode()) {
+				s = thinkingStr;
+			}
+			thinking.setText(s, TextView.BufferType.SPANNABLE);
 		}
 		if (mShowBookHints && (bookInfoStr.length() > 0)) {
-			sb.append("\nBook: ");
-			sb.append(bookInfoStr);
+			thinking.append(Html.fromHtml("<br><b>Book:</b> "));
+			thinking.append(bookInfoStr);
 		}
 		if (variantStr.indexOf(' ') >= 0) {
-			sb.append("\nVar: ");
-			sb.append(variantStr);
+			String s = "<br><b>Var:</b> " + variantStr;
+			thinking.append(Html.fromHtml(s));
 		}
-		thinking.setText(sb.toString());
 
 		List<Move> hints = null;
 		if (mShowThinking || gameMode.analysisMode())

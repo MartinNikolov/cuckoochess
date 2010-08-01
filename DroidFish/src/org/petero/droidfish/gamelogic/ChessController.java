@@ -488,7 +488,11 @@ public class ChessController {
         	List<Move> prevVarList = game.tree.variations();
         	for (int i = 0; i < prevVarList.size(); i++) {
         		if (i > 0) sb.append(' ');
+        		if (i == game.tree.currentNode.defaultChild)
+        			sb.append("<b>");
         		sb.append(TextIO.moveToString(pos, prevVarList.get(i), false));
+        		if (i == game.tree.currentNode.defaultChild)
+        			sb.append("</b>");
         	}
         	game.tree.goForward(-1);
         }
