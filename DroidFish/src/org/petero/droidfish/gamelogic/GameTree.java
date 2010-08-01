@@ -86,7 +86,24 @@ public class GameTree {
     public final String toPGN(PGNOptions options) {
     	StringBuilder pgn = new StringBuilder();
 
-    	String pgnResultString = getPGNResultString(); // FIXME!!! Must evaluate result at end of mainline.
+    	// Go to end of mainline to evaluate PGN result string.
+    	String pgnResultString;
+    	{
+    		List<Integer> currPath = new ArrayList<Integer>();
+    		while (currentNode != rootNode) {
+    			Node child = currentNode;
+    			goBack();
+    			int childNum = variations().indexOf(child);
+    			currPath.add(childNum);
+    		}
+    		while (variations().size() > 0)
+    			goForward(0, false);
+    		pgnResultString = getPGNResultString();
+    		while (currentNode != rootNode)
+    			goBack();
+    		for (int i = currPath.size() - 1; i >= 0; i--)
+    			goForward(currPath.get(i), false);
+    	}
 
     	// Write seven tag roster
         addTagPair(pgn, "Event",  event);
@@ -512,13 +529,17 @@ public class GameTree {
      * @param variation Which variation to follow. -1 to follow default variation.
      */
     public final void goForward(int variation) {
+    	goForward(variation, true);
+    }
+    public final void goForward(int variation, boolean updateDefault) {
     	currentNode.verifyChildren(currentPos);
     	if (variation < 0)
     		variation = currentNode.defaultChild;
     	int numChildren = currentNode.children.size();
     	if (variation >= numChildren)
     		variation = 0;
-    	currentNode.defaultChild = variation;
+    	if (updateDefault)
+    		currentNode.defaultChild = variation;
     	if (numChildren > 0) {
     		currentNode = currentNode.children.get(variation);
     		currentPos.makeMove(currentNode.move, currentNode.ui);

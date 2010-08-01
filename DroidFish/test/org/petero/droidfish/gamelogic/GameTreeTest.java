@@ -582,4 +582,29 @@ public class GameTreeTest {
 		pgn = gt.toPGN(options);
 		assertTrue(pgn.indexOf("e4") >= 0);
 	}
+
+	@Test
+	public final void testGameResult() throws ChessParseError {
+		GameTree gt = new GameTree();
+		int varNo = gt.addMove("e4", "", 0, "", "");
+		gt.goForward(varNo);
+		varNo = gt.addMove("e5", "", 0, "", "");
+		gt.goForward(varNo);
+		varNo = gt.addMove("--", "resign", 0, "", "");
+		gt.goBack();
+		gt.goBack();
+		varNo = gt.addMove("d4", "", 0, "", "");
+		gt.goForward(varNo);
+		varNo = gt.addMove("--", "resign", 0, "", "");
+		gt.goForward(varNo);
+
+		// Black has resigned in a variation, but white resigned in the mainline,
+		// so the PGN result should be "0-1";
+		PGNOptions options = new PGNOptions();
+		options.exp.variations = true;
+//		options.exp.playerAction = true;
+		String pgn = gt.toPGN(options);
+		assertTrue(pgn.indexOf("1-0") < 0);
+		assertTrue(pgn.indexOf("0-1") >= 0);
+	}
 }
