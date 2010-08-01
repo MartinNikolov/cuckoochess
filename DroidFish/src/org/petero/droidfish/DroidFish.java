@@ -1,6 +1,7 @@
 package org.petero.droidfish;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -288,6 +289,7 @@ public class DroidFish extends Activity implements GUIInterface {
         });
         cb.setOnLongClickListener(new OnLongClickListener() {
 			public boolean onLongClick(View v) {
+				removeDialog(CLIPBOARD_DIALOG);
 				showDialog(CLIPBOARD_DIALOG);
 				return true;
 			}
@@ -615,12 +617,16 @@ public class DroidFish extends Activity implements GUIInterface {
 			return alert;
 		}
 		case CLIPBOARD_DIALOG: {
-			final CharSequence[] items = {
-				getString(R.string.copy_game), getString(R.string.copy_position), getString(R.string.paste)
-			};
+			List<CharSequence> lst = new ArrayList<CharSequence>();
+			lst.add(getString(R.string.copy_game));
+			lst.add(getString(R.string.copy_position));
+			lst.add(getString(R.string.paste));
+			if (ctrl.humansTurn() && (ctrl.numVariations() > 1)) {
+				lst.add(getString(R.string.remove_variation));
+			}
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.clipboard);
-			builder.setItems(items, new DialogInterface.OnClickListener() {
+			builder.setTitle(R.string.tools_menu);
+			builder.setItems(lst.toArray(new CharSequence[3]), new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 					switch (item) {
 					case 0: {
@@ -647,6 +653,9 @@ public class DroidFish extends Activity implements GUIInterface {
 						}
 						break;
 					}
+					case 3:
+						ctrl.removeVariation();
+						break;
 					}
 			    }
 			});

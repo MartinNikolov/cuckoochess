@@ -205,13 +205,13 @@ public class Game {
     	return nVar > 0;
     }
     
-    public final boolean canChangeVariation() {
+    public final int numVariations() {
     	if (tree.currentNode == tree.rootNode)
-    		return false;
+    		return 1;
     	tree.goBack();
     	int nChildren = tree.variations().size();
     	tree.goForward(-1);
-    	return nChildren > 1;
+    	return nChildren;
     }
 
     private final void changeVariation(int delta) {
@@ -224,6 +224,17 @@ public class Game {
     	newChild = Math.max(newChild, 0);
     	newChild = Math.min(newChild, nChildren - 1);
     	tree.goForward(newChild);
+    }
+    
+    public final void removeVariation() {
+    	if (numVariations() <= 1)
+    		return;
+    	tree.goBack();
+    	int defChild = tree.currentNode.defaultChild;
+    	tree.deleteVariation(defChild);
+    	tree.goForward(-1);
+        pendingDrawOffer = false;
+        updateTimeControl(true);
     }
 
     public static enum GameState {
@@ -260,7 +271,7 @@ public class Game {
      * @param moveStr  The command to handle
      * @return  True if command handled, false otherwise.
      */
-    private final boolean handleCommand(String moveStr) {
+    private final boolean handleCommand(String moveStr) { // FIXME!!! Remove string interface
         if (moveStr.equals("new")) {
         	tree = new GameTree();
             pendingDrawOffer = false;
@@ -287,7 +298,7 @@ public class Game {
             }
             return true;
         } else if (moveStr.startsWith("changevariation ")) {
-        	if (canChangeVariation()) {
+        	if (numVariations() > 1) {
         		String deltaStr = moveStr.substring(moveStr.indexOf(" ") + 1);
         		int delta = Integer.parseInt(deltaStr);
         		changeVariation(delta);

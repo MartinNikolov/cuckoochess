@@ -186,10 +186,11 @@ you are not actively using the program.\
 	<string name="bishop">Bishop</string>
 	<string name="knight">Knight</string>
 	<string name="promote_pawn_to">Promote pawn to?</string>
-	<string name="copy_game">Copy Game</string>
-	<string name="copy_position">Copy Position</string>
-	<string name="paste">Paste</string>
-	<string name="clipboard">Clipboard</string>
+	<string name="copy_game">Copy Game to Clipboard</string>
+	<string name="copy_position">Copy Position to Clipboard</string>
+	<string name="paste">Paste from Clipboard</string>
+	<string name="remove_variation">Remove variation</string>
+	<string name="tools_menu">Tools</string>
 	<string name="goto_move">Goto move</string>
 	<string name="invalid_number_format">Invalid number format</string>
 	<string name="side_to_move">Side to Move</string>

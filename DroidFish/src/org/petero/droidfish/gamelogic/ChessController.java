@@ -366,12 +366,28 @@ public class ChessController {
     	}
     }
     
+    public final int numVariations() {
+    	return game.numVariations();
+    }
+
     public final void changeVariation(int delta) {
-    	if (game.canChangeVariation()) {
+    	if (game.numVariations() > 1) {
     		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
     		game.processString(String.format("changevariation %d", delta));
+    		updateComputeThreads(true);
+    		setSelection();
+    		updateGUI();
+    	}
+    }
+    
+    public final void removeVariation() {
+    	if (game.numVariations() > 1) {
+    		ss.searchResultWanted = false;
+    		stopAnalysis();
+			stopComputerThinking();
+    		game.removeVariation();
     		updateComputeThreads(true);
     		setSelection();
     		updateGUI();
