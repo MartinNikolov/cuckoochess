@@ -69,13 +69,16 @@ public class Game {
      * @return True if str was understood, false otherwise.
      */
     public final boolean processString(String str) {
-        if (handleCommand(str)) {
-        	updateTimeControl(true);
-            return true;
-        }
-        if (getGameState() != GameState.ALIVE) {
+        if (getGameState() != GameState.ALIVE)
             return false;
-        }
+		if (str.startsWith("draw ")) {
+			String drawCmd = str.substring(str.indexOf(" ") + 1);
+			handleDrawCmd(drawCmd);
+	    	return true;
+		} else if (str.equals("resign")) {
+			addToGameTree(new Move(0, 0, 0), "resign");
+			return true;
+		}
 
         Move m = TextIO.UCIstringToMove(str);
         if (m != null) {
@@ -294,31 +297,6 @@ public class Game {
         updateTimeControl(true);
     }
     
-    /**
-     * Handle a special command.
-     * @param moveStr  The command to handle
-     * @return  True if command handled, false otherwise.
-     */
-    private final boolean handleCommand(String moveStr) {
-        if (moveStr.startsWith("draw ")) {
-            if (getGameState() == GameState.ALIVE) {
-                String drawCmd = moveStr.substring(moveStr.indexOf(" ") + 1);
-                return handleDrawCmd(drawCmd);
-            } else {
-                return true;
-            }
-        } else if (moveStr.equals("resign")) {
-            if (getGameState()== GameState.ALIVE) {
-            	addToGameTree(new Move(0, 0, 0), "resign");
-                return true;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
     public final String getMoveListString() {
         StringBuilder ret = new StringBuilder(2048);
 
@@ -384,7 +362,7 @@ public class Game {
         return new Pair<Position, ArrayList<Move>>(pos, mList);
     }
 
-    private final boolean handleDrawCmd(String drawCmd) {
+    private final void handleDrawCmd(String drawCmd) {
     	Position pos = tree.currentPos;
         if (drawCmd.startsWith("rep") || drawCmd.startsWith("50")) {
             boolean rep = drawCmd.startsWith("rep");
@@ -437,20 +415,15 @@ public class Game {
                     processString(ms);
                 }
             }
-            return true;
         } else if (drawCmd.startsWith("offer ")) {
             pendingDrawOffer = true;
             String ms = drawCmd.substring(drawCmd.indexOf(" ") + 1);
             if (TextIO.stringToMove(pos, ms) != null) {
                 processString(ms);
             }
-            return true;
         } else if (drawCmd.equals("accept")) {
             if (haveDrawOffer())
             	addToGameTree(new Move(0, 0, 0), "draw accept");
-            return true;
-        } else {
-            return false;
         }
     }
 }
