@@ -70,34 +70,28 @@ public class GameTest {
         assertEquals(true, res);
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Draw by agreement
 
-        res = game.processString("undo"); // Undo "draw accept"
-        assertEquals(true, res);
+        game.undoMove(); // Undo "draw accept"
         assertEquals(Piece.WBISHOP, game.currPos().getPiece(TextIO.getSquare("b5")));
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        res = game.processString("undo"); // Undo "Bb5"
-        assertEquals(true, res);
+        game.undoMove(); // Undo "Bb5"
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move undone
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        res = game.processString("undo");
-        assertEquals(true, res);
+        game.undoMove();
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move undone
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move redone
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(Piece.WBISHOP, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move redone
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Can redo draw accept
 
         // Test draw offer in connection with invalid move
@@ -119,8 +113,8 @@ public class GameTest {
         game.processString("e4");
         game.processString("draw offer e4");       // Invalid black move
         assertEquals(true, game.pendingDrawOffer);
-        game.processString("undo");
-        game.processString("redo");
+        game.undoMove();
+        game.redoMove();
         game.processString("e5");
         assertEquals(true,game.currPos().whiteMove);
         assertEquals(false, game.haveDrawOffer());
@@ -204,7 +198,7 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Claim not valid, wrong move claimed
         assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5)));   // Move Nc6 made
         assertEquals(true, game.haveDrawOffer());
-        game.processString("undo");
+        game.undoMove();
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(2, 5)));
         game.processString("draw rep Ng8");
@@ -267,13 +261,13 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         game.processString("resign");
         assertEquals(Game.GameState.RESIGN_BLACK, game.getGameState());
-        game.processString("undo");
+        game.undoMove();
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         game.processString("f3");
         game.processString("e5");
         game.processString("resign");
         assertEquals(Game.GameState.RESIGN_WHITE, game.getGameState());
-        game.processString("undo");
+        game.undoMove();
         game.processString("e5");
         game.processString("g4");
         game.processString("Qh4");
@@ -298,27 +292,21 @@ public class GameTest {
         assertEquals(0, game.currPos().halfMoveClock);
         assertEquals(2, game.currPos().fullMoveCounter);
 
-        res = game.processString("undo");
-        assertEquals(true, res);
+        game.undoMove();
         assertEquals(1, game.currPos().halfMoveClock);
         assertEquals(1, game.currPos().fullMoveCounter);
-        res = game.processString("undo");
-        assertEquals(true, res);
+        game.undoMove();
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
-        res = game.processString("undo");
-        assertEquals(true, res);
+        game.undoMove();
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
 
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(1, game.currPos().halfMoveClock);
         assertEquals(1, game.currPos().fullMoveCounter);
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(0, game.currPos().halfMoveClock);
         assertEquals(2, game.currPos().fullMoveCounter);
-        res = game.processString("redo");
-        assertEquals(true, res);
+        game.redoMove();
         assertEquals(0, game.currPos().halfMoveClock);
         assertEquals(2, game.currPos().fullMoveCounter);
 
@@ -452,7 +440,7 @@ public class GameTest {
         assertEquals(expectedPos, hist.first);
         
         for (int i = 0; i < 6; i++)
-        	game.processString("undo");
+        	game.undoMove();
         hist = game.getUCIHistory();
         assertEquals(0, hist.second.size());
         expectedPos = TextIO.readFEN(TextIO.startPosFEN);

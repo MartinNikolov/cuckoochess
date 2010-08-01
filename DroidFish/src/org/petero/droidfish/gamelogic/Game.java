@@ -214,7 +214,7 @@ public class Game {
     	return nChildren;
     }
 
-    private final void changeVariation(int delta) {
+    public final void changeVariation(int delta) {
     	if (tree.currentNode == tree.rootNode)
     		return;
     	tree.goBack();
@@ -224,8 +224,10 @@ public class Game {
     	newChild = Math.max(newChild, 0);
     	newChild = Math.min(newChild, nChildren - 1);
     	tree.goForward(newChild);
+        pendingDrawOffer = false;
+        updateTimeControl(true);
     }
-    
+
     public final void removeVariation() {
     	if (numVariations() <= 1)
     		return;
@@ -266,12 +268,29 @@ public class Game {
     	return tree.currentNode.playerAction.equals("draw offer");
     }
 
+    public final void undoMove() {
+    	Move m = tree.currentNode.move;
+    	if (m != null) {
+    		tree.goBack();
+    		pendingDrawOffer = false;
+    		updateTimeControl(true);
+    	}
+    }
+
+    public final void redoMove() {
+    	if (canRedoMove()) {
+    		tree.goForward(-1);
+            pendingDrawOffer = false;
+            updateTimeControl(true);
+        }
+    }
+
     /**
      * Handle a special command.
      * @param moveStr  The command to handle
      * @return  True if command handled, false otherwise.
      */
-    private final boolean handleCommand(String moveStr) { // FIXME!!! Remove string interface
+    private final boolean handleCommand(String moveStr) {
         if (moveStr.equals("new")) {
         	tree = new GameTree();
             pendingDrawOffer = false;
@@ -280,32 +299,6 @@ public class Game {
             timeController.reset();
             updateTimeControl(true);
             return true;
-        } else if (moveStr.equals("undo")) {
-        	Move m = tree.currentNode.move;
-            if (m != null) {
-            	tree.goBack();
-                pendingDrawOffer = false;
-                updateTimeControl(true);
-                return true;
-            }
-            return true;
-        } else if (moveStr.equals("redo")) {
-        	if (canRedoMove()) {
-        		tree.goForward(-1);
-                pendingDrawOffer = false;
-                updateTimeControl(true);
-                return true;
-            }
-            return true;
-        } else if (moveStr.startsWith("changevariation ")) {
-        	if (numVariations() > 1) {
-        		String deltaStr = moveStr.substring(moveStr.indexOf(" ") + 1);
-        		int delta = Integer.parseInt(deltaStr);
-        		changeVariation(delta);
-                pendingDrawOffer = false;
-                updateTimeControl(true);
-        	}
-        	return true;
         } else if (moveStr.startsWith("draw ")) {
             if (getGameState() == GameState.ALIVE) {
                 String drawCmd = moveStr.substring(moveStr.indexOf(" ") + 1);
