@@ -366,6 +366,7 @@ public class GameTree {
     	}
     	setStartPos(TextIO.readFEN(fen));
     	
+    	String result = "";
     	for (int i = 0; i < nTags; i++) {
     		String name = tagPairs.get(i).tagName;
     		String val = tagPairs.get(i).tagValue;
@@ -384,7 +385,7 @@ public class GameTree {
     		} else if (name.equals("Black")) {
     			black = val;
     		} else if (name.equals("Result")) {
-    			// FIXME!!! Handle result somehow (maybe create resign/draw playerAction)
+    			result = val;
     		} else if (name.equals("TimeControl")) {
     			timeControl = val;
     		} else {
@@ -394,6 +395,36 @@ public class GameTree {
 
     	rootNode = gameRoot;
     	currentNode = rootNode;
+
+    	// If result indicated draw by agreement or a resigned game,
+    	// add that info to the game tree.
+    	{
+    		// Go to end of mainline
+    		while (variations().size() > 0)
+    			goForward(0);
+    		GameState state = getGameState();
+    		if (state == GameState.ALIVE) {
+    			if (result.equals("1-0")) {
+    				if (currentPos.whiteMove) {
+    					currentNode.playerAction = "resign";
+    				} else {
+    					addMove("--", "resign", 0, "", "");
+    				}
+    			} else if (result.equals("0-1")) {
+    				if (!currentPos.whiteMove) {
+    					currentNode.playerAction = "resign";
+    				} else {
+    					addMove("--", "resign", 0, "", "");
+    				}
+    			} else if (result.equals("1/2-1/2") || result.equals("1/2")) {
+    				currentNode.playerAction = "draw offer";
+    				addMove("--", "draw accept", 0, "", "");
+    			}
+    		}
+    		// Go back to the root
+    		while (currentNode != rootNode)
+    			goBack();
+    	}
 
     	return true;
     }
