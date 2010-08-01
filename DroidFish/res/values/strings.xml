@@ -149,11 +149,14 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 * Two player mode\n\
 * Computer vs computer mode\n\
 * Edit board\n\
+* Support for PGN variations\n\
 \n\
 <b>Hints</b>\n\
 * In game mode, long press chess board to activate copy/paste menu.\n\
 * In edit board mode, long press chess board to activate edit menu.\n\
 * Scroll left/right on the chess board to undo/redo moves.\n\
+* If the game contains multiple variations, scroll up/down on the chess board to \
+go to the previous/next variation.\n\
 \n\
 <b>Opening book</b>\n\
 DroidFish contains a small internal opening book. If you want to use \
