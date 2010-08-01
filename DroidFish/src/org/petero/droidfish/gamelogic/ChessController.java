@@ -602,9 +602,11 @@ public class ChessController {
     			final Pair<Position, ArrayList<Move>> ph = game.getUCIHistory();
     			final boolean haveDrawOffer = game.haveDrawOffer();
     			final Position currPos = new Position(game.currPos());
+    			final boolean alive = game.tree.getGameState() == GameState.ALIVE;
             	analysisThread = new Thread(new Runnable() {
             		public void run() {
-            			computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
+            			if (alive)
+            				computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
             		}
             	});
             	listener.clearSearchInfo();
