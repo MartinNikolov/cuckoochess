@@ -292,46 +292,104 @@ public class Game {
         pendingDrawOffer = false;
         updateTimeControl(true);
     }
-    
+
+
+	/** PngTokenReceiver implementation that renders PGN data for screen display. */
+	private static class PgnScreenText implements PgnToken.PgnTokenReceiver {
+		private StringBuilder sb = new StringBuilder(256);
+		private int prevType = PgnToken.EOF;
+		int nestLevel = 0;
+		boolean col0 = true;
+
+		final String getPgnString() {
+			StringBuilder ret = new StringBuilder(4096);
+			ret.append(sb.toString());
+	    	return ret.toString();
+		}
+
+		private final void newLine() {
+			if (!col0) {
+				sb.append('\n');
+				for (int i = 0; i < nestLevel; i++)
+					sb.append("  ");
+			}
+			col0 = true;
+		}
+
+		public void processToken(Node node, int type, String token) {
+			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
+					(type != PgnToken.LEFT_BRACKET))  {
+				// End of header. Just drop header lines
+				sb = new StringBuilder(4096);
+			}
+			switch (type) {
+			case PgnToken.STRING:
+				break;
+			case PgnToken.INTEGER:
+				if (	(prevType != PgnToken.LEFT_PAREN) &&
+						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
+					sb.append(' ');
+				sb.append(token);
+				col0 = false;
+				break;
+			case PgnToken.PERIOD:		 sb.append('.');   col0 = false; break;
+			case PgnToken.ASTERISK:		 sb.append(" *");  col0 = false; break;
+			case PgnToken.LEFT_BRACKET:  sb.append('[');   col0 = false; break;
+			case PgnToken.RIGHT_BRACKET: sb.append("]\n"); col0 = false; break;
+			case PgnToken.LEFT_PAREN:
+				nestLevel++;
+				if (col0)
+					sb.append("  ");
+				newLine();
+				sb.append('(');
+				col0 = false;
+				break;
+			case PgnToken.RIGHT_PAREN:
+				sb.append(')');
+				nestLevel--;
+				newLine();
+				break;
+			case PgnToken.NAG:
+				sb.append(Node.nagStr(Integer.parseInt(token)));
+				col0 = false;
+				break;
+			case PgnToken.SYMBOL:
+				if ((prevType != PgnToken.RIGHT_BRACKET) && !col0)
+					sb.append(' ');
+				sb.append(token);
+				col0 = false;
+				break;
+			case PgnToken.COMMENT:
+				if (prevType == PgnToken.RIGHT_BRACKET) {
+				} else if (nestLevel == 0) {
+					nestLevel++;
+					newLine();
+					nestLevel--;
+				} else {
+					if ((prevType != PgnToken.LEFT_PAREN) && !col0) {
+						sb.append(' ');
+					}
+				}
+				sb.append(token.trim());
+				col0 = false;
+				if (nestLevel == 0)
+					newLine();
+				break;
+			}
+			prevType = type;
+		}
+	}
+
     public final String getMoveListString() {
-        StringBuilder ret = new StringBuilder(2048);
-
-        Pair<List<Node>, Integer> ml = tree.getMoveList();
-        List<GameTree.Node> moveList = ml.first;
-        final int numMovesPlayed = ml.second;
-        Position pos = new Position(tree.startPos);
-
-        // Print all moves
-        int size = moveList.size();
-        boolean haveRedoPart = false;
-        if (!pos.whiteMove && (size > 0)) {
-        	ret.append(String.format("%d... ", pos.fullMoveCounter));
-        }
-        UndoInfo ui = new UndoInfo();
-        Node n = tree.rootNode;
-        for (int i = 0; i < size; i++) {
-        	n = moveList.get(i);
-        	if (i == numMovesPlayed) {
-        		ret.append("{ ");
-        		haveRedoPart = true;
-        	}
-            if (pos.whiteMove) {
-            	ret.append(pos.fullMoveCounter);
-            	ret.append('.');
-            	ret.append(' ');
-            }
-            ret.append(n.moveStr);
-            ret.append(n.nagStr());
-            ret.append(' ');
-            pos.makeMove(n.move, ui);
-        }
-        String gameResult = tree.getPGNResultString();
-        if (!gameResult.equals("*")) {
-        	ret.append(gameResult);
-        }
-        if (haveRedoPart)
-        	ret.append("}");
-        return ret.toString();
+        PGNOptions options = new PGNOptions();
+		options.exp.variations = true;
+		options.exp.comments = true;
+		options.exp.nag = true;
+		options.exp.playerAction = false;
+		options.exp.clockInfo = false;
+        PgnScreenText out = new PgnScreenText();
+        tree.pgnTreeWalker(options, out);
+        return out.getPgnString();
     }
 
     /**

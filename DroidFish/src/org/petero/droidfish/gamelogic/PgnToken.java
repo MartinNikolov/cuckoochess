@@ -29,6 +29,6 @@ public class PgnToken {
 	}
 	
 	public interface PgnTokenReceiver {
-		public void processToken(int type, String token);
+		public void processToken(GameTree.Node node, int type, String token);
 	};
 }

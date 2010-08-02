@@ -73,7 +73,7 @@ public class GameTree {
 		private String header = "";
 		private int prevType = PgnToken.EOF;
 
-		String getPgnString() {
+		final String getPgnString() {
 			StringBuilder ret = new StringBuilder(4096);
 			ret.append(header);
 			ret.append('\n');
@@ -105,7 +105,7 @@ public class GameTree {
 		}
 
 		@Override
-		public void processToken(int type, String token) {
+		public void processToken(Node node, int type, String token) {
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
 				header = sb.toString();
@@ -226,14 +226,14 @@ public class GameTree {
     	// Write moveText section
     	MoveNumber mn = new MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
     	Node.addPgnData(out, rootNode, mn.prev(), options);
-    	out.processToken(PgnToken.SYMBOL, pgnResultString);
+    	out.processToken(null, PgnToken.SYMBOL, pgnResultString);
     }
 
     private final void addTagPair(PgnToken.PgnTokenReceiver out, String tagName, String tagValue) {
-		out.processToken(PgnToken.LEFT_BRACKET, null);
-		out.processToken(PgnToken.SYMBOL, tagName);
-		out.processToken(PgnToken.STRING, tagValue);
-		out.processToken(PgnToken.RIGHT_BRACKET, null);
+		out.processToken(null, PgnToken.LEFT_BRACKET, null);
+		out.processToken(null, PgnToken.SYMBOL, tagName);
+		out.processToken(null, PgnToken.STRING, tagValue);
+		out.processToken(null, PgnToken.RIGHT_BRACKET, null);
 	}
 
     final static class PgnScanner {
@@ -991,9 +991,9 @@ public class GameTree {
     			needMoveNr = node.children.get(0).addPgnDataOneNode(out, nextMN, needMoveNr, options);
     			if (options.exp.variations) {
     				for (int i = 1; i < nChild; i++) {
-    					out.processToken(PgnToken.LEFT_PAREN, null);
+    					out.processToken(node, PgnToken.LEFT_PAREN, null);
     					addPgnData(out, node.children.get(i), nextMN, options);
-    					out.processToken(PgnToken.RIGHT_PAREN, null);
+    					out.processToken(node, PgnToken.RIGHT_PAREN, null);
     					needMoveNr = true;
     				}
     			}
@@ -1006,32 +1006,32 @@ public class GameTree {
     	private final boolean addPgnDataOneNode(PgnToken.PgnTokenReceiver out, MoveNumber mn,
     											boolean needMoveNr, PGNOptions options) {
     		if ((preComment.length() > 0) && options.exp.comments) {
-    			out.processToken(PgnToken.COMMENT, preComment);
+    			out.processToken(this, PgnToken.COMMENT, preComment);
     			needMoveNr = true;
     		}
     		if (moveStr.length() > 0) {
     			boolean nullSkip = moveStr.equals("--") && (playerAction.length() > 0) && !options.exp.playerAction;
     			if (!nullSkip) {
     				if (mn.wtm) {
-    					out.processToken(PgnToken.INTEGER, new Integer(mn.moveNo).toString());
-    					out.processToken(PgnToken.PERIOD, null);
+    					out.processToken(this, PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+    					out.processToken(this, PgnToken.PERIOD, null);
     				} else {
     					if (needMoveNr) {
-        					out.processToken(PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+        					out.processToken(this, PgnToken.INTEGER, new Integer(mn.moveNo).toString());
     						for (int i = 0; i < 3; i++)
-    							out.processToken(PgnToken.PERIOD, null);
+    							out.processToken(this, PgnToken.PERIOD, null);
     					}
     				}
-    				out.processToken(PgnToken.SYMBOL, moveStr);
+    				out.processToken(this, PgnToken.SYMBOL, moveStr);
     				needMoveNr = false;
     			}
     		}
     		if ((nag > 0) && options.exp.nag) {
-    			out.processToken(PgnToken.NAG, new Integer(nag).toString());
+    			out.processToken(this, PgnToken.NAG, new Integer(nag).toString());
     			needMoveNr = true;
     		}
     		if ((postComment.length() > 0) && options.exp.comments) {
-    			out.processToken(PgnToken.COMMENT, postComment);
+    			out.processToken(this, PgnToken.COMMENT, postComment);
     			needMoveNr = true;
     		}
     		if ((playerAction.length() > 0) && options.exp.playerAction) {
@@ -1045,9 +1045,9 @@ public class GameTree {
     		return needMoveNr;
 		}
 
-    	private static final void addExtendedInfo(PgnToken.PgnTokenReceiver out,
+    	private final void addExtendedInfo(PgnToken.PgnTokenReceiver out,
     											  String extCmd, String extData) {
-    		out.processToken(PgnToken.COMMENT, "{[%" + extCmd + " " + extData + "]}");
+    		out.processToken(this, PgnToken.COMMENT, "{[%" + extCmd + " " + extData + "]}");
     	}
 
     	private static final String getTimeStr(int remainingTime) {
@@ -1238,7 +1238,7 @@ public class GameTree {
     		return ret;
     	}
     	
-    	public final String nagStr() {
+    	public final static String nagStr(int nag) {
     		switch (nag) {
     		case 1: return "!";
     		case 2: return "?";
@@ -1246,14 +1246,14 @@ public class GameTree {
     		case 4: return "??";
     		case 5: return "!?";
     		case 6: return "?!";
-    		case 11: return "=";
-    		case 13: return "∞";
-    		case 14: return "+/=";
-    		case 15: return "=/+";
-    		case 16: return "+/-"; 
-    		case 17: return "-/+";
-    		case 18: return "+-";
-    		case 19: return "-+";
+    		case 11: return " =";
+    		case 13: return " ∞";
+    		case 14: return " +/=";
+    		case 15: return " =/+";
+    		case 16: return " +/-"; 
+    		case 17: return " -/+";
+    		case 18: return " +-";
+    		case 19: return " -+";
     		default: return "";
     		}
     	}
