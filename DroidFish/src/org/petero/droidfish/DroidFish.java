@@ -572,19 +572,25 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void updateThinkingInfo() {
+		boolean thinkingEmpty = true;
 		{
 			String s = "";
 			if (mShowThinking || gameMode.analysisMode()) {
 				s = thinkingStr;
 			}
 			thinking.setText(s, TextView.BufferType.SPANNABLE);
+			if (s.length() > 0) thinkingEmpty = false;
 		}
 		if (mShowBookHints && (bookInfoStr.length() > 0)) {
 			thinking.append(Html.fromHtml("<br><b>Book:</b> "));
 			thinking.append(bookInfoStr);
+			thinkingEmpty = false;
 		}
 		if (variantStr.indexOf(' ') >= 0) {
-			String s = "<br><b>Var:</b> " + variantStr;
+			String s = "";
+			if (!thinkingEmpty)
+				s += "<br>";
+			s += "<b>Var:</b> " + variantStr;
 			thinking.append(Html.fromHtml(s));
 		}
 
