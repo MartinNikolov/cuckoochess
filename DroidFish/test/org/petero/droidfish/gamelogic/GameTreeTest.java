@@ -10,7 +10,6 @@ import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.gamelogic.Game.GameState;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 import org.petero.droidfish.gamelogic.GameTree.PgnScanner;
-import org.petero.droidfish.gamelogic.GameTree.PgnToken;
 
 public class GameTreeTest {
 

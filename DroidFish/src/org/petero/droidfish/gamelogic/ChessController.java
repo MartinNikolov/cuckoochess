@@ -266,7 +266,7 @@ public class ChessController {
     
     /** Convert current game to PGN format. */ 
     public final String getPGN(PGNOptions options) {
-    	return game.getPGN(options);
+    	return game.tree.toPGN(options);
     }
 
     public final void setFENOrPGN(String fenPgn, PGNOptions options) throws ChessParseError {

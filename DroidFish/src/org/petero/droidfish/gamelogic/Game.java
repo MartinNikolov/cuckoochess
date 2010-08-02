@@ -48,10 +48,6 @@ public class Game {
         updateTimeControl(false);
 	}
 
-    public final String getPGN(PGNOptions options) {
-    	return tree.toPGN(options);
-    }
-
 	final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
 		boolean ret = tree.readPGN(pgn, options);
 		if (ret)

@@ -67,25 +67,121 @@ public class GameTree {
     	currentPos = new Position(startPos);
 	}
 
-	private final void addTagPair(StringBuilder sb, String tagName, String tagValue) {
-		sb.append('[');
-		sb.append(tagName);
-		sb.append(" \"");
-		int len = tagValue.length();
-		for (int i = 0; i < len; i++) {
-			char c = tagValue.charAt(i);
-			if ((c == '\\') || (c == '"')) {
-				sb.append('\\');
+	/** PngTokenReceiver implementation that generates plain text PGN data. */
+	private static class PgnText implements PgnToken.PgnTokenReceiver {
+		private StringBuilder sb = new StringBuilder(256);
+		private String header = "";
+		private int prevType = PgnToken.EOF;
+
+		String getPgnString() {
+			StringBuilder ret = new StringBuilder(4096);
+			ret.append(header);
+			ret.append('\n');
+
+			String[] words = sb.toString().split(" ");
+	    	int currLineLength = 0;
+			final int arrLen = words.length;
+			for (int i = 0; i < arrLen; i++) {
+				String word = words[i].trim();
+				int wordLen = word.length();
+				if (wordLen > 0) {
+					if (currLineLength == 0) {
+						ret.append(word);
+						currLineLength = wordLen;
+					} else if (currLineLength + 1 + wordLen >= 80) {
+						ret.append('\n');
+						ret.append(word);
+						currLineLength = wordLen;
+					} else {
+						ret.append(' ');
+						currLineLength++;
+						ret.append(word);
+						currLineLength += wordLen;
+					}
+				}
 			}
-			sb.append(c);
+	    	ret.append("\n\n");
+	    	return ret.toString();
 		}
-		sb.append("\"]\n");
+
+		@Override
+		public void processToken(int type, String token) {
+			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
+					(type != PgnToken.LEFT_BRACKET))  {
+				header = sb.toString();
+				sb = new StringBuilder(4096);
+			}
+			switch (type) {
+			case PgnToken.STRING: {
+				sb.append(" \"");
+				int len = token.length();
+				for (int i = 0; i < len; i++) {
+					char c = token.charAt(i);
+					if ((c == '\\') || (c == '"')) {
+						sb.append('\\');
+					}
+					sb.append(c);
+				}
+				sb.append("\"");
+				break;
+			}
+			case PgnToken.INTEGER:
+				if (	(prevType != PgnToken.LEFT_PAREN) &&
+						(prevType != PgnToken.RIGHT_BRACKET))
+					sb.append(' ');
+				sb.append(token);
+				break;
+			case PgnToken.PERIOD:
+				sb.append('.');
+				break;
+			case PgnToken.ASTERISK:
+				sb.append(" *");
+				break;
+			case PgnToken.LEFT_BRACKET:
+				sb.append('[');
+				break;
+			case PgnToken.RIGHT_BRACKET:
+				sb.append("]\n");
+				break;
+			case PgnToken.LEFT_PAREN:
+				sb.append(" (");
+				break;
+			case PgnToken.RIGHT_PAREN:
+				sb.append(')');
+				break;
+			case PgnToken.NAG:
+				sb.append(" $");
+				sb.append(token);
+				break;
+			case PgnToken.SYMBOL:
+				if (prevType != PgnToken.RIGHT_BRACKET)
+					sb.append(' ');
+				sb.append(token);
+				break;
+			case PgnToken.COMMENT:
+				if (	(prevType != PgnToken.LEFT_PAREN) &&
+						(prevType != PgnToken.RIGHT_BRACKET))
+					sb.append(' ');
+				sb.append('{');
+				sb.append(token);
+				sb.append('}');
+				break;
+			case PgnToken.EOF:
+				break;
+			}
+			prevType = type;
+		}
 	}
 
-    /** Export in PGN format. */ 
+    /** Export game tree in PGN format. */
     public final String toPGN(PGNOptions options) {
-    	StringBuilder pgn = new StringBuilder();
+    	PgnText pgnText = new PgnText();
+    	pgnTreeWalker(options, pgnText);
+    	return pgnText.getPgnString();
+    }
 
+    /** Walks the game tree in PGN export order. */
+    public final void pgnTreeWalker(PGNOptions options, PgnToken.PgnTokenReceiver out) {
     	// Go to end of mainline to evaluate PGN result string.
     	String pgnResultString;
     	{
@@ -106,89 +202,39 @@ public class GameTree {
     	}
 
     	// Write seven tag roster
-        addTagPair(pgn, "Event",  event);
-        addTagPair(pgn, "Site",   site);
-        addTagPair(pgn, "Date",   date);
-        addTagPair(pgn, "Round",  round);
-        addTagPair(pgn, "White",  white);
-        addTagPair(pgn, "Black",  black);
-        addTagPair(pgn, "Result", pgnResultString);
+        addTagPair(out, "Event",  event);
+        addTagPair(out, "Site",   site);
+        addTagPair(out, "Date",   date);
+        addTagPair(out, "Round",  round);
+        addTagPair(out, "White",  white);
+        addTagPair(out, "Black",  black);
+        addTagPair(out, "Result", pgnResultString);
 
         // Write special tag pairs
     	String fen = TextIO.toFEN(startPos);
     	if (!fen.equals(TextIO.startPosFEN)) {
-    		addTagPair(pgn, "FEN", fen);
-    		addTagPair(pgn, "Setup", "1");
+    		addTagPair(out, "FEN", fen);
+    		addTagPair(out, "Setup", "1");
     	}
     	if (!timeControl.equals("?"))
-    		addTagPair(pgn, "TimeControl", timeControl);
+    		addTagPair(out, "TimeControl", timeControl);
 
     	// Write other non-standard tag pairs
     	for (int i = 0; i < tagPairs.size(); i++)
-    		addTagPair(pgn, tagPairs.get(i).tagName, tagPairs.get(i).tagValue);
-    	pgn.append("\n");
+    		addTagPair(out, tagPairs.get(i).tagName, tagPairs.get(i).tagValue);
 
     	// Write moveText section
-    	StringBuilder moveText = new StringBuilder(4096);
     	MoveNumber mn = new MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
-    	Node.addPgnData(moveText, rootNode, mn.prev(), options);
-    	moveText.append(' ');
-    	moveText.append(pgnResultString);
-		String[] words = moveText.toString().split(" ");
-    	int currLineLength = 0;
-		final int arrLen = words.length;
-		for (int i = 0; i < arrLen; i++) {
-			String word = words[i].trim();
-			int wordLen = word.length();
-			if (wordLen > 0) {
-				if (currLineLength == 0) {
-					pgn.append(word);
-					currLineLength = wordLen;
-				} else if (currLineLength + 1 + wordLen >= 80) {
-					pgn.append('\n');
-					pgn.append(word);
-					currLineLength = wordLen;
-				} else {
-					pgn.append(' ');
-					currLineLength++;
-					pgn.append(word);
-					currLineLength += wordLen;
-				}
-			}
-		}
-
-    	pgn.append("\n\n");
-    	return pgn.toString();
+    	Node.addPgnData(out, rootNode, mn.prev(), options);
+    	out.processToken(PgnToken.SYMBOL, pgnResultString);
     }
 
-    /** A token in a PGN data stream. Used by the PGN parser. */
-    final static class PgnToken {
-    	// These are tokens according to the PGN spec
-    	static final int STRING = 0;
-    	static final int INTEGER = 1;
-    	static final int PERIOD = 2;
-    	static final int ASTERISK = 3;
-    	static final int LEFT_BRACKET = 4;
-    	static final int RIGHT_BRACKET = 5;
-    	static final int LEFT_PAREN = 6;
-    	static final int RIGHT_PAREN = 7;
-    	static final int NAG = 8;
-    	static final int SYMBOL = 9;
-
-    	// These are not tokens according to the PGN spec, but the parser
-    	// extracts these anyway for convenience.
-    	static final int COMMENT = 10;
-    	static final int EOF = 11;
-
-    	// Actual token data
-    	int type;
-    	String token;
-
-    	PgnToken(int type, String token) {
-    		this.type = type;
-    		this.token = token;
-    	}
-    }
+    private final void addTagPair(PgnToken.PgnTokenReceiver out, String tagName, String tagValue) {
+		out.processToken(PgnToken.LEFT_BRACKET, null);
+		out.processToken(PgnToken.SYMBOL, tagName);
+		out.processToken(PgnToken.STRING, tagValue);
+		out.processToken(PgnToken.RIGHT_BRACKET, null);
+	}
 
     final static class PgnScanner {
     	String data;
@@ -934,21 +980,20 @@ public class GameTree {
 		}
 
 		/** Export whole tree rooted at "node" in PGN format. */ 
-    	public static final void addPgnData(StringBuilder pgn, Node node, MoveNumber moveNum, PGNOptions options) {
-    		int l0 = pgn.length();
-    		boolean needMoveNr = node.addPgnDataOneNode(pgn, moveNum, true, options);
+    	public static final void addPgnData(PgnToken.PgnTokenReceiver out, Node node,
+    										MoveNumber moveNum, PGNOptions options) {
+    		boolean needMoveNr = node.addPgnDataOneNode(out, moveNum, true, options);
     		while (true) {
     			int nChild = node.children.size();
     			if (nChild == 0)
     				break;
-    			if (pgn.length() > l0) pgn.append(' ');
     			MoveNumber nextMN = moveNum.next();
-    			needMoveNr = node.children.get(0).addPgnDataOneNode(pgn, nextMN, needMoveNr, options);
+    			needMoveNr = node.children.get(0).addPgnDataOneNode(out, nextMN, needMoveNr, options);
     			if (options.exp.variations) {
     				for (int i = 1; i < nChild; i++) {
-    					pgn.append(" (");
-    					addPgnData(pgn, node.children.get(i), nextMN, options);
-    					pgn.append(')');
+    					out.processToken(PgnToken.LEFT_PAREN, null);
+    					addPgnData(out, node.children.get(i), nextMN, options);
+    					out.processToken(PgnToken.RIGHT_PAREN, null);
     					needMoveNr = true;
     				}
     			}
@@ -958,63 +1003,51 @@ public class GameTree {
     	}
 
     	/** Export this node in PGN format. */ 
-    	private final boolean addPgnDataOneNode(StringBuilder pgn, MoveNumber mn, boolean needMoveNr, PGNOptions options) {
-    		int l0 = pgn.length();
+    	private final boolean addPgnDataOneNode(PgnToken.PgnTokenReceiver out, MoveNumber mn,
+    											boolean needMoveNr, PGNOptions options) {
     		if ((preComment.length() > 0) && options.exp.comments) {
-    			pgn.append('{');
-    			pgn.append(preComment);
-    			pgn.append('}');
+    			out.processToken(PgnToken.COMMENT, preComment);
     			needMoveNr = true;
     		}
     		if (moveStr.length() > 0) {
     			boolean nullSkip = moveStr.equals("--") && (playerAction.length() > 0) && !options.exp.playerAction;
     			if (!nullSkip) {
-    				if (pgn.length() > l0) pgn.append(' ');
     				if (mn.wtm) {
-    					pgn.append(mn.moveNo);
-    					pgn.append(". ");
+    					out.processToken(PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+    					out.processToken(PgnToken.PERIOD, null);
     				} else {
     					if (needMoveNr) {
-    						pgn.append(mn.moveNo);
-    						pgn.append("... ");
+        					out.processToken(PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+    						for (int i = 0; i < 3; i++)
+    							out.processToken(PgnToken.PERIOD, null);
     					}
     				}
-    				pgn.append(moveStr);
+    				out.processToken(PgnToken.SYMBOL, moveStr);
     				needMoveNr = false;
     			}
     		}
     		if ((nag > 0) && options.exp.nag) {
-    			if (pgn.length() > l0) pgn.append(' ');
-    			pgn.append('$');
-    			pgn.append(nag);
+    			out.processToken(PgnToken.NAG, new Integer(nag).toString());
     			needMoveNr = true;
     		}
     		if ((postComment.length() > 0) && options.exp.comments) {
-    			if (pgn.length() > l0) pgn.append(' ');
-    			pgn.append('{');
-    			pgn.append(postComment);
-    			pgn.append('}');
+    			out.processToken(PgnToken.COMMENT, postComment);
     			needMoveNr = true;
     		}
     		if ((playerAction.length() > 0) && options.exp.playerAction) {
-    			if (pgn.length() > l0) pgn.append(' ');
-    			addExtendedInfo(pgn, "playeraction", playerAction);
+    			addExtendedInfo(out, "playeraction", playerAction);
     			needMoveNr = true;
     		}
     		if ((remainingTime != Integer.MIN_VALUE) && options.exp.clockInfo) {
-    			if (pgn.length() > l0) pgn.append(' ');
-    			addExtendedInfo(pgn, "clk", getTimeStr(remainingTime));
+    			addExtendedInfo(out, "clk", getTimeStr(remainingTime));
     			needMoveNr = true;
     		}
     		return needMoveNr;
 		}
 
-    	private static final void addExtendedInfo(StringBuilder pgn, String extCmd, String extData) {
-    		pgn.append("{[%");
-    		pgn.append(extCmd);
-    		pgn.append(' ');
-    		pgn.append(extData);
-    		pgn.append("]}");
+    	private static final void addExtendedInfo(PgnToken.PgnTokenReceiver out,
+    											  String extCmd, String extData) {
+    		out.processToken(PgnToken.COMMENT, "{[%" + extCmd + " " + extData + "]}");
     	}
 
     	private static final String getTimeStr(int remainingTime) {
