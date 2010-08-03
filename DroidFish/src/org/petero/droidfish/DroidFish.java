@@ -168,7 +168,7 @@ public class DroidFish extends Activity implements GUIInterface {
     }
     
 	private SpannableStringBuilder moveListStr = new SpannableStringBuilder();
-	private int currCharPos = 0;
+	private boolean inMainLine = true;
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -184,7 +184,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		cb.setFlipped(oldCB.flipped);
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
-        setMoveListString(moveListStr, currCharPos);
+        setMoveListString(moveListStr, inMainLine);
 		updateThinkingInfo();
 	}
 
@@ -535,11 +535,11 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	@Override
-	public void setMoveListString(SpannableStringBuilder str, int charPos) {
+	public void setMoveListString(SpannableStringBuilder str, boolean inMainLine) {
 		moveListStr = str;
-		currCharPos = charPos;
+		this.inMainLine = inMainLine;
 		moveList.setText(moveListStr);
-		if (!ctrl.canRedoMove())
+		if (!ctrl.canRedoMove() && inMainLine)
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 

@@ -309,14 +309,14 @@ public class Game {
 		boolean col0 = true;
 		Node currNode;
 		final int indentStep = 15;
-		int currCharPos = 0;
+		boolean inMainLine = true;
 
 		PgnScreenText(Node currNode) {
 			this.currNode = currNode;
 		}
 		
-		final Pair<SpannableStringBuilder,Integer> getData() {
-			return new Pair<SpannableStringBuilder, Integer>(sb, currCharPos);
+		final Pair<SpannableStringBuilder, Boolean> getData() {
+			return new Pair<SpannableStringBuilder, Boolean>(sb, inMainLine);
 		}
 
 		int paraStart = 0;
@@ -389,7 +389,7 @@ public class Game {
 				int l1 = sb.length();
 				if (node == currNode) {
 					sb.setSpan(new BackgroundColorSpan(0xff888888), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					currCharPos = l0;
+					inMainLine = (nestLevel == 0);
 				}
 //				sb.setSpan(new ForegroundColorSpan(0xffffffff), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				if (nestLevel == 0) {
@@ -419,7 +419,7 @@ public class Game {
 		}
 	}
 
-    public final Pair<SpannableStringBuilder,Integer> getMoveListString() {
+    public final Pair<SpannableStringBuilder, Boolean> getMoveListString() {
         PGNOptions options = new PGNOptions();
 		options.exp.variations = true;
 		options.exp.comments = true;

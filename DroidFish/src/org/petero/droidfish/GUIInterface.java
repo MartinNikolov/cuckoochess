@@ -21,7 +21,7 @@ public interface GUIInterface {
 	public void setStatusString(String str);
 
 	/** Update the list of moves. */
-	public void setMoveListString(SpannableStringBuilder str, int charPos);
+	public void setMoveListString(SpannableStringBuilder str, boolean inMainLine);
 
 	/** Update the computer thinking information. */
 	public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves);

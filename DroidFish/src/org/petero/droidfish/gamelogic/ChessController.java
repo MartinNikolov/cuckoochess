@@ -497,7 +497,7 @@ public class ChessController {
             str = game.getGameStateString();
         }
         gui.setStatusString(str);
-        Pair<SpannableStringBuilder, Integer> pair = game.getMoveListString();
+        Pair<SpannableStringBuilder, Boolean> pair = game.getMoveListString();
         gui.setMoveListString(pair.first, pair.second);
 
         StringBuilder sb = new StringBuilder();
