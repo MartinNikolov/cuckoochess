@@ -13,6 +13,8 @@ import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.Game.GameState;
 
+import android.text.SpannableStringBuilder;
+
 /**
  * The glue between the chess engine and the GUI.
  * @author petero
@@ -495,7 +497,8 @@ public class ChessController {
             str = game.getGameStateString();
         }
         gui.setStatusString(str);
-        gui.setMoveListString(game.getMoveListString());
+        Pair<SpannableStringBuilder, Integer> pair = game.getMoveListString();
+        gui.setMoveListString(pair.first, pair.second);
 
         StringBuilder sb = new StringBuilder();
         if (game.tree.currentNode != game.tree.rootNode) {

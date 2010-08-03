@@ -5,6 +5,8 @@ import java.util.List;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Position;
 
+import android.text.SpannableStringBuilder;
+
 
 /** Interface between the gui and the ChessController. */
 public interface GUIInterface {
@@ -19,7 +21,7 @@ public interface GUIInterface {
 	public void setStatusString(String str);
 
 	/** Update the list of moves. */
-	public void setMoveListString(String str);
+	public void setMoveListString(SpannableStringBuilder str, int charPos);
 
 	/** Update the computer thinking information. */
 	public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves);

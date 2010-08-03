@@ -12,6 +12,13 @@ import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.LeadingMarginSpan;
+import android.text.style.StyleSpan;
+
 /**
  *
  * @author petero
@@ -296,31 +303,52 @@ public class Game {
 
 	/** PngTokenReceiver implementation that renders PGN data for screen display. */
 	private static class PgnScreenText implements PgnToken.PgnTokenReceiver {
-		private StringBuilder sb = new StringBuilder(256);
+		private SpannableStringBuilder sb = new SpannableStringBuilder();
 		private int prevType = PgnToken.EOF;
 		int nestLevel = 0;
 		boolean col0 = true;
+		Node currNode;
+		final int indentStep = 15;
+		int currCharPos = 0;
 
-		final String getPgnString() {
-			StringBuilder ret = new StringBuilder(4096);
-			ret.append(sb.toString());
-	    	return ret.toString();
+		PgnScreenText(Node currNode) {
+			this.currNode = currNode;
+		}
+		
+		final Pair<SpannableStringBuilder,Integer> getData() {
+			return new Pair<SpannableStringBuilder, Integer>(sb, currCharPos);
 		}
 
+		int paraStart = 0;
+		int paraIndent = 0;
 		private final void newLine() {
 			if (!col0) {
+				if (paraIndent > 0) {
+					int paraEnd = sb.length();
+					int indent = paraIndent * indentStep;
+					sb.setSpan(new LeadingMarginSpan.Standard(indent), paraStart, paraEnd,
+							   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
 				sb.append('\n');
-				for (int i = 0; i < nestLevel; i++)
-					sb.append("  ");
+				paraStart = sb.length();
+				paraIndent = nestLevel;
 			}
 			col0 = true;
 		}
+
+		boolean pendingNewLine = false;
 
 		public void processToken(Node node, int type, String token) {
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
 				// End of header. Just drop header lines
-				sb = new StringBuilder(4096);
+				sb = new SpannableStringBuilder();
+			}
+			if (pendingNewLine) {
+				if (type != PgnToken.RIGHT_PAREN) {
+					newLine();
+					pendingNewLine = false;
+				}
 			}
 			switch (type) {
 			case PgnToken.STRING:
@@ -339,7 +367,7 @@ public class Game {
 			case PgnToken.LEFT_PAREN:
 				nestLevel++;
 				if (col0)
-					sb.append("  ");
+					paraIndent++;
 				newLine();
 				sb.append('(');
 				col0 = false;
@@ -347,18 +375,29 @@ public class Game {
 			case PgnToken.RIGHT_PAREN:
 				sb.append(')');
 				nestLevel--;
-				newLine();
+				pendingNewLine = true;
 				break;
 			case PgnToken.NAG:
 				sb.append(Node.nagStr(Integer.parseInt(token)));
 				col0 = false;
 				break;
-			case PgnToken.SYMBOL:
+			case PgnToken.SYMBOL: {
 				if ((prevType != PgnToken.RIGHT_BRACKET) && !col0)
 					sb.append(' ');
+				int l0 = sb.length();
 				sb.append(token);
+				int l1 = sb.length();
+				if (node == currNode) {
+					sb.setSpan(new BackgroundColorSpan(0xff888888), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					currCharPos = l0;
+				}
+//				sb.setSpan(new ForegroundColorSpan(0xffffffff), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				if (nestLevel == 0) {
+					sb.setSpan(new StyleSpan(Typeface.BOLD), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
 				col0 = false;
 				break;
+			}
 			case PgnToken.COMMENT:
 				if (prevType == PgnToken.RIGHT_BRACKET) {
 				} else if (nestLevel == 0) {
@@ -380,16 +419,16 @@ public class Game {
 		}
 	}
 
-    public final String getMoveListString() {
+    public final Pair<SpannableStringBuilder,Integer> getMoveListString() {
         PGNOptions options = new PGNOptions();
 		options.exp.variations = true;
 		options.exp.comments = true;
 		options.exp.nag = true;
 		options.exp.playerAction = false;
 		options.exp.clockInfo = false;
-        PgnScreenText out = new PgnScreenText();
+        PgnScreenText out = new PgnScreenText(tree.currentNode);
         tree.pgnTreeWalker(options, out);
-        return out.getPgnString();
+        return out.getData();
     }
 
     /**

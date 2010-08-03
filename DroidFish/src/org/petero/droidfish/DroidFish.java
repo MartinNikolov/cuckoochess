@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -166,13 +167,14 @@ public class DroidFish extends Activity implements GUIInterface {
     	return ret.toString();
     }
     
+	private SpannableStringBuilder moveListStr = new SpannableStringBuilder();
+	private int currCharPos = 0;
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		ChessBoard oldCB = cb;
 		String statusStr = status.getText().toString();
-		String moveListStr = moveList.getText().toString();
         initUI(false);
         readPrefs();
         cb.cursorX = oldCB.cursorX;
@@ -182,7 +184,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		cb.setFlipped(oldCB.flipped);
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
-        setMoveListString(moveListStr);
+        setMoveListString(moveListStr, currCharPos);
 		updateThinkingInfo();
 	}
 
@@ -533,8 +535,10 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	@Override
-	public void setMoveListString(String str) {
-		moveList.setText(str);
+	public void setMoveListString(SpannableStringBuilder str, int charPos) {
+		moveListStr = str;
+		currCharPos = charPos;
+		moveList.setText(moveListStr);
 		if (!ctrl.canRedoMove())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
@@ -582,8 +586,11 @@ public class DroidFish extends Activity implements GUIInterface {
 			if (s.length() > 0) thinkingEmpty = false;
 		}
 		if (mShowBookHints && (bookInfoStr.length() > 0)) {
-			thinking.append(Html.fromHtml("<br><b>Book:</b> "));
-			thinking.append(bookInfoStr);
+			String s = "";
+			if (!thinkingEmpty)
+				s += "<br>";
+			s += "<b>Book:</b>" + bookInfoStr;
+			thinking.append(Html.fromHtml(s));
 			thinkingEmpty = false;
 		}
 		if (variantStr.indexOf(' ') >= 0) {
