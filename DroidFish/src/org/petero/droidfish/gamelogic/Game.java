@@ -13,12 +13,10 @@ import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 
-import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.LeadingMarginSpan;
-import android.text.style.StyleSpan;
 
 /**
  *
@@ -406,9 +404,6 @@ public class Game {
 				nodeToCharPos.put(node, new NodeInfo(node, l0, l1));
 				if (node == currNode) {
 					inMainLine = (nestLevel == 0);
-				}
-				if (nestLevel == 0) {
-					sb.setSpan(new StyleSpan(Typeface.BOLD), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 				col0 = false;
 				break;
