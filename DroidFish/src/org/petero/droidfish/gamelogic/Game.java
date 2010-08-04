@@ -6,6 +6,7 @@
 package org.petero.droidfish.gamelogic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.petero.droidfish.PGNOptions;
@@ -30,9 +31,12 @@ public class Game {
     TimeControl timeController;
     private boolean gamePaused;
 
+    PgnScreenText gameTextListener;
+
     public Game(ComputerPlayer computerPlayer, int timeControl, int movesPerSession, int timeIncrement) {
         this.computerPlayer = computerPlayer;
-        tree = new GameTree();
+        gameTextListener = new PgnScreenText();
+        tree = new GameTree(gameTextListener);
         timeController = new TimeControl();
         timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
         gamePaused = false;
@@ -292,7 +296,7 @@ public class Game {
     }
 
     public final void newGame() {
-    	tree = new GameTree();
+    	tree = new GameTree(gameTextListener);
         if (computerPlayer != null)
         	computerPlayer.clearTT();
         timeController.reset();
@@ -302,20 +306,32 @@ public class Game {
 
 
 	/** PngTokenReceiver implementation that renders PGN data for screen display. */
-	private static class PgnScreenText implements PgnToken.PgnTokenReceiver {
+	static class PgnScreenText implements PgnToken.PgnTokenReceiver {
 		private SpannableStringBuilder sb = new SpannableStringBuilder();
 		private int prevType = PgnToken.EOF;
 		int nestLevel = 0;
 		boolean col0 = true;
-		Node currNode;
+		Node currNode = null;
 		final int indentStep = 15;
 		boolean inMainLine = true;
+		boolean upToDate = false;
 
-		PgnScreenText(Node currNode) {
-			this.currNode = currNode;
+		private static class NodeInfo {
+			Node node;
+			int l0, l1;
+			NodeInfo(Node n, int ls, int le) {
+				node = n;
+				l0 = ls;
+				l1 = le;
+			}
 		}
+		HashMap<Node, NodeInfo> nodeToCharPos;
 		
-		final Pair<SpannableStringBuilder, Boolean> getData() {
+		PgnScreenText() {
+			nodeToCharPos = new HashMap<Node, NodeInfo>();
+		}
+
+		public Pair<SpannableStringBuilder, Boolean> getData() {
 			return new Pair<SpannableStringBuilder, Boolean>(sb, inMainLine);
 		}
 
@@ -387,11 +403,10 @@ public class Game {
 				int l0 = sb.length();
 				sb.append(token);
 				int l1 = sb.length();
+				nodeToCharPos.put(node, new NodeInfo(node, l0, l1));
 				if (node == currNode) {
-					sb.setSpan(new BackgroundColorSpan(0xff888888), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					inMainLine = (nestLevel == 0);
 				}
-//				sb.setSpan(new ForegroundColorSpan(0xffffffff), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				if (nestLevel == 0) {
 					sb.setSpan(new StyleSpan(Typeface.BOLD), l0, l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
@@ -417,6 +432,25 @@ public class Game {
 			}
 			prevType = type;
 		}
+
+		@Override
+		public void clear() {
+			upToDate = false;
+			nodeToCharPos.clear();
+		}
+
+		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);
+
+		@Override
+		public void setCurrent(Node node) {
+			sb.removeSpan(bgSpan);
+			NodeInfo ni = nodeToCharPos.get(node);
+			if (ni != null) {
+				bgSpan = new BackgroundColorSpan(0xff888888);
+				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			currNode = node;
+		}
 	}
 
     public final Pair<SpannableStringBuilder, Boolean> getMoveListString() {
@@ -426,9 +460,13 @@ public class Game {
 		options.exp.nag = true;
 		options.exp.playerAction = false;
 		options.exp.clockInfo = false;
-        PgnScreenText out = new PgnScreenText(tree.currentNode);
-        tree.pgnTreeWalker(options, out);
-        return out.getData();
+        if (!gameTextListener.upToDate) {
+        	gameTextListener.clear();
+        	tree.pgnTreeWalker(options, gameTextListener);
+        	gameTextListener.upToDate = true;
+        }
+        gameTextListener.setCurrent(tree.currentNode);
+        return gameTextListener.getData();
     }
 
     /**

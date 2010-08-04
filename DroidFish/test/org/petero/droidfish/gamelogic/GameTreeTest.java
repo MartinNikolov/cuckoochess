@@ -15,7 +15,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testGameTree() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		Position expectedPos = TextIO.readFEN(TextIO.startPosFEN);
 		assertEquals(expectedPos, gt.currentPos);
 
@@ -73,7 +73,7 @@ public class GameTreeTest {
 		assertEquals(expectedPos, gt.currentPos);
 		
 		byte[] serialState = gt.toByteArray();
-		gt = new GameTree();
+		gt = new GameTree(null);
 		gt.fromByteArray(serialState);
 		assertEquals(expectedPos, gt.currentPos);
 
@@ -103,7 +103,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testGetMoveList() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		gt.addMove("e4", "", 0, "", "");
 		gt.addMove("d4", "", 0, "", "");
 		assertEquals("*e4", getMoveListAsString(gt));
@@ -146,7 +146,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testReorderVariation() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		gt.addMove("e4", "", 0, "", "");
 		gt.addMove("d4", "", 0, "", "");
 		gt.addMove("c4", "", 0, "", "");
@@ -172,7 +172,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testDeleteVariation() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		gt.addMove("e4", "", 0, "", "");
 		gt.addMove("d4", "", 0, "", "");
 		gt.addMove("c4", "", 0, "", "");
@@ -214,7 +214,7 @@ public class GameTreeTest {
 	
 	@Test
 	public final void testGetRemainingTime() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		int initialTime = 60000;
 		assertEquals(initialTime, gt.getRemainingTime(true, initialTime));
 		assertEquals(initialTime, gt.getRemainingTime(false, initialTime));
@@ -408,7 +408,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testReadPGN() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		PGNOptions options = new PGNOptions();
 		options.imp.variations = true;
 		options.imp.comments = true;
@@ -452,7 +452,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testStringEscape() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		PGNOptions options = new PGNOptions();
 		gt.white = "test \"x\"";
 		String pgn = gt.toPGN(options);
@@ -464,7 +464,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testNAG() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		PGNOptions options = new PGNOptions();
 		options.imp.variations = true;
 		options.imp.comments = true;
@@ -503,7 +503,7 @@ public class GameTreeTest {
 	
 	@Test
 	public final void testTime() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		PGNOptions options = new PGNOptions();
 		options.imp.variations = true;
 		options.imp.comments = true;
@@ -534,7 +534,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testPlayerAction() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		int varNo = gt.addMove("--", "resign", 0, "", "");
 		assertEquals(0, varNo);
 
@@ -547,13 +547,13 @@ public class GameTreeTest {
 		pgn = gt.toPGN(options);
 		assertTrue(pgn.indexOf("--") >= 0);
 
-		gt = new GameTree();
+		gt = new GameTree(null);
 		gt.readPGN(pgn, options);
 		assertEquals("--", getVariationsAsString(gt));
 		gt.goForward(0);
 		assertEquals(GameState.RESIGN_WHITE, gt.getGameState());
 		
-		gt = new GameTree();
+		gt = new GameTree(null);
 		gt.readPGN("1. -- {[%playeraction resign]}", options);
 		assertEquals("--", getVariationsAsString(gt));
 		gt.goForward(0);
@@ -568,7 +568,7 @@ public class GameTreeTest {
 
 		// Even if playerActions are not exported, moves corresponding
 		// to draw offers must still be exported
-		gt = new GameTree();
+		gt = new GameTree(null);
 		varNo = gt.addMove("e4", "draw offer", 0, "", "");
 		assertEquals(0, varNo);
 		assertEquals("e4", getVariationsAsString(gt));
@@ -584,7 +584,7 @@ public class GameTreeTest {
 
 	@Test
 	public final void testGameResult() throws ChessParseError {
-		GameTree gt = new GameTree();
+		GameTree gt = new GameTree(null);
 		int varNo = gt.addMove("e4", "", 0, "", "");
 		gt.goForward(varNo);
 		varNo = gt.addMove("e5", "", 0, "", "");

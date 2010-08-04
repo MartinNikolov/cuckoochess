@@ -33,7 +33,10 @@ public class GameTree {
     Node currentNode;
     Position currentPos;	// Cached value. Computable from "currentNode".
 
-    public GameTree() {
+    PgnToken.PgnTokenReceiver gameStateListener;
+    
+    public GameTree(PgnToken.PgnTokenReceiver gameStateListener) {
+    	this.gameStateListener = gameStateListener;
     	try {
         	setStartPos(TextIO.readFEN(TextIO.startPosFEN));
 		} catch (ChessParseError e) {
@@ -65,6 +68,13 @@ public class GameTree {
     	rootNode = new Node();
     	currentNode = rootNode;
     	currentPos = new Position(startPos);
+    	updateListener();
+	}
+	
+	private final void updateListener() {
+		if (gameStateListener != null) {
+			gameStateListener.clear();
+		}
 	}
 
 	/** PngTokenReceiver implementation that generates plain text PGN data. */
@@ -170,6 +180,14 @@ public class GameTree {
 				break;
 			}
 			prevType = type;
+		}
+
+		@Override
+		public void clear() {
+		}
+
+		@Override
+		public void setCurrent(Node node) {
 		}
 	}
 
@@ -489,6 +507,7 @@ public class GameTree {
     			goBack();
     	}
 
+    	updateListener();
     	return true;
     }
 
@@ -560,6 +579,7 @@ public class GameTree {
 		} catch (IOException e) {
 		} catch (ChessParseError e) {
 		}
+    	updateListener();
     }
 
 
@@ -578,7 +598,8 @@ public class GameTree {
     	goForward(variation, true);
     }
     public final void goForward(int variation, boolean updateDefault) {
-    	currentNode.verifyChildren(currentPos);
+    	if (currentNode.verifyChildren(currentPos))
+    		updateListener();
     	if (variation < 0)
     		variation = currentNode.defaultChild;
     	int numChildren = currentNode.children.size();
@@ -595,7 +616,8 @@ public class GameTree {
 
     /** List of possible continuation moves. */
     public final List<Move> variations() {
-    	currentNode.verifyChildren(currentPos);
+    	if (currentNode.verifyChildren(currentPos))
+    		updateListener();
     	List<Move> ret = new ArrayList<Move>();
     	for (Node child : currentNode.children)
     		ret.add(child.move);
@@ -606,7 +628,8 @@ public class GameTree {
      * @return Move number in variations list. -1 if moveStr is not a valid move
      */
     public final int addMove(String moveStr, String playerAction, int nag, String preComment, String postComment) {
-    	currentNode.verifyChildren(currentPos);
+    	if (currentNode.verifyChildren(currentPos))
+    		updateListener();
     	int idx = currentNode.children.size();
     	Node node = new Node(currentNode, moveStr, playerAction, Integer.MIN_VALUE, nag, preComment, postComment);
     	Move move = TextIO.UCIstringToMove(moveStr);
@@ -618,12 +641,14 @@ public class GameTree {
     	node.move = move;
     	node.ui = new UndoInfo();
     	currentNode.children.add(node);
+    	updateListener();
     	return idx;
 	}
     
 	/** Move a variation in the ordered list of variations. */
     public final void reorderVariation(int varNo, int newPos) {
-    	currentNode.verifyChildren(currentPos);
+    	if (currentNode.verifyChildren(currentPos))
+    		updateListener();
     	int nChild = currentNode.children.size();
     	if ((varNo < 0) || (varNo >= nChild) || (newPos < 0) || (newPos >= nChild))
     		return;
@@ -639,11 +664,13 @@ public class GameTree {
         	if (newPos <= newDef) newDef++;
     	}
 		currentNode.defaultChild = newDef;
+    	updateListener();
     }
 
     /** Delete a variation. */
     public final void deleteVariation(int varNo) {
-    	currentNode.verifyChildren(currentPos);
+    	if (currentNode.verifyChildren(currentPos))
+    		updateListener();
     	int nChild = currentNode.children.size();
     	if ((varNo < 0) || (varNo >= nChild))
     		return;
@@ -653,6 +680,7 @@ public class GameTree {
     	} else if (varNo < currentNode.defaultChild) {
     		currentNode.defaultChild--;
     	}
+    	updateListener();
     }
     
     /* Get linear game history, using default variations at branch points. */
@@ -668,8 +696,10 @@ public class GameTree {
     	node = currentNode;
     	Position pos = new Position(currentPos);
     	UndoInfo ui = new UndoInfo();
+    	boolean changed = false;
     	while (true) {
-    		node.verifyChildren(pos);
+    		if (node.verifyChildren(pos))
+    			changed = true;
     		if (node.defaultChild >= node.children.size())
     			break;
     		Node child = node.children.get(node.defaultChild);
@@ -677,9 +707,10 @@ public class GameTree {
     		pos.makeMove(child.move, ui);
     		node = child;
     	}
+    	if (changed)
+    		updateListener();
     	return new Pair<List<Node>, Integer>(ret, numMovesPlayed);
     }
-
 
 	final void setRemainingTime(int remaining) {
 		currentNode.remainingTime = remaining;
@@ -886,7 +917,7 @@ public class GameTree {
     	}
 
     	/** nodePos must represent the same position as this Node object. */
-        private final void verifyChildren(Position nodePos) {
+        private final boolean verifyChildren(Position nodePos) {
         	boolean anyToRemove = false;
         	for (Node child : children) {
         		if (child.move == null) {
@@ -907,6 +938,7 @@ public class GameTree {
             			validChildren.add(child);
             	children = validChildren;
         	}
+        	return anyToRemove;
         }
 
 		final List<Integer> getPathFromRoot() {
