@@ -3,6 +3,7 @@ package org.petero.droidfish;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.petero.droidfish.gamelogic.ChessController;
@@ -10,6 +11,8 @@ import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.TextIO;
+import org.petero.droidfish.gamelogic.PgnToken;
+import org.petero.droidfish.gamelogic.GameTree.Node;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,7 +34,10 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.LeadingMarginSpan;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -69,11 +75,12 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
 	// FIXME!!! Online play on FICS
+	// FIXME!!! Make program translatable
+	// FIXME!!! Don't write 9... after !
 
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
 	// FIXME!!! What should happen if you change time controls in the middle of a game?
-	// FIXME!!! Don't write 9... after !
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
@@ -103,6 +110,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	private long lastVisibleMillis; // Time when GUI became invisible. 0 if currently visible.
 	private long lastComputationMillis; // Time when engine last showed that it was computing.
 
+	PgnScreenText gameTextListener;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -119,7 +128,8 @@ public class DroidFish extends Activity implements GUIInterface {
 
         initUI(true);
 
-        ctrl = new ChessController(this, pgnOptions);
+        gameTextListener = new PgnScreenText();
+        ctrl = new ChessController(this, gameTextListener, pgnOptions);
         ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
         ctrl.newGame(gameMode);
@@ -164,9 +174,6 @@ public class DroidFish extends Activity implements GUIInterface {
     	return ret.toString();
     }
     
-	private SpannableStringBuilder moveListStr = new SpannableStringBuilder();
-	private boolean inMainLine = true;
-
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
@@ -181,7 +188,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		cb.setFlipped(oldCB.flipped);
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
-        setMoveListString(moveListStr, inMainLine);
+        moveListUpdated();
 		updateThinkingInfo();
 	}
 
@@ -396,6 +403,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		pgnOptions.exp.playerAction = settings.getBoolean("exportPlayerAction", false);
 		pgnOptions.exp.clockInfo    = settings.getBoolean("exportTime",         false);
 
+		gameTextListener.clear();
         ctrl.prefsChanged();
 	}
 
@@ -536,11 +544,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	@Override
-	public void setMoveListString(SpannableStringBuilder str, boolean inMainLine) {
-		moveListStr = str;
-		this.inMainLine = inMainLine;
-		moveList.setText(moveListStr);
-		if (!ctrl.canRedoMove() && inMainLine)
+	public void moveListUpdated() {
+		moveList.setText(gameTextListener.getSpannableData());
+		if (!ctrl.canRedoMove() && gameTextListener.inMainLine())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 
@@ -875,6 +881,159 @@ public class DroidFish extends Activity implements GUIInterface {
 		handlerTimer.removeCallbacks(r);
 		if (nextUpdate > 0) {
 			handlerTimer.postDelayed(r, nextUpdate);
+		}
+	}
+
+	/** PngTokenReceiver implementation that renders PGN data for screen display. */
+	static class PgnScreenText implements PgnToken.PgnTokenReceiver {
+		private SpannableStringBuilder sb = new SpannableStringBuilder();
+		private int prevType = PgnToken.EOF;
+		int nestLevel = 0;
+		boolean col0 = true;
+		Node currNode = null;
+		final int indentStep = 15;
+		boolean inMainLine = true;
+		boolean upToDate = false;
+
+		private static class NodeInfo {
+			int l0, l1;
+			NodeInfo(int ls, int le) {
+				l0 = ls;
+				l1 = le;
+			}
+		}
+		HashMap<Node, NodeInfo> nodeToCharPos;
+		
+		PgnScreenText() {
+			nodeToCharPos = new HashMap<Node, NodeInfo>();
+		}
+		
+		public final SpannableStringBuilder getSpannableData() {
+			return sb;
+		}
+		public final boolean inMainLine() {
+			return inMainLine;
+		}
+
+		public boolean isUpToDate() {
+			return upToDate;
+		}
+
+		int paraStart = 0;
+		int paraIndent = 0;
+		private final void newLine() {
+			if (!col0) {
+				if (paraIndent > 0) {
+					int paraEnd = sb.length();
+					int indent = paraIndent * indentStep;
+					sb.setSpan(new LeadingMarginSpan.Standard(indent), paraStart, paraEnd,
+							   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+				sb.append('\n');
+				paraStart = sb.length();
+				paraIndent = nestLevel;
+			}
+			col0 = true;
+		}
+
+		boolean pendingNewLine = false;
+
+		public void processToken(Node node, int type, String token) {
+			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
+					(type != PgnToken.LEFT_BRACKET))  {
+				// End of header. Just drop header lines
+				sb = new SpannableStringBuilder();
+			}
+			if (pendingNewLine) {
+				if (type != PgnToken.RIGHT_PAREN) {
+					newLine();
+					pendingNewLine = false;
+				}
+			}
+			switch (type) {
+			case PgnToken.STRING:
+				break;
+			case PgnToken.INTEGER:
+				if (	(prevType != PgnToken.LEFT_PAREN) &&
+						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
+					sb.append(' ');
+				sb.append(token);
+				col0 = false;
+				break;
+			case PgnToken.PERIOD:		 sb.append('.');   col0 = false; break;
+			case PgnToken.ASTERISK:		 sb.append(" *");  col0 = false; break;
+			case PgnToken.LEFT_BRACKET:  sb.append('[');   col0 = false; break;
+			case PgnToken.RIGHT_BRACKET: sb.append("]\n"); col0 = false; break;
+			case PgnToken.LEFT_PAREN:
+				nestLevel++;
+				if (col0)
+					paraIndent++;
+				newLine();
+				sb.append('(');
+				col0 = false;
+				break;
+			case PgnToken.RIGHT_PAREN:
+				sb.append(')');
+				nestLevel--;
+				pendingNewLine = true;
+				break;
+			case PgnToken.NAG:
+				sb.append(Node.nagStr(Integer.parseInt(token)));
+				col0 = false;
+				break;
+			case PgnToken.SYMBOL: {
+				if ((prevType != PgnToken.RIGHT_BRACKET) && !col0)
+					sb.append(' ');
+				int l0 = sb.length();
+				sb.append(token);
+				int l1 = sb.length();
+				nodeToCharPos.put(node, new NodeInfo(l0, l1));
+				if (node == currNode) {
+					inMainLine = (nestLevel == 0);
+				}
+				col0 = false;
+				break;
+			}
+			case PgnToken.COMMENT:
+				if (prevType == PgnToken.RIGHT_BRACKET) {
+				} else if (nestLevel == 0) {
+					nestLevel++;
+					newLine();
+					nestLevel--;
+				} else {
+					if ((prevType != PgnToken.LEFT_PAREN) && !col0) {
+						sb.append(' ');
+					}
+				}
+				sb.append(token.trim());
+				col0 = false;
+				if (nestLevel == 0)
+					newLine();
+				break;
+			case PgnToken.EOF:
+				upToDate = true;
+				break;
+			}
+			prevType = type;
+		}
+
+		@Override
+		public void clear() {
+			upToDate = false;
+			nodeToCharPos.clear();
+		}
+
+		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);
+
+		@Override
+		public void setCurrent(Node node) {
+			sb.removeSpan(bgSpan);
+			NodeInfo ni = nodeToCharPos.get(node);
+			if (ni != null) {
+				bgSpan = new BackgroundColorSpan(0xff888888);
+				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			currNode = node;
 		}
 	}
 }

@@ -29,21 +29,4 @@ public class PGNOptions {
 		imp = new Import();
 		exp = new Export();
 	}
-
-	public PGNOptions(PGNOptions other) {
-		view = new Viewer();
-		imp = new Import();
-		exp = new Export(); 
-		view.variations  = other.view.variations;
-		view.comments    = other.view.comments;
-		view.nag         = other.view.nag;
-		imp.variations   = other.imp.variations;
-		imp.comments     = other.imp.comments;
-		imp.nag          = other.imp.nag;
-		exp.variations   = other.exp.variations;
-		exp.comments     = other.exp.comments;
-		exp.nag          = other.exp.nag;
-		exp.playerAction = other.exp.playerAction;
-		exp.clockInfo    = other.exp.clockInfo;
-	}
 }

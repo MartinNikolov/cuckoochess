@@ -183,9 +183,12 @@ public class GameTree {
 		}
 
 		@Override
+		public boolean isUpToDate() {
+			return true;
+		}
+		@Override
 		public void clear() {
 		}
-
 		@Override
 		public void setCurrent(Node node) {
 		}
@@ -245,6 +248,7 @@ public class GameTree {
     	MoveNumber mn = new MoveNumber(startPos.fullMoveCounter, startPos.whiteMove);
     	Node.addPgnData(out, rootNode, mn.prev(), options);
     	out.processToken(null, PgnToken.SYMBOL, pgnResultString);
+    	out.processToken(null, PgnToken.EOF, null);
     }
 
     private final void addTagPair(PgnToken.PgnTokenReceiver out, String tagName, String tagValue) {
@@ -870,7 +874,7 @@ public class GameTree {
      *  The position is defined by the move that leads to the position from the parent position.
      *  The root node is special in that it doesn't have a move.
      */
-    static class Node {
+    public static class Node {
     	String moveStr;				// String representation of move leading to this node. Empty string root node.
     	Move move;					// Computed on demand for better PGN parsing performance.
     								// Subtrees of invalid moves will be dropped when detected.
