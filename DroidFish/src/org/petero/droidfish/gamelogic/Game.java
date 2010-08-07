@@ -6,17 +6,11 @@
 package org.petero.droidfish.gamelogic;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.GameTree.Node;
-
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.LeadingMarginSpan;
 
 /**
  *
@@ -29,11 +23,12 @@ public class Game {
     TimeControl timeController;
     private boolean gamePaused;
 
-    PgnScreenText gameTextListener;
+    PgnToken.PgnTokenReceiver gameTextListener;
 
-    public Game(ComputerPlayer computerPlayer, int timeControl, int movesPerSession, int timeIncrement) {
+    public Game(ComputerPlayer computerPlayer, PgnToken.PgnTokenReceiver gameTextListener,
+    			int timeControl, int movesPerSession, int timeIncrement) {
         this.computerPlayer = computerPlayer;
-        gameTextListener = new PgnScreenText();
+        this.gameTextListener = gameTextListener;
         tree = new GameTree(gameTextListener);
         timeController = new TimeControl();
         timeController.setTimeControl(timeControl, movesPerSession, timeIncrement);
@@ -302,175 +297,6 @@ public class Game {
         updateTimeControl(true);
     }
 
-
-	/** PngTokenReceiver implementation that renders PGN data for screen display. */
-	static class PgnScreenText implements PgnToken.PgnTokenReceiver {
-		private SpannableStringBuilder sb = new SpannableStringBuilder();
-		private int prevType = PgnToken.EOF;
-		int nestLevel = 0;
-		boolean col0 = true;
-		Node currNode = null;
-		final int indentStep = 15;
-		boolean inMainLine = true;
-		boolean upToDate = false;
-
-		private static class NodeInfo {
-			int l0, l1;
-			NodeInfo(int ls, int le) {
-				l0 = ls;
-				l1 = le;
-			}
-		}
-		HashMap<Node, NodeInfo> nodeToCharPos;
-		
-		PgnScreenText() {
-			nodeToCharPos = new HashMap<Node, NodeInfo>();
-		}
-
-		public Pair<SpannableStringBuilder, Boolean> getData() {
-			return new Pair<SpannableStringBuilder, Boolean>(sb, inMainLine);
-		}
-
-		int paraStart = 0;
-		int paraIndent = 0;
-		private final void newLine() {
-			if (!col0) {
-				if (paraIndent > 0) {
-					int paraEnd = sb.length();
-					int indent = paraIndent * indentStep;
-					sb.setSpan(new LeadingMarginSpan.Standard(indent), paraStart, paraEnd,
-							   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				}
-				sb.append('\n');
-				paraStart = sb.length();
-				paraIndent = nestLevel;
-			}
-			col0 = true;
-		}
-
-		boolean pendingNewLine = false;
-
-		public void processToken(Node node, int type, String token) {
-			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
-					(type != PgnToken.LEFT_BRACKET))  {
-				// End of header. Just drop header lines
-				sb = new SpannableStringBuilder();
-			}
-			if (pendingNewLine) {
-				if (type != PgnToken.RIGHT_PAREN) {
-					newLine();
-					pendingNewLine = false;
-				}
-			}
-			switch (type) {
-			case PgnToken.STRING:
-				break;
-			case PgnToken.INTEGER:
-				if (	(prevType != PgnToken.LEFT_PAREN) &&
-						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
-					sb.append(' ');
-				sb.append(token);
-				col0 = false;
-				break;
-			case PgnToken.PERIOD:		 sb.append('.');   col0 = false; break;
-			case PgnToken.ASTERISK:		 sb.append(" *");  col0 = false; break;
-			case PgnToken.LEFT_BRACKET:  sb.append('[');   col0 = false; break;
-			case PgnToken.RIGHT_BRACKET: sb.append("]\n"); col0 = false; break;
-			case PgnToken.LEFT_PAREN:
-				nestLevel++;
-				if (col0)
-					paraIndent++;
-				newLine();
-				sb.append('(');
-				col0 = false;
-				break;
-			case PgnToken.RIGHT_PAREN:
-				sb.append(')');
-				nestLevel--;
-				pendingNewLine = true;
-				break;
-			case PgnToken.NAG:
-				sb.append(Node.nagStr(Integer.parseInt(token)));
-				col0 = false;
-				break;
-			case PgnToken.SYMBOL: {
-				if ((prevType != PgnToken.RIGHT_BRACKET) && !col0)
-					sb.append(' ');
-				int l0 = sb.length();
-				sb.append(token);
-				int l1 = sb.length();
-				nodeToCharPos.put(node, new NodeInfo(l0, l1));
-				if (node == currNode) {
-					inMainLine = (nestLevel == 0);
-				}
-				col0 = false;
-				break;
-			}
-			case PgnToken.COMMENT:
-				if (prevType == PgnToken.RIGHT_BRACKET) {
-				} else if (nestLevel == 0) {
-					nestLevel++;
-					newLine();
-					nestLevel--;
-				} else {
-					if ((prevType != PgnToken.LEFT_PAREN) && !col0) {
-						sb.append(' ');
-					}
-				}
-				sb.append(token.trim());
-				col0 = false;
-				if (nestLevel == 0)
-					newLine();
-				break;
-			}
-			prevType = type;
-		}
-
-		@Override
-		public void clear() {
-			upToDate = false;
-			nodeToCharPos.clear();
-		}
-
-		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);
-
-		@Override
-		public void setCurrent(Node node) {
-			sb.removeSpan(bgSpan);
-			NodeInfo ni = nodeToCharPos.get(node);
-			if (ni != null) {
-				bgSpan = new BackgroundColorSpan(0xff888888);
-				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
-			currNode = node;
-		}
-	}
-
-	private PGNOptions currViewOptions = null;
-
-	public final Pair<SpannableStringBuilder, Boolean> getMoveListString(PGNOptions options) {
-		boolean update = currViewOptions == null;
-		if (!update) {
-			update |= options.view.comments != currViewOptions.view.comments;
-			update |= options.view.variations != currViewOptions.view.variations;
-			update |= options.view.nag != currViewOptions.view.nag;
-		}
-		update |= !gameTextListener.upToDate;
-		currViewOptions = new PGNOptions(options);
-		if (update) {
-			PGNOptions tmpOptions = new PGNOptions();
-			tmpOptions.exp.variations   = currViewOptions.view.variations;
-			tmpOptions.exp.comments     = currViewOptions.view.comments;
-			tmpOptions.exp.nag          = currViewOptions.view.nag;
-			tmpOptions.exp.playerAction = false;
-			tmpOptions.exp.clockInfo    = false;
-			gameTextListener.clear();
-			tree.pgnTreeWalker(tmpOptions, gameTextListener);
-			gameTextListener.upToDate = true;
-		}
-        gameTextListener.setCurrent(tree.currentNode);
-        return gameTextListener.getData();
-    }
 
     /**
      * Return the last zeroing position and a list of moves

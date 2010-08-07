@@ -73,6 +73,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
 	// FIXME!!! What should happen if you change time controls in the middle of a game?
+	// FIXME!!! Don't write 9... after !
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
