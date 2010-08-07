@@ -1,5 +1,6 @@
 package org.petero.droidfish;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -27,7 +28,7 @@ public class LoadPGN extends Activity {
 		long endPos; // -1 means to end of file
 	}
 
-	Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
+	static Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
 	String fileName;
 	ProgressDialog progress;
 	static int defaultItem = 0;
@@ -42,6 +43,13 @@ public class LoadPGN extends Activity {
 		new Thread(new Runnable() {
 			public void run() {
 				readFile();
+				runOnUiThread(new Runnable() {
+					public void run() {
+						progress.dismiss();
+						removeDialog(SELECT_GAME_DIALOG);
+						showDialog(SELECT_GAME_DIALOG);
+					}
+				});
 			}
 		}).start();
 	}
@@ -110,7 +118,17 @@ public class LoadPGN extends Activity {
 		}
 	}
 
+	static long lastModTime = -1;
+	static String lastFileName = "";
+	
 	private final void readFile() {
+		if (!fileName.equals(lastFileName))
+			defaultItem = 0;
+		long modTime = new File(fileName).lastModified();
+		if ((modTime == lastModTime) && fileName.equals(lastFileName))
+			return;
+		lastModTime = modTime;
+		lastFileName = fileName;
 		try {
 			gamesInFile.clear();
 			RandomAccessFile f = new RandomAccessFile(fileName, "r");
@@ -174,13 +192,6 @@ public class LoadPGN extends Activity {
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
-		runOnUiThread(new Runnable() {
-			public void run() {
-				progress.dismiss();
-				removeDialog(SELECT_GAME_DIALOG);
-				showDialog(SELECT_GAME_DIALOG);
-			}
-		});
 	}
 
 	private final void sendBackResult(int gameNo) {
