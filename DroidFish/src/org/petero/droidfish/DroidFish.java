@@ -128,7 +128,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
         initUI(true);
 
-        gameTextListener = new PgnScreenText();
+        gameTextListener = new PgnScreenText(pgnOptions);
         ctrl = new ChessController(this, gameTextListener, pgnOptions);
         ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
@@ -394,6 +394,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		pgnOptions.view.variations  = settings.getBoolean("viewVariations",   	true);
 		pgnOptions.view.comments    = settings.getBoolean("viewComments",     	true);
 		pgnOptions.view.nag         = settings.getBoolean("viewNAG", 		  	true);
+		pgnOptions.view.headers     = settings.getBoolean("viewHeaders", 		false);
 		pgnOptions.imp.variations   = settings.getBoolean("importVariations",   true);
 		pgnOptions.imp.comments     = settings.getBoolean("importComments",     true);
 		pgnOptions.imp.nag          = settings.getBoolean("importNAG", 		  	true);
@@ -901,6 +902,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		final int indentStep = 15;
 		boolean inMainLine = true;
 		boolean upToDate = false;
+		PGNOptions options;
 
 		private static class NodeInfo {
 			int l0, l1;
@@ -911,8 +913,9 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 		HashMap<Node, NodeInfo> nodeToCharPos;
 		
-		PgnScreenText() {
+		PgnScreenText(PGNOptions options) {
 			nodeToCharPos = new HashMap<Node, NodeInfo>();
+			this.options = options;
 		}
 		
 		public final SpannableStringBuilder getSpannableData() {
@@ -953,8 +956,11 @@ public class DroidFish extends Activity implements GUIInterface {
 				skipMoveNr = false;
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
-				// End of header. Just drop header lines
-				sb = new SpannableStringBuilder();
+				if (options.view.headers) {
+					sb.append('\n');
+				} else {
+					sb.clear();
+				}
 			}
 			if (pendingNewLine) {
 				if (type != PgnToken.RIGHT_PAREN) {
@@ -964,6 +970,9 @@ public class DroidFish extends Activity implements GUIInterface {
 			}
 			switch (type) {
 			case PgnToken.STRING:
+				sb.append(" \"");
+				sb.append(token);
+				sb.append('"');
 				break;
 			case PgnToken.INTEGER:
 				if (!skipMoveNr) {
@@ -1001,7 +1010,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				col0 = false;
 				break;
 			case PgnToken.SYMBOL: {
-				if ((prevType != PgnToken.RIGHT_BRACKET) && !col0)
+				if ((prevType != PgnToken.RIGHT_BRACKET) && (prevType != PgnToken.LEFT_BRACKET) && !col0)
 					sb.append(' ');
 				int l0 = sb.length();
 				sb.append(token);
@@ -1040,6 +1049,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		public void clear() {
 			upToDate = false;
 			nodeToCharPos.clear();
+			sb.clear();
 		}
 
 		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);

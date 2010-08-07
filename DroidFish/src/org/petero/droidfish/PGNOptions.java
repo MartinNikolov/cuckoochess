@@ -6,6 +6,7 @@ public class PGNOptions {
 		public boolean variations;
 		public boolean comments;
 		public boolean nag;
+		public boolean headers;
 	}
 	public static class Import {
 		public boolean variations;

@@ -131,6 +131,12 @@
 					android:summary="Include numeric annotation glyphs (NAGs), such as ! and ?"
 					android:defaultValue="true">
 				</CheckBoxPreference>
+				<CheckBoxPreference
+					android:key="viewHeaders"
+					android:title="Headers"
+					android:summary="Show PGN header lines"
+					android:defaultValue="false">
+				</CheckBoxPreference>
 			</PreferenceCategory>
 			<PreferenceCategory
 				android:title="PGN import">
