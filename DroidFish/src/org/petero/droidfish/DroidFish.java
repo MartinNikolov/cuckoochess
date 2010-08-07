@@ -561,7 +561,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	@Override
 	public void moveListUpdated() {
 		moveList.setText(gameTextListener.getSpannableData());
-		if (!ctrl.canRedoMove() && gameTextListener.inMainLine())
+		if (gameTextListener.atEnd())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
 	}
 
@@ -965,7 +965,7 @@ public class DroidFish extends Activity implements GUIInterface {
 		boolean col0 = true;
 		Node currNode = null;
 		final int indentStep = 15;
-		boolean inMainLine = true;
+		int currPos = 0, endPos = 0;
 		boolean upToDate = false;
 		PGNOptions options;
 
@@ -986,8 +986,8 @@ public class DroidFish extends Activity implements GUIInterface {
 		public final SpannableStringBuilder getSpannableData() {
 			return sb;
 		}
-		public final boolean inMainLine() {
-			return inMainLine;
+		public final boolean atEnd() {
+			return currPos >= endPos - 10;
 		}
 
 		public boolean isUpToDate() {
@@ -1081,9 +1081,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				sb.append(token);
 				int l1 = sb.length();
 				nodeToCharPos.put(node, new NodeInfo(l0, l1));
-				if (node == currNode) {
-					inMainLine = (nestLevel == 0);
-				}
+				if (endPos < l0) endPos = l0;
 				col0 = false;
 				break;
 			}
@@ -1115,6 +1113,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			upToDate = false;
 			nodeToCharPos.clear();
 			sb.clear();
+			endPos = 0;
 		}
 
 		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);
@@ -1126,9 +1125,9 @@ public class DroidFish extends Activity implements GUIInterface {
 			if (ni != null) {
 				bgSpan = new BackgroundColorSpan(0xff888888);
 				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				currPos = ni.l0;
 			}
 			currNode = node;
-			// FIXME!!! inMainLine must be updated
 		}
 	}
 }
