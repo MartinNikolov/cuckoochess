@@ -79,6 +79,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Make program translatable
 	// FIXME!!! Display last move in status line
 	// FIXME!!! Document PGN file load in About/help dialog
+	// FIXME!!! Make PGN load activity handle orientation changes
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?

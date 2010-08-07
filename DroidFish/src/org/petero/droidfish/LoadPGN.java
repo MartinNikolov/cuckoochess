@@ -17,13 +17,13 @@ import android.os.Bundle;
 
 public class LoadPGN extends Activity {
 	private static final class GameInfo {
-		String event;
-		String site;
-		String date;
-		String round;
-		String white;
-		String black;
-		String result;
+		String event = "";
+		String site = "";
+		String date = "";
+		String round = "";
+		String white = "";
+		String black = "";
+		String result = "";
 		long startPos;
 		long endPos; // -1 means to end of file
 	}
@@ -73,7 +73,7 @@ public class LoadPGN extends Activity {
 	    		GameInfo gi = gamesInFile.get(i);
 	    		StringBuilder info = new StringBuilder(128);
 	    		info.append(gi.white);
-	    		info.append(' ');
+	    		info.append(" - ");
 	    		info.append(gi.black);
 	    		if (gi.date.length() > 0) {
 	    			info.append(' ');
