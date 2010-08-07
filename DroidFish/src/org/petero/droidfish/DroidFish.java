@@ -1,6 +1,7 @@
 package org.petero.droidfish;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -741,14 +742,21 @@ public class DroidFish extends Activity implements GUIInterface {
         	File extDir = Environment.getExternalStorageDirectory();
         	String sep = File.separator;
         	File dir = new File(extDir.getAbsolutePath() + sep + bookDir);
-        	String[] files = dir.list();
+        	File[] files = dir.listFiles(new FileFilter() {
+				public boolean accept(File pathname) {
+					return pathname.isFile();
+				}
+			});
         	if (files == null)
-        		files = new String[0];
-        	Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+        		files = new File[0];
         	final int numFiles = files.length;
+        	String[] fileNames = new String[numFiles];
+        	for (int i = 0; i < files.length; i++)
+        		fileNames[i] = files[i].getName();
+        	Arrays.sort(fileNames, String.CASE_INSENSITIVE_ORDER);
         	CharSequence[] items = new CharSequence[numFiles + 1];
         	for (int i = 0; i < numFiles; i++)
-        		items[i] = files[i];
+        		items[i] = fileNames[i];
         	items[numFiles] = getString(R.string.internal_book);
         	final CharSequence[] finalItems = items;
 			int defaultItem = numFiles;
