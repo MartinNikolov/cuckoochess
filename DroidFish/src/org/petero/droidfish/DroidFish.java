@@ -76,7 +76,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
-	// FIXME!!! Don't write 9... after !
 
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
@@ -937,8 +936,13 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 
 		boolean pendingNewLine = false;
+		boolean skipMoveNr = false;
 
 		public void processToken(Node node, int type, String token) {
+			if (prevType == PgnToken.NAG)
+				skipMoveNr = true;
+			else if ((prevType != PgnToken.INTEGER) && (prevType != PgnToken.PERIOD))
+				skipMoveNr = false;
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
 				// End of header. Just drop header lines
@@ -954,13 +958,20 @@ public class DroidFish extends Activity implements GUIInterface {
 			case PgnToken.STRING:
 				break;
 			case PgnToken.INTEGER:
-				if (	(prevType != PgnToken.LEFT_PAREN) &&
-						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
-					sb.append(' ');
-				sb.append(token);
-				col0 = false;
+				if (!skipMoveNr) {
+					if (	(prevType != PgnToken.LEFT_PAREN) &&
+							(prevType != PgnToken.RIGHT_BRACKET) && !col0)
+						sb.append(' ');
+					sb.append(token);
+					col0 = false;
+				}
 				break;
-			case PgnToken.PERIOD:		 sb.append('.');   col0 = false; break;
+			case PgnToken.PERIOD:
+				if (!skipMoveNr) {
+					sb.append('.');
+					col0 = false;
+				}
+				break;
 			case PgnToken.ASTERISK:		 sb.append(" *");  col0 = false; break;
 			case PgnToken.LEFT_BRACKET:  sb.append('[');   col0 = false; break;
 			case PgnToken.RIGHT_BRACKET: sb.append("]\n"); col0 = false; break;
