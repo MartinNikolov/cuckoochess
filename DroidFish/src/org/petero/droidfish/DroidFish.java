@@ -104,6 +104,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private MediaPlayer moveSound;
 
 	private final String bookDir = "DroidFish";
+	private final String pgnDir = "DroidFish" + File.separator + "pgn";
 	private String currentBookFile = "";
 	private PGNOptions pgnOptions = new PGNOptions();
 
@@ -426,6 +427,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	
 	static private final int RESULT_EDITBOARD = 0;
 	static private final int RESULT_SETTINGS = 1;
+	static private final int RESULT_LOAD_PGN = 2;
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -510,6 +512,16 @@ public class DroidFish extends Activity implements GUIInterface {
 					String fen = data.getAction();
 					ctrl.setFENOrPGN(fen);
 				} catch (ChessParseError e) {
+				}
+			}
+			break;
+		case RESULT_LOAD_PGN:
+			if (resultCode == RESULT_OK) {
+				try {
+					String pgn = data.getAction();
+					ctrl.setFENOrPGN(pgn);
+				} catch (ChessParseError e) {
+					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
 			}
 			break;
@@ -628,6 +640,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int ABOUT_DIALOG = 2;
 	static final int SELECT_MOVE_DIALOG = 3;
 	static final int SELECT_BOOK_DIALOG = 4;
+	static final int SELECT_PGN_FILE_DIALOG = 5;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -648,31 +661,40 @@ public class DroidFish extends Activity implements GUIInterface {
 			return alert;
 		}
 		case CLIPBOARD_DIALOG: {
+			final int COPY_GAME        = 0;
+			final int COPY_POSITION    = 1;
+			final int PASTE            = 2;
+			final int LOAD_GAME        = 3;
+			final int REMOVE_VARIATION = 4;
+
 			List<CharSequence> lst = new ArrayList<CharSequence>();
-			lst.add(getString(R.string.copy_game));
-			lst.add(getString(R.string.copy_position));
-			lst.add(getString(R.string.paste));
+			List<Integer> actions = new ArrayList<Integer>();
+			lst.add(getString(R.string.copy_game));     actions.add(COPY_GAME);
+			lst.add(getString(R.string.copy_position)); actions.add(COPY_POSITION);
+			lst.add(getString(R.string.paste));         actions.add(PASTE);
+			lst.add(getString(R.string.load_game));     actions.add(LOAD_GAME);
 			if (ctrl.humansTurn() && (ctrl.numVariations() > 1)) {
-				lst.add(getString(R.string.remove_variation));
+				lst.add(getString(R.string.remove_variation)); actions.add(REMOVE_VARIATION);
 			}
+			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.tools_menu);
-			builder.setItems(lst.toArray(new CharSequence[3]), new DialogInterface.OnClickListener() {
+			builder.setItems(lst.toArray(new CharSequence[4]), new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
-					switch (item) {
-					case 0: {
+					switch (finalActions.get(item)) {
+					case COPY_GAME: {
 						String pgn = ctrl.getPGN();
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						clipboard.setText(pgn);
 						break;
 					}
-					case 1: {
+					case COPY_POSITION: {
 						String fen = ctrl.getFEN() + "\n";
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						clipboard.setText(fen);
 						break;
 					}
-					case 2: {
+					case PASTE: {
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						if (clipboard.hasText()) {
 							String fenPgn = clipboard.getText().toString();
@@ -684,7 +706,11 @@ public class DroidFish extends Activity implements GUIInterface {
 						}
 						break;
 					}
-					case 3:
+					case LOAD_GAME:
+						removeDialog(SELECT_PGN_FILE_DIALOG);
+						showDialog(SELECT_PGN_FILE_DIALOG);
+						break;
+					case REMOVE_VARIATION:
 						ctrl.removeVariation();
 						break;
 					}
@@ -740,21 +766,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			return dialog;
 		}
 		case SELECT_BOOK_DIALOG: {
-        	File extDir = Environment.getExternalStorageDirectory();
-        	String sep = File.separator;
-        	File dir = new File(extDir.getAbsolutePath() + sep + bookDir);
-        	File[] files = dir.listFiles(new FileFilter() {
-				public boolean accept(File pathname) {
-					return pathname.isFile();
-				}
-			});
-        	if (files == null)
-        		files = new File[0];
-        	final int numFiles = files.length;
-        	String[] fileNames = new String[numFiles];
-        	for (int i = 0; i < files.length; i++)
-        		fileNames[i] = files[i].getName();
-        	Arrays.sort(fileNames, String.CASE_INSENSITIVE_ORDER);
+        	String[] fileNames = findFilesInDirectory(bookDir);
+    		final int numFiles = fileNames.length;
         	CharSequence[] items = new CharSequence[numFiles + 1];
         	for (int i = 0; i < numFiles; i++)
         		items[i] = fileNames[i];
@@ -778,6 +791,37 @@ public class DroidFish extends Activity implements GUIInterface {
 					editor.putString("bookFile", bookFile);
 					editor.commit();
 					setBookFile(bookFile);
+					dialog.dismiss();
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case SELECT_PGN_FILE_DIALOG: {
+        	final String[] fileNames = findFilesInDirectory(pgnDir);
+    		final int numFiles = fileNames.length;
+			int defaultItem = 0;
+			String currentPGNFile = settings.getString("currentPGNFile", "");
+			for (int i = 0; i < numFiles; i++) {
+				if (currentPGNFile.equals(fileNames[i])) {
+					defaultItem = i;
+					break;
+				}
+			}
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.select_pgn_file);
+			builder.setSingleChoiceItems(fileNames, defaultItem, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					Editor editor = settings.edit();
+					String pgnFile = fileNames[item].toString();
+					editor.putString("currentPGNFile", pgnFile);
+					editor.commit();
+					String sep = File.separator;
+					String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
+					Intent i = new Intent(DroidFish.this, LoadPGN.class);
+					i.setAction(pathName);
+					startActivityForResult(i, RESULT_LOAD_PGN);
+					dialog.dismiss();
 				}
 			});
 			AlertDialog alert = builder.create();
@@ -787,6 +831,25 @@ public class DroidFish extends Activity implements GUIInterface {
 		return null;
 	}
 
+	private final String[] findFilesInDirectory(String dirName) {
+		File extDir = Environment.getExternalStorageDirectory();
+		String sep = File.separator;
+		File dir = new File(extDir.getAbsolutePath() + sep + dirName);
+		File[] files = dir.listFiles(new FileFilter() {
+			public boolean accept(File pathname) {
+				return pathname.isFile();
+			}
+		});
+		if (files == null)
+			files = new File[0];
+		final int numFiles = files.length;
+		String[] fileNames = new String[numFiles];
+		for (int i = 0; i < files.length; i++)
+			fileNames[i] = files[i].getName();
+		Arrays.sort(fileNames, String.CASE_INSENSITIVE_ORDER);
+		return fileNames;
+	}
+	
 	@Override
 	public void requestPromotePiece() {
 		runOnUIThread(new Runnable() {
@@ -1063,6 +1126,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			}
 			currNode = node;
+			// FIXME!!! inMainLine must be updated
 		}
 	}
 }

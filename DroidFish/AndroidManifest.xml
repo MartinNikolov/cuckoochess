@@ -22,6 +22,10 @@
         		  android:label="Edit Board"
                   android:configChanges="orientation">
         </activity>
+        <activity android:name="LoadPGN"
+        		  android:label="Load PGN"
+				  android:screenOrientation="portrait">
+        </activity>
         <activity android:name="CPUWarning"
         		  android:label="CPU Warning">
         </activity>
