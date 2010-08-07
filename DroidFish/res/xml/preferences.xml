@@ -112,6 +112,27 @@
 			android:title="PGN settings"
 			android:summary="Settings for import and export of portable game notation (PGN) data">
 			<PreferenceCategory
+				android:title="PGN viewer">
+				<CheckBoxPreference
+					android:key="viewVariations"
+					android:title="Variations"
+					android:summary="Include non-mainline moves"
+					android:defaultValue="true">
+				</CheckBoxPreference>
+				<CheckBoxPreference
+					android:key="viewComments"
+					android:title="Comments"
+					android:summary="Include user written comments"
+					android:defaultValue="true">
+				</CheckBoxPreference>
+				<CheckBoxPreference
+					android:key="viewNAG"
+					android:title="Annotations"
+					android:summary="Include numeric annotation glyphs (NAGs), such as ! and ?"
+					android:defaultValue="true">
+				</CheckBoxPreference>
+			</PreferenceCategory>
+			<PreferenceCategory
 				android:title="PGN import">
 				<CheckBoxPreference
 					android:key="importVariations"

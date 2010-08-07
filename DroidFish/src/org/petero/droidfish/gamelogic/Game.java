@@ -315,10 +315,8 @@ public class Game {
 		boolean upToDate = false;
 
 		private static class NodeInfo {
-			Node node;
 			int l0, l1;
-			NodeInfo(Node n, int ls, int le) {
-				node = n;
+			NodeInfo(int ls, int le) {
 				l0 = ls;
 				l1 = le;
 			}
@@ -401,7 +399,7 @@ public class Game {
 				int l0 = sb.length();
 				sb.append(token);
 				int l1 = sb.length();
-				nodeToCharPos.put(node, new NodeInfo(node, l0, l1));
+				nodeToCharPos.put(node, new NodeInfo(l0, l1));
 				if (node == currNode) {
 					inMainLine = (nestLevel == 0);
 				}
@@ -448,18 +446,28 @@ public class Game {
 		}
 	}
 
-    public final Pair<SpannableStringBuilder, Boolean> getMoveListString() {
-        PGNOptions options = new PGNOptions();
-		options.exp.variations = true;
-		options.exp.comments = true;
-		options.exp.nag = true;
-		options.exp.playerAction = false;
-		options.exp.clockInfo = false;
-        if (!gameTextListener.upToDate) {
-        	gameTextListener.clear();
-        	tree.pgnTreeWalker(options, gameTextListener);
-        	gameTextListener.upToDate = true;
-        }
+	private PGNOptions currViewOptions = null;
+
+	public final Pair<SpannableStringBuilder, Boolean> getMoveListString(PGNOptions options) {
+		boolean update = currViewOptions == null;
+		if (!update) {
+			update |= options.view.comments != currViewOptions.view.comments;
+			update |= options.view.variations != currViewOptions.view.variations;
+			update |= options.view.nag != currViewOptions.view.nag;
+		}
+		update |= !gameTextListener.upToDate;
+		currViewOptions = new PGNOptions(options);
+		if (update) {
+			PGNOptions tmpOptions = new PGNOptions();
+			tmpOptions.exp.variations   = currViewOptions.view.variations;
+			tmpOptions.exp.comments     = currViewOptions.view.comments;
+			tmpOptions.exp.nag          = currViewOptions.view.nag;
+			tmpOptions.exp.playerAction = false;
+			tmpOptions.exp.clockInfo    = false;
+			gameTextListener.clear();
+			tree.pgnTreeWalker(tmpOptions, gameTextListener);
+			gameTextListener.upToDate = true;
+		}
         gameTextListener.setCurrent(tree.currentNode);
         return gameTextListener.getData();
     }

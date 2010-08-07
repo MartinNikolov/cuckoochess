@@ -52,12 +52,8 @@ import android.widget.Toast;
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 	// FIXME!!! book.txt (and test classes) should not be included in apk
-
 	// FIXME!!! Current position in game should be visible: TextView.bringPointIntoView()
 
-	// FIXME!!! PGN view option: Show comments
-	// FIXME!!! PGN view option: Show NAGs
-	// FIXME!!! PGN view option: Show variations (recursion depth?)
 	// FIXME!!! PGN view option: game continuation (for training)
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
@@ -72,6 +68,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
+	// FIXME!!! Online play on FICS
 
 	// FIXME!!! Add support all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
@@ -121,7 +118,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
         initUI(true);
 
-        ctrl = new ChessController(this);
+        ctrl = new ChessController(this, pgnOptions);
         ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
         ctrl.newGame(gameMode);
@@ -384,9 +381,11 @@ public class DroidFish extends Activity implements GUIInterface {
 
         String bookFile = settings.getString("bookFile", "");
         setBookFile(bookFile);
-        ctrl.updateBookHints();
 		updateThinkingInfo();
 
+		pgnOptions.view.variations  = settings.getBoolean("viewVariations",   	true);
+		pgnOptions.view.comments    = settings.getBoolean("viewComments",     	true);
+		pgnOptions.view.nag         = settings.getBoolean("viewNAG", 		  	true);
 		pgnOptions.imp.variations   = settings.getBoolean("importVariations",   true);
 		pgnOptions.imp.comments     = settings.getBoolean("importComments",     true);
 		pgnOptions.imp.nag          = settings.getBoolean("importNAG", 		  	true);
@@ -395,6 +394,8 @@ public class DroidFish extends Activity implements GUIInterface {
 		pgnOptions.exp.nag          = settings.getBoolean("exportNAG",          true);
 		pgnOptions.exp.playerAction = settings.getBoolean("exportPlayerAction", false);
 		pgnOptions.exp.clockInfo    = settings.getBoolean("exportTime",         false);
+
+        ctrl.prefsChanged();
 	}
 
 	private final void setBookFile(String bookFile) {
@@ -497,7 +498,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			if (resultCode == RESULT_OK) {
 				try {
 					String fen = data.getAction();
-					ctrl.setFENOrPGN(fen, pgnOptions);
+					ctrl.setFENOrPGN(fen);
 				} catch (ChessParseError e) {
 				}
 			}
@@ -652,7 +653,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			    public void onClick(DialogInterface dialog, int item) {
 					switch (item) {
 					case 0: {
-						String pgn = ctrl.getPGN(pgnOptions);
+						String pgn = ctrl.getPGN();
 						ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 						clipboard.setText(pgn);
 						break;
@@ -668,7 +669,7 @@ public class DroidFish extends Activity implements GUIInterface {
 						if (clipboard.hasText()) {
 							String fenPgn = clipboard.getText().toString();
 							try {
-								ctrl.setFENOrPGN(fenPgn, pgnOptions);
+								ctrl.setFENOrPGN(fenPgn);
 							} catch (ChessParseError e) {
 								Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 							}

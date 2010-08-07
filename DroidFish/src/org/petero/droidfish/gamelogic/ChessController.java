@@ -25,6 +25,7 @@ public class ChessController {
     private Game game;
     private GUIInterface gui;
     private GameMode gameMode;
+    private PGNOptions pgnOptions;
     private Thread computerThread;
     private Thread analysisThread;
 
@@ -142,8 +143,9 @@ public class ChessController {
     }
     SearchListener listener;
     
-    public ChessController(GUIInterface gui) {
+    public ChessController(GUIInterface gui, PGNOptions options) {
         this.gui = gui;
+        pgnOptions = options;
         listener = new SearchListener();
     }
 
@@ -161,7 +163,7 @@ public class ChessController {
 		}
 	}
 	
-	public final void updateBookHints() {
+	private final void updateBookHints() {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
 			if (!analysis && humansTurn()) {
@@ -244,6 +246,11 @@ public class ChessController {
 		}
 	}
 
+	public final void prefsChanged() {
+		updateBookHints();
+		updateGUI();
+	}
+ 
 	private final void setPlayerNames(Game game) {
 		if (game != null) {
 			String engine = ComputerPlayer.engineName;
@@ -267,11 +274,11 @@ public class ChessController {
     }
     
     /** Convert current game to PGN format. */ 
-    public final String getPGN(PGNOptions options) {
-    	return game.tree.toPGN(options);
+    public final String getPGN() {
+    	return game.tree.toPGN(pgnOptions);
     }
 
-    public final void setFENOrPGN(String fenPgn, PGNOptions options) throws ChessParseError {
+    public final void setFENOrPGN(String fenPgn) throws ChessParseError {
        	Game newGame = new Game(null, timeControl, movesPerSession, timeIncrement);
     	try {
     		Position pos = TextIO.readFEN(fenPgn);
@@ -279,7 +286,7 @@ public class ChessController {
     		setPlayerNames(newGame);
     	} catch (ChessParseError e) {
     		// Try read as PGN instead
-    		if (!newGame.readPGN(fenPgn, options)) {
+    		if (!newGame.readPGN(fenPgn, pgnOptions)) {
     			throw e;
     		}
     	}
@@ -497,7 +504,7 @@ public class ChessController {
             str = game.getGameStateString();
         }
         gui.setStatusString(str);
-        Pair<SpannableStringBuilder, Boolean> pair = game.getMoveListString();
+        Pair<SpannableStringBuilder, Boolean> pair = game.getMoveListString(pgnOptions);
         gui.setMoveListString(pair.first, pair.second);
 
         StringBuilder sb = new StringBuilder();
