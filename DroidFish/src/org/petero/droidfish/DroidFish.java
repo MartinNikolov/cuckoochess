@@ -79,7 +79,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Make program translatable
 
 	// FIXME!!! Display last move in status line
-	// FIXME!!! Remove leading spaces on comment lines. (human_computer.pgn)
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
@@ -1097,7 +1096,7 @@ public class DroidFish extends Activity implements GUIInterface {
 						sb.append(' ');
 					}
 				}
-				sb.append(token.trim());
+				sb.append(token.replaceAll("[ \t\r\n]+", " ").trim());
 				col0 = false;
 				if (nestLevel == 0)
 					newLine();
