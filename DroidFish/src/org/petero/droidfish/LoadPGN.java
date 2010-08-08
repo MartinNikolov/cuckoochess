@@ -150,7 +150,12 @@ public class LoadPGN extends Activity {
 				int len = line.length();
 				if (len == 0)
 					continue;
-				if (line.charAt(0) == '[') { // FIXME!!! Search for '[word "' to reduce false positives
+				boolean isHeader = line.charAt(0) == '[';
+				if (isHeader) {
+					if (!line.contains("\"")) // Try to avoid some false positives
+						isHeader = false;
+				}
+				if (isHeader) {
 					if (!inHeader) { // Start of game
 						inHeader = true;
 						if (gi != null) {
