@@ -166,6 +166,13 @@ a larger book, you can configure DroidFish to use a <i>polyglot</i> book file:\n
 3. From the program menu, activate the <i>Select opening book</i> function.\n\
 4. Select the opening book file you want to use.\n\
 \n\
+<b>PGN files</b>\n\
+DroidFish can load games from PGN files. To use this feature:\n\
+1. Create a directory called <i>DroidFish/pgn</i> on the SD card.\n\
+2. Copy one or more PGN files to the <i>DroidFish/pgn</i> directory.\n\
+3. Long press the chess board and select <i>Load game from PGN file</i>.\n\
+4. Select the file, then the game within the file you want to load.\n\
+\n\
 <b>License</b>\n\
 GNU GPL v3\n\
 \n\
@@ -192,7 +199,7 @@ you are not actively using the program.\
 	<string name="copy_game">Copy Game to Clipboard</string>
 	<string name="copy_position">Copy Position to Clipboard</string>
 	<string name="paste">Paste from Clipboard</string>
-	<string name="load_game">Load from PGN file</string>
+	<string name="load_game">Load game from PGN file</string>
 	<string name="remove_variation">Remove variation</string>
 	<string name="tools_menu">Tools</string>
 	<string name="goto_move">Goto move</string>
@@ -218,4 +225,5 @@ you are not actively using the program.\
 	<string name="internal_book">&lt;Internal Book&gt;</string>
 	<string name="select_opening_book_file">Select opening book file</string>
 	<string name="select_pgn_file">Select PGN file to open</string>
+	<string name="select_pgn_game">Select game to open</string>
 </resources>

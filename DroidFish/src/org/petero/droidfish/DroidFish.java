@@ -77,8 +77,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
+
 	// FIXME!!! Display last move in status line
-	// FIXME!!! Document PGN file load in About/help dialog
+	// FIXME!!! Remove leading spaces on comment lines. (human_computer.pgn)
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?

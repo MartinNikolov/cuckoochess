@@ -105,7 +105,7 @@ public class LoadPGN extends Activity {
 	    		defaultItem = 0;
 	    	}
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.select_pgn_file);
+			builder.setTitle(R.string.select_pgn_game);
 			builder.setSingleChoiceItems(items, defaultItem, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					defaultItem = item;
@@ -150,7 +150,7 @@ public class LoadPGN extends Activity {
 				int len = line.length();
 				if (len == 0)
 					continue;
-				if (line.charAt(0) == '[') {
+				if (line.charAt(0) == '[') { // FIXME!!! Search for '[word "' to reduce false positives
 					if (!inHeader) { // Start of game
 						inHeader = true;
 						if (gi != null) {
