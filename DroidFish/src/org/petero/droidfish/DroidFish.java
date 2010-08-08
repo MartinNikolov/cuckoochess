@@ -61,14 +61,16 @@ import android.widget.Toast;
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 	// FIXME!!! book.txt (and test classes) should not be included in apk
+
 	// FIXME!!! Current position in game should be visible: TextView.bringPointIntoView()
+	// FIXME!!! Display last move in status line
 
 	// FIXME!!! PGN view option: game continuation (for training)
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 
-	// FIXME!!! Handle more move formats in PGN import. 0-0, long form, extra characters in short form
+	// FIXME!!! Handle more move formats in PGN import. long form, extra characters in short form
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
@@ -79,8 +81,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
-
-	// FIXME!!! Display last move in status line
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?

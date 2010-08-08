@@ -407,6 +407,10 @@ public class TextIO {
     public static final Move stringToMove(Position pos, String strMove) {
     	if (strMove.equals("--"))
     		return new Move(0, 0, 0);
+    	else if (strMove.equals("0-0"))
+    		strMove = "O-O";
+    	else if (strMove.equals("0-0-0"))
+    		strMove = "O-O-O";
         strMove = strMove.replaceAll("=", "");
         Move move = null;
         if (strMove.length() == 0)

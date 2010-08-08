@@ -315,9 +315,13 @@ public class TextIOTest {
         assertEquals(kCastle, m);
         m = TextIO.stringToMove(pos, "O-O");
         assertEquals(kCastle, m);
+        m = TextIO.stringToMove(pos, "0-0");
+        assertEquals(kCastle, m);
         m = TextIO.stringToMove(pos, "o-o-o");
         assertEquals(qCastle, m);
-        
+        m = TextIO.stringToMove(pos, "0-0-0");
+        assertEquals(qCastle, m);
+
         // Test 'o-o+'
         pos.setPiece(Position.getSquare(5,1), Piece.EMPTY);
         pos.setPiece(Position.getSquare(5,5), Piece.EMPTY);
