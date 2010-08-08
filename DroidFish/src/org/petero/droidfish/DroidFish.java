@@ -1114,6 +1114,7 @@ public class DroidFish extends Activity implements GUIInterface {
 					newLine();
 				break;
 			case PgnToken.EOF:
+				newLine();
 				upToDate = true;
 				break;
 			}
