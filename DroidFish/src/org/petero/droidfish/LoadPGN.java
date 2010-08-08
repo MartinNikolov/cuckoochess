@@ -13,6 +13,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnDismissListener;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 public class LoadPGN extends Activity {
@@ -25,7 +26,7 @@ public class LoadPGN extends Activity {
 		String black = "";
 		String result = "";
 		long startPos;
-		long endPos; // -1 means to end of file
+		long endPos;
 	}
 
 	static Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
@@ -52,6 +53,11 @@ public class LoadPGN extends Activity {
 				});
 			}
 		}).start();
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
 	}
 
 	final static int PROGRESS_DIALOG = 0;

@@ -23,8 +23,8 @@
                   android:configChanges="orientation">
         </activity>
         <activity android:name="LoadPGN"
-        		  android:label="Load PGN"
-				  android:screenOrientation="portrait">
+        		  android:label="Load PGN game"
+        		  android:configChanges="orientation">
         </activity>
         <activity android:name="CPUWarning"
         		  android:label="CPU Warning">
