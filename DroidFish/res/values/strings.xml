@@ -226,4 +226,6 @@ you are not actively using the program.\
 	<string name="select_opening_book_file">Select opening book file</string>
 	<string name="select_pgn_file">Select PGN file to open</string>
 	<string name="select_pgn_game">Select game to open</string>
+	<string name="reading_pgn_file">Reading PGN file</string>
+	<string name="please_wait">Please wait...</string>
 </resources>

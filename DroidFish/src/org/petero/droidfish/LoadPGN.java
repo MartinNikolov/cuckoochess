@@ -69,8 +69,8 @@ public class LoadPGN extends Activity {
 		case PROGRESS_DIALOG:
 			progress = new ProgressDialog(this);
 			progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			progress.setTitle("Parsing PGN file");
-			progress.setMessage("Please wait...");
+			progress.setTitle(R.string.reading_pgn_file);
+			progress.setMessage(getString(R.string.please_wait));
 			progress.setCancelable(false);
 			return progress;
 		case SELECT_GAME_DIALOG:
