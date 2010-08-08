@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,6 +40,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.LeadingMarginSpan;
+import android.text.style.StyleSpan;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -996,6 +998,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 		int paraStart = 0;
 		int paraIndent = 0;
+		boolean paraBold = false;
 		private final void newLine() {
 			if (!col0) {
 				if (paraIndent > 0) {
@@ -1004,9 +1007,15 @@ public class DroidFish extends Activity implements GUIInterface {
 					sb.setSpan(new LeadingMarginSpan.Standard(indent), paraStart, paraEnd,
 							   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
+				if (paraBold) {
+					int paraEnd = sb.length();
+					sb.setSpan(new StyleSpan(Typeface.BOLD), paraStart, paraEnd,
+							   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
 				sb.append('\n');
 				paraStart = sb.length();
 				paraIndent = nestLevel;
+				paraBold = false;
 			}
 			col0 = true;
 		}
@@ -1022,9 +1031,11 @@ public class DroidFish extends Activity implements GUIInterface {
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
 				if (options.view.headers) {
-					sb.append('\n');
+					col0 = false;
+					newLine();
 				} else {
 					sb.clear();
+					paraBold = false;
 				}
 			}
 			if (pendingNewLine) {
@@ -1083,6 +1094,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				nodeToCharPos.put(node, new NodeInfo(l0, l1));
 				if (endPos < l0) endPos = l0;
 				col0 = false;
+				if (nestLevel == 0) paraBold = true;
 				break;
 			}
 			case PgnToken.COMMENT:
@@ -1110,10 +1122,21 @@ public class DroidFish extends Activity implements GUIInterface {
 
 		@Override
 		public void clear() {
-			upToDate = false;
-			nodeToCharPos.clear();
 			sb.clear();
+			prevType = PgnToken.EOF;
+			nestLevel = 0;
+			col0 = true;
+			currNode = null;
+			currPos = 0;
 			endPos = 0;
+			nodeToCharPos.clear();
+			paraStart = 0;
+			paraIndent = 0;
+			paraBold = false;
+			pendingNewLine = false;
+			skipMoveNr = false;
+
+			upToDate = false;
 		}
 
 		BackgroundColorSpan bgSpan = new BackgroundColorSpan(0xff888888);
