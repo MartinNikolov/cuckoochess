@@ -184,19 +184,19 @@ public class LoadPGN extends Activity {
 					break;
 				}
 			}
-			if (b == EOF)
+			if ((b == EOF) && (lineLen == 0))
 				return null;
 			else
 				return new String(lineBuf, 0, lineLen);
 		}
 		
 		private final int getByte() throws IOException {
-			if (bufPos >= buffer.length) {
+			if (bufPos >= bufLen) {
 				bufStartFilePos = f.getFilePointer();
 				bufLen = f.read(buffer);
+				bufPos = 0;
 				if (bufLen <= 0)
 					return EOF;
-				bufPos = 0;
 			}
 			return buffer[bufPos++];
 		}
