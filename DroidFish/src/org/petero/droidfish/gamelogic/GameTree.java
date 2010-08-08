@@ -164,7 +164,7 @@ public class GameTree {
 				sb.append(token);
 				break;
 			case PgnToken.SYMBOL:
-				if (prevType != PgnToken.RIGHT_BRACKET)
+				if ((prevType != PgnToken.RIGHT_BRACKET) && (prevType != PgnToken.LEFT_BRACKET))
 					sb.append(' ');
 				sb.append(token);
 				break;
