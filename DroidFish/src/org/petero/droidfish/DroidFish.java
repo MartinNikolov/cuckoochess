@@ -804,6 +804,12 @@ public class DroidFish extends Activity implements GUIInterface {
 		case SELECT_PGN_FILE_DIALOG: {
         	final String[] fileNames = findFilesInDirectory(pgnDir);
     		final int numFiles = fileNames.length;
+    		if (numFiles == 0) {
+    			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    			builder.setTitle(R.string.app_name).setMessage(R.string.no_pgn_files);
+    			AlertDialog alert = builder.create();
+    			return alert;
+    		}
 			int defaultItem = 0;
 			String currentPGNFile = settings.getString("currentPGNFile", "");
 			for (int i = 0; i < numFiles; i++) {
