@@ -285,7 +285,7 @@ public class TextIOTest {
         m = TextIO.stringToMove(pos, "axb1Q#");
         assertEquals(maxb1Q, m);
         m = TextIO.stringToMove(pos, "axb1Q+");
-        assertEquals(null, m);
+        assertEquals(maxb1Q, m);
         
         Move mh5= new Move(Position.getSquare(7, 6), Position.getSquare(7, 4), Piece.EMPTY);
         m = TextIO.stringToMove(pos, "h5");
@@ -317,6 +317,8 @@ public class TextIOTest {
         assertEquals(kCastle, m);
         m = TextIO.stringToMove(pos, "0-0");
         assertEquals(kCastle, m);
+        m = TextIO.stringToMove(pos, "O-O-O");
+        assertEquals(qCastle, m);
         m = TextIO.stringToMove(pos, "o-o-o");
         assertEquals(qCastle, m);
         m = TextIO.stringToMove(pos, "0-0-0");
@@ -345,6 +347,17 @@ public class TextIOTest {
         Move nullMove = new Move(0, 0, 0);
         m = TextIO.stringToMove(pos, "--");
         assertEquals(nullMove, m);
+        
+        // Test extra characters
+        pos = TextIO.readFEN(TextIO.startPosFEN);
+        Move mNf3 = new Move(TextIO.getSquare("g1"), TextIO.getSquare("f3"), Piece.EMPTY);
+        assertEquals(mNf3, TextIO.stringToMove(pos, "Ngf3"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "Ng1f3"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "Ng1-f3"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "g1f3"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "N1f3"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "Ngf"));
+        assertEquals(mNf3, TextIO.stringToMove(pos, "Nf"));
     }
 
     /**

@@ -292,6 +292,7 @@ public class LoadPGN extends Activity {
 				byte[] pgnData = new byte[(int) (gi.endPos - gi.startPos)];
 				f.seek(gi.startPos);
 				f.readFully(pgnData);
+				f.close();
 				String result = new String(pgnData);
 				setResult(RESULT_OK, (new Intent()).setAction(result));
 				finish();

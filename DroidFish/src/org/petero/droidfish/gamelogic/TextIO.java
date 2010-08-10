@@ -399,89 +399,141 @@ public class TextIO {
         }
     }
 
+	private final static class MoveInfo {
+		int piece;					// -1 for unspecified
+		int fromX, fromY, toX, toY; // -1 for unspecified
+		int promPiece;				// -1 for unspecified
+		MoveInfo() { piece = fromX = fromY = toX = toY = promPiece = -1; }
+	}
+    
     /**
      * Convert a chess move string to a Move object.
-     * Any prefix of the string representation of a valid move counts as a legal move string,
-     * as long as the string only matches one valid move.
+     * The string may specify any combination of piece/source/target/promotion
+     * information as long as it matches exactly one valid move.
      */
     public static final Move stringToMove(Position pos, String strMove) {
     	if (strMove.equals("--"))
     		return new Move(0, 0, 0);
-    	else if (strMove.equals("0-0"))
-    		strMove = "O-O";
-    	else if (strMove.equals("0-0-0"))
-    		strMove = "O-O-O";
-        strMove = strMove.replaceAll("=", "");
-        Move move = null;
-        if (strMove.length() == 0)
-            return move;
+
+    	strMove = strMove.replaceAll("=", "");
+    	strMove = strMove.replaceAll("\\+", "");
+    	strMove = strMove.replaceAll("#", "");
+        boolean wtm = pos.whiteMove;
+
+    	MoveInfo info = new MoveInfo();
+    	boolean capture = false;
+    	if (strMove.equals("O-O") || strMove.equals("0-0") || strMove.equals("o-o")) {
+    		info.piece = wtm ? Piece.WKING : Piece.BKING;
+    		info.fromX = 4;
+    		info.toX = 6;
+    		info.fromY = info.toY = wtm ? 0 : 7;
+    		info.promPiece= Piece.EMPTY;
+    	} else if (strMove.equals("O-O-O") || strMove.equals("0-0-0") || strMove.equals("o-o-o")) {
+    		info.piece = wtm ? Piece.WKING : Piece.BKING;
+    		info.fromX = 4;
+    		info.toX = 2;
+    		info.fromY = info.toY = wtm ? 0 : 7;
+    		info.promPiece= Piece.EMPTY;
+    	} else {
+    		boolean atToSq = false;
+    		for (int i = 0; i < strMove.length(); i++) {
+    			char c = strMove.charAt(i);
+    			if (i == 0) {
+    				int piece = charToPiece(wtm, c);
+    				if (piece >= 0) {
+    					info.piece = piece;
+    					continue;
+    				}
+    			}
+    			int tmpX = c - 'a';
+    			if ((tmpX >= 0) && (tmpX < 8)) {
+    				if (atToSq || (info.fromX >= 0))
+    					info.toX = tmpX;
+    				else
+    					info.fromX = tmpX;
+    			}
+    			int tmpY = c - '1';
+    			if ((tmpY >= 0) && (tmpY < 8)) {
+    				if (atToSq || (info.fromY >= 0))
+    					info.toY = tmpY;
+    				else
+    					info.fromY = tmpY;
+    			}
+    			if ((c == 'x') || (c == '-')) {
+    				atToSq = true;
+    				if (c == 'x')
+    					capture = true;
+    			}
+    			if (i == strMove.length() - 1) {
+    				int promPiece = charToPiece(wtm, c);
+    				if (promPiece >= 0) {
+    					info.promPiece = promPiece;
+    				}
+    			}
+    		}
+    		if ((info.fromX >= 0) && (info.toX < 0)) {
+    			info.toX = info.fromX;
+    			info.fromX = -1;
+    		}
+    		if ((info.fromY >= 0) && (info.toY < 0)) {
+    			info.toY = info.fromY;
+    			info.fromY = -1;
+    		}
+    		if (info.piece < 0) {
+    			boolean haveAll = (info.fromX >= 0) && (info.fromY >= 0) &&
+    							  (info.toX >= 0) && (info.toY >= 0);
+    			if (!haveAll)
+    				info.piece = wtm ? Piece.WPAWN : Piece.BPAWN;
+    		}
+    		if (info.promPiece < 0)
+    			info.promPiece = Piece.EMPTY;
+    	}
+
         ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
-        {
-            char lastChar = strMove.charAt(strMove.length() - 1);
-            if ((lastChar == '#') || (lastChar == '+')) {
-                ArrayList<Move> subMoves = new ArrayList<Move>();
-                int mSize = moves.size();
-                for (int mi = 0; mi < mSize; mi++) {
-                	Move m = moves.get(mi);
-                    String str1 = TextIO.moveToString(pos, m, true, false, moves);
-                    if (str1.charAt(str1.length() - 1) == lastChar) {
-                        subMoves.add(m);
-                    }
-                }
-                moves = subMoves;
-                strMove = normalizeMoveString(strMove);
-            }
-        }
 
-        for (int i = 0; i < 2; i++) {
-            // Search for full match
-        	int mSize = moves.size();
-        	for (int mi = 0; mi < mSize; mi++) {
-        		Move m = moves.get(mi);
-                String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true, false, moves));
-                String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false, false, moves));
-                if (i == 0) {
-                    if (strMove.equals(str1) || strMove.equals(str2)) {
-                        return m;
-                    }
-                } else {
-                    if (strMove.toLowerCase().equals(str1.toLowerCase()) ||
-                            strMove.toLowerCase().equals(str2.toLowerCase())) {
-                        return m;
-                    }
-                }
-            }
+        ArrayList<Move> matches = new ArrayList<Move>(2);
+        for (int i = 0; i < moves.size(); i++) {
+        	Move m = moves.get(i);
+        	int p = pos.getPiece(m.from);
+        	boolean match = true;
+        	if ((info.piece >= 0) && (info.piece != p))
+        		match = false;
+        	if ((info.fromX >= 0) && (info.fromX != Position.getX(m.from)))
+        		match = false;
+        	if ((info.fromY >= 0) && (info.fromY != Position.getY(m.from)))
+        		match = false;
+        	if ((info.toX >= 0) && (info.toX != Position.getX(m.to)))
+        		match = false;
+        	if ((info.toY >= 0) && (info.toY != Position.getY(m.to)))
+        		match = false;
+        	if ((info.promPiece >= 0) && (info.promPiece != m.promoteTo))
+        		match = false;
+        	if (match) {
+        		matches.add(m);
+        	}
         }
-        
-        for (int i = 0; i < 2; i++) {
-            // Search for unique substring match
-        	int mSize = moves.size();
-        	for (int mi = 0; mi < mSize; mi++) {
-        		Move m = moves.get(mi);
-                String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true));
-                String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false));
-                boolean match;
-                if (i == 0) {
-                    match = (str1.startsWith(strMove) || str2.startsWith(strMove));
-                } else {
-                    match = (str1.toLowerCase().startsWith(strMove.toLowerCase()) ||
-                            str2.toLowerCase().startsWith(strMove.toLowerCase()));
-                }
-                if (match) {
-                    if (move != null) {
-                        return null; // More than one match, not ok
-                    } else {
-                        move = m;
-                    }
-                }
-            }
-            if (move != null)
-                return move;
+        int nMatches = matches.size();
+        if (nMatches == 0)
+        	return null;
+        else if (nMatches == 1)
+        	return matches.get(0);
+        if (!capture)
+        	return null;
+        Move move = null;
+        for (int i = 0; i < matches.size(); i++) {
+        	Move m = matches.get(i);
+        	int capt = pos.getPiece(m.to);
+        	if (capt != Piece.EMPTY) {
+        		if (move == null)
+        			move = m;
+        		else
+        			return null;
+        	}
         }
         return move;
     }
-    
+
     /** Convert a move object to UCI string format. */
     public static final String moveToUCIString(Move m) {
         String ret = squareToString(m.from);
@@ -613,19 +665,6 @@ public class TextIO {
         return ret.toString();
     }
 
-    /**
-     * Convert move string to lower case and remove special check/mate symbols.
-     */
-    private static final String normalizeMoveString(String str) {
-        if (str.length() > 0) {
-            char lastChar = str.charAt(str.length() - 1);
-            if ((lastChar == '#') || (lastChar == '+')) {
-                str = str.substring(0, str.length() - 1);
-            }
-        }
-        return str;
-    }
-    
     private final static String pieceToChar(int p) {
         switch (p) {
             case Piece.WQUEEN:  case Piece.BQUEEN:  return "Q";
@@ -635,5 +674,17 @@ public class TextIO {
             case Piece.WKING:   case Piece.BKING:   return "K";
         }
         return "";
+    }
+    
+    private final static int charToPiece(boolean white, char c) {
+    	switch (c) {
+    	case 'Q': case 'q': return white ? Piece.WQUEEN  : Piece.BQUEEN;
+    	case 'R': case 'r': return white ? Piece.WROOK   : Piece.BROOK;
+    	case 'B':           return white ? Piece.WBISHOP : Piece.BBISHOP;
+    	case 'N': case 'n': return white ? Piece.WKNIGHT : Piece.BKNIGHT;
+    	case 'K': case 'k': return white ? Piece.WKING   : Piece.BKING;
+    	case 'P': case 'p': return white ? Piece.WPAWN   : Piece.BPAWN;
+    	}
+    	return -1;
     }
 }
