@@ -63,7 +63,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! book.txt (and test classes) should not be included in apk
 
 	// FIXME!!! Current position in game should be visible: TextView.bringPointIntoView()
-	// FIXME!!! Display last move in status line
 
 	// FIXME!!! PGN view option: game continuation (for training)
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
