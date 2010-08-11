@@ -427,8 +427,22 @@ public class GameTree {
     			break;
     		tp.tagValue = tok.token;
     		tok = scanner.nextTokenDropComments();
-    		if (tok.type != PgnToken.RIGHT_BRACKET)
-    			break;
+    		if (tok.type != PgnToken.RIGHT_BRACKET) {
+    			// In a well-formed PGN, there is nothing between the string
+    			// and the right bracket, but broken headers with non-escaped
+    			// " characters sometimes occur. Try to do something useful
+    			// for such headers here.
+    			PgnToken prevTok = new PgnToken(PgnToken.STRING, "");
+    			while ((tok.type == PgnToken.STRING) || (tok.type == PgnToken.SYMBOL)) {
+    				if (tok.type != prevTok.type)
+    					tp.tagValue += '"';
+    				if ((tok.type == PgnToken.SYMBOL) && (prevTok.type == PgnToken.SYMBOL))
+    					tp.tagValue += ' ';
+    				tp.tagValue += tok.token;
+    				prevTok = tok;
+    				tok = scanner.nextTokenDropComments();
+    			}
+    		}
     		tagPairs.add(tp);
     		tok = scanner.nextToken();
     	}

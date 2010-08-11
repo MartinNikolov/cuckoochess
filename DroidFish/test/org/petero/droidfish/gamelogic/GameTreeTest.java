@@ -454,6 +454,18 @@ public class GameTreeTest {
 		assertEquals("e4", getVariationsAsString(gt));
 		gt.goForward(0);
 		assertEquals("e5", getVariationsAsString(gt));
+		
+		// Test for broken PGN headers: [White "A "good" player"]
+		res = gt.readPGN("[White \"A \"good\" player\"]\ne4", options);
+		assertEquals(true, res);
+		assertEquals("A \"good\" player", gt.white);
+		assertEquals("e4", getVariationsAsString(gt));
+
+		// Test for broken PGN headers: [White "A "good" player"]
+		res = gt.readPGN("[White \"A \"good old\" player\"]\ne4", options);
+		assertEquals(true, res);
+		assertEquals("A \"good old\" player", gt.white);
+		assertEquals("e4", getVariationsAsString(gt));
 	}
 
 	@Test
