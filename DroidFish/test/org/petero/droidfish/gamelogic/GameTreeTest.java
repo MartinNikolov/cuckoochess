@@ -624,4 +624,23 @@ public class GameTreeTest {
 		assertTrue(pgn.indexOf("1-0") < 0);
 		assertTrue(pgn.indexOf("0-1") >= 0);
 	}
+
+	@Test
+	public final void testPGNPromotion() throws ChessParseError {
+		// PGN standard specifies that promotion moves shall have an = sign 
+		// before the promotion piece
+		GameTree gt = new GameTree(null);
+		gt.setStartPos(TextIO.readFEN("rnbqkbnr/ppPppppp/8/8/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"));
+		int varNo = gt.addMove("cxb8N", "", 0, "", "");
+		assertEquals(0, varNo);
+		varNo = gt.addMove("cxd8R+", "", 0, "", "");
+		assertEquals(1, varNo);
+		assertEquals("cxb8N cxd8R+", getVariationsAsString(gt)); // Normal short alg notation does not have =
+		PGNOptions options = new PGNOptions();
+		options.exp.variations = true;
+		String pgn = gt.toPGN(options);
+		assertTrue(pgn.indexOf("cxb8=N") >= 0);			  // ... but PGN promotions do have the = sign
+		assertTrue(pgn.indexOf("cxd8=R+") >= 0);
+
+	}
 }

@@ -68,7 +68,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 
-	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
 	// FIXME!!! Implement "limit strength" option

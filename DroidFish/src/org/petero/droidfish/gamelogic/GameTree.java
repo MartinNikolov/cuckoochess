@@ -197,6 +197,7 @@ public class GameTree {
     /** Export game tree in PGN format. */
     public final String toPGN(PGNOptions options) {
     	PgnText pgnText = new PgnText();
+    	options.exp.pgnPromotions = true;
     	pgnTreeWalker(options, pgnText);
     	return pgnText.getPgnString();
     }
@@ -655,7 +656,7 @@ public class GameTree {
     		move = TextIO.stringToMove(currentPos, moveStr);
     	if (move == null)
     		return -1;
-    	node.moveStr = TextIO.moveToString(currentPos, move, false, false);
+    	node.moveStr = TextIO.moveToString(currentPos, move, false);
     	node.move = move;
     	node.ui = new UndoInfo();
     	currentNode.children.add(node);
@@ -941,7 +942,7 @@ public class GameTree {
         		if (child.move == null) {
         	    	Move move = TextIO.stringToMove(nodePos, child.moveStr);
         			if (move != null) {
-        				child.moveStr = TextIO.moveToString(nodePos, move, false, false);
+        				child.moveStr = TextIO.moveToString(nodePos, move, false);
         				child.move = move;
         				child.ui = new UndoInfo();
         			} else {
@@ -1072,7 +1073,11 @@ public class GameTree {
     							out.processToken(this, PgnToken.PERIOD, null);
     					}
     				}
-    				out.processToken(this, PgnToken.SYMBOL, moveStr);
+    				String str = moveStr;
+    				if (options.exp.pgnPromotions && (move != null) && (move.promoteTo != Piece.EMPTY)) {
+    					str = TextIO.pgnPromotion(str);
+    				}
+    				out.processToken(this, PgnToken.SYMBOL, str);
     				needMoveNr = false;
     			}
     		}

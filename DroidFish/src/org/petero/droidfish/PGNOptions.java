@@ -19,6 +19,7 @@ public class PGNOptions {
 		public boolean nag;
 		public boolean playerAction;
 		public boolean clockInfo;
+		public boolean pgnPromotions;
 	}
 
 	public Viewer view;

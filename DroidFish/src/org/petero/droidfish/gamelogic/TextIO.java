@@ -283,16 +283,12 @@ public class TextIO {
      *                 Otherwise, use short notation, eg Nf3
      */
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-    	return moveToString(pos, move, longForm, false);
-    }
-
-    public static final String moveToString(Position pos, Move move, boolean longForm, boolean equalInPromote) {
         ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
-        return moveToString(pos, move, longForm, equalInPromote, moves);
+        return moveToString(pos, move, longForm, moves);
     }
     private static final String moveToString(Position pos, Move move, boolean longForm, 
-    										 boolean equalInPromote, List<Move> moves) {
+    										 List<Move> moves) {
     	if (move.equals(new Move(0, 0, 0)))
     		return "--";
         StringBuilder ret = new StringBuilder();
@@ -361,11 +357,8 @@ public class TextIO {
             }
             ret.append((char) (x2 + 'a'));
             ret.append((char) (y2 + '1'));
-            if (move.promoteTo != Piece.EMPTY) {
-            	if (equalInPromote)
-            		ret.append('=');
+            if (move.promoteTo != Piece.EMPTY)
                 ret.append(pieceToChar(move.promoteTo));
-            }
         }
         UndoInfo ui = new UndoInfo();
         pos.makeMove(move, ui);
@@ -685,4 +678,18 @@ public class TextIO {
     	}
     	return -1;
     }
+
+    /** Add an = sign to a promotion move, as required by the PGN standard. */
+	public final static String pgnPromotion(String str) {
+		int idx = str.length() - 1;
+		while (idx > 0) {
+			char c = str.charAt(idx);
+			if ((c != '#') && (c != '+'))
+				break;
+			idx--;
+		}
+		if ((idx > 0) && (charToPiece(true, str.charAt(idx)) != -1))
+			idx--;
+		return str.substring(0, idx + 1) + '=' + str.substring(idx + 1, str.length());
+	}
 }
