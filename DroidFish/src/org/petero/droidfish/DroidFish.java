@@ -61,7 +61,6 @@ import android.widget.Toast;
 public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
 	// FIXME!!! book.txt (and test classes) should not be included in apk
-
 	// FIXME!!! Current position in game should be visible: TextView.bringPointIntoView()
 
 	// FIXME!!! PGN view option: game continuation (for training)

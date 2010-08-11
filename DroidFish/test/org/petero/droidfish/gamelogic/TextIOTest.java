@@ -106,7 +106,7 @@ public class TextIOTest {
         // Test that insane move numbers are rejected. Otherwise, could cause problems
         // (excessive memory usage) for the clock history class.
         pos = TextIO.readFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 10000");
-        assertTrue(pos.fullMoveCounter < 1000);
+        assertEquals(10000, pos.fullMoveCounter);
     }
 
     /**
