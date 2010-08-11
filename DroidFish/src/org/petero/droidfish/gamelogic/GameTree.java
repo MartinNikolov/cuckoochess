@@ -1159,6 +1159,8 @@ public class GameTree {
     					return;
     				}
     				char lastChar = tok.token.charAt(tok.token.length() - 1);
+    				if (lastChar == '+')
+    					tok.token = tok.token.substring(0, tok.token.length() - 1);
     				if ((lastChar == '!') || (lastChar == '?')) {
     					int movLen = tok.token.length() - 1;
     					while (movLen > 0) {

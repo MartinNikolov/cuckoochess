@@ -73,7 +73,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! PGN standard says = sign shall be used in promotions, e8=Q
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 	// FIXME!!! Handle broken pgn: [Annotator "Lopez "Battle Royale""]
-	// FIXME!!! Handle borken pgn: Nxd3 +
+	// FIXME!!! Remember current position in pgn file when game restarted
 
 	// FIXME!!! Implement "limit strength" option
 	// FIXME!!! Implement PGN database support (and FEN?)

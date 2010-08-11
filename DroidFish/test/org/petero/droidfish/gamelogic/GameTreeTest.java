@@ -448,6 +448,12 @@ public class GameTreeTest {
 		assertEquals("e5 c5 d5", getVariationsAsString(gt));
 		gt.goForward(1);
 		assertEquals("d4 Nc3", getVariationsAsString(gt));
+
+		res = gt.readPGN("e4 + e5", options); // Extra + should be ignored
+		assertEquals(true, res);
+		assertEquals("e4", getVariationsAsString(gt));
+		gt.goForward(0);
+		assertEquals("e5", getVariationsAsString(gt));
 	}
 
 	@Test
