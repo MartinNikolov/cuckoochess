@@ -165,7 +165,7 @@ public class LoadPGN extends Activity {
 			}
 
 			// Generic case
-			byte[] lineBuf = new byte[4096];
+			byte[] lineBuf = new byte[8192];
 			int lineLen = 0;
 			int b;
 			while (true) {
@@ -214,6 +214,7 @@ public class LoadPGN extends Activity {
 		lastModTime = modTime;
 		lastFileName = fileName;
 		try {
+			int percent = -1;
 			gamesInFile.clear();
 			BufferedRandomAccessFileReader f = new BufferedRandomAccessFileReader(fileName);
 			long fileLen = f.length();
@@ -239,12 +240,15 @@ public class LoadPGN extends Activity {
 						if (gi != null) {
 							gi.endPos = filePos;
 							gamesInFile.add(gi);
-							final int percent = (int)(filePos * 100 / fileLen);
-							runOnUiThread(new Runnable() {
-								public void run() {
-									progress.setProgress(percent);
-								}
-							});
+							final int newPercent = (int)(filePos * 100 / fileLen);
+							if (newPercent > percent) {
+								percent =  newPercent;
+								runOnUiThread(new Runnable() {
+									public void run() {
+										progress.setProgress(newPercent);
+									}
+								});
+							}
 						}
 						gi = new GameInfo();
 						gi.startPos = filePos;
