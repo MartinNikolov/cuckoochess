@@ -1023,13 +1023,8 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 
 		boolean pendingNewLine = false;
-		boolean skipMoveNr = false;
 
 		public void processToken(Node node, int type, String token) {
-			if (prevType == PgnToken.NAG)
-				skipMoveNr = true;
-			else if ((prevType != PgnToken.INTEGER) && (prevType != PgnToken.PERIOD))
-				skipMoveNr = false;
 			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
 					(type != PgnToken.LEFT_BRACKET))  {
 				if (options.view.headers) {
@@ -1053,19 +1048,15 @@ public class DroidFish extends Activity implements GUIInterface {
 				sb.append('"');
 				break;
 			case PgnToken.INTEGER:
-				if (!skipMoveNr) {
-					if (	(prevType != PgnToken.LEFT_PAREN) &&
-							(prevType != PgnToken.RIGHT_BRACKET) && !col0)
-						sb.append(' ');
-					sb.append(token);
-					col0 = false;
-				}
+				if (	(prevType != PgnToken.LEFT_PAREN) &&
+						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
+					sb.append(' ');
+				sb.append(token);
+				col0 = false;
 				break;
 			case PgnToken.PERIOD:
-				if (!skipMoveNr) {
-					sb.append('.');
-					col0 = false;
-				}
+				sb.append('.');
+				col0 = false;
 				break;
 			case PgnToken.ASTERISK:		 sb.append(" *");  col0 = false; break;
 			case PgnToken.LEFT_BRACKET:  sb.append('[');   col0 = false; break;
@@ -1137,7 +1128,6 @@ public class DroidFish extends Activity implements GUIInterface {
 			paraIndent = 0;
 			paraBold = false;
 			pendingNewLine = false;
-			skipMoveNr = false;
 
 			upToDate = false;
 		}

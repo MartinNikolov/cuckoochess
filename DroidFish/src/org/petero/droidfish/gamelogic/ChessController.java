@@ -533,11 +533,12 @@ public class ChessController {
 	final private void updateMoveList() {
 		if (!gameTextListener.isUpToDate()) {
 			PGNOptions tmpOptions = new PGNOptions();
-			tmpOptions.exp.variations   = pgnOptions.view.variations;
-			tmpOptions.exp.comments     = pgnOptions.view.comments;
-			tmpOptions.exp.nag          = pgnOptions.view.nag;
-			tmpOptions.exp.playerAction = false;
-			tmpOptions.exp.clockInfo    = false;
+			tmpOptions.exp.variations     = pgnOptions.view.variations;
+			tmpOptions.exp.comments       = pgnOptions.view.comments;
+			tmpOptions.exp.nag            = pgnOptions.view.nag;
+			tmpOptions.exp.playerAction   = false;
+			tmpOptions.exp.clockInfo      = false;
+			tmpOptions.exp.moveNrAfterNag = false;
 			gameTextListener.clear();
 			game.tree.pgnTreeWalker(tmpOptions, gameTextListener);
 		}

@@ -1083,7 +1083,8 @@ public class GameTree {
     		}
     		if ((nag > 0) && options.exp.nag) {
     			out.processToken(this, PgnToken.NAG, new Integer(nag).toString());
-    			needMoveNr = true;
+    			if (options.exp.moveNrAfterNag)
+    				needMoveNr = true;
     		}
     		if ((postComment.length() > 0) && options.exp.comments) {
     			out.processToken(this, PgnToken.COMMENT, postComment);

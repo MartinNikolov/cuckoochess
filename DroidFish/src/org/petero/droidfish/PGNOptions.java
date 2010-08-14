@@ -20,6 +20,7 @@ public class PGNOptions {
 		public boolean playerAction;
 		public boolean clockInfo;
 		public boolean pgnPromotions;
+		public boolean moveNrAfterNag;
 	}
 
 	public Viewer view;
@@ -30,5 +31,6 @@ public class PGNOptions {
 		view = new Viewer();
 		imp = new Import();
 		exp = new Export();
+		exp.moveNrAfterNag = true;
 	}
 }
