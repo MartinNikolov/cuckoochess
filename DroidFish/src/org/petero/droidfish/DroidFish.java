@@ -187,6 +187,7 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.cursorVisible = oldCB.cursorVisible;
 		cb.setPosition(oldCB.pos);
 		cb.setFlipped(oldCB.flipped);
+		cb.oneTouchMoves = oldCB.oneTouchMoves;
         setSelection(oldCB.selectedSquare);
         setStatusString(statusStr);
         moveListUpdated();
@@ -363,6 +364,7 @@ public class DroidFish extends Activity implements GUIInterface {
         boardFlipped = settings.getBoolean("boardFlipped", false);
         autoSwapSides = settings.getBoolean("autoSwapSides", false);
         setBoardFlip();
+        cb.oneTouchMoves = settings.getBoolean("oneTouchMoves", false);
 
         mShowThinking = settings.getBoolean("showThinking", false);
         tmp = settings.getString("thinkingArrows", "2");

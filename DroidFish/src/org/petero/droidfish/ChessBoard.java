@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.petero.droidfish.gamelogic.Move;
+import org.petero.droidfish.gamelogic.MoveGen;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 
@@ -26,6 +27,7 @@ public class ChessBoard extends View {
     boolean cursorVisible;
     protected int x0, y0, sqSize;
     boolean flipped;
+    boolean oneTouchMoves;
     
     List<Move> moveHints;
 
@@ -45,6 +47,7 @@ public class ChessBoard extends View {
         cursorVisible = false;
         x0 = y0 = sqSize = 0;
         flipped = false;
+        oneTouchMoves = false;
 
         darkPaint = new Paint();
         darkPaint.setARGB(255, 128, 128, 128);
@@ -325,6 +328,27 @@ public class ChessBoard extends View {
             }
             setSelection(-1);
         } else {
+        	if (oneTouchMoves) {
+                ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+                moves = MoveGen.removeIllegal(pos, moves);
+                Move matchingMove = null;
+                int toSq = -1;
+                for (Move m : moves) {
+                	if ((m.from == sq) || (m.to == sq)) {
+                		if (matchingMove == null) {
+                			matchingMove = m;
+                			toSq = m.to;
+                		} else {
+                			matchingMove = null;
+                			break;
+                		}
+                	}
+                }
+                if (matchingMove != null) {
+                	setSelection(toSq);
+                	return matchingMove;
+                }
+        	}
         	if (myColor(p)) {
         		setSelection(sq);
         	}
