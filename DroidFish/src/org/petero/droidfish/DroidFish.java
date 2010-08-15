@@ -100,6 +100,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	SharedPreferences settings;
 
 	private float scrollSensitivity;
+	private boolean invertScrollDirection;
 	private boolean soundEnabled;
 	private MediaPlayer moveSound;
 
@@ -227,6 +228,10 @@ public class DroidFish extends Activity implements GUIInterface {
         	}
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 				cb.cancelLongPress();
+				if (invertScrollDirection) {
+					distanceX = -distanceX;
+					distanceY = -distanceY;
+				}
 				if (scrollSensitivity > 0) {
 					scrollX += distanceX;
 					scrollY += distanceY;
@@ -382,6 +387,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
         tmp = settings.getString("scrollSensitivity", "2");
         scrollSensitivity = Float.parseFloat(tmp);
+        invertScrollDirection = settings.getBoolean("invertScrollDirection", false);
 
         tmp = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(tmp);

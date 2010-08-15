@@ -84,6 +84,12 @@
 			android:entries="@array/scroll_sensitivity_texts"
 			android:defaultValue="2">
 		</ListPreference>
+		<CheckBoxPreference
+			android:key="invertScrollDirection"
+			android:title="Invert Scroll Direction"
+			android:summary="Enable this if you think scrolling moves in the wrong direction"
+			android:defaultValue="false">
+		</CheckBoxPreference>
 		<ListPreference
 			android:key="fontSize"
 			android:title="Text Size"
