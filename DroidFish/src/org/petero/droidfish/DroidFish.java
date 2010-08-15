@@ -407,6 +407,9 @@ public class DroidFish extends Activity implements GUIInterface {
 		pgnOptions.exp.playerAction = settings.getBoolean("exportPlayerAction", false);
 		pgnOptions.exp.clockInfo    = settings.getBoolean("exportTime",         false);
 
+        ColorTheme.instance().readColors(settings);
+        cb.setColors();
+
 		gameTextListener.clear();
         ctrl.prefsChanged();
 	}
@@ -1141,7 +1144,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			sb.removeSpan(bgSpan);
 			NodeInfo ni = nodeToCharPos.get(node);
 			if (ni != null) {
-				bgSpan = new BackgroundColorSpan(0xff888888);
+				int color = ColorTheme.instance().getColor(ColorTheme.CURRENT_MOVE);
+				bgSpan = new BackgroundColorSpan(color);
 				sb.setSpan(bgSpan, ni.l0, ni.l1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				currPos = ni.l0;
 			}

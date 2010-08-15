@@ -104,6 +104,81 @@
 			android:summary="Touching a square that corresponds to one unique move makes that move immediately"
 			android:defaultValue="false">
 		</CheckBoxPreference>
+		<PreferenceScreen
+			android:key="colors"
+			android:title="Color Settings">
+			<PreferenceCategory
+				android:title="Chess Board">
+				<EditTextPreference
+					android:key="color_brightSquare"
+					android:title="Bright Squares"
+					android:defaultValue="#FFBEBE5A">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_darkSquare"
+					android:title="Dark Squares"
+					android:defaultValue="#FF808080">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_selectedSquare"
+					android:title="Selected Square"
+					android:defaultValue="#FFFF0000">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_cursorSquare"
+					android:title="Trackball Cursor"
+					android:defaultValue="#FF00FF00">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_brightPiece"
+					android:title="White Pieces"
+					android:defaultValue="#FFFFFFFF">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_darkPiece"
+					android:title="Black Pieces"
+					android:defaultValue="#FF000000">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow0"
+					android:title="Arrow 1"
+					android:defaultValue="#A01F1FFF">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow1"
+					android:title="Arrow 2"
+					android:defaultValue="#A0FF1F1F">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow2"
+					android:title="Arrow 3"
+					android:defaultValue="#501F1FFF">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow3"
+					android:title="Arrow 4"
+					android:defaultValue="#50FF1F1F">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow4"
+					android:title="Arrow 5"
+					android:defaultValue="#1E1F1FFF">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_arrow5"
+					android:title="Arrow 6"
+					android:defaultValue="#28FF1F1F">
+				</EditTextPreference>
+			</PreferenceCategory>
+			<PreferenceCategory
+				android:title="Move List">
+				<EditTextPreference
+					android:key="color_currentMove"
+					android:title="Current Move"
+					android:defaultValue="#FF888888">
+				</EditTextPreference>
+			</PreferenceCategory>
+		</PreferenceScreen>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="Other">
@@ -115,7 +190,7 @@
 		</EditTextPreference>
 		<PreferenceScreen
 			android:key="pgnSettings"
-			android:title="PGN settings"
+			android:title="PGN Settings"
 			android:summary="Settings for import and export of portable game notation (PGN) data">
 			<PreferenceCategory
 				android:title="PGN viewer">

@@ -33,8 +33,8 @@ public class ChessBoard extends View {
 
     protected Paint darkPaint;
     protected Paint brightPaint;
-    private Paint redOutline;
-    private Paint greenOutline;
+    private Paint selectedSquarePaint;
+    private Paint cursorSquarePaint;
     private Paint whitePiecePaint;
     private Paint blackPiecePaint;
     private ArrayList<Paint> moveMarkPaint;
@@ -50,38 +50,23 @@ public class ChessBoard extends View {
         oneTouchMoves = false;
 
         darkPaint = new Paint();
-        darkPaint.setARGB(255, 128, 128, 128);
-
         brightPaint = new Paint();
-        brightPaint.setARGB(255, 190, 190, 90);
 
-        redOutline = new Paint();
-        redOutline.setARGB(255, 255, 0, 0);
-        redOutline.setStyle(Paint.Style.STROKE);
+        selectedSquarePaint = new Paint();
+        selectedSquarePaint.setStyle(Paint.Style.STROKE);
         
-        greenOutline = new Paint();
-        greenOutline.setARGB(255, 0, 255, 0);
-        greenOutline.setStyle(Paint.Style.STROKE);
+        cursorSquarePaint = new Paint();
+        cursorSquarePaint.setStyle(Paint.Style.STROKE);
         
         whitePiecePaint = new Paint();
-        whitePiecePaint.setARGB(255, 255, 255, 255);
         whitePiecePaint.setAntiAlias(true);
         
         blackPiecePaint = new Paint();
-        blackPiecePaint.setARGB(255, 0, 0, 0);
         blackPiecePaint.setAntiAlias(true);
         
         moveMarkPaint = new ArrayList<Paint>();
         for (int i = 0; i < 6; i++) {
         	Paint p = new Paint();
-        	switch (i) {
-        	case 0: p.setARGB(160,  31, 31, 255);  break;
-        	case 1: p.setARGB(160, 255, 31,  31);  break;
-        	case 2: p.setARGB( 80,  31, 31, 255);  break;
-        	case 3: p.setARGB( 80, 255, 31,  31);  break;
-        	case 4: p.setARGB( 30,  31, 31, 255);  break;
-        	case 5: p.setARGB( 40, 255, 31,  31);  break;
-        	}
         	p.setStyle(Paint.Style.FILL);
         	p.setAntiAlias(true);
         	moveMarkPaint.add(p);
@@ -90,6 +75,23 @@ public class ChessBoard extends View {
         Typeface chessFont = Typeface.createFromAsset(getContext().getAssets(), "ChessCases.ttf");
 		whitePiecePaint.setTypeface(chessFont);
 		blackPiecePaint.setTypeface(chessFont);
+
+		setColors();
+	}
+
+	/** Must be called for new color theme to take effect. */
+	final void setColors() {
+        ColorTheme ct = ColorTheme.instance();
+        darkPaint.setColor(ct.getColor(ColorTheme.DARK_SQUARE));
+        brightPaint.setColor(ct.getColor(ColorTheme.BRIGHT_SQUARE));
+        selectedSquarePaint.setColor(ct.getColor(ColorTheme.SELECTED_SQUARE));
+        cursorSquarePaint.setColor(ct.getColor(ColorTheme.CURSOR_SQUARE));
+        whitePiecePaint.setColor(ct.getColor(ColorTheme.BRIGHT_PIECE));
+        blackPiecePaint.setColor(ct.getColor(ColorTheme.DARK_PIECE));
+        for (int i = 0; i < 6; i++)
+        	moveMarkPaint.get(i).setColor(ct.getColor(ColorTheme.ARROW_0 + i));
+
+        invalidate();
 	}
 
 	/**
@@ -179,18 +181,18 @@ public class ChessBoard extends View {
         if (selectedSquare != -1) {
             int selX = getXFromSq(selectedSquare);
             int selY = getYFromSq(selectedSquare);
-            redOutline.setStrokeWidth(sqSize/(float)16);
+            selectedSquarePaint.setStrokeWidth(sqSize/(float)16);
             int x0 = getXCrd(selX);
             int y0 = getYCrd(selY);
-            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, redOutline);
+            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, selectedSquarePaint);
         }
         if (cursorVisible) {
         	int x = Math.round(cursorX);
         	int y = Math.round(cursorY);
         	int x0 = getXCrd(x);
         	int y0 = getYCrd(y);
-            greenOutline.setStrokeWidth(sqSize/(float)16);
-            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
+            cursorSquarePaint.setStrokeWidth(sqSize/(float)16);
+            canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, cursorSquarePaint);
         }
         drawMoveHints(canvas);
     }
