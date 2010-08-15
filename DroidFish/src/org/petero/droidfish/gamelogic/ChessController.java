@@ -264,7 +264,7 @@ public class ChessController {
 	
 	
 	public final void fromByteArray(byte[] data) {
-		game.tree.fromByteArray(data);
+		game.fromByteArray(data);
     }
     
     public final byte[] toByteArray() {

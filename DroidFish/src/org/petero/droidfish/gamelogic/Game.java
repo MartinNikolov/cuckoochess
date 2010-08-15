@@ -36,7 +36,12 @@ public class Game {
         newGame();
     }
 
-    public final void setComputerPlayer(ComputerPlayer computerPlayer) {
+	final void fromByteArray(byte[] data) {
+		tree.fromByteArray(data);
+		updateTimeControl(true);
+	}
+
+	public final void setComputerPlayer(ComputerPlayer computerPlayer) {
     	this.computerPlayer = computerPlayer;
 	}
 
