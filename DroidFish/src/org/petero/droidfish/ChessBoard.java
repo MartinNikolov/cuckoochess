@@ -54,10 +54,12 @@ public class ChessBoard extends View {
 
         selectedSquarePaint = new Paint();
         selectedSquarePaint.setStyle(Paint.Style.STROKE);
-        
+        selectedSquarePaint.setAntiAlias(true);
+
         cursorSquarePaint = new Paint();
         cursorSquarePaint.setStyle(Paint.Style.STROKE);
-        
+        cursorSquarePaint.setAntiAlias(true);
+
         whitePiecePaint = new Paint();
         whitePiecePaint.setAntiAlias(true);
         

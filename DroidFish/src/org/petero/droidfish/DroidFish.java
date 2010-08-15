@@ -849,6 +849,8 @@ public class DroidFish extends Activity implements GUIInterface {
 				public void onClick(DialogInterface dialog, int item) {
 					ColorTheme.instance().setTheme(settings, item);
 					cb.setColors();
+					gameTextListener.setCurrent(gameTextListener.currNode);
+					moveListUpdated();
 					dialog.dismiss();
 				}
 			});
