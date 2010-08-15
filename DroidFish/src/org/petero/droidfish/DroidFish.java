@@ -497,6 +497,9 @@ public class DroidFish extends Activity implements GUIInterface {
 			removeDialog(SELECT_BOOK_DIALOG);
 			showDialog(SELECT_BOOK_DIALOG);
 			return true;
+		case R.id.set_color_theme:
+			showDialog(SET_COLOR_THEME_DIALOG);
+			return true;
 		case R.id.item_about:
         	showDialog(ABOUT_DIALOG);
         	return true;
@@ -646,7 +649,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int SELECT_MOVE_DIALOG = 3;
 	static final int SELECT_BOOK_DIALOG = 4;
 	static final int SELECT_PGN_FILE_DIALOG = 5;
-	
+	static final int SET_COLOR_THEME_DIALOG = 6;
+
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
@@ -837,6 +841,18 @@ public class DroidFish extends Activity implements GUIInterface {
 			});
 			AlertDialog alert = builder.create();
 			return alert;
+		}
+		case SET_COLOR_THEME_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.select_color_theme);
+			builder.setSingleChoiceItems(ColorTheme.themeNames, -1, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					ColorTheme.instance().setTheme(settings, item);
+					cb.setColors();
+					dialog.dismiss();
+				}
+			});
+			return builder.create();
 		}
 		}
 		return null;

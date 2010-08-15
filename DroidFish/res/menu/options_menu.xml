@@ -47,6 +47,10 @@
 		android:title="Select Opening Book">
 	</item>
 	<item
+		android:id="@+id/set_color_theme"
+		android:title="Set Color Theme">
+	</item>
+	<item
 		android:id="@+id/item_about"
 		android:title="About / Help">
 	</item>

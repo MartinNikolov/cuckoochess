@@ -1,10 +1,18 @@
 package org.petero.droidfish;
 
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 
 public class ColorTheme {
-	private int colorTable[];
+	private static ColorTheme inst = null;
+
+	/** Get singleton instance. */
+	static final ColorTheme instance() {
+		if (inst == null)
+			inst = new ColorTheme();
+		return inst;
+	}
 
 	final static int DARK_SQUARE = 0;
 	final static int BRIGHT_SQUARE = 1;
@@ -14,48 +22,52 @@ public class ColorTheme {
 	final static int BRIGHT_PIECE = 5;
 	final static int CURRENT_MOVE = 6;
 	final static int ARROW_0 = 7;
+	final static int ARROW_1 = 8;
+	final static int ARROW_2 = 9;
+	final static int ARROW_3 = 10;
+	final static int ARROW_4 = 11;
+	final static int ARROW_5 = 12;
+	private final static int numColors = 13;
 
-	final static int numArrows = 6;
+	private int colorTable[] = new int[numColors];
 
-	private static ColorTheme inst = null;
+	private static final String[] prefNames = {
+		"darkSquare", "brightSquare", "selectedSquare", "cursorSquare", "darkPiece", "brightPiece", "currentMove",
+		"arrow0", "arrow1", "arrow2", "arrow3", "arrow4", "arrow5"
+	};
+	private static final String prefPrefix = "color_";
 
-	/** Get singleton instance. */
-	static final ColorTheme instance() {
-		if (inst == null)
-			inst = new ColorTheme();
-		return inst;
+	final static String[] themeNames = { "Default", "Grey" };
+	private final static String themeColors[][] = {
+	{ 
+		"#FF808080", "#FFBEBE5A", "#FFFF0000", "#FF00FF00", "#FF000000", "#FFFFFFFF", "#FF888888",
+		"#A01F1FFF", "#A0FF1F1F", "#501F1FFF", "#50FF1F1F", "#1E1F1FFF", "#28FF1F1F"
+	},
+	{
+		"#FF666666", "#FFDDDDDD", "#FFFF0000", "#FF0000FF", "#FF000000", "#FFFFFFFF", "#FF888888",
+		"#A01F1FFF", "#A0FF1F1F", "#501F1FFF", "#50FF1F1F", "#1E1F1FFF", "#28FF1F1F"
 	}
-	
-	private ColorTheme() {
-		colorTable = new int[ARROW_0 + numArrows];
-	}
-	
+	};
+
 	final void readColors(SharedPreferences settings) {
-		setColorTable(DARK_SQUARE,     settings, "darkSquare",     "#FF808080");
-		setColorTable(BRIGHT_SQUARE,   settings, "brightSquare",   "#FFBEBE5A");
-		setColorTable(SELECTED_SQUARE, settings, "selectedSquare", "#FFFF0000");
-		setColorTable(CURSOR_SQUARE,   settings, "cursorSquare",   "#FF00FF00");
-		setColorTable(DARK_PIECE,      settings, "darkPiece",      "#FF000000");
-		setColorTable(BRIGHT_PIECE,    settings, "brightPiece",    "#FFFFFFFF");
-		setColorTable(CURRENT_MOVE,    settings, "currentMove",    "#FF888888");
-
-		setColorTable(ARROW_0 + 0, settings, "arrow0", "#A01F1FFF");
-		setColorTable(ARROW_0 + 1, settings, "arrow1", "#A0FF1F1F");
-		setColorTable(ARROW_0 + 2, settings, "arrow2", "#501F1FFF");
-		setColorTable(ARROW_0 + 3, settings, "arrow3", "#50FF1F1F");
-		setColorTable(ARROW_0 + 4, settings, "arrow4", "#1E1F1FFF");
-		setColorTable(ARROW_0 + 5, settings, "arrow5", "#28FF1F1F");
+		for (int i = 0; i < numColors; i++) {
+			String prefName = prefPrefix + prefNames[i];
+			String defaultColor = themeColors[0][i];
+			String colorString = settings.getString(prefName, defaultColor);
+			try {
+				colorTable[i] = Color.parseColor(colorString);
+			} catch (IllegalArgumentException e) {
+				colorTable[i] = 0;
+			}
+		}
 	}
 
-	private void setColorTable(int colorType, SharedPreferences settings,
-							   String prefName, String defaultColor) {
-		prefName = "color_" + prefName;
-		String colorString = settings.getString(prefName, defaultColor);
-		try {
-			colorTable[colorType] = Color.parseColor(colorString);
-		} catch (IllegalArgumentException e) {
-			colorTable[colorType] = 0;
-		}
+	final void setTheme(SharedPreferences settings, int themeType) {
+		Editor editor = settings.edit();
+		for (int i = 0; i < numColors; i++)
+			editor.putString(prefPrefix + prefNames[i], themeColors[themeType][i]);
+		editor.commit();
+		readColors(settings);
 	}
 
 	final int getColor(int colorType) {

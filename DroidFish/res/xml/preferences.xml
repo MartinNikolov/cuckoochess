@@ -106,7 +106,8 @@
 		</CheckBoxPreference>
 		<PreferenceScreen
 			android:key="colors"
-			android:title="Color Settings">
+			android:title="Color Settings"
+			android:summary="Change individual colors">
 			<PreferenceCategory
 				android:title="Chess Board">
 				<EditTextPreference
