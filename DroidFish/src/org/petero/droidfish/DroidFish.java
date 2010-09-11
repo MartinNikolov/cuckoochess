@@ -78,6 +78,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
 	// FIXME!!! Animated piece movement
+	// FIXME!!! Implement "hint" feature
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
