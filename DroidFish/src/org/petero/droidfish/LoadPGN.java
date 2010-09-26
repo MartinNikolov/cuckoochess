@@ -6,17 +6,22 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Vector;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
 
-public class LoadPGN extends Activity {
+public class LoadPGN extends ListActivity {
 	private static final class GameInfo {
 		String event = "";
 		String site = "";
@@ -27,12 +32,39 @@ public class LoadPGN extends Activity {
 		String result = "";
 		long startPos;
 		long endPos;
+
+		public String toString() {
+    		StringBuilder info = new StringBuilder(128);
+    		info.append(white);
+    		info.append(" - ");
+    		info.append(black);
+    		if (date.length() > 0) {
+    			info.append(' ');
+    			info.append(date);
+    		}
+    		if (round.length() > 0) {
+    			info.append(' ');
+	    		info.append(round);
+    		}
+    		if (event.length() > 0) {
+    			info.append(' ');
+    			info.append(event);
+    		}
+    		if (site.length() > 0) {
+    			info.append(' ');
+    			info.append(site);
+    		}
+    		info.append(' ');
+    		info.append(result);
+    		return info.toString();
+		}
 	}
 
 	static Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
 	String fileName;
 	ProgressDialog progress;
 	static int defaultItem = 0;
+	static String lastSearchString = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,27 +73,59 @@ public class LoadPGN extends Activity {
 		Intent i = getIntent();
 		fileName = i.getAction();
 		showDialog(PROGRESS_DIALOG);
+		final LoadPGN lpgn = this;
 		new Thread(new Runnable() {
 			public void run() {
 				readFile();
 				runOnUiThread(new Runnable() {
 					public void run() {
-						progress.dismiss();
-						removeDialog(SELECT_GAME_DIALOG);
-						showDialog(SELECT_GAME_DIALOG);
+						lpgn.showList();
 					}
 				});
 			}
 		}).start();
 	}
 
+	private final void showList() {
+		progress.dismiss();
+		setContentView(R.layout.select_game);
+		final ArrayAdapter<GameInfo> aa =
+			new ArrayAdapter<GameInfo>(this, R.layout.select_game_list_item,
+									   gamesInFile);
+		setListAdapter(aa);
+		ListView lv = getListView();
+		lv.setSelectionFromTop(defaultItem, 0);
+		lv.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+				defaultItem = pos;
+				sendBackResult(aa.getItem(pos));
+			}
+		});
+
+//		lv.setTextFilterEnabled(true);
+		EditText filterText = (EditText)findViewById(R.id.select_game_filter);
+		filterText.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s) { }
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				aa.getFilter().filter(s);
+				lastSearchString = s.toString();
+			}
+		});
+		filterText.setText(lastSearchString);
+		lv.requestFocus();
+	}
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 	}
 
 	final static int PROGRESS_DIALOG = 0;
-	final static int SELECT_GAME_DIALOG = 1;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -73,52 +137,6 @@ public class LoadPGN extends Activity {
 			progress.setMessage(getString(R.string.please_wait));
 			progress.setCancelable(false);
 			return progress;
-		case SELECT_GAME_DIALOG:
-	    	final String[] items = new String[gamesInFile.size()];
-	    	for (int i = 0; i < items.length; i++) {
-	    		GameInfo gi = gamesInFile.get(i);
-	    		StringBuilder info = new StringBuilder(128);
-	    		info.append(gi.white);
-	    		info.append(" - ");
-	    		info.append(gi.black);
-	    		if (gi.date.length() > 0) {
-	    			info.append(' ');
-	    			info.append(gi.date);
-	    		}
-	    		if (gi.round.length() > 0) {
-	    			info.append(' ');
-		    		info.append(gi.round);
-	    		}
-	    		if (gi.event.length() > 0) {
-	    			info.append(' ');
-	    			info.append(gi.event);
-	    		}
-	    		if (gi.site.length() > 0) {
-	    			info.append(' ');
-	    			info.append(gi.site);
-	    		}
-	    		info.append(' ');
-	    		info.append(gi.result);
-	    		items[i] = info.toString();
-	    	}
-	    	if (defaultItem >= items.length) {
-	    		defaultItem = 0;
-	    	}
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.select_pgn_game);
-			builder.setSingleChoiceItems(items, defaultItem, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int item) {
-					defaultItem = item;
-					sendBackResult(item);
-				}
-			});
-			AlertDialog alert = builder.create();
-			alert.setOnDismissListener(new OnDismissListener() {
-				public void onDismiss(DialogInterface dialog) {
-					sendBackResult(-1);
-				}
-			});
-			return alert;
 		default:
 			return null;
 		}
@@ -287,20 +305,17 @@ public class LoadPGN extends Activity {
 		}
 	}
 
-	private final void sendBackResult(int gameNo) {
+	private final void sendBackResult(GameInfo gi) {
 		try {
-			if ((gameNo >= 0) && (gameNo < gamesInFile.size())) {
-				GameInfo gi = gamesInFile.get(gameNo);
-				RandomAccessFile f;
-				f = new RandomAccessFile(fileName, "r");
-				byte[] pgnData = new byte[(int) (gi.endPos - gi.startPos)];
-				f.seek(gi.startPos);
-				f.readFully(pgnData);
-				f.close();
-				String result = new String(pgnData);
-				setResult(RESULT_OK, (new Intent()).setAction(result));
-				finish();
-			}
+			RandomAccessFile f;
+			f = new RandomAccessFile(fileName, "r");
+			byte[] pgnData = new byte[(int) (gi.endPos - gi.startPos)];
+			f.seek(gi.startPos);
+			f.readFully(pgnData);
+			f.close();
+			String result = new String(pgnData);
+			setResult(RESULT_OK, (new Intent()).setAction(result));
+			finish();
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
