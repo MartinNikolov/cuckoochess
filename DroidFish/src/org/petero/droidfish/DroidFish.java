@@ -48,6 +48,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
@@ -390,6 +391,8 @@ public class DroidFish extends Activity implements GUIInterface {
         tmp = settings.getString("scrollSensitivity", "2");
         scrollSensitivity = Float.parseFloat(tmp);
         invertScrollDirection = settings.getBoolean("invertScrollDirection", false);
+        boolean fullScreenMode = settings.getBoolean("fullScreenMode", false);
+        setFullScreenMode(fullScreenMode);
 
         tmp = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(tmp);
@@ -420,6 +423,16 @@ public class DroidFish extends Activity implements GUIInterface {
 
 		gameTextListener.clear();
         ctrl.prefsChanged();
+	}
+
+	private final void setFullScreenMode(boolean fullScreenMode) {
+		WindowManager.LayoutParams attrs = getWindow().getAttributes();
+		if (fullScreenMode) {
+			attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+		} else {
+			attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		}
+		getWindow().setAttributes(attrs);
 	}
 
 	private final void setBookFile(String bookFile) {

@@ -90,6 +90,24 @@
 			android:summary="Enable this if you think scrolling moves in the wrong direction"
 			android:defaultValue="false">
 		</CheckBoxPreference>
+		<CheckBoxPreference
+			android:key="oneTouchMoves"
+			android:title="One Touch Moves"
+			android:summary="Touching a square that corresponds to one unique move makes that move immediately"
+			android:defaultValue="false">
+		</CheckBoxPreference>
+		<CheckBoxPreference
+			android:key="soundEnabled"
+			android:title="Enable Sounds"
+			android:summary="Play sound when computer makes a move"
+			android:defaultValue="false">
+		</CheckBoxPreference>
+		<CheckBoxPreference
+			android:key="fullScreenMode"
+			android:title="Fullscreen Mode"
+			android:summary="Fullscreen mode hides the status bar"
+			android:defaultValue="false">
+		</CheckBoxPreference>
 		<ListPreference
 			android:key="fontSize"
 			android:title="Text Size"
@@ -98,18 +116,6 @@
 			android:entries="@array/font_size_texts"
 			android:defaultValue="12">
 		</ListPreference>
-		<CheckBoxPreference
-			android:key="soundEnabled"
-			android:title="Enable Sounds"
-			android:summary="Play sound when computer makes a move"
-			android:defaultValue="false">
-		</CheckBoxPreference>
-		<CheckBoxPreference
-			android:key="oneTouchMoves"
-			android:title="One Touch Moves"
-			android:summary="Touching a square that corresponds to one unique move makes that move immediately"
-			android:defaultValue="false">
-		</CheckBoxPreference>
 		<PreferenceScreen
 			android:key="colors"
 			android:title="Color Settings"
