@@ -408,6 +408,7 @@ public class Search {
         }
 
         boolean futilityPrune = false;
+        int futilityScore = alpha;
         if (!inCheck && (depth < 4) && (posExtend == 0)) {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
@@ -421,7 +422,8 @@ public class Search {
                 if (evalScore == UNKNOWN_SCORE) {
                 	evalScore = eval.evalPos(pos);
                 }
-                if (evalScore + margin <= alpha) {
+                futilityScore = evalScore + margin;
+                if (futilityScore <= alpha) {
                     futilityPrune = true;
                 }
             }
@@ -487,34 +489,38 @@ public class Search {
             }
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
+            boolean doFutility = false;
             if (futilityPrune && !isCapture && !isPromotion && haveLegalMoves) {
                 if (!givesCheck)
-                    continue;
+                	doFutility = true;
             }
-            int extend = Math.max(posExtend, moveExtend);
-
-            int lmr = 0;
-            if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
-                    (extend == 0) && !isPromotion) {
-                if (!givesCheck) {
-                    lmrCount++;
-                    if (lmrCount > 3) {
-                        lmr = 1;
-                    }
-                }
-            }
-
-            posHashList[posHashListSize++] = pos.zobristHash();
-            pos.makeMove(m, ui);
-            int newDepth = depth - 1 + extend - lmr;
-            int score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
-            if ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore)) {
-                newDepth += lmr;
-                score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
+            int score;
+            if (doFutility) {
+            	score = futilityScore;
+            } else {
+            	int extend = Math.max(posExtend, moveExtend);
+            	int lmr = 0;
+            	if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
+            			(extend == 0) && !isPromotion) {
+            		if (!givesCheck) {
+            			lmrCount++;
+            			if (lmrCount > 3) {
+            				lmr = 1;
+            			}
+            		}
+            	}
+            	posHashList[posHashListSize++] = pos.zobristHash();
+            	pos.makeMove(m, ui);
+            	int newDepth = depth - 1 + extend - lmr;
+            	score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
+            	if ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore)) {
+            		newDepth += lmr;
+            		score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
+            	}
+            	posHashListSize--;
+            	pos.unMakeMove(m, ui);
             }
             m.score = score;
-            posHashListSize--;
-            pos.unMakeMove(m, ui);
 
             if (score != illegalScore) {
                 haveLegalMoves = true;

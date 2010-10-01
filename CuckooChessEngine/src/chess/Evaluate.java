@@ -110,13 +110,13 @@ public class Evaluate {
 				 				 { -5,  0,  5,  5,  5,  5,  0, -5 },
 				 				 {-10, -5,  0,  0,  0,  0, -5,-10 } };
 
-    /** Piece/square table for queens during middle game. */
-    static final int[][] rt1 = { {  0,  1,  2,  2,  2,  2,  1,  0 },
-				 				 { 10, 15, 15, 15, 15, 15, 15, 10 },
+    /** Piece/square table for rooks during middle game. */
+    static final int[][] rt1 = { {  0,  3,  5,  5,  5,  5,  3,  0 },
+				 				 { 15, 20, 20, 20, 20, 20, 20, 15 },
 				 				 {  0,  0,  0,  0,  0,  0,  0,  0 },
 				 				 {  0,  0,  0,  0,  0,  0,  0,  0 },
 				 				 { -1,  0,  0,  0,  0,  0,  0, -1 },
-				 				 { -2,  0,  0,  0,  0,  0,  0, -2 },
+				 				 { -2,  0,  0,  2,  2,  0,  0, -2 },
 				 				 { -3,  2,  5,  5,  5,  5,  2, -3 },
 				 				 {  0,  3,  5,  5,  5,  5,  3,  0 } };
     
@@ -128,6 +128,10 @@ public class Evaluate {
 										{ 5, 6, 7, 6, 5, 4, 3, 2 },
 										{ 6, 7, 6, 5, 4, 3, 2, 1 },
 										{ 7, 6, 5, 4, 3, 2, 1, 0 } };
+
+    static final int[] rookMobScore = {-10,-7,-4,-1,2,5,7,9,11,12,13,14,14,14,14};
+    static final int[] bishMobScore = {-15,-10,-6,-2,2,6,10,13,16,18,20,22,23,24};
+    static final int[] queenMobScore = {-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,19,20,20,20,20,20,20,20,20,20,20,20,20};
 
     private static final class PawnHashData {
     	PawnHashData() {
@@ -293,15 +297,13 @@ public class Evaluate {
             case Piece.WQUEEN:
             {
             	score += qt1[7-y][x];
-            	score += rookMobility(pos, x, y, sq);
-            	score += bishopMobility(pos, x, y, sq);
+            	score += queenMobScore[rookMobility(pos, x, y, sq) + bishopMobility(pos, x, y, sq)];
             	break;
             }
             case Piece.BQUEEN:
             {
             	score -= qt1[y][x];
-            	score -= rookMobility(pos, x, y, sq);
-            	score -= bishopMobility(pos, x, y, sq);
+            	score -= queenMobScore[rookMobility(pos, x, y, sq) + bishopMobility(pos, x, y, sq)];
             	break;
             }
             case Piece.WROOK:
@@ -536,7 +538,7 @@ public class Evaluate {
         ph.passedBonusW = passedBonusW;
         ph.passedBonusB = passedBonusB;
     }
-    
+
     /** Compute rook bonus. Rook on open/half-open file. */
     final int rookBonus(Position pos) {
         int score = 0;
@@ -548,7 +550,7 @@ public class Evaluate {
             if (ph.nPawns[0][x] == 0) { // At least half-open file
                 score += ph.nPawns[1][x] == 0 ? 25 : 12;
             }
-            score += rookMobility(pos, x, y, sq) / 2;
+            score += rookMobScore[rookMobility(pos, x, y, sq)];
         }
         nP = nPieces[Piece.BROOK];
         for (int i = 0; i < nP; i++) {
@@ -558,7 +560,7 @@ public class Evaluate {
             if (ph.nPawns[1][x] == 0) {
                 score -= ph.nPawns[0][x] == 0 ? 25 : 12;
             }
-            score -= rookMobility(pos, x, y, sq) / 2;
+            score -= rookMobScore[rookMobility(pos, x, y, sq)];
         }
         return score;
     }
@@ -627,7 +629,7 @@ public class Evaluate {
         		whiteDark = true;
         	else
         		whiteLight = true;
-        	score += bishopMobility(pos, x, y, sq) * 2;
+        	score += bishMobScore[bishopMobility(pos, x, y, sq)];
         }
         nP = nPieces[Piece.BBISHOP];
         for (int i = 0; i < nP; i++) {
@@ -638,7 +640,7 @@ public class Evaluate {
         		blackDark = true;
         	else
         		blackLight = true;
-        	score -= bishopMobility(pos, x, y, sq) * 2;
+        	score -= bishMobScore[bishopMobility(pos, x, y, sq)];
         }
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);

@@ -105,7 +105,6 @@ public class EvaluateTest {
         UndoInfo ui = new UndoInfo();
         pos.makeMove(TextIO.stringToMove(pos, "e4"), ui);
         score = evalWhite(pos);
-        System.out.printf("score:%d%n", score);
         assertTrue(score > 0);     // Centralizing a pawn is a good thing
         pos.makeMove(TextIO.stringToMove(pos, "e5"), ui);
         score = evalWhite(pos);
@@ -124,7 +123,7 @@ public class EvaluateTest {
         int score2 = evalWhite(pos);
         assertTrue(score2 < score);                 // Bishop worth more than knight in this case
         
-        pos = TextIO.readFEN("5k2/1b2nppp/pqn5/1pp1p3/4P3/1BP1BN2/PP2QPPP/3R2K1 w - - 0 1");
+        pos = TextIO.readFEN("5k2/4nppp/p1n5/1pp1p3/4P3/2P1BN2/PP3PPP/3R2K1 w - - 0 1");
         assertTrue(moveScore(pos, "Rd7") > 0);      // Rook on 7:th rank is good
         assertTrue(moveScore(pos, "Rd8") <= 0);     // Rook on 8:th rank not particularly good
         pos.setPiece(TextIO.getSquare("a1"), Piece.WROOK);
