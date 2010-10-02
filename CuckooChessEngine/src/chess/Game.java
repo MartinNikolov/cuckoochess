@@ -264,6 +264,21 @@ public class Game {
                 System.out.printf("Number format exception: %s\n", nfe.getMessage());
                 return false;
             }
+        } else if (moveStr.startsWith("perft ")) {
+        	try {
+        		String depthStr = moveStr.substring(moveStr.indexOf(" ") + 1);
+        		int depth = Integer.parseInt(depthStr);
+        		MoveGen moveGen = new MoveGen();
+        		long t0 = System.currentTimeMillis();
+        		long nodes = perfT(moveGen, pos, depth);
+        		long t1 = System.currentTimeMillis();
+        		System.out.printf("perft(%d) = %d, t=%.3fs\n", depth, nodes, (t1 - t0)*1e-3);
+        	}
+        	catch (NumberFormatException nfe) {
+                System.out.printf("Number format exception: %s\n", nfe.getMessage());
+                return false;
+        	}
+        	return true;
         } else {
             return false;
         }
@@ -531,4 +546,21 @@ public class Game {
 
         return false;
     }
+
+    private final static long perfT(MoveGen moveGen, Position pos, int depth) {
+		if (depth == 0)
+			return 1;
+		long nodes = 0;
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        moves = MoveGen.removeIllegal(pos, moves);
+        if (depth == 1)
+        	return moves.size();
+        UndoInfo ui = new UndoInfo();
+        for (Move m : moves) {
+        	pos.makeMove(m, ui);
+        	nodes += perfT(moveGen, pos, depth - 1);
+        	pos.unMakeMove(m, ui);
+        }
+		return nodes;
+	}
 }

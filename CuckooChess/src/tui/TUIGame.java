@@ -60,6 +60,7 @@ public class TUIGame extends Game {
 	    System.out.println("  testsuite filename maxtime");
 	    System.out.println("  book on|off     - Turn opening book on/off");
 	    System.out.println("  time t          - Set computer thinking time, ms");
+	    System.out.println("  perft d         - Run perft test to depth d");
 	    System.out.println("  uci             - Switch to uci protocol.");
 	    System.out.println("  help            - Show this help");
 	    System.out.println("  quit            - Terminate program");
