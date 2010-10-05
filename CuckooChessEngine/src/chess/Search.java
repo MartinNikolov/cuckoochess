@@ -9,6 +9,7 @@ import chess.TranspositionTable.TTEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -104,18 +105,37 @@ public class Search {
         this.listener = listener;
     }
 
-    final public Move iterativeDeepening(ArrayList<Move> scMoves,
+    private final static class MoveInfo {
+    	Move move;
+    	int nodes;
+    	MoveInfo(Move m, int n) { move = m;  nodes = n; }
+        static public class SortByScore implements Comparator<MoveInfo> {
+            public int compare(MoveInfo mi1, MoveInfo mi2) {
+                return mi2.move.score - mi1.move.score;
+            }
+        }
+        static public class SortByNodes implements Comparator<MoveInfo> {
+            public int compare(MoveInfo mi1, MoveInfo mi2) {
+                return mi2.nodes - mi1.nodes;
+            }
+        }
+    }
+    
+    final public Move iterativeDeepening(ArrayList<Move> scMovesIn,
             int initialMinTimeMillis, int initialMaxTimeMillis,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
         totalNodes = 0;
+        ArrayList<MoveInfo> scMoves = new ArrayList<MoveInfo>(scMovesIn.size());
+        for (Move m : scMovesIn)
+        	scMoves.add(new MoveInfo(m, 0));
         minTimeMillis = initialMinTimeMillis;
         maxTimeMillis = initialMaxTimeMillis;
         maxNodes = initialMaxNodes;
         Position origPos = new Position(pos);
         final int aspirationDelta = 50;
         int bestScoreLastIter = 0;
-        Move bestMove = scMoves.get(0);
+        Move bestMove = scMoves.get(0).move;
         this.verbose = verbose;
         if ((maxDepth < 0) || (maxDepth > 100)) {
         	maxDepth = 100;
@@ -131,7 +151,7 @@ public class Search {
             boolean needMoreTime = false;
             for (int mi = 0; mi < scMoves.size(); mi++) {
                 searchNeedMoreTime = (mi > 0);
-                Move m = scMoves.get(mi);
+                Move m = scMoves.get(mi).move;
                 if ((listener != null) && (System.currentTimeMillis() - tStart >= 1000)) {
                     listener.notifyCurrMove(m, mi + 1);
                 }
@@ -146,6 +166,7 @@ public class Search {
                     beta = Search.MATE0;
                 }
                 int score = -negaScout(-beta, -alpha, 1, depth - 1, -1, givesCheck);
+                int nodesThisMove = nodes + qNodes;
                 posHashListSize--;
                 pos.unMakeMove(m, ui);
                 {
@@ -171,6 +192,7 @@ public class Search {
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
                     score = -negaScout(-Search.MATE0, -score, 1, depth - 1, -1, givesCheck);
+                    nodesThisMove += nodes + qNodes;
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
                 } else if ((mi == 0) && (score <= alpha)) {
@@ -183,6 +205,7 @@ public class Search {
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
                     score = -negaScout(-score, Search.MATE0, 1, depth - 1, -1, givesCheck);
+                    nodesThisMove += nodes + qNodes;
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
                 }
@@ -207,17 +230,18 @@ public class Search {
                         notifyPV(depth, score, false, false, m);
                     }
                 }
-                scMoves.get(mi).score = score;
+                scMoves.get(mi).move.score = score;
+                scMoves.get(mi).nodes = nodesThisMove;
                 bestScore = Math.max(bestScore, score);
                 if (depth > 1) {
                     if ((score > alpha) || (mi == 0)) {
                         alpha = score;
-                        Move tmp = scMoves.get(mi);
+                        MoveInfo tmp = scMoves.get(mi);
                         for (int i = mi - 1; i >= 0;  i--) {
                             scMoves.set(i + 1, scMoves.get(i));
                         }
                         scMoves.set(0, tmp);
-                        bestMove = scMoves.get(0);
+                        bestMove = scMoves.get(0).move;
                     }
                 }
                 if (depth > 1) {
@@ -230,8 +254,8 @@ public class Search {
                 }
             }
             if (depth == 1) {
-                 Collections.sort(scMoves, new Move.SortByScore());
-                 bestMove = scMoves.get(0);
+                 Collections.sort(scMoves, new MoveInfo.SortByScore());
+                 bestMove = scMoves.get(0).move;
                  notifyPV(depth, bestMove.score, false, false, bestMove);
             }
             long tNow = System.currentTimeMillis();
@@ -256,6 +280,13 @@ public class Search {
             if (depth >= plyToMate)
                 break;
             bestScoreLastIter = bestScore;
+
+            if (depth > 1) {
+            	// Moves that were hard to search should be searched early in the next iteration
+            	if (scMoves.size() > 1)
+            		Collections.sort(scMoves.subList(1, scMoves.size()),
+            						 new MoveInfo.SortByNodes());
+            }
         }
         } catch (StopSearch ss) {
             pos = origPos;
