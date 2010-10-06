@@ -429,6 +429,8 @@ public class Search {
                 int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, nextInCheck);
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
+                	if (score > MATE0 / 2)
+                		return beta;
                     return score;
                 } else {
                     if ((score == -(MATE0-(ply+3))) && (ply < 2 * depth)) {
