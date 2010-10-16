@@ -86,7 +86,7 @@ public class ChessController {
 			final SearchStatus localSS = ss;
             gui.runOnUIThread(new Runnable() {
                 public void run() {
-                	if (!localSS.searchResultWanted)
+                	if (!localSS.searchResultWanted && (bookMoves != null))
                 		return;
                 	gui.setThinkingInfo(newPV, newBookInfo, pvMoves, bookMoves);
                 }
