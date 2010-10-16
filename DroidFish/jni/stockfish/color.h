@@ -21,6 +21,7 @@
 #if !defined(COLOR_H_INCLUDED)
 #define COLOR_H_INCLUDED
 
+#include "types.h"
 
 ////
 //// Types
@@ -32,12 +33,17 @@ enum Color {
   COLOR_NONE
 };
 
+enum SquareColor {
+  DARK,
+  LIGHT
+};
+
+ENABLE_OPERATORS_ON(Color);
+
 
 ////
 //// Inline functions
 ////
-
-inline void operator++ (Color &c, int) { c = Color(int(c) + 1); }
 
 inline Color opposite_color(Color c) {
   return Color(int(c) ^ 1);

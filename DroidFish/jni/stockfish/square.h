@@ -64,6 +64,11 @@ enum SquareDelta {
   DELTA_NN = 020, DELTA_NNE = 021
 };
 
+ENABLE_OPERATORS_ON(Square);
+ENABLE_OPERATORS_ON(File);
+ENABLE_OPERATORS_ON(Rank);
+ENABLE_OPERATORS_ON(SquareDelta);
+
 
 ////
 //// Constants
@@ -77,35 +82,10 @@ const int FlopMask = 07;
 //// Inline functions
 ////
 
-inline File operator+ (File x, int i) { return File(int(x) + i); }
-inline File operator+ (File x, File y) { return x + int(y); }
-inline void operator++ (File &x, int) { x = File(int(x) + 1); }
-inline void operator+= (File &x, int i) { x = File(int(x) + i); }
-inline File operator- (File x, int i) { return File(int(x) - i); }
-inline void operator-- (File &x, int) { x = File(int(x) - 1); }
-inline void operator-= (File &x, int i) { x = File(int(x) - i); }
-
-inline Rank operator+ (Rank x, int i) { return Rank(int(x) + i); }
-inline Rank operator+ (Rank x, Rank y) { return x + int(y); }
-inline void operator++ (Rank &x, int) { x = Rank(int(x) + 1); }
-inline void operator+= (Rank &x, int i) { x = Rank(int(x) + i); }
-inline Rank operator- (Rank x, int i) { return Rank(int(x) - i); }
-inline void operator-- (Rank &x, int) { x = Rank(int(x) - 1); }
-inline void operator-= (Rank &x, int i) { x = Rank(int(x) - i); }
-
-inline Square operator+ (Square x, int i) { return Square(int(x) + i); }
-inline void operator++ (Square &x, int) { x = Square(int(x) + 1); }
-inline void operator+= (Square &x, int i) { x = Square(int(x) + i); }
-inline Square operator- (Square x, int i) { return Square(int(x) - i); }
-inline void operator-- (Square &x, int) { x = Square(int(x) - 1); }
-inline void operator-= (Square &x, int i) { x = Square(int(x) - i); }
-inline Square operator+ (Square x, SquareDelta i) { return Square(int(x) + i); }
-inline void operator+= (Square &x, SquareDelta i) { x = Square(int(x) + i); }
-inline Square operator- (Square x, SquareDelta i) { return Square(int(x) - i); }
-inline void operator-= (Square &x, SquareDelta i) { x = Square(int(x) - i); }
-inline SquareDelta operator- (Square x, Square y) {
-  return SquareDelta(int(x) - int(y));
-}
+inline Square operator+ (Square x, SquareDelta i) { return x + Square(i); }
+inline void operator+= (Square& x, SquareDelta i) { x = x + Square(i); }
+inline Square operator- (Square x, SquareDelta i) { return x - Square(i); }
+inline void operator-= (Square& x, SquareDelta i) { x = x - Square(i); }
 
 inline Square make_square(File f, Rank r) {
   return Square(int(f) | (int(r) << 3));
@@ -135,8 +115,13 @@ inline Rank relative_rank(Color c, Square s) {
   return square_rank(relative_square(c, s));
 }
 
-inline Color square_color(Square s) {
-  return Color((int(square_file(s)) + int(square_rank(s))) & 1);
+inline SquareColor square_color(Square s) {
+  return SquareColor((int(square_file(s)) + int(square_rank(s))) & 1);
+}
+
+inline bool same_color_squares(Square s1, Square s2) {
+  int s = int(s1) ^ int(s2);
+  return (((s >> 3) ^ s) & 1) == 0;
 }
 
 inline int file_distance(File f1, File f2) {
@@ -180,10 +165,8 @@ inline Square square_from_string(const std::string& str) {
 }
 
 inline const std::string square_to_string(Square s) {
-  std::string str;
-  str += file_to_char(square_file(s));
-  str += rank_to_char(square_rank(s));
-  return str;
+  return  std::string(1, file_to_char(square_file(s)))
+        + std::string(1, rank_to_char(square_rank(s)));
 }
 
 inline bool file_is_ok(File f) {

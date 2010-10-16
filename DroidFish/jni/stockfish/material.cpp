@@ -23,6 +23,7 @@
 ////
 
 #include <cassert>
+#include <cstring>
 #include <sstream>
 #include <map>
 
@@ -57,6 +58,8 @@ namespace {
 
   typedef EndgameEvaluationFunctionBase EF;
   typedef EndgameScalingFunctionBase SF;
+  typedef map<Key, EF*> EFMap;
+  typedef map<Key, SF*> SFMap;
 
   // Endgame evaluation and scaling functions accessed direcly and not through
   // the function maps because correspond to more then one material hash key.
@@ -70,7 +73,7 @@ namespace {
   // Helper templates used to detect a given material distribution
   template<Color Us> bool is_KXK(const Position& pos) {
     const Color Them = (Us == WHITE ? BLACK : WHITE);
-    return   pos.non_pawn_material(Them) == Value(0)
+    return   pos.non_pawn_material(Them) == VALUE_ZERO
           && pos.piece_count(Them, PAWN) == 0
           && pos.non_pawn_material(Us)   >= RookValueMidgame;
   }
@@ -113,21 +116,17 @@ private:
   static Key buildKey(const string& keyCode);
   static const string swapColors(const string& keyCode);
 
-  // Here we store two maps, for evaluate and scaling functions
-  pair<map<Key, EF*>, map<Key, SF*> > maps;
+  // Here we store two maps, for evaluate and scaling functions...
+  pair<EFMap, SFMap> maps;
 
-  // Maps accessing functions returning const and non-const references
-  template<typename T> const map<Key, T*>& get() const { return maps.first; }
-  template<typename T> map<Key, T*>& get() { return maps.first; }
+  // ...and here is the accessing template function
+  template<typename T> const map<Key, T*>& get() const;
 };
 
 // Explicit specializations of a member function shall be declared in
 // the namespace of which the class template is a member.
-template<> const map<Key, SF*>&
-EndgameFunctions::get<SF>() const { return maps.second; }
-
-template<> map<Key, SF*>&
-EndgameFunctions::get<SF>() { return maps.second; }
+template<> const EFMap& EndgameFunctions::get<EF>() const { return maps.first; }
+template<> const SFMap& EndgameFunctions::get<SF>() const { return maps.second; }
 
 
 ////
@@ -136,15 +135,14 @@ EndgameFunctions::get<SF>() { return maps.second; }
 
 /// MaterialInfoTable c'tor and d'tor, called once by each thread
 
-MaterialInfoTable::MaterialInfoTable(unsigned int numOfEntries) {
+MaterialInfoTable::MaterialInfoTable() {
 
-  size = numOfEntries;
-  entries = new MaterialInfo[size];
+  entries = new MaterialInfo[MaterialTableSize];
   funcs = new EndgameFunctions();
 
   if (!entries || !funcs)
   {
-      cerr << "Failed to allocate " << numOfEntries * sizeof(MaterialInfo)
+      cerr << "Failed to allocate " << MaterialTableSize * sizeof(MaterialInfo)
            << " bytes for material hash table." << endl;
       Application::exit_with_failure();
   }
@@ -167,7 +165,8 @@ Phase MaterialInfoTable::game_phase(const Position& pos) {
 
   if (npm >= MidgameLimit)
       return PHASE_MIDGAME;
-  else if (npm <= EndgameLimit)
+
+  if (npm <= EndgameLimit)
       return PHASE_ENDGAME;
 
   return Phase(((npm - EndgameLimit) * 128) / (MidgameLimit - EndgameLimit));
@@ -182,7 +181,7 @@ Phase MaterialInfoTable::game_phase(const Position& pos) {
 MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
 
   Key key = pos.get_material_key();
-  int index = key & (size - 1);
+  unsigned index = unsigned(key & (MaterialTableSize - 1));
   MaterialInfo* mi = entries + index;
 
   // If mi->key matches the position's material hash key, it means that we
@@ -192,7 +191,8 @@ MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
       return mi;
 
   // Clear the MaterialInfo object, and set its key
-  mi->clear();
+  memset(mi, 0, sizeof(MaterialInfo));
+  mi->factor[WHITE] = mi->factor[BLACK] = uint8_t(SCALE_FACTOR_NORMAL);
   mi->key = key;
 
   // Store game phase
@@ -204,14 +204,15 @@ MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
   if ((mi->evaluationFunction = funcs->get<EF>(key)) != NULL)
       return mi;
 
-  else if (is_KXK<WHITE>(pos) || is_KXK<BLACK>(pos))
+  if (is_KXK<WHITE>(pos) || is_KXK<BLACK>(pos))
   {
       mi->evaluationFunction = is_KXK<WHITE>(pos) ? &EvaluateKXK[WHITE] : &EvaluateKXK[BLACK];
       return mi;
   }
-  else if (   pos.pieces(PAWN)  == EmptyBoardBB
-           && pos.pieces(ROOK)  == EmptyBoardBB
-           && pos.pieces(QUEEN) == EmptyBoardBB)
+
+  if (   pos.pieces(PAWN)  == EmptyBoardBB
+      && pos.pieces(ROOK)  == EmptyBoardBB
+      && pos.pieces(QUEEN) == EmptyBoardBB)
   {
       // Minor piece endgame with at least one minor piece per side and
       // no pawns. Note that the case KmmK is already handled by KXK.
@@ -254,7 +255,7 @@ MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
   else if (is_KQKRPs<BLACK>(pos))
       mi->scalingFunction[BLACK] = &ScaleKQKRPs[BLACK];
 
-  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) == Value(0))
+  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) == VALUE_ZERO)
   {
       if (pos.piece_count(BLACK, PAWN) == 0)
       {
@@ -332,9 +333,9 @@ MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
 
     // Second-degree polynomial material imbalance by Tord Romstad
     //
-    // We use NO_PIECE_TYPE as a place holder for the bishop pair "extended piece",
+    // We use PIECE_TYPE_NONE as a place holder for the bishop pair "extended piece",
     // this allow us to be more flexible in defining bishop pair bonuses.
-    for (pt1 = NO_PIECE_TYPE; pt1 <= QUEEN; pt1++)
+    for (pt1 = PIECE_TYPE_NONE; pt1 <= QUEEN; pt1++)
     {
         pc = pieceCount[c][pt1];
         if (!pc)
@@ -342,7 +343,7 @@ MaterialInfo* MaterialInfoTable::get_material_info(const Position& pos) {
 
         vv = LinearCoefficients[pt1];
 
-        for (pt2 = NO_PIECE_TYPE; pt2 <= pt1; pt2++)
+        for (pt2 = PIECE_TYPE_NONE; pt2 <= pt1; pt2++)
             vv +=  pieceCount[c][pt2] * QuadraticCoefficientsSameColor[pt1][pt2]
                  + pieceCount[them][pt2] * QuadraticCoefficientsOppositeColor[pt1][pt2];
 
@@ -378,11 +379,11 @@ EndgameFunctions::EndgameFunctions() {
 
 EndgameFunctions::~EndgameFunctions() {
 
-    for (map<Key, EF*>::iterator it = maps.first.begin(); it != maps.first.end(); ++it)
-        delete (*it).second;
+    for (EFMap::const_iterator it = maps.first.begin(); it != maps.first.end(); ++it)
+        delete it->second;
 
-    for (map<Key, SF*>::iterator it = maps.second.begin(); it != maps.second.end(); ++it)
-        delete (*it).second;
+    for (SFMap::const_iterator it = maps.second.begin(); it != maps.second.end(); ++it)
+        delete it->second;
 }
 
 Key EndgameFunctions::buildKey(const string& keyCode) {
@@ -400,9 +401,9 @@ Key EndgameFunctions::buildKey(const string& keyCode) {
         if (keyCode[i] == 'K')
             upcase = !upcase;
 
-        s << char(upcase? toupper(keyCode[i]) : tolower(keyCode[i]));
+        s << char(upcase ? toupper(keyCode[i]) : tolower(keyCode[i]));
     }
-    s << 8 - keyCode.length() << "/8/8/8/8/8/8/8 w -";
+    s << 8 - keyCode.length() << "/8/8/8/8/8/8/8 w - -";
     return Position(s.str(), 0).get_material_key();
 }
 
@@ -417,14 +418,15 @@ template<class T>
 void EndgameFunctions::add(const string& keyCode) {
 
   typedef typename T::Base F;
+  typedef map<Key, F*> M;
 
-  get<F>().insert(pair<Key, F*>(buildKey(keyCode), new T(WHITE)));
-  get<F>().insert(pair<Key, F*>(buildKey(swapColors(keyCode)), new T(BLACK)));
+  const_cast<M&>(get<F>()).insert(pair<Key, F*>(buildKey(keyCode), new T(WHITE)));
+  const_cast<M&>(get<F>()).insert(pair<Key, F*>(buildKey(swapColors(keyCode)), new T(BLACK)));
 }
 
 template<class T>
 T* EndgameFunctions::get(Key key) const {
 
-  typename map<Key, T*>::const_iterator it(get<T>().find(key));
-  return (it != get<T>().end() ? it->second : NULL);
+  typename map<Key, T*>::const_iterator it = get<T>().find(key);
+  return it != get<T>().end() ? it->second : NULL;
 }

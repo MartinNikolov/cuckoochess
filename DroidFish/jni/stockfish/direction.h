@@ -45,6 +45,8 @@ enum SignedDirection {
   SIGNED_DIR_NONE = 8
 };
 
+ENABLE_OPERATORS_ON(SignedDirection);
+
 
 ////
 //// Variables
@@ -57,14 +59,6 @@ extern uint8_t SignedDirectionTable[64][64];
 ////
 //// Inline functions
 ////
-
-inline void operator++ (Direction& d, int) {
-  d = Direction(int(d) + 1);
-}
-
-inline void operator++ (SignedDirection& d, int) {
-  d = SignedDirection(int(d) + 1);
-}
 
 inline Direction direction_between_squares(Square s1, Square s2) {
   return Direction(DirectionTable[s1][s2]);

@@ -27,6 +27,7 @@
 
 #include "color.h"
 #include "square.h"
+#include "value.h"
 
 
 ////
@@ -34,38 +35,48 @@
 ////
 
 enum PieceType {
-  NO_PIECE_TYPE = 0,
+  PIECE_TYPE_NONE = 0,
   PAWN = 1, KNIGHT = 2, BISHOP = 3, ROOK = 4, QUEEN = 5, KING = 6
 };
 
 enum Piece {
-  NO_PIECE = 0, WP = 1, WN = 2, WB = 3, WR = 4, WQ = 5, WK = 6,
-  BP = 9, BN = 10, BB = 11, BR = 12, BQ = 13, BK = 14,
-  EMPTY = 16, OUTSIDE = 17
+  PIECE_NONE_DARK_SQ = 0, WP = 1, WN = 2, WB = 3, WR = 4, WQ = 5, WK = 6,
+  BP = 9, BN = 10, BB = 11, BR = 12, BQ = 13, BK = 14, PIECE_NONE = 16
 };
+
+ENABLE_OPERATORS_ON(PieceType);
+ENABLE_OPERATORS_ON(Piece);
 
 
 ////
 //// Constants
 ////
 
-const int SlidingArray[18] = {
-  0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0
-};
+/// Important: If the material values are changed, one must also
+/// adjust the piece square tables, and the method game_phase() in the
+/// Position class!
+///
+/// Values modified by Joona Kiiski
+
+const Value PawnValueMidgame   = Value(0x0C6);
+const Value PawnValueEndgame   = Value(0x102);
+const Value KnightValueMidgame = Value(0x331);
+const Value KnightValueEndgame = Value(0x34E);
+const Value BishopValueMidgame = Value(0x344);
+const Value BishopValueEndgame = Value(0x359);
+const Value RookValueMidgame   = Value(0x4F6);
+const Value RookValueEndgame   = Value(0x4FE);
+const Value QueenValueMidgame  = Value(0x9D9);
+const Value QueenValueEndgame  = Value(0x9FE);
+
+extern const Value PieceValueMidgame[17];
+extern const Value PieceValueEndgame[17];
+extern const int SlidingArray[18];
 
 
 ////
 //// Inline functions
 ////
-
-inline Piece operator+ (Piece p, int i) { return Piece(int(p) + i); }
-inline void operator++ (Piece &p, int) { p = Piece(int(p) + 1); }
-inline Piece operator- (Piece p, int i) { return Piece(int(p) - i); }
-inline void operator-- (Piece &p, int) { p = Piece(int(p) - 1); }
-inline PieceType operator+ (PieceType p, int i) {return PieceType(int(p) + i);}
-inline void operator++ (PieceType &p, int) { p = PieceType(int(p) + 1); }
-inline PieceType operator- (PieceType p, int i) {return PieceType(int(p) - i);}
-inline void operator-- (PieceType &p, int) { p = PieceType(int(p) - 1); }
 
 inline PieceType type_of_piece(Piece p)  {
   return PieceType(int(p) & 7);
@@ -80,7 +91,7 @@ inline Piece piece_of_color_and_type(Color c, PieceType pt) {
 }
 
 inline int piece_is_slider(Piece p) {
-  return SlidingArray[int(p)];
+  return SlidingArray[p];
 }
 
 inline SquareDelta pawn_push(Color c) {

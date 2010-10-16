@@ -8,9 +8,9 @@ LOCAL_SRC_FILES := \
 	benchmark.cpp    history.cpp   movegen.cpp   tt.cpp \
 	bitbase.cpp      main.cpp      movepick.cpp  uci.cpp \
 	bitboard.cpp     pawns.cpp     ucioption.cpp \
-	book.cpp         material.cpp  piece.cpp     value.cpp \
+	book.cpp         material.cpp  piece.cpp     \
 	direction.cpp    mersenne.cpp  position.cpp \
-	endgame.cpp      misc.cpp      san.cpp
+	endgame.cpp      misc.cpp      san.cpp   timeman.cpp
 
 LOCAL_CFLAGS    := -I$(LOCAL_PATH)/../stlport/stlport \
 	 -mandroid \

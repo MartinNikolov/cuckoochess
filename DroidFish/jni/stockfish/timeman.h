@@ -18,35 +18,25 @@
 */
 
 
-#if !defined(SCALE_H_INCLUDED)
-#define SCALE_H_INCLUDED
+#if !defined(TIMEMAN_H_INCLUDED)
+#define TIMEMAN_H_INCLUDED
 
 ////
-//// Includes
+//// Prototypes
 ////
 
-#include "value.h"
+class TimeManager {
+public:
 
+  void init(int myTime, int myInc, int movesToGo, int currentPly);
+  void pv_unstability(int curChanges, int prevChanges);
+  int available_time() const { return optimumSearchTime + unstablePVExtraTime; }
+  int maximum_time() const { return maximumSearchTime; }
 
-////
-//// Types
-////
-
-enum ScaleFactor {
-  SCALE_FACTOR_ZERO = 0,
-  SCALE_FACTOR_NORMAL = 64,
-  SCALE_FACTOR_MAX = 128,
-  SCALE_FACTOR_NONE = 255
+private:
+  int optimumSearchTime;
+  int maximumSearchTime;
+  int unstablePVExtraTime;
 };
 
-
-////
-//// Inline functions
-////
-
-inline Value apply_scale_factor(Value v, ScaleFactor f) {
-  return Value((v * f) / int(SCALE_FACTOR_NORMAL));
-}
-
-
-#endif // !defined(SCALE_H_INCLUDED)
+#endif // !defined(TIMEMAN_H_INCLUDED)

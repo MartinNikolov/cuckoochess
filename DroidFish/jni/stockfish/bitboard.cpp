@@ -163,7 +163,10 @@ const int RShift[64] = {
 
 #endif // defined(IS_64BIT)
 
-const Bitboard SquaresByColorBB[2] = { BlackSquaresBB, WhiteSquaresBB };
+const Bitboard LightSquaresBB = 0x55AA55AA55AA55AAULL;
+const Bitboard DarkSquaresBB  = 0xAA55AA55AA55AA55ULL;
+
+const Bitboard SquaresByColorBB[2] = { DarkSquaresBB, LightSquaresBB };
 
 const Bitboard FileBB[8] = {
   FileABB, FileBBB, FileCBB, FileDBB, FileEBB, FileFBB, FileGBB, FileHBB
@@ -401,7 +404,7 @@ namespace {
         }
 
     for (Bitboard b = 0ULL; b < 256ULL; b++)
-        BitCount8Bit[b] = (uint8_t)count_1s(b);
+        BitCount8Bit[b] = (uint8_t)count_1s<CNT32>(b);
   }
 
   int remove_bit_8(int i) { return ((i & ~15) >> 1) | (i & 7); }
@@ -491,7 +494,7 @@ namespace {
   Bitboard index_to_bitboard(int index, Bitboard mask) {
 
     Bitboard result = 0ULL;
-    int bits = count_1s(mask);
+    int bits = count_1s<CNT32>(mask);
 
     for (int i = 0; i < bits; i++)
     {

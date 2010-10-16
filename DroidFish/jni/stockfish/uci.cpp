@@ -46,6 +46,9 @@ using namespace std;
 
 namespace {
 
+  // FEN string for the initial position
+  const string StartPositionFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
   // UCIInputParser is a class for parsing UCI input. The class
   // is actually a string stream built on a given input string.
 
@@ -79,7 +82,7 @@ namespace {
 
 void uci_main_loop() {
 
-  RootPosition.from_fen(StartPosition);
+  RootPosition.from_fen(StartPositionFEN);
   string command;
 
   do {
@@ -126,8 +129,7 @@ namespace {
     else if (token == "ucinewgame")
     {
         push_button("New Game");
-        Position::init_piece_square_tables();
-        RootPosition.from_fen(StartPosition);
+        RootPosition.from_fen(StartPositionFEN);
     }
     else if (token == "isready")
         cout << "readyok" << endl;
@@ -148,10 +150,10 @@ namespace {
     }
     else if (token == "eval")
     {
-        EvalInfo ei;
-        cout << "Incremental mg: " << mg_value(RootPosition.value())
+        Value evalMargin;
+        cout << "Incremental mg: "   << mg_value(RootPosition.value())
              << "\nIncremental eg: " << eg_value(RootPosition.value())
-             << "\nFull eval: " << evaluate(RootPosition, ei) << endl;
+             << "\nFull eval: "      << evaluate(RootPosition, evalMargin) << endl;
     }
     else if (token == "key")
         cout << "key: " << hex << RootPosition.get_key()
@@ -180,7 +182,7 @@ namespace {
         return;
 
     if (token == "startpos")
-        RootPosition.from_fen(StartPosition);
+        RootPosition.from_fen(StartPositionFEN);
     else if (token == "fen")
     {
         string fen;
@@ -207,9 +209,11 @@ namespace {
                 RootPosition.do_move(move, st);
                 if (RootPosition.rule_50_counter() == 0)
                     RootPosition.reset_game_ply();
+
+                RootPosition.inc_startpos_ply_counter(); //FIXME: make from_fen to support this and rule50
             }
             // Our StateInfo st is about going out of scope so copy
-            // its content inside RootPosition before they disappear.
+            // its content inside RootPosition before it disappears.
             RootPosition.detach();
         }
     }
@@ -300,8 +304,8 @@ namespace {
 
     assert(RootPosition.is_ok());
 
-    return think(RootPosition, infinite, ponder, RootPosition.side_to_move(),
-                 time, inc, movesToGo, depth, nodes, moveTime, searchMoves);
+    return think(RootPosition, infinite, ponder, time, inc, movesToGo,
+                 depth, nodes, moveTime, searchMoves);
   }
 
   void perft(UCIInputParser& uip) {
@@ -315,7 +319,7 @@ namespace {
 
     tm = get_system_time();
 
-    n = perft(pos, depth * OnePly);
+    n = perft(pos, depth * ONE_PLY);
 
     tm = get_system_time() - tm;
     std::cout << "\nNodes " << n

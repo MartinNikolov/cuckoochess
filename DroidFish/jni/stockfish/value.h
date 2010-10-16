@@ -22,13 +22,6 @@
 #define VALUE_H_INCLUDED
 
 ////
-//// Includes
-////
-
-#include "piece.h"
-
-
-////
 //// Types
 ////
 
@@ -41,12 +34,23 @@ enum ValueType {
 
 
 enum Value {
-  VALUE_DRAW = 0,
+  VALUE_ZERO      = 0,
+  VALUE_DRAW      = 0,
   VALUE_KNOWN_WIN = 15000,
-  VALUE_MATE = 30000,
-  VALUE_INFINITE = 30001,
-  VALUE_NONE = 30002,
+  VALUE_MATE      = 30000,
+  VALUE_INFINITE  = 30001,
+  VALUE_NONE      = 30002,
   VALUE_ENSURE_SIGNED = -1
+};
+
+ENABLE_OPERATORS_ON(Value);
+
+
+enum ScaleFactor {
+  SCALE_FACTOR_ZERO   = 0,
+  SCALE_FACTOR_NORMAL = 64,
+  SCALE_FACTOR_MAX    = 128,
+  SCALE_FACTOR_NONE   = 255
 };
 
 
@@ -56,7 +60,14 @@ enum Value {
 
 // Compiler is free to choose the enum type as long as can keep
 // its data, so ensure Score to be an integer type.
-enum Score { ENSURE_32_BITS_SIZE_P = (1 << 16), ENSURE_32_BITS_SIZE_N = -(1 << 16)};
+enum Score {
+    SCORE_ZERO = 0,
+    SCORE_ENSURE_32_BITS_SIZE_P =  (1 << 16),
+    SCORE_ENSURE_32_BITS_SIZE_N = -(1 << 16)
+};
+
+ENABLE_OPERATORS_ON(Score);
+
 
 // Extracting the _signed_ lower and upper 16 bits it not so trivial
 // because according to the standard a simple cast to short is
@@ -73,13 +84,6 @@ inline Value eg_value(Score s) { return Value((int)(unsigned(s) & 0x7fffu) - (in
 
 inline Score make_score(int mg, int eg) { return Score((mg << 16) + eg); }
 
-inline Score operator-(Score s) { return Score(-int(s)); }
-inline Score operator+(Score s1, Score s2) { return Score(int(s1) + int(s2)); }
-inline Score operator-(Score s1, Score s2) { return Score(int(s1) - int(s2)); }
-inline void operator+=(Score& s1, Score s2) { s1 = Score(int(s1) + int(s2)); }
-inline void operator-=(Score& s1, Score s2) { s1 = Score(int(s1) - int(s2)); }
-inline Score operator*(int i, Score s) { return Score(i * int(s)); }
-
 // Division must be handled separately for each term
 inline Score operator/(Score s, int i) { return make_score(mg_value(s) / i, eg_value(s) / i); }
 
@@ -89,117 +93,19 @@ inline Score operator*(Score s1, Score s2);
 
 
 ////
-//// Constants and variables
-////
-
-/// Piece values, middle game and endgame
-
-/// Important: If the material values are changed, one must also
-/// adjust the piece square tables, and the method game_phase() in the
-/// Position class!
-///
-/// Values modified by Joona Kiiski
-
-const Value PawnValueMidgame   = Value(0x0C6);
-const Value PawnValueEndgame   = Value(0x102);
-const Value KnightValueMidgame = Value(0x331);
-const Value KnightValueEndgame = Value(0x34E);
-const Value BishopValueMidgame = Value(0x344);
-const Value BishopValueEndgame = Value(0x359);
-const Value RookValueMidgame   = Value(0x4F6);
-const Value RookValueEndgame   = Value(0x4FE);
-const Value QueenValueMidgame  = Value(0x9D9);
-const Value QueenValueEndgame  = Value(0x9FE);
-
-const Value PieceValueMidgame[17] = {
-  Value(0),
-  PawnValueMidgame, KnightValueMidgame, BishopValueMidgame,
-  RookValueMidgame, QueenValueMidgame,
-  Value(0), Value(0), Value(0),
-  PawnValueMidgame, KnightValueMidgame, BishopValueMidgame,
-  RookValueMidgame, QueenValueMidgame,
-  Value(0), Value(0), Value(0)
-};
-
-const Value PieceValueEndgame[17] = {
-  Value(0),
-  PawnValueEndgame, KnightValueEndgame, BishopValueEndgame,
-  RookValueEndgame, QueenValueEndgame,
-  Value(0), Value(0), Value(0),
-  PawnValueEndgame, KnightValueEndgame, BishopValueEndgame,
-  RookValueEndgame, QueenValueEndgame,
-  Value(0), Value(0), Value(0)
-};
-
-/// Bonus for having the side to move (modified by Joona Kiiski)
-
-const Score TempoValue = make_score(48, 22);
-
-
-////
 //// Inline functions
 ////
 
 inline Value operator+ (Value v, int i) { return Value(int(v) + i); }
-inline Value operator+ (Value v1, Value v2) { return Value(int(v1) + int(v2)); }
-inline void operator+= (Value &v1, Value v2) {
-  v1 = Value(int(v1) + int(v2));
-}
 inline Value operator- (Value v, int i) { return Value(int(v) - i); }
-inline Value operator- (Value v) { return Value(-int(v)); }
-inline Value operator- (Value v1, Value v2) { return Value(int(v1) - int(v2)); }
-inline void operator-= (Value &v1, Value v2) {
-  v1 = Value(int(v1) - int(v2));
-}
-inline Value operator* (Value v, int i) { return Value(int(v) * i); }
-inline void operator*= (Value &v, int i) { v = Value(int(v) * i); }
-inline Value operator* (int i, Value v) { return Value(int(v) * i); }
-inline Value operator/ (Value v, int i) { return Value(int(v) / i); }
-inline void operator/= (Value &v, int i) { v = Value(int(v) / i); }
 
 
 inline Value value_mate_in(int ply) {
-  return Value(VALUE_MATE - Value(ply));
+  return VALUE_MATE - ply;
 }
 
 inline Value value_mated_in(int ply) {
-  return Value(-VALUE_MATE + Value(ply));
+  return -VALUE_MATE + ply;
 }
-
-inline bool is_upper_bound(ValueType vt) {
-  return (int(vt) & int(VALUE_TYPE_UPPER)) != 0;
-}
-
-inline bool is_lower_bound(ValueType vt) {
-  return (int(vt) & int(VALUE_TYPE_LOWER)) != 0;
-}
-
-inline Value piece_value_midgame(PieceType pt) {
-  return PieceValueMidgame[pt];
-}
-
-inline Value piece_value_endgame(PieceType pt) {
-  return PieceValueEndgame[pt];
-}
-
-inline Value piece_value_midgame(Piece p) {
-  return PieceValueMidgame[p];
-}
-
-inline Value piece_value_endgame(Piece p) {
-  return PieceValueEndgame[p];
-}
-
-
-////
-//// Prototypes
-////
-
-extern Value value_to_tt(Value v, int ply);
-extern Value value_from_tt(Value v, int ply);
-extern int value_to_centipawns(Value v);
-extern Value value_from_centipawns(int cp);
-extern const std::string value_to_string(Value v);
-
 
 #endif // !defined(VALUE_H_INCLUDED)

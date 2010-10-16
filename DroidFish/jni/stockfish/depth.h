@@ -21,41 +21,20 @@
 #if !defined(DEPTH_H_INCLUDED)
 #define DEPTH_H_INCLUDED
 
+#include "types.h"
+
 ////
 //// Types
 ////
 
 enum Depth {
+
+  ONE_PLY = 2,
+
   DEPTH_ZERO = 0,
-  DEPTH_MAX = 200, // 100 * OnePly;
-  DEPTH_ENSURE_SIGNED = -1
+  DEPTH_NONE = -127 * ONE_PLY
 };
 
-
-////
-//// Constants
-////
-
-const Depth OnePly = Depth(2);
-
-
-////
-//// Inline functions
-////
-
-inline Depth operator+ (Depth d, int i) { return Depth(int(d) + i); }
-inline Depth operator+ (Depth d1, Depth d2) { return Depth(int(d1) + int(d2)); }
-inline void operator+= (Depth &d, int i) { d = Depth(int(d) + i); }
-inline void operator+= (Depth &d1, Depth d2) { d1 += int(d2); }
-inline Depth operator- (Depth d, int i) { return Depth(int(d) - i); }
-inline Depth operator- (Depth d1, Depth d2) { return Depth(int(d1) - int(d2)); }
-inline void operator-= (Depth &d, int i) { d = Depth(int(d) - i); }
-inline void operator-= (Depth &d1, Depth d2) { d1 -= int(d2); }
-inline Depth operator* (Depth d, int i) { return Depth(int(d) * i); }
-inline Depth operator* (int i, Depth d) { return Depth(int(d) * i); }
-inline void operator*= (Depth &d, int i) { d = Depth(int(d) * i); }
-inline Depth operator/ (Depth d, int i) { return Depth(int(d) / i); }
-inline void operator/= (Depth &d, int i) { d = Depth(int(d) / i); }
-
+ENABLE_OPERATORS_ON(Depth);
 
 #endif // !defined(DEPTH_H_INCLUDED)

@@ -49,7 +49,7 @@ public:
   void clear();
   void success(Piece p, Square to, Depth d);
   void failure(Piece p, Square to, Depth d);
-  int move_ordering_score(Piece p, Square to) const;
+  int value(Piece p, Square to) const;
   void set_gain(Piece p, Square to, Value delta);
   Value gain(Piece p, Square to) const;
 
@@ -71,7 +71,19 @@ private:
 /// recently have a bigger importance for move ordering than the moves which
 /// have been searched a long time ago.
 
-const int HistoryMax = 50000 * OnePly;
+const int HistoryMax = 50000 * ONE_PLY;
 
+
+////
+//// Inline functions
+////
+
+inline int History::value(Piece p, Square to) const {
+  return history[p][to];
+}
+
+inline Value History::gain(Piece p, Square to) const {
+  return Value(maxStaticValueDelta[p][to]);
+}
 
 #endif // !defined(HISTORY_H_INCLUDED)

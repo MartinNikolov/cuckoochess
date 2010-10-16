@@ -50,9 +50,6 @@
 //// Constants
 ////
 
-/// FEN string for the initial position
-const std::string StartPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 /// Maximum number of plies per game (220 should be enough, because the
 /// maximum search depth is 100, and during position setup we reset the
 /// move counter for every non-reversible move).
@@ -78,12 +75,12 @@ struct CheckInfo {
 /// Castle rights, encoded as bit fields
 
 enum CastleRights {
-  NO_CASTLES  = 0,
-  WHITE_OO    = 1,
-  BLACK_OO    = 2,
-  WHITE_OOO   = 4,
-  BLACK_OOO   = 8,
-  ALL_CASTLES = 15
+  CASTLES_NONE = 0,
+  WHITE_OO     = 1,
+  BLACK_OO     = 2,
+  WHITE_OOO    = 4,
+  BLACK_OOO    = 8,
+  ALL_CASTLES  = 15
 };
 
 /// Game phase
@@ -105,7 +102,7 @@ struct StateInfo {
   Score value;
   Value npMaterial[2];
 
-  PieceType capture;
+  PieceType capturedType;
   Key key;
   Bitboard checkersBB;
   StateInfo* previous;
@@ -227,7 +224,7 @@ public:
   bool move_attacks_square(Move m, Square s) const;
 
   // Piece captured with previous moves
-  PieceType captured_piece() const;
+  PieceType captured_piece_type() const;
 
   // Information about pawns
   bool pawn_is_passed(Color c, Square s) const;
@@ -246,7 +243,6 @@ public:
   // Static exchange evaluation
   int see(Square from, Square to) const;
   int see(Move m) const;
-  int see(Square to) const;
   int see_sign(Move m) const;
 
   // Accessing hash keys
@@ -258,27 +254,32 @@ public:
   // Incremental evaluation
   Score value() const;
   Value non_pawn_material(Color c) const;
-  Score pst_delta(Piece piece, Square from, Square to) const;
+  static Score pst_delta(Piece piece, Square from, Square to);
 
   // Game termination checks
   bool is_mate() const;
   bool is_draw() const;
 
-  // Check if one side threatens a mate in one
-  bool has_mate_threat(Color c);
+  // Check if side to move could be mated in one
+  bool has_mate_threat();
 
   // Number of plies since the last non-reversible move
   int rule_50_counter() const;
 
+  int startpos_ply_counter() const;
+
   // Other properties of the position
   bool opposite_colored_bishops() const;
   bool has_pawn_on_7th(Color c) const;
+  bool is_chess960() const;
 
   // Current thread ID searching on the position
   int thread() const;
 
   // Reset the gamePly variable to 0
   void reset_game_ply();
+
+  void inc_startpos_ply_counter();
 
   // Position consistency check, for debugging
   bool is_ok(int* failedStep = NULL) const;
@@ -294,6 +295,7 @@ private:
   void put_piece(Piece p, Square s);
   void allow_oo(Color c);
   void allow_ooo(Color c);
+  bool set_castling_rights(char token);
 
   // Helper functions for doing and undoing moves
   void do_capture_move(Key& key, PieceType capture, Color them, Square to, bool ep);
@@ -310,7 +312,7 @@ private:
   Key compute_material_key() const;
 
   // Computing incremental evaluation scores and material counts
-  Score pst(Color c, PieceType pt, Square s) const;
+  static Score pst(Color c, PieceType pt, Square s);
   Score compute_value() const;
   Value compute_non_pawn_material(Color c) const;
 
@@ -333,6 +335,8 @@ private:
   int castleRightsMask[64];
   StateInfo startState;
   File initialKFile, initialKRFile, initialQRFile;
+  bool isChess960;
+  int startPosPlyCounter;
   int threadID;
   StateInfo* st;
 
@@ -343,6 +347,7 @@ private:
   static Key zobSideToMove;
   static Score PieceSquareTable[16][64];
   static Key zobExclusion;
+  static const Value seeValues[8];
 };
 
 
@@ -363,7 +368,7 @@ inline PieceType Position::type_of_piece_on(Square s) const {
 }
 
 inline bool Position::square_is_empty(Square s) const {
-  return piece_on(s) == EMPTY;
+  return piece_on(s) == PIECE_NONE;
 }
 
 inline bool Position::square_is_occupied(Square s) const {
@@ -371,11 +376,11 @@ inline bool Position::square_is_occupied(Square s) const {
 }
 
 inline Value Position::midgame_value_of_piece_on(Square s) const {
-  return piece_value_midgame(piece_on(s));
+  return PieceValueMidgame[piece_on(s)];
 }
 
 inline Value Position::endgame_value_of_piece_on(Square s) const {
-  return piece_value_endgame(piece_on(s));
+  return PieceValueEndgame[piece_on(s)];
 }
 
 inline Color Position::side_to_move() const {
@@ -507,11 +512,11 @@ inline Key Position::get_material_key() const {
   return st->materialKey;
 }
 
-inline Score Position::pst(Color c, PieceType pt, Square s) const {
+inline Score Position::pst(Color c, PieceType pt, Square s) {
   return PieceSquareTable[piece_of_color_and_type(c, pt)][s];
 }
 
-inline Score Position::pst_delta(Piece piece, Square from, Square to) const {
+inline Score Position::pst_delta(Piece piece, Square from, Square to) {
   return PieceSquareTable[piece][to] - PieceSquareTable[piece][from];
 }
 
@@ -535,16 +540,26 @@ inline int Position::rule_50_counter() const {
   return st->rule50;
 }
 
+inline int Position::startpos_ply_counter() const {
+
+  return startPosPlyCounter;
+}
+
 inline bool Position::opposite_colored_bishops() const {
 
   return   piece_count(WHITE, BISHOP) == 1
         && piece_count(BLACK, BISHOP) == 1
-        && square_color(piece_list(WHITE, BISHOP, 0)) != square_color(piece_list(BLACK, BISHOP, 0));
+        && !same_color_squares(piece_list(WHITE, BISHOP, 0), piece_list(BLACK, BISHOP, 0));
 }
 
 inline bool Position::has_pawn_on_7th(Color c) const {
 
   return pieces(PAWN, c) & relative_rank_bb(c, RANK_7);
+}
+
+inline bool Position::is_chess960() const {
+
+  return isChess960;
 }
 
 inline bool Position::move_is_capture(Move m) const {
@@ -559,8 +574,8 @@ inline bool Position::move_is_capture_or_promotion(Move m) const {
   return (m & (0x1F << 12)) ? !move_is_castle(m) : !square_is_empty(move_to(m));
 }
 
-inline PieceType Position::captured_piece() const {
-  return st->capture;
+inline PieceType Position::captured_piece_type() const {
+  return st->capturedType;
 }
 
 inline int Position::thread() const {

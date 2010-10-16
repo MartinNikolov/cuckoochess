@@ -35,8 +35,8 @@ PGOBENCH = ./$(EXE) bench 32 1 10 default depth
 ### Object files
 OBJS = application.o bitboard.o pawns.o material.o endgame.o evaluate.o main.o \
 	misc.o move.o movegen.o history.o movepick.o search.o piece.o \
-	position.o direction.o tt.o value.o uci.o ucioption.o \
-	mersenne.o book.o bitbase.o san.o benchmark.o
+	position.o direction.o tt.o uci.o ucioption.o \
+	mersenne.o book.o bitbase.o san.o benchmark.o timeman.o
 
 
 ### ==========================================================================
@@ -219,7 +219,11 @@ ifeq ($(COMP),icc)
 endif
 
 ### 3.2 General compiler settings
-CXXFLAGS += -g -Wall -fno-exceptions -fno-rtti $(EXTRACXXFLAGS)
+CXXFLAGS = -g -Wall -Wcast-qual -ansi -fno-exceptions -fno-rtti $(EXTRACXXFLAGS)
+
+ifeq ($(comp),gcc)
+	CXXFLAGS += -pedantic -Wno-long-long -Wextra
+endif
 
 ifeq ($(comp),icc)
 	CXXFLAGS += -wd383,869,981,10187,10188,11505,11503
@@ -230,7 +234,7 @@ ifeq ($(os),osx)
 endif
 
 ### 3.3 General linker settings
-LDFLAGS += -lpthread $(EXTRALDFLAGS)
+LDFLAGS = -lpthread $(EXTRALDFLAGS)
 
 ifeq ($(os),osx)
 	LDFLAGS += -arch $(arch)
@@ -408,7 +412,7 @@ install:
 	-strip $(BINDIR)/$(EXE)
 
 clean:
-	$(RM) $(EXE) *.o .depend *~ core bench.txt
+	$(RM) $(EXE) *.o .depend *~ core bench.txt *.gcda
 
 testrun:
 	@$(PGOBENCH)
@@ -500,7 +504,7 @@ icc-profile-clean:
 
 hpux:
 	$(MAKE) \
-	CXX='/opt/aCC/bin/aCC -AA +hpxstd98 -DBIGENDIAN -mt +O3 -DNDEBUG' \
+	CXX='/opt/aCC/bin/aCC -AA +hpxstd98 -DBIGENDIAN -mt +O3 -DNDEBUG -DNO_PREFETCH' \
 	CXXFLAGS="" \
 	LDFLAGS="" \
 	all

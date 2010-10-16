@@ -28,6 +28,33 @@
 
 using namespace std;
 
+// Tables indexed by Piece
+
+const Value PieceValueMidgame[17] = {
+  VALUE_ZERO,
+  PawnValueMidgame, KnightValueMidgame, BishopValueMidgame,
+  RookValueMidgame, QueenValueMidgame,
+  VALUE_ZERO, VALUE_ZERO, VALUE_ZERO,
+  PawnValueMidgame, KnightValueMidgame, BishopValueMidgame,
+  RookValueMidgame, QueenValueMidgame,
+  VALUE_ZERO, VALUE_ZERO, VALUE_ZERO
+};
+
+const Value PieceValueEndgame[17] = {
+  VALUE_ZERO,
+  PawnValueEndgame, KnightValueEndgame, BishopValueEndgame,
+  RookValueEndgame, QueenValueEndgame,
+  VALUE_ZERO, VALUE_ZERO, VALUE_ZERO,
+  PawnValueEndgame, KnightValueEndgame, BishopValueEndgame,
+  RookValueEndgame, QueenValueEndgame,
+  VALUE_ZERO, VALUE_ZERO, VALUE_ZERO
+};
+
+const int SlidingArray[18] = {
+  0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0
+};
+
+
 ////
 //// Functions
 ////
@@ -45,5 +72,5 @@ PieceType piece_type_from_char(char c) {
 
   size_t idx = PieceChars.find(c);
 
-  return idx != string::npos ? PieceType(idx % 7) : NO_PIECE_TYPE;
+  return idx != string::npos ? PieceType(idx % 7) : PIECE_TYPE_NONE;
 }

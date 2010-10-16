@@ -75,7 +75,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
   int searchTT = ttm;
   ttMoves[0].move = ttm;
   badCaptureThreshold = 0;
-  lastBadCapture = badCaptures;
+  badCaptures = moves + 256;
 
   pinned = p.pinned_pieces(pos.side_to_move());
 
@@ -90,16 +90,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
 
   if (p.is_check())
       phasePtr = EvasionsPhaseTable;
-  else if (d > Depth(0))
+  else if (d > DEPTH_ZERO)
   {
       // Consider sligtly negative captures as good if at low
       // depth and far from beta.
-      if (ss && ss->eval < beta - PawnValueMidgame && d < 3 * OnePly)
+      if (ss && ss->eval < beta - PawnValueMidgame && d < 3 * ONE_PLY)
           badCaptureThreshold = -PawnValueMidgame;
 
       phasePtr = MainSearchPhaseTable;
   }
-  else if (d == Depth(0))
+  else if (d == DEPTH_ZERO)
       phasePtr = QsearchWithChecksPhaseTable;
   else
   {
@@ -148,16 +148,16 @@ void MovePicker::go_next_phase() {
       return;
 
   case PH_BAD_CAPTURES:
-      // Bad captures SEE value is already calculated so just sort them
-      // to get SEE move ordering.
+      // Bad captures SEE value is already calculated so just pick
+      // them in order to get SEE move ordering.
       curMove = badCaptures;
-      lastMove = lastBadCapture;
+      lastMove = moves + 256;
       return;
 
   case PH_EVASIONS:
       assert(pos.is_check());
       lastMove = generate_evasions(pos, moves);
-      score_evasions_or_checks();
+      score_evasions();
       return;
 
   case PH_QCAPTURES:
@@ -167,7 +167,6 @@ void MovePicker::go_next_phase() {
 
   case PH_QCHECKS:
       lastMove = generate_non_capture_checks(pos, moves);
-      score_evasions_or_checks();
       return;
 
   case PH_STOP:
@@ -221,7 +220,6 @@ void MovePicker::score_noncaptures() {
   Move m;
   Piece piece;
   Square from, to;
-  int hs;
 
   for (MoveStack* cur = moves; cur != lastMove; cur++)
   {
@@ -229,18 +227,11 @@ void MovePicker::score_noncaptures() {
       from = move_from(m);
       to = move_to(m);
       piece = pos.piece_on(from);
-      hs = H.move_ordering_score(piece, to);
-
-      // Ensure history has always highest priority
-      if (hs > 0)
-          hs += 10000;
-
-      // Gain table based scoring
-      cur->score = hs + 16 * H.gain(piece, to);
+      cur->score = H.value(piece, to) + H.gain(piece, to);
   }
 }
 
-void MovePicker::score_evasions_or_checks() {
+void MovePicker::score_evasions() {
   // Try good captures ordered by MVV/LVA, then non-captures if
   // destination square is not under attack, ordered by history
   // value, and at the end bad-captures and non-captures with a
@@ -261,7 +252,7 @@ void MovePicker::score_evasions_or_checks() {
           cur->score =  pos.midgame_value_of_piece_on(move_to(m))
                       - pos.type_of_piece_on(move_from(m)) + HistoryMax;
       else
-          cur->score = H.move_ordering_score(pos.piece_on(move_from(m)), move_to(m));
+          cur->score = H.value(pos.piece_on(move_from(m)), move_to(m));
   }
 }
 
@@ -301,12 +292,10 @@ Move MovePicker::get_next_move() {
                   if (seeValue >= badCaptureThreshold)
                       return move;
 
-                  // Losing capture, move it to the badCaptures[] array, note
+                  // Losing capture, move it to the tail of the array, note
                   // that move has now been already checked for legality.
-                  assert(int(lastBadCapture - badCaptures) < 63);
-                  lastBadCapture->move = move;
-                  lastBadCapture->score = seeValue;
-                  lastBadCapture++;
+                  (--badCaptures)->move = move;
+                  badCaptures->score = seeValue;
               }
               break;
 

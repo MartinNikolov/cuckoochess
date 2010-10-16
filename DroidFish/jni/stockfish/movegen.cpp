@@ -140,6 +140,32 @@ MoveStack* generate_noncaptures(const Position& pos, MoveStack* mlist) {
 }
 
 
+/// generate_non_evasions() generates all pseudo-legal captures and
+/// non-captures. Returns a pointer to the end of the move list.
+
+MoveStack* generate_non_evasions(const Position& pos, MoveStack* mlist) {
+
+  assert(pos.is_ok());
+  assert(!pos.is_check());
+
+  Color us = pos.side_to_move();
+  Bitboard target = pos.pieces_of_color(opposite_color(us));
+
+  mlist = generate_piece_moves<PAWN, CAPTURE>(pos, mlist, us, target);
+  mlist = generate_piece_moves<PAWN, NON_CAPTURE>(pos, mlist, us, pos.empty_squares());
+
+  target |= pos.empty_squares();
+
+  mlist = generate_piece_moves<KNIGHT>(pos, mlist, us, target);
+  mlist = generate_piece_moves<BISHOP>(pos, mlist, us, target);
+  mlist = generate_piece_moves<ROOK>(pos, mlist, us, target);
+  mlist = generate_piece_moves<QUEEN>(pos, mlist, us, target);
+  mlist = generate_piece_moves<KING>(pos, mlist, us, target);
+  mlist = generate_castle_moves<KING_SIDE>(pos, mlist);
+  return  generate_castle_moves<QUEEN_SIDE>(pos, mlist);
+}
+
+
 /// generate_non_capture_checks() generates all pseudo-legal non-captures and knight
 /// underpromotions that give check. Returns a pointer to the end of the move list.
 
@@ -260,11 +286,8 @@ MoveStack* generate_moves(const Position& pos, MoveStack* mlist, bool pseudoLega
   Bitboard pinned = pos.pinned_pieces(pos.side_to_move());
 
   // Generate pseudo-legal moves
-  if (pos.is_check())
-      last = generate_evasions(pos, mlist);
-  else
-      last = generate_noncaptures(pos, generate_captures(pos, mlist));
-
+  last = pos.is_check() ? generate_evasions(pos, mlist)
+                        : generate_non_evasions(pos, mlist);
   if (pseudoLegal)
       return last;
 
@@ -312,7 +335,7 @@ bool move_is_legal(const Position& pos, const Move m, Bitboard pinned) {
   Piece pc = pos.piece_on(from);
 
   // Use a slower but simpler function for uncommon cases
-  if (move_is_ep(m) || move_is_castle(m))
+  if (move_is_special(m))
       return move_is_legal(pos, m);
 
   // If the from square is not occupied by a piece belonging to the side to
@@ -332,14 +355,9 @@ bool move_is_legal(const Position& pos, const Move m, Bitboard pinned) {
       if ((us == WHITE) != (direction > 0))
           return false;
 
-      // A pawn move is a promotion iff the destination square is
-      // on the 8/1th rank.
-      if ((  (square_rank(to) == RANK_8 && us == WHITE)
-           ||(square_rank(to) == RANK_1 && us != WHITE)) != bool(move_is_promotion(m)))
-          return false;
-
-      // The promotion piece, if any, must be valid
-      if (move_promotion_piece(m) > QUEEN || move_promotion_piece(m) == PAWN)
+      // We have already handled promotion moves, so destination
+      // cannot be on the 8/1th rank.
+      if (square_rank(to) == RANK_8 || square_rank(to) == RANK_1)
           return false;
 
       // Proceed according to the square delta between the origin and
@@ -386,14 +404,12 @@ bool move_is_legal(const Position& pos, const Move m, Bitboard pinned) {
       default:
           return false;
       }
-      // The move is pseudo-legal, check if it is also legal
-      return pos.is_check() ? pos.pl_move_is_evasion(m, pinned) : pos.pl_move_is_legal(m, pinned);
   }
+  else if (!bit_is_set(pos.attacks_from(pc, from), to))
+      return false;
 
-  // Luckly we can handle all the other pieces in one go
-  return    bit_is_set(pos.attacks_from(pc, from), to)
-        && (pos.is_check() ? pos.pl_move_is_evasion(m, pinned) : pos.pl_move_is_legal(m, pinned))
-        && !move_is_promotion(m);
+  // The move is pseudo-legal, check if it is also legal
+  return pos.is_check() ? pos.pl_move_is_evasion(m, pinned) : pos.pl_move_is_legal(m, pinned);
 }
 
 
@@ -406,10 +422,13 @@ namespace {
     Square from;
     const Square* ptr = pos.piece_list_begin(us, Piece);
 
-    while ((from = *ptr++) != SQ_NONE)
+    if (*ptr != SQ_NONE)
     {
-        b = pos.attacks_from<Piece>(from) & target;
-        SERIALIZE_MOVES(b);
+        do {
+            from = *ptr;
+            b = pos.attacks_from<Piece>(from) & target;
+            SERIALIZE_MOVES(b);
+        } while (*++ptr != SQ_NONE);
     }
     return mlist;
   }

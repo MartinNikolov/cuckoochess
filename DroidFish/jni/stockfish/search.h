@@ -36,7 +36,6 @@
 
 const int PLY_MAX = 100;
 const int PLY_MAX_PLUS_2 = 102;
-const int KILLER_MAX = 2;
 
 
 ////
@@ -52,16 +51,12 @@ struct EvalInfo;
 struct SearchStack {
   Move currentMove;
   Move mateKiller;
-  Move threatMove;
   Move excludedMove;
   Move bestMove;
-  Move killers[KILLER_MAX];
+  Move killers[2];
   Depth reduction;
   Value eval;
   bool skipNullMove;
-
-  void init();
-  void initKillers();
 };
 
 
@@ -72,11 +67,9 @@ struct SearchStack {
 extern void init_search();
 extern void init_threads();
 extern void exit_threads();
-extern bool think(const Position &pos, bool infinite, bool ponder, int side_to_move,
-                  int time[], int increment[], int movesToGo, int maxDepth,
-                  int maxNodes, int maxTime, Move searchMoves[]);
-extern int perft(Position &pos, Depth depth);
+extern int perft(Position& pos, Depth depth);
 extern int64_t nodes_searched();
-
+extern bool think(const Position& pos, bool infinite, bool ponder, int time[], int increment[],
+                  int movesToGo, int maxDepth, int maxNodes, int maxTime, Move searchMoves[]);
 
 #endif // !defined(SEARCH_H_INCLUDED)

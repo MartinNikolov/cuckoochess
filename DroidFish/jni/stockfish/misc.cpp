@@ -58,7 +58,7 @@ using namespace std;
 /// Version number. If this is left empty, the current date (in the format
 /// YYMMDD) is used as a version number.
 
-static const string EngineVersion = "1.8";
+static const string EngineVersion = "1.9.1";
 static const string AppName = "Stockfish";
 static const string AppTag  = "";
 
@@ -66,8 +66,6 @@ static const string AppTag  = "";
 ////
 //// Variables
 ////
-
-bool Chess960;
 
 uint64_t dbg_cnt0 = 0;
 uint64_t dbg_cnt1 = 0;
@@ -148,7 +146,7 @@ void dbg_print_mean(ofstream& logFile) {
 
 const string engine_name() {
 
-  const string cpu64(CpuHas64BitPath ? " 64bit" : "");
+  const string cpu64(CpuIs64Bit ? " 64bit" : "");
 
   if (!EngineVersion.empty())
       return AppName + " " + EngineVersion + cpu64;
