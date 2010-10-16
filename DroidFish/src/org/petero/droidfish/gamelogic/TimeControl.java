@@ -66,12 +66,13 @@ public class TimeControl {
 	}
 
 	/** Compute new remaining time after a move is made. */
-	public final int moveMade(long now) {
+	public final int moveMade(long now, boolean useIncrement) {
 		stopTimer(now);
 		long remaining = getRemainingTime(whiteToMove, now);
-		remaining += increment;
-		if (getMovesToTC() == 1) {
-			remaining += timeControl;
+		if (useIncrement) {
+			remaining += increment;
+			if (getMovesToTC() == 1)
+				remaining += timeControl;
 		}
 		elapsed = 0;
 		return (int)remaining;

@@ -30,7 +30,7 @@ public class TimeControlTest {
     	assertEquals(0, tc.getIncrement());
     	assertEquals(totTime, tc.getRemainingTime(true, 0));
     	tc.startTimer(t0);
-    	int remain = tc.moveMade(t0 + 1000);
+    	int remain = tc.moveMade(t0 + 1000, true);
     	assertEquals(totTime - 1000, remain);
 
     	tc.setCurrentMove(2, true, totTime - 1000, totTime);
@@ -49,7 +49,7 @@ public class TimeControlTest {
     	tc.stopTimer(t0 + 8000);
     	assertEquals(totTime - 1000, tc.getRemainingTime(true, t0 + 4711));
     	assertEquals(totTime - 5000, tc.getRemainingTime(false, t0 + 4711));
-    	remain = tc.moveMade(t0 + 8000);
+    	remain = tc.moveMade(t0 + 8000, true);
     	assertEquals(totTime - 5000, remain);
     	tc.setCurrentMove(2, true, totTime - 1000, totTime - 5000);
     	assertEquals(totTime - 1000, tc.getRemainingTime(true, t0 + 4711));
@@ -85,10 +85,10 @@ public class TimeControlTest {
     @Test
     public void testExtraTime() {
     	TimeControl tc = new TimeControl();
-    	long timeCont = 60 * 1000;
+    	final long timeCont = 60 * 1000;
     	int wBaseTime = (int)timeCont;
     	int bBaseTime = (int)timeCont;
-    	long inc = 700;
+    	final long inc = 700;
     	tc.setTimeControl(timeCont, 5, inc);
     	tc.setCurrentMove(5, true, wBaseTime, bBaseTime);
     	long t0 = 1342134;
@@ -96,21 +96,38 @@ public class TimeControlTest {
     	assertEquals(timeCont, tc.getRemainingTime(false, t0 + 4711));
     	
     	tc.startTimer(t0 + 1000);
-    	wBaseTime = tc.moveMade(t0 + 2000);
+    	wBaseTime = tc.moveMade(t0 + 2000, true);
     	tc.setCurrentMove(5, false, wBaseTime, bBaseTime);
     	assertEquals(timeCont - 1000 + timeCont + inc, tc.getRemainingTime(true, t0 + 4711));
     	assertEquals(timeCont, tc.getRemainingTime(false, t0 + 4711));
 
     	tc.startTimer(t0 + 2000);
-    	bBaseTime = tc.moveMade(t0 + 6000);
+    	bBaseTime = tc.moveMade(t0 + 6000, true);
     	tc.setCurrentMove(6, true, wBaseTime, bBaseTime);
     	assertEquals(timeCont - 1000 + timeCont + inc, tc.getRemainingTime(true, t0 + 4711));
     	assertEquals(timeCont - 4000 + timeCont + inc, tc.getRemainingTime(false, t0 + 4711));
     	
     	tc.startTimer(t0 + 6000);
-    	wBaseTime = tc.moveMade(t0 + 9000);
+    	wBaseTime = tc.moveMade(t0 + 9000, true);
     	tc.setCurrentMove(6, false, wBaseTime, bBaseTime);
     	assertEquals(timeCont - 1000 + timeCont + inc - 3000 + inc, tc.getRemainingTime(true, t0 + 4711));
     	assertEquals(timeCont - 4000 + timeCont + inc, tc.getRemainingTime(false, t0 + 4711));
+
+    	// No increment when move made int paused mode, ie analysis mode
+    	tc.startTimer(t0 + 9000);
+    	bBaseTime = tc.moveMade(t0 + 10000, false);
+    	tc.setCurrentMove(7, true, wBaseTime, bBaseTime);
+    	assertEquals(timeCont - 1000 + timeCont + inc - 3000 + inc, tc.getRemainingTime(true, t0 + 4711));
+    	assertEquals(timeCont - 4000 + timeCont + inc - 1000, tc.getRemainingTime(false, t0 + 4711));
+
+    	// No extra time when passing time control in analysis mode
+    	tc.setTimeControl(timeCont, 1, inc);
+    	wBaseTime = bBaseTime = (int)timeCont;
+    	tc.setCurrentMove(1, true, wBaseTime, bBaseTime);
+    	tc.startTimer(t0 + 1000);
+    	wBaseTime = tc.moveMade(t0 + 3000, false);
+    	tc.setCurrentMove(1, false, wBaseTime, bBaseTime);
+    	assertEquals(timeCont - 2000 + (timeCont + inc)*0, tc.getRemainingTime(true, t0 + 4711));
+    	assertEquals(timeCont, tc.getRemainingTime(false, t0 + 4711));
     }
 }

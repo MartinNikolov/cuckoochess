@@ -135,7 +135,7 @@ public class Game {
         }
         tree.reorderVariation(varNo, 0);
         tree.goForward(0);
-        int remaining = timeController.moveMade(System.currentTimeMillis());
+        int remaining = timeController.moveMade(System.currentTimeMillis(), !gamePaused);
         tree.setRemainingTime(remaining);
         updateTimeControl(true);
     	pendingDrawOffer = false;
