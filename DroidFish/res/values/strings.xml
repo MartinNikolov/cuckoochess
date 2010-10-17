@@ -230,4 +230,8 @@ you are not actively using the program.\
 	<string name="please_wait">Please wait...</string>
 	<string name="no_pgn_files">No files found in directory DroidFish/pgn on the SD card</string>
 	<string name="select_color_theme">Select Color Theme</string>
+	<string name="replay_game">Replay Game</string>
+	<string name="analyze_game">Analyze Game</string>
+	<string name="play_white">Play White</string>
+	<string name="play_black">Play Black</string>
 </resources>

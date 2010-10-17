@@ -69,6 +69,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 	// FIXME!!! Edit PGN comments
+	// FIXME!!! Edit PGN headers
 
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
@@ -560,6 +561,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				try {
 					String pgn = data.getAction();
 					ctrl.setFENOrPGN(pgn);
+	            	showDialog(VIEW_GAME_DIALOG);
 				} catch (ChessParseError e) {
 					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
@@ -682,6 +684,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int SELECT_BOOK_DIALOG = 4;
 	static final int SELECT_PGN_FILE_DIALOG = 5;
 	static final int SET_COLOR_THEME_DIALOG = 6;
+	static final int VIEW_GAME_DIALOG = 7;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -887,6 +890,49 @@ public class DroidFish extends Activity implements GUIInterface {
 				}
 			});
 			return builder.create();
+		}
+		case VIEW_GAME_DIALOG: {
+			final CharSequence[] items = {
+				getString(R.string.replay_game), getString(R.string.analyze_game),
+				getString(R.string.play_white), getString(R.string.play_black)
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					int gameModeType = -1;
+					boolean startAtEnd = false;
+					switch (item) {
+					case 0: // Replay
+						gameModeType = GameMode.TWO_PLAYERS;
+						break;
+					case 1: // Analyze
+						gameModeType = GameMode.ANALYSIS;
+						break;
+					case 2: // Play white
+						gameModeType = GameMode.PLAYER_WHITE;
+						startAtEnd = true;
+						break;
+					case 3: // Play black
+						gameModeType = GameMode.PLAYER_BLACK;
+						startAtEnd = true;
+						break;
+					default:
+						break;
+					}
+					dialog.dismiss();
+					if (gameModeType >= 0) {
+						Editor editor = settings.edit();
+						String gameModeStr = String.format("%d", gameModeType);
+						editor.putString("gameMode", gameModeStr);
+						editor.commit();
+						gameMode = new GameMode(gameModeType);
+						ctrl.setGameMode(gameMode);
+					}
+					ctrl.gotoMove(startAtEnd ? Integer.MAX_VALUE : 0);
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
 		}
 		}
 		return null;
