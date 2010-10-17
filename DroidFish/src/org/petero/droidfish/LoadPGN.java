@@ -237,6 +237,7 @@ public class LoadPGN extends ListActivity {
 			BufferedRandomAccessFileReader f = new BufferedRandomAccessFileReader(fileName);
 			long fileLen = f.length();
 			GameInfo gi = null;
+			GameInfo prevGi = new GameInfo();
 			boolean inHeader = false;
 			long filePos = 0;
 			while (true) {
@@ -267,6 +268,7 @@ public class LoadPGN extends ListActivity {
 									}
 								});
 							}
+							prevGi = gi;
 						}
 						gi = new GameInfo();
 						gi.startPos = filePos;
@@ -275,21 +277,31 @@ public class LoadPGN extends ListActivity {
 					if (line.startsWith("[Event ")) {
 						gi.event = line.substring(8, len - 2);
 						if (gi.event.equals("?")) gi.event = "";
+						else if (gi.event.equals(prevGi.event)) gi.event = prevGi.event;
 					} else if (line.startsWith("[Site ")) {
 						gi.site = line.substring(7, len - 2);
-						if (gi.site.equals("?")) gi.site= "";
+						if (gi.site.equals("?")) gi.site = "";
+						else if (gi.site.equals(prevGi.site)) gi.site = prevGi.site;
 					} else if (line.startsWith("[Date ")) {
 						gi.date = line.substring(7, len - 2);
-						if (gi.date.equals("?")) gi.date= "";
+						if (gi.date.equals("?")) gi.date = "";
+						else if (gi.date.equals(prevGi.date)) gi.date = prevGi.date;
 					} else if (line.startsWith("[Round ")) {
 						gi.round = line.substring(8, len - 2);
-						if (gi.round.equals("?")) gi.round= "";
+						if (gi.round.equals("?")) gi.round = "";
+						else if (gi.round.equals(prevGi.round)) gi.round = prevGi.round;
 					} else if (line.startsWith("[White ")) {
 						gi.white = line.substring(8, len - 2);
+						if (gi.white.equals(prevGi.white)) gi.white = prevGi.white;
 					} else if (line.startsWith("[Black ")) {
 						gi.black = line.substring(8, len - 2);
+						if (gi.black.equals(prevGi.black)) gi.black = prevGi.black;
 					} else if (line.startsWith("[Result ")) {
 						gi.result = line.substring(9, len - 2);
+						if (gi.result.equals("1-0")) gi.result = "1-0";
+						else if (gi.result.equals("0-1")) gi.result = "0-1";
+						else if ((gi.result.equals("1/2-1/2")) || (gi.result.equals("1/2"))) gi.result = "1/2-1/2";
+						else gi.result = "*";
 					}
 				} else {
 					inHeader = false;
