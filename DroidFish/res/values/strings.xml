@@ -229,6 +229,7 @@ you are not actively using the program.\
 	<string name="select_pgn_file_save">Save to PGN file</string>
 	<string name="select_pgn_game">Select game to open</string>
 	<string name="reading_pgn_file">Reading PGN file</string>
+	<string name="new_file">&lt;New File&gt;</string>
 	<string name="please_wait">Please wait...</string>
 	<string name="no_pgn_files">No files found in directory DroidFish/pgn on the SD card</string>
 	<string name="select_color_theme">Select Color Theme</string>

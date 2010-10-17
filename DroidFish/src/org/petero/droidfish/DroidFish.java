@@ -689,6 +689,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int SELECT_PGN_FILE_SAVE_DIALOG = 6;
 	static final int SET_COLOR_THEME_DIALOG = 7;
 	static final int VIEW_GAME_DIALOG = 8;
+	static final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -890,11 +891,6 @@ public class DroidFish extends Activity implements GUIInterface {
 		case SELECT_PGN_FILE_SAVE_DIALOG: {
         	final String[] fileNames = findFilesInDirectory(pgnDir);
     		final int numFiles = fileNames.length;
-    		if (numFiles == 0) {
-    			String pgn = ctrl.getPGN();
-    			savePGNToFile(pgn, "savedgames.pgn", false);
-    			return null;
-    		}
 			int defaultItem = 0;
 			String currentPGNFile = settings.getString("currentPGNFile", "");
 			for (int i = 0; i < numFiles; i++) {
@@ -903,22 +899,71 @@ public class DroidFish extends Activity implements GUIInterface {
 					break;
 				}
 			}
+        	CharSequence[] items = new CharSequence[numFiles + 1];
+        	for (int i = 0; i < numFiles; i++)
+        		items[i] = fileNames[i];
+        	items[numFiles] = getString(R.string.new_file);
+        	final CharSequence[] finalItems = items;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.select_pgn_file_save);
-			builder.setSingleChoiceItems(fileNames, defaultItem, new DialogInterface.OnClickListener() {
+			builder.setSingleChoiceItems(finalItems, defaultItem, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
-					Editor editor = settings.edit();
-					String pgnFile = fileNames[item].toString();
-					editor.putString("currentPGNFile", pgnFile);
-					editor.commit();
-					dialog.dismiss();
-	    			String pgn = ctrl.getPGN();
-	    			savePGNToFile(pgn, pgnFile, false);
+					String pgnFile;
+					if (item >= numFiles) {
+						dialog.dismiss();
+						showDialog(SELECT_PGN_SAVE_NEWFILE_DIALOG);
+					} else {
+						Editor editor = settings.edit();
+						pgnFile = fileNames[item].toString();
+						editor.putString("currentPGNFile", pgnFile);
+						editor.commit();
+						dialog.dismiss();
+						savePGNToFile(ctrl.getPGN(), pgnFile, false);
+					}
 				}
 			});
 			AlertDialog alert = builder.create();
 			return alert;
 		}
+		case SELECT_PGN_SAVE_NEWFILE_DIALOG: {
+			final Dialog dialog = new Dialog(this);
+			dialog.setContentView(R.layout.create_pgn_file);
+			dialog.setTitle(R.string.select_pgn_file_save);
+			final EditText fileNameView = (EditText)dialog.findViewById(R.id.create_pgn_filename);
+			Button ok = (Button)dialog.findViewById(R.id.create_pgn_ok);
+			Button cancel = (Button)dialog.findViewById(R.id.create_pgn_cancel);
+			fileNameView.setText("");
+			final Runnable savePGN = new Runnable() {
+				public void run() {
+					String pgnFile = fileNameView.getText().toString();
+					if ((pgnFile.length() > 0) && !pgnFile.contains("."))
+						pgnFile += ".pgn";
+					savePGNToFile(ctrl.getPGN(), pgnFile, false);
+					dialog.cancel();
+				}
+			};
+			fileNameView.setOnKeyListener(new OnKeyListener() {
+				public boolean onKey(View v, int keyCode, KeyEvent event) {
+					if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+						savePGN.run();
+						return true;
+					}
+					return false;
+				}
+	        });
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					savePGN.run();
+				}
+			});
+			cancel.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					dialog.cancel();
+				}
+			});
+			return dialog;
+		}
+
 		case SET_COLOR_THEME_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.select_color_theme);
