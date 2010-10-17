@@ -397,10 +397,13 @@ public class LoadPGN extends ListActivity {
 				aa.remove(gi);
 				aa.notifyDataSetChanged();
 			} else {
+				ListView lv = getListView();
+				int pos = lv.pointToPosition(0,0);
 				aa = new ArrayAdapter<GameInfo>(this, R.layout.select_game_list_item, gamesInFile);
 				setListAdapter(aa);
 				String s = filterText.getText().toString();
 				aa.getFilter().filter(s);
+				lv.setSelection(pos);
 			}
 			// Update lastModTime, since current change has already been handled
 			long modTime = new File(fileName).lastModified();
