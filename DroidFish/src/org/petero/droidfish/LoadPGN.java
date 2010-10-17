@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Vector;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -19,7 +21,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 public class LoadPGN extends ListActivity {
 	private static final class GameInfo {
@@ -65,6 +69,7 @@ public class LoadPGN extends ListActivity {
 	ProgressDialog progress;
 	static int defaultItem = 0;
 	static String lastSearchString = "";
+	GameInfo giToDelete = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +107,15 @@ public class LoadPGN extends ListActivity {
 				sendBackResult(aa.getItem(pos));
 			}
 		});
+		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int pos, long id) {
+				giToDelete = aa.getItem(pos);
+				removeDialog(DELETE_GAME_DIALOG);
+				showDialog(DELETE_GAME_DIALOG);
+				return true;
+			}
+		});
 
 //		lv.setTextFilterEnabled(true);
 		EditText filterText = (EditText)findViewById(R.id.select_game_filter);
@@ -126,6 +140,7 @@ public class LoadPGN extends ListActivity {
 	}
 
 	final static int PROGRESS_DIALOG = 0;
+	final static int DELETE_GAME_DIALOG = 1;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -137,6 +152,28 @@ public class LoadPGN extends ListActivity {
 			progress.setMessage(getString(R.string.please_wait));
 			progress.setCancelable(false);
 			return progress;
+		case DELETE_GAME_DIALOG: {
+			final GameInfo gi = giToDelete;
+			giToDelete = null;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Delete game?");
+			String msg = gi.toString();
+			builder.setMessage(msg);
+			builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					deleteGame(gi);
+					dialog.cancel();
+					finish();
+				}
+			});
+			builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					dialog.cancel();
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
 		default:
 			return null;
 		}
@@ -312,15 +349,13 @@ public class LoadPGN extends ListActivity {
 				gamesInFile.add(gi);
 			}
 			f.close();
-		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
 	}
 
 	private final void sendBackResult(GameInfo gi) {
 		try {
-			RandomAccessFile f;
-			f = new RandomAccessFile(fileName, "r");
+			RandomAccessFile f = new RandomAccessFile(fileName, "r");
 			byte[] pgnData = new byte[(int) (gi.endPos - gi.startPos)];
 			f.seek(gi.startPos);
 			f.readFully(pgnData);
@@ -328,10 +363,41 @@ public class LoadPGN extends ListActivity {
 			String result = new String(pgnData);
 			setResult(RESULT_OK, (new Intent()).setAction(result));
 			finish();
-		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
 		setResult(RESULT_CANCELED);
 		finish();
+	}
+
+	private final void deleteGame(GameInfo gi) {
+		try {
+			File origFile = new File(fileName);
+			File tmpFile = new File(fileName + ".tmp_delete");
+			RandomAccessFile fileReader = new RandomAccessFile(origFile, "r");
+			RandomAccessFile fileWriter = new RandomAccessFile(tmpFile, "rw");
+			copyData(fileReader, fileWriter, gi.startPos);
+			fileReader.seek(gi.endPos);
+			copyData(fileReader, fileWriter, fileReader.length() - gi.endPos);
+			fileReader.close();
+			fileWriter.close();
+			tmpFile.renameTo(origFile);
+			
+		} catch (IOException e) {
+			String msg = "Failed to delete game";
+			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	private final static void copyData(RandomAccessFile fileReader,
+									   RandomAccessFile fileWriter,
+									   long nBytes) throws IOException {
+		byte[] buffer = new byte[8192];
+		while (nBytes > 0) {
+			int nRead = fileReader.read(buffer, 0, Math.min(buffer.length, (int)nBytes));
+			if (nRead > 0) {
+				fileWriter.write(buffer, 0, nRead);
+				nBytes -= nRead;
+			}
+		}
 	}
 }
