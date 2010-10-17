@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -64,12 +64,14 @@ public class LoadPGN extends ListActivity {
 		}
 	}
 
-	static Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
+	static ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
 	String fileName;
 	ProgressDialog progress;
 	static int defaultItem = 0;
 	static String lastSearchString = "";
 	GameInfo giToDelete = null;
+	ArrayAdapter<GameInfo> aa = null;
+	EditText filterText = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +96,7 @@ public class LoadPGN extends ListActivity {
 	private final void showList() {
 		progress.dismiss();
 		setContentView(R.layout.select_game);
-		final ArrayAdapter<GameInfo> aa =
-			new ArrayAdapter<GameInfo>(this, R.layout.select_game_list_item,
-									   gamesInFile);
+		aa = new ArrayAdapter<GameInfo>(this, R.layout.select_game_list_item, gamesInFile);
 		setListAdapter(aa);
 		ListView lv = getListView();
 		lv.setSelectionFromTop(defaultItem, 0);
@@ -118,7 +118,7 @@ public class LoadPGN extends ListActivity {
 		});
 
 //		lv.setTextFilterEnabled(true);
-		EditText filterText = (EditText)findViewById(R.id.select_game_filter);
+		filterText = (EditText)findViewById(R.id.select_game_filter);
 		filterText.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) { }
@@ -163,7 +163,6 @@ public class LoadPGN extends ListActivity {
 				public void onClick(DialogInterface dialog, int id) {
 					deleteGame(gi);
 					dialog.cancel();
-					finish();
 				}
 			});
 			builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -381,7 +380,31 @@ public class LoadPGN extends ListActivity {
 			fileReader.close();
 			fileWriter.close();
 			tmpFile.renameTo(origFile);
-			
+
+			// Update gamesInFile and listview adapter (aa)
+			gamesInFile.remove(gi);
+			final int nGames = gamesInFile.size();
+			final long delta = gi.endPos - gi.startPos;
+			for (int i = 0; i < nGames; i++) {
+				GameInfo tmpGi = gamesInFile.get(i);
+				if (tmpGi.startPos > gi.startPos) {
+					tmpGi.startPos -= delta;
+					tmpGi.endPos -= delta;
+				}
+			}
+			boolean androidIsBuggy = true;
+			if (!androidIsBuggy) {
+				aa.remove(gi);
+				aa.notifyDataSetChanged();
+			} else {
+				aa = new ArrayAdapter<GameInfo>(this, R.layout.select_game_list_item, gamesInFile);
+				setListAdapter(aa);
+				String s = filterText.getText().toString();
+				aa.getFilter().filter(s);
+			}
+			// Update lastModTime, since current change has already been handled
+			long modTime = new File(fileName).lastModified();
+			lastModTime = modTime;
 		} catch (IOException e) {
 			String msg = "Failed to delete game";
 			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();

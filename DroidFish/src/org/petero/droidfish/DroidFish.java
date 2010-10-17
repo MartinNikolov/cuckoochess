@@ -76,7 +76,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
 	// FIXME!!! Implement "limit strength" option
-	// FIXME!!! Implement PGN database support (and FEN?)
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
