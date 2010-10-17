@@ -30,5 +30,6 @@
         		  android:label="CPU Warning">
         </activity>
     </application>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-sdk android:minSdkVersion="3"/>
 </manifest>

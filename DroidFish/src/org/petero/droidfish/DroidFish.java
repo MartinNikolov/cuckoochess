@@ -2,6 +2,8 @@ package org.petero.droidfish;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -474,6 +476,7 @@ public class DroidFish extends Activity implements GUIInterface {
 				editor.commit();
 				gameMode = new GameMode(gameModeType);
 			}
+//			savePGNToFile(ctrl.getPGN(), ".autosave.pgn", true);
 	        ctrl.newGame(gameMode);
 	        ctrl.startGame();
 			return true;
@@ -683,8 +686,9 @@ public class DroidFish extends Activity implements GUIInterface {
 	static final int SELECT_MOVE_DIALOG = 3;
 	static final int SELECT_BOOK_DIALOG = 4;
 	static final int SELECT_PGN_FILE_DIALOG = 5;
-	static final int SET_COLOR_THEME_DIALOG = 6;
-	static final int VIEW_GAME_DIALOG = 7;
+	static final int SELECT_PGN_FILE_SAVE_DIALOG = 6;
+	static final int SET_COLOR_THEME_DIALOG = 7;
+	static final int VIEW_GAME_DIALOG = 8;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -709,7 +713,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			final int COPY_POSITION    = 1;
 			final int PASTE            = 2;
 			final int LOAD_GAME        = 3;
-			final int REMOVE_VARIATION = 4;
+			final int SAVE_GAME	       = 4;
+			final int REMOVE_VARIATION = 5;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
@@ -717,6 +722,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			lst.add(getString(R.string.copy_position)); actions.add(COPY_POSITION);
 			lst.add(getString(R.string.paste));         actions.add(PASTE);
 			lst.add(getString(R.string.load_game));     actions.add(LOAD_GAME);
+			lst.add(getString(R.string.save_game));     actions.add(SAVE_GAME);
 			if (ctrl.humansTurn() && (ctrl.numVariations() > 1)) {
 				lst.add(getString(R.string.remove_variation)); actions.add(REMOVE_VARIATION);
 			}
@@ -753,6 +759,10 @@ public class DroidFish extends Activity implements GUIInterface {
 					case LOAD_GAME:
 						removeDialog(SELECT_PGN_FILE_DIALOG);
 						showDialog(SELECT_PGN_FILE_DIALOG);
+						break;
+					case SAVE_GAME:
+						removeDialog(SELECT_PGN_FILE_SAVE_DIALOG);
+						showDialog(SELECT_PGN_FILE_SAVE_DIALOG);
 						break;
 					case REMOVE_VARIATION:
 						ctrl.removeVariation();
@@ -877,6 +887,38 @@ public class DroidFish extends Activity implements GUIInterface {
 			AlertDialog alert = builder.create();
 			return alert;
 		}
+		case SELECT_PGN_FILE_SAVE_DIALOG: {
+        	final String[] fileNames = findFilesInDirectory(pgnDir);
+    		final int numFiles = fileNames.length;
+    		if (numFiles == 0) {
+    			String pgn = ctrl.getPGN();
+    			savePGNToFile(pgn, "savedgames.pgn", false);
+    			return null;
+    		}
+			int defaultItem = 0;
+			String currentPGNFile = settings.getString("currentPGNFile", "");
+			for (int i = 0; i < numFiles; i++) {
+				if (currentPGNFile.equals(fileNames[i])) {
+					defaultItem = i;
+					break;
+				}
+			}
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.select_pgn_file_save);
+			builder.setSingleChoiceItems(fileNames, defaultItem, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					Editor editor = settings.edit();
+					String pgnFile = fileNames[item].toString();
+					editor.putString("currentPGNFile", pgnFile);
+					editor.commit();
+					dialog.dismiss();
+	    			String pgn = ctrl.getPGN();
+	    			savePGNToFile(pgn, pgnFile, false);
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
 		case SET_COLOR_THEME_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.select_color_theme);
@@ -955,6 +997,24 @@ public class DroidFish extends Activity implements GUIInterface {
 			fileNames[i] = files[i].getName();
 		Arrays.sort(fileNames, String.CASE_INSENSITIVE_ORDER);
 		return fileNames;
+	}
+
+	private final void savePGNToFile(String pgn, String filename, boolean silent) {
+		try {
+			String sep = File.separator;
+			String dir = Environment.getExternalStorageDirectory() + sep + pgnDir;
+			File dirFile = new File(dir);
+			dirFile.mkdirs();
+			String pathName = dir + sep + filename;
+			FileWriter fw = new FileWriter(pathName, true);
+			fw.write(pgn);
+			fw.close();
+		} catch (IOException e) {
+			if (!silent) {
+				String msg = "Failed to save game";
+				Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+			}
+		}
 	}
 	
 	@Override
