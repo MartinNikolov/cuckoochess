@@ -100,6 +100,7 @@ public class LoadPGN extends ListActivity {
 		setListAdapter(aa);
 		ListView lv = getListView();
 		lv.setSelectionFromTop(defaultItem, 0);
+		lv.setFastScrollEnabled(true);
 		lv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
