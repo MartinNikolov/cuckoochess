@@ -12,8 +12,11 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -65,17 +68,38 @@ public class LoadPGN extends ListActivity {
 	}
 
 	static ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
+	static boolean cacheValid = false;
 	String fileName;
 	ProgressDialog progress;
-	static int defaultItem = 0;
-	static String lastSearchString = "";
 	GameInfo giToDelete = null;
 	ArrayAdapter<GameInfo> aa = null;
 	EditText filterText = null;
 
+	SharedPreferences settings;
+	int defaultItem = 0;
+	String lastSearchString = "";
+	String lastFileName = "";
+	long lastModTime = -1;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+
+		if (savedInstanceState != null) {
+			defaultItem = savedInstanceState.getInt("defaultItem");
+			lastSearchString = savedInstanceState.getString("lastSearchString");
+			if (lastSearchString == null) lastSearchString = "";
+			lastFileName = savedInstanceState.getString("lastFileName");
+			if (lastFileName == null) lastFileName = "";
+			lastModTime = savedInstanceState.getLong("lastModTime");
+		} else {
+			defaultItem = settings.getInt("defaultItem", 0);
+			lastSearchString = settings.getString("lastSearchString", "");
+			lastFileName = settings.getString("lastFileName", "");
+			lastModTime = settings.getLong("lastModTime", 0);
+		}
 
 		Intent i = getIntent();
 		fileName = i.getAction();
@@ -91,6 +115,26 @@ public class LoadPGN extends ListActivity {
 				});
 			}
 		}).start();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("defaultItem", defaultItem);
+		outState.putString("lastSearchString", lastSearchString);
+		outState.putString("lastFileName", lastFileName);
+		outState.putLong("lastModTime", lastModTime);
+	}
+
+	@Override
+	protected void onPause() {
+		Editor editor = settings.edit();
+		editor.putInt("defaultItem", defaultItem);
+		editor.putString("lastSearchString", lastSearchString);
+		editor.putString("lastFileName", lastFileName);
+		editor.putLong("lastModTime", lastModTime);
+		editor.commit();
+		super.onPause();
 	}
 
 	private final void showList() {
@@ -257,14 +301,11 @@ public class LoadPGN extends ListActivity {
 		}
 	}
 	
-	static long lastModTime = -1;
-	static String lastFileName = "";
-	
 	private final void readFile() {
 		if (!fileName.equals(lastFileName))
 			defaultItem = 0;
 		long modTime = new File(fileName).lastModified();
-		if ((modTime == lastModTime) && fileName.equals(lastFileName))
+		if (cacheValid && (modTime == lastModTime) && fileName.equals(lastFileName))
 			return;
 		lastModTime = modTime;
 		lastFileName = fileName;
@@ -351,6 +392,7 @@ public class LoadPGN extends ListActivity {
 			f.close();
 		} catch (IOException e) {
 		}
+		cacheValid = true;
 	}
 
 	private final void sendBackResult(GameInfo gi) {
