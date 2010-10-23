@@ -393,17 +393,15 @@ public class ChessController {
     		updateGUI();
     	}
     }
-    
-    public final void removeVariation() {
-    	if (game.numVariations() > 1) {
-    		ss.searchResultWanted = false;
-    		stopAnalysis();
-			stopComputerThinking();
-    		game.removeVariation();
-    		updateComputeThreads(true);
-    		setSelection();
-    		updateGUI();
-    	}
+
+    public final void removeSubTree() {
+    	ss.searchResultWanted = false;
+    	stopAnalysis();
+    	stopComputerThinking();
+    	game.removeSubTree();
+    	updateComputeThreads(true);
+    	setSelection();
+    	updateGUI();
     }
 
 	public final void gotoMove(int moveNr) {

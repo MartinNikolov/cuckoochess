@@ -236,13 +236,15 @@ public class Game {
         updateTimeControl(true);
     }
 
-    public final void removeVariation() {
-    	if (numVariations() <= 1)
-    		return;
-    	tree.goBack();
-    	int defChild = tree.currentNode.defaultChild;
-    	tree.deleteVariation(defChild);
-    	tree.goForward(-1);
+    public final void removeSubTree() {
+    	if (getLastMove() != null) {
+    		tree.goBack();
+    		int defChild = tree.currentNode.defaultChild;
+    		tree.deleteVariation(defChild);
+    	} else {
+    		while (canRedoMove())
+    			tree.deleteVariation(0);
+    	}
         pendingDrawOffer = false;
         updateTimeControl(true);
     }

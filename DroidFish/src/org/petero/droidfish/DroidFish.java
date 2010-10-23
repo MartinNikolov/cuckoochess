@@ -733,7 +733,6 @@ public class DroidFish extends Activity implements GUIInterface {
 			final int PASTE            = 2;
 			final int LOAD_GAME        = 3;
 			final int SAVE_GAME	       = 4;
-			final int REMOVE_VARIATION = 5;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
@@ -742,9 +741,6 @@ public class DroidFish extends Activity implements GUIInterface {
 			lst.add(getString(R.string.paste));         actions.add(PASTE);
 			lst.add(getString(R.string.load_game));     actions.add(LOAD_GAME);
 			lst.add(getString(R.string.save_game));     actions.add(SAVE_GAME);
-			if (ctrl.humansTurn() && (ctrl.numVariations() > 1)) {
-				lst.add(getString(R.string.remove_variation)); actions.add(REMOVE_VARIATION);
-			}
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.tools_menu);
@@ -782,9 +778,6 @@ public class DroidFish extends Activity implements GUIInterface {
 					case SAVE_GAME:
 						removeDialog(SELECT_PGN_FILE_SAVE_DIALOG);
 						showDialog(SELECT_PGN_FILE_SAVE_DIALOG);
-						break;
-					case REMOVE_VARIATION:
-						ctrl.removeVariation();
 						break;
 					}
 			    }
@@ -1040,14 +1033,17 @@ public class DroidFish extends Activity implements GUIInterface {
 			return alert;
 		}
 		case MOVELIST_MENU_DIALOG: {
-			final int EDIT_HEADERS  = 0;
+			final int EDIT_HEADERS   = 0;
+			final int REMOVE_SUBTREE = 1;
+
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
-			lst.add(getString(R.string.edit_headers));     actions.add(EDIT_HEADERS);
+			lst.add(getString(R.string.edit_headers));      actions.add(EDIT_HEADERS);
+			lst.add(getString(R.string.truncate_gametree)); actions.add(REMOVE_SUBTREE);
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.edit_game);
-			builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+			builder.setItems(lst.toArray(new CharSequence[2]), new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
 					switch (finalActions.get(item)) {
 					case EDIT_HEADERS: {
@@ -1063,6 +1059,9 @@ public class DroidFish extends Activity implements GUIInterface {
 						startActivityForResult(i, RESULT_EDITHEADERS);
 						break;
 					}
+					case REMOVE_SUBTREE:
+						ctrl.removeSubTree();
+						break;
 					}
 			    }
 			});
