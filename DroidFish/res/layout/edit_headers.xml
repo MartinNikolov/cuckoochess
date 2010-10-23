@@ -2,24 +2,23 @@
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content">
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">	
 	<LinearLayout
 	    android:orientation="horizontal"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="Event">
 		</TextView>
 		<EditText
 			android:id="@+id/ed_header_event" 
 			android:background="@android:drawable/editbox_background"
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
@@ -29,17 +28,16 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="Site">
 		</TextView>
 		<EditText
 			android:id="@+id/ed_header_site" 
 			android:background="@android:drawable/editbox_background"
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
@@ -49,17 +47,16 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="Date">
 		</TextView>
 		<EditText
 			android:id="@+id/ed_header_date" 
 			android:background="@android:drawable/editbox_background"
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
@@ -69,17 +66,16 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="Round">
 		</TextView>
 		<EditText
 			android:id="@+id/ed_header_round" 
 			android:background="@android:drawable/editbox_background"
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
@@ -89,17 +85,16 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="White">
 		</TextView>
 		<EditText
 			android:id="@+id/ed_header_white" 
 			android:background="@android:drawable/editbox_background"
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
@@ -109,9 +104,8 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TextView
-			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_weight="1"
+			android:layout_height="wrap_content"
 			android:text="Black">
 		</TextView>
 		<EditText
@@ -119,7 +113,7 @@
 			android:background="@android:drawable/editbox_background"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:minEms="10"
+			android:layout_weight="1"
 			android:inputType="text">
 		</EditText>
 	</LinearLayout>
