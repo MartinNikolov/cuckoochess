@@ -1,5 +1,6 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
+import org.petero.droidfish.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;

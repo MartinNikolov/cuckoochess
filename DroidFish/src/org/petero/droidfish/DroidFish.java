@@ -9,6 +9,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.petero.droidfish.activities.CPUWarning;
+import org.petero.droidfish.activities.EditBoard;
+import org.petero.droidfish.activities.EditHeaders;
+import org.petero.droidfish.activities.LoadPGN;
+import org.petero.droidfish.activities.Preferences;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;

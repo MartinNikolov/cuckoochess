@@ -20,13 +20,13 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class ChessBoard extends View {
-	Position pos;
+	public Position pos;
 
-    int selectedSquare;
-    float cursorX, cursorY;
-    boolean cursorVisible;
+	public int selectedSquare;
+    public float cursorX, cursorY;
+    public boolean cursorVisible;
     protected int x0, y0, sqSize;
-    boolean flipped;
+    public boolean flipped;
     boolean oneTouchMoves;
     
     List<Move> moveHints;
@@ -291,7 +291,7 @@ public class ChessBoard extends View {
      * @param evt Details about the mouse event.
      * @return The square corresponding to the mouse event, or -1 if outside board.
      */
-    int eventToSquare(MotionEvent evt) {
+    public int eventToSquare(MotionEvent evt) {
         int xCrd = (int)(evt.getX());
         int yCrd = (int)(evt.getY());
 
@@ -310,7 +310,7 @@ public class ChessBoard extends View {
     	return (piece != Piece.EMPTY) && (Piece.isWhite(piece) == pos.whiteMove);
     }
 
-	Move mousePressed(int sq) {
+	public Move mousePressed(int sq) {
 		if (sq < 0)
 			return null;
     	cursorVisible = false;

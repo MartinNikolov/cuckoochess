@@ -1,5 +1,6 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
+import org.petero.droidfish.ChessBoard;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
@@ -114,6 +115,7 @@ public class ChessBoardEdit extends ChessBoard {
 	}
 
 	@Override
+	public
 	Move mousePressed(int sq) {
 		if (sq == -1)
 			return null;
@@ -168,7 +170,7 @@ public class ChessBoardEdit extends ChessBoard {
      * @return The square corresponding to the mouse event, or -1 if outside board.
      */
 	@Override
-    int eventToSquare(MotionEvent evt) {
+    public int eventToSquare(MotionEvent evt) {
     	int sq = super.eventToSquare(evt);
     	if (sq != -1)
     		return sq;

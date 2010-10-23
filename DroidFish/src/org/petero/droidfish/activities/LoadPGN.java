@@ -1,4 +1,4 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
+import org.petero.droidfish.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;

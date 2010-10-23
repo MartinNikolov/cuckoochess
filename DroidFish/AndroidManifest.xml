@@ -15,21 +15,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="Preferences"
+        <activity android:name=".activities.Preferences"
         		  android:label="Preferences">
         </activity>
-        <activity android:name="EditBoard"
+        <activity android:name=".activities.EditBoard"
         		  android:label="Edit Board"
                   android:configChanges="orientation">
         </activity>
-        <activity android:name="LoadPGN"
+        <activity android:name=".activities.LoadPGN"
         		  android:label="Load PGN game"
         		  android:configChanges="orientation">
         </activity>
-        <activity android:name="CPUWarning"
+        <activity android:name=".activities.CPUWarning"
         		  android:label="CPU Warning">
         </activity>
-        <activity android:name="EditHeaders"
+        <activity android:name=".activities.EditHeaders"
         		  android:label="Edit Headers">
         </activity>
     </application>

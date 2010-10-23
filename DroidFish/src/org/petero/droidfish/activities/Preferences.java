@@ -1,6 +1,7 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
 import org.petero.droidfish.R;
+
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 

@@ -1,7 +1,9 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+
+import org.petero.droidfish.R;
 
 import android.app.Activity;
 import android.content.Intent;

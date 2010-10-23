@@ -1,5 +1,7 @@
-package org.petero.droidfish;
+package org.petero.droidfish.activities;
 
+import org.petero.droidfish.ChessBoard;
+import org.petero.droidfish.R;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
