@@ -76,7 +76,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 	// FIXME!!! Edit PGN comments
-	// FIXME!!! Edit PGN headers
 
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
@@ -92,8 +91,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add support for all time controls defined by the PGN standard
 	// FIXME!!! How to handle hour-glass time control?
 	// FIXME!!! What should happen if you change time controls in the middle of a game?
-
-	// FIXME!!! Change "remove variation" to "delete current position and continuation"
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
