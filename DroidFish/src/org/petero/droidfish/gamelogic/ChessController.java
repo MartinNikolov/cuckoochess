@@ -707,4 +707,14 @@ public class ChessController {
     		updateGUI();
     	}
     }
+
+	public void setHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
+		game.tree.setHeaders(tags, tagValues);
+    	gameTextListener.clear();
+    	updateGUI();
+	}
+
+	public void getHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
+		game.tree.getHeaders(tags, tagValues);
+	}
 }

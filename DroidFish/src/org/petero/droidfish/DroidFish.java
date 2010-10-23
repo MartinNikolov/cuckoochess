@@ -88,6 +88,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! How to handle hour-glass time control?
 	// FIXME!!! What should happen if you change time controls in the middle of a game?
 
+	// FIXME!!! Change "remove variation" to "delete current position and continuation"
+
 	private ChessBoard cb;
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
@@ -318,8 +320,15 @@ public class DroidFish extends Activity implements GUIInterface {
         });
         cb.setOnLongClickListener(new OnLongClickListener() {
 			public boolean onLongClick(View v) {
-				removeDialog(CLIPBOARD_DIALOG);
-				showDialog(CLIPBOARD_DIALOG);
+				removeDialog(BOARD_MENU_DIALOG);
+				showDialog(BOARD_MENU_DIALOG);
+				return true;
+			}
+		});
+        
+        moveList.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				showDialog(MOVELIST_MENU_DIALOG);
 				return true;
 			}
 		});
@@ -457,6 +466,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static private final int RESULT_EDITBOARD = 0;
 	static private final int RESULT_SETTINGS = 1;
 	static private final int RESULT_LOAD_PGN = 2;
+	static private final int RESULT_EDITHEADERS = 3;
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -569,6 +579,14 @@ public class DroidFish extends Activity implements GUIInterface {
 				}
 			}
 			break;
+		case RESULT_EDITHEADERS:
+			if (resultCode == RESULT_OK) {
+				Bundle bundle = data.getBundleExtra("org.petero.droidfish.headers");
+				ArrayList<String> tags = bundle.getStringArrayList("tags");
+				ArrayList<String> tagValues = bundle.getStringArrayList("tagValues");
+				ctrl.setHeaders(tags, tagValues);
+			}
+			break;
 		}
 	}
 
@@ -679,17 +697,18 @@ public class DroidFish extends Activity implements GUIInterface {
 		cb.setMoveHints(hints);
 	}
 
-	static final int PROMOTE_DIALOG = 0; 
-	static final int CLIPBOARD_DIALOG = 1;
-	static final int ABOUT_DIALOG = 2;
-	static final int SELECT_MOVE_DIALOG = 3;
-	static final int SELECT_BOOK_DIALOG = 4;
-	static final int SELECT_PGN_FILE_DIALOG = 5;
-	static final int SELECT_PGN_FILE_SAVE_DIALOG = 6;
-	static final int SET_COLOR_THEME_DIALOG = 7;
-	static final int VIEW_GAME_DIALOG = 8;
-	static final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
-
+	static private final int PROMOTE_DIALOG = 0; 
+	static private final int BOARD_MENU_DIALOG = 1;
+	static private final int ABOUT_DIALOG = 2;
+	static private final int SELECT_MOVE_DIALOG = 3;
+	static private final int SELECT_BOOK_DIALOG = 4;
+	static private final int SELECT_PGN_FILE_DIALOG = 5;
+	static private final int SELECT_PGN_FILE_SAVE_DIALOG = 6;
+	static private final int SET_COLOR_THEME_DIALOG = 7;
+	static private final int VIEW_GAME_DIALOG = 8;
+	static private final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
+	static private final int MOVELIST_MENU_DIALOG = 10;
+	
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
@@ -708,7 +727,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			AlertDialog alert = builder.create();
 			return alert;
 		}
-		case CLIPBOARD_DIALOG: {
+		case BOARD_MENU_DIALOG: {
 			final int COPY_GAME        = 0;
 			final int COPY_POSITION    = 1;
 			final int PASTE            = 2;
@@ -1016,6 +1035,36 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 					ctrl.gotoMove(startAtEnd ? Integer.MAX_VALUE : 0);
 				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case MOVELIST_MENU_DIALOG: {
+			final int EDIT_HEADERS  = 0;
+			List<CharSequence> lst = new ArrayList<CharSequence>();
+			List<Integer> actions = new ArrayList<Integer>();
+			lst.add(getString(R.string.edit_headers));     actions.add(EDIT_HEADERS);
+			final List<Integer> finalActions = actions;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.edit_game);
+			builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int item) {
+					switch (finalActions.get(item)) {
+					case EDIT_HEADERS: {
+						Intent i = new Intent(DroidFish.this, EditHeaders.class);
+						i.setAction("");
+						Bundle bundle = new Bundle();
+						ArrayList<String> tags = new ArrayList<String>();
+						ArrayList<String> tagValues = new ArrayList<String>();
+						ctrl.getHeaders(tags, tagValues);
+						bundle.putStringArrayList("tags", tags);
+						bundle.putStringArrayList("tagValues", tagValues);
+						i.putExtra("org.petero.droidfish.headers", bundle);
+						startActivityForResult(i, RESULT_EDITHEADERS);
+						break;
+					}
+					}
+			    }
 			});
 			AlertDialog alert = builder.create();
 			return alert;

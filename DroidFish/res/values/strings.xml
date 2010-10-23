@@ -237,4 +237,6 @@ you are not actively using the program.\
 	<string name="analyze_game">Analyze Game</string>
 	<string name="play_white">Play White</string>
 	<string name="play_black">Play Black</string>
+	<string name="edit_game">Edit Game</string>
+	<string name="edit_headers">Edit Headers</string>
 </resources>

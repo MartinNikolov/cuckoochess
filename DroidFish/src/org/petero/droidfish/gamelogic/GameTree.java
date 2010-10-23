@@ -1316,4 +1316,36 @@ public class GameTree {
     		}
     	}
     }
+
+	void setHeaders(ArrayList<String> tags, ArrayList<String> vals) {
+		for (int i = 0 ; i < tags.size(); i++) {
+			String tag = tags.get(i);
+			String val = vals.get(i);
+			if (tag.equals("Event")) event = val;
+			else if (tag.equals("Site")) site = val;
+			else if (tag.equals("Date")) date = val;
+			else if (tag.equals("Round")) round = val;
+			else if (tag.equals("White")) white = val;
+			else if (tag.equals("Black")) black = val;
+			else {
+				TagPair tp = new TagPair();
+				tp.tagName = tag;
+				tp.tagValue = val;
+				tagPairs.add(tp);
+			}
+		}
+	}
+
+	void getHeaders(ArrayList<String> tags, ArrayList<String> vals) {
+		tags.add("Event"); vals.add(event);
+		tags.add("Site");  vals.add(site);
+		tags.add("Date");  vals.add(date);
+		tags.add("Round"); vals.add(round);
+		tags.add("White"); vals.add(white);
+		tags.add("Black"); vals.add(black);
+		for (int i = 0; i < tagPairs.size(); i++) {
+			tags.add(tagPairs.get(i).tagName);
+			vals.add(tagPairs.get(i).tagValue);
+		}
+	}
 }
