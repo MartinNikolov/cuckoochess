@@ -2,8 +2,6 @@ package org.petero.droidfish;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,6 +12,7 @@ import org.petero.droidfish.activities.EditBoard;
 import org.petero.droidfish.activities.EditComments;
 import org.petero.droidfish.activities.EditHeaders;
 import org.petero.droidfish.activities.LoadPGN;
+import org.petero.droidfish.activities.PGNFile;
 import org.petero.droidfish.activities.Preferences;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
@@ -1125,21 +1124,10 @@ public class DroidFish extends Activity implements GUIInterface {
 	}
 
 	private final void savePGNToFile(String pgn, String filename, boolean silent) {
-		try {
-			String sep = File.separator;
-			String dir = Environment.getExternalStorageDirectory() + sep + pgnDir;
-			File dirFile = new File(dir);
-			dirFile.mkdirs();
-			String pathName = dir + sep + filename;
-			FileWriter fw = new FileWriter(pathName, true);
-			fw.write(pgn);
-			fw.close();
-		} catch (IOException e) {
-			if (!silent) {
-				String msg = "Failed to save game";
-				Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-			}
-		}
+		String sep = File.separator;
+		String sdDir = Environment.getExternalStorageDirectory().toString();
+		PGNFile pgnFile = new PGNFile(sdDir + sep + pgnDir + sep + filename);
+		pgnFile.appendPGN(pgn, silent ? null : getApplicationContext());
 	}
 	
 	@Override
