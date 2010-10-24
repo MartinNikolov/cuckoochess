@@ -12,7 +12,6 @@ import org.petero.droidfish.activities.EditBoard;
 import org.petero.droidfish.activities.EditComments;
 import org.petero.droidfish.activities.EditHeaders;
 import org.petero.droidfish.activities.LoadPGN;
-import org.petero.droidfish.activities.PGNFile;
 import org.petero.droidfish.activities.Preferences;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
@@ -906,7 +905,8 @@ public class DroidFish extends Activity implements GUIInterface {
 					String sep = File.separator;
 					String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
 					Intent i = new Intent(DroidFish.this, LoadPGN.class);
-					i.setAction(pathName);
+					i.setAction("org.petero.droidfish.loadFile");
+					i.putExtra("org.petero.droidfish.pathname", pathName);
 					startActivityForResult(i, RESULT_LOAD_PGN);
 					dialog.dismiss();
 				}
@@ -1125,11 +1125,15 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	private final void savePGNToFile(String pgn, String filename, boolean silent) {
 		String sep = File.separator;
-		String sdDir = Environment.getExternalStorageDirectory().toString();
-		PGNFile pgnFile = new PGNFile(sdDir + sep + pgnDir + sep + filename);
-		pgnFile.appendPGN(pgn, silent ? null : getApplicationContext());
+		String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + filename;
+		Intent i = new Intent(DroidFish.this, LoadPGN.class);
+		i.setAction("org.petero.droidfish.saveFile");
+		i.putExtra("org.petero.droidfish.pathname", pathName);
+		i.putExtra("org.petero.droidfish.pgn", pgn);
+		i.putExtra("org.petero.droidfish.silent", silent);
+		startActivity(i);
 	}
-	
+
 	@Override
 	public void requestPromotePiece() {
 		runOnUIThread(new Runnable() {

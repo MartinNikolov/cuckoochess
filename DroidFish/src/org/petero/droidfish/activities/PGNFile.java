@@ -23,21 +23,6 @@ public class PGNFile {
 		return fileName.getAbsolutePath();
 	}
 	
-	/** Append pgn to the end of this PGN file. */
-	public final void appendPGN(String pgn, Context context) {
-		try {
-			mkDirs();
-			FileWriter fw = new FileWriter(fileName, true);
-			fw.write(pgn);
-			fw.close();
-		} catch (IOException e) {
-			if (context != null) {
-				String msg = "Failed to save game";
-				Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-			}
-		}
-	}
-
 	static final class GameInfo {
 		String event = "";
 		String site = "";
@@ -49,7 +34,18 @@ public class PGNFile {
 		long startPos;
 		long endPos;
 
+		final GameInfo setNull(long currPos) {
+			event = null;
+			startPos = currPos;
+			endPos = currPos;
+			return this;
+		}
+		
+		final boolean isNull() { return event == null; }
+
 		public String toString() {
+			if (event == null)
+				return "--";
     		StringBuilder info = new StringBuilder(128);
     		info.append(white);
     		info.append(" - ");
@@ -74,6 +70,7 @@ public class PGNFile {
     		info.append(result);
     		return info.toString();
 		}
+
 	}
 	
 	
@@ -155,6 +152,7 @@ public class PGNFile {
 		}
 	}
 	
+	/** Return info about all PGN games in a file. */
 	public final ArrayList<GameInfo> getGameInfo(Activity activity, 
 												 final ProgressDialog progress) {
 		ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
@@ -265,6 +263,21 @@ public class PGNFile {
 		return null;
 	}
 
+	/** Append PGN to the end of this PGN file. */
+	public final void appendPGN(String pgn, Context context) {
+		try {
+			mkDirs();
+			FileWriter fw = new FileWriter(fileName, true);
+			fw.write(pgn);
+			fw.close();
+		} catch (IOException e) {
+			if (context != null) {
+				String msg = "Failed to save game";
+				Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+
 	final boolean deleteGame(GameInfo gi, Context context, ArrayList<GameInfo> gamesInFile) {
 		try {
 			File tmpFile = new File(fileName + ".tmp_delete");
@@ -300,6 +313,28 @@ public class PGNFile {
 		return false;
 	}
 
+	final boolean replacePGN(String pgnToSave, GameInfo gi, Context context) {
+		try {
+			File tmpFile = new File(fileName + ".tmp_delete");
+			RandomAccessFile fileReader = new RandomAccessFile(fileName, "r");
+			RandomAccessFile fileWriter = new RandomAccessFile(tmpFile, "rw");
+			copyData(fileReader, fileWriter, gi.startPos);
+			fileWriter.write(pgnToSave.getBytes());
+			fileReader.seek(gi.endPos);
+			copyData(fileReader, fileWriter, fileReader.length() - gi.endPos);
+			fileReader.close();
+			fileWriter.close();
+			tmpFile.renameTo(fileName);
+			return true;
+		} catch (IOException e) {
+			if (context != null) {
+				String msg = "Failed to save game";
+				Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+			}
+		}
+		return false;
+	}
+	
 	private final static void copyData(RandomAccessFile fileReader,
 			   RandomAccessFile fileWriter,
 			   long nBytes) throws IOException {
@@ -312,4 +347,5 @@ public class PGNFile {
 			}
 		}
 	}
+
 }

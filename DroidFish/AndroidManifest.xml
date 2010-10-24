@@ -23,7 +23,7 @@
                   android:configChanges="orientation">
         </activity>
         <activity android:name=".activities.LoadPGN"
-        		  android:label="Load PGN game"
+        		  android:label="Edit File"
         		  android:configChanges="orientation">
         </activity>
         <activity android:name=".activities.CPUWarning"

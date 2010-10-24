@@ -32,7 +32,7 @@ public class LoadPGN extends ListActivity {
 	static boolean cacheValid = false;
 	PGNFile pgnFile;
 	ProgressDialog progress;
-	GameInfo giToDelete = null;
+	GameInfo selectedGi = null;
 	ArrayAdapter<GameInfo> aa = null;
 	EditText filterText = null;
 
@@ -42,6 +42,9 @@ public class LoadPGN extends ListActivity {
 	String lastFileName = "";
 	long lastModTime = -1;
 
+	boolean loadGame; // True when loading game, false when saving
+	String pgnToSave;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -63,20 +66,49 @@ public class LoadPGN extends ListActivity {
 		}
 
 		Intent i = getIntent();
-		String fileName = i.getAction();
-		pgnFile = new PGNFile(fileName);
-		showDialog(PROGRESS_DIALOG);
-		final LoadPGN lpgn = this;
-		new Thread(new Runnable() {
-			public void run() {
-				readFile();
-				runOnUiThread(new Runnable() {
+		String action = i.getAction();
+		String fileName = i.getStringExtra("org.petero.droidfish.pathname");
+		if (action.equals("org.petero.droidfish.loadFile")) {
+			pgnFile = new PGNFile(fileName);
+			loadGame = true;
+			showDialog(PROGRESS_DIALOG);
+			final LoadPGN lpgn = this;
+			new Thread(new Runnable() {
+				public void run() {
+					readFile();
+					runOnUiThread(new Runnable() {
+						public void run() {
+							lpgn.showList();
+						}
+					});
+				}
+			}).start();
+		} else if (action.equals("org.petero.droidfish.saveFile")) {
+			loadGame = false;
+			pgnToSave = i.getStringExtra("org.petero.droidfish.pgn");
+			boolean silent = i.getBooleanExtra("org.petero.droidfish.silent", false);
+			if (silent) { // Silently append to file
+				PGNFile pgnFile2 = new PGNFile(fileName);
+				pgnFile2.appendPGN(pgnToSave, null);
+			} else {
+				pgnFile = new PGNFile(fileName);
+				showDialog(PROGRESS_DIALOG);
+				final LoadPGN lpgn = this;
+				new Thread(new Runnable() {
 					public void run() {
-						lpgn.showList();
+						readFile();
+						runOnUiThread(new Runnable() {
+							public void run() {
+								lpgn.showList();
+							}
+						});
 					}
-				});
+				}).start();
 			}
-		}).start();
+		} else { // Unsupported action
+			setResult(RESULT_CANCELED);
+			finish();
+		}
 	}
 
 	@Override
@@ -110,16 +142,24 @@ public class LoadPGN extends ListActivity {
 		lv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-				defaultItem = pos;
-				sendBackResult(aa.getItem(pos));
+				selectedGi = aa.getItem(pos);
+				if (loadGame) {
+					defaultItem = pos;
+					sendBackResult(selectedGi);
+				} else {
+					removeDialog(SAVE_GAME_DIALOG);
+					showDialog(SAVE_GAME_DIALOG);
+				}
 			}
 		});
 		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int pos, long id) {
-				giToDelete = aa.getItem(pos);
-				removeDialog(DELETE_GAME_DIALOG);
-				showDialog(DELETE_GAME_DIALOG);
+				selectedGi = aa.getItem(pos);
+				if (!selectedGi.isNull()) {
+					removeDialog(DELETE_GAME_DIALOG);
+					showDialog(DELETE_GAME_DIALOG);
+				}
 				return true;
 			}
 		});
@@ -148,6 +188,7 @@ public class LoadPGN extends ListActivity {
 
 	final static int PROGRESS_DIALOG = 0;
 	final static int DELETE_GAME_DIALOG = 1;
+	final static int SAVE_GAME_DIALOG = 2;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -160,8 +201,8 @@ public class LoadPGN extends ListActivity {
 			progress.setCancelable(false);
 			return progress;
 		case DELETE_GAME_DIALOG: {
-			final GameInfo gi = giToDelete;
-			giToDelete = null;
+			final GameInfo gi = selectedGi;
+			selectedGi = null;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Delete game?");
 			String msg = gi.toString();
@@ -179,6 +220,30 @@ public class LoadPGN extends ListActivity {
 			});
 			AlertDialog alert = builder.create();
 			return alert;
+		}
+		case SAVE_GAME_DIALOG: {
+			final GameInfo gi = selectedGi;
+			selectedGi = null;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Save game?");
+			final CharSequence[] items = { "Before", "After", "Replace" };
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					GameInfo giToReplace;
+					switch (item) {
+					case 0: giToReplace = new GameInfo().setNull(gi.startPos); break;
+					case 1: giToReplace = new GameInfo().setNull(gi.endPos); break;
+					case 2: giToReplace = gi; break;
+					default:
+						finish(); return;
+					}
+					pgnFile.replacePGN(pgnToSave, giToReplace, getApplicationContext());
+					finish();
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+
 		}
 		default:
 			return null;
