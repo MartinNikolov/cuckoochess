@@ -40,7 +40,10 @@ public class EditComments extends Activity {
 		preComment.setText(pre);
 		postComment.setText(post);
 		moveView.setText(move);
-		nag.setText(Node.nagStr(nagVal).trim());
+		String nagStr = Node.nagStr(nagVal).trim();
+		if ((nagStr.length() == 0) && (nagVal > 0))
+			nagStr = String.format("%d", nagVal);
+		nag.setText(nagStr);
 
 		okButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
