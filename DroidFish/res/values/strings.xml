@@ -148,8 +148,8 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 * Analysis mode\n\
 * Two player mode\n\
 * Computer vs computer mode\n\
-* Edit board\n\
-* Support for PGN variations\n\
+* Setup positions\n\
+* Extensive PGN support\n\
 \n\
 <b>Hints</b>\n\
 * In game mode, long press chess board to activate copy/paste menu.\n\
@@ -172,6 +172,11 @@ DroidFish can load games from PGN files. To use this feature:\n\
 2. Copy one or more PGN files to the <i>DroidFish/pgn</i> directory.\n\
 3. Long press the chess board and select <i>Load game from PGN file</i>.\n\
 4. Select the file, then the game within the file you want to load.\n\
+\n\
+To edit game headers such as player names, long press the move list and select \
+<i>Edit Headers</i>. To edit comments for a move, long press the move list and \
+select <i>Edit Comments</i>. To save your edited game, long press the chess board \
+and select <i>Save game to PGN file</i>.\n\
 \n\
 <b>License</b>\n\
 GNU GPL v3\n\
