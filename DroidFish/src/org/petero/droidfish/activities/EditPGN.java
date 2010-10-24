@@ -27,7 +27,7 @@ import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 
-public class LoadPGN extends ListActivity {
+public class EditPGN extends ListActivity {
 	static ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
 	static boolean cacheValid = false;
 	PGNFile pgnFile;
@@ -72,7 +72,7 @@ public class LoadPGN extends ListActivity {
 			pgnFile = new PGNFile(fileName);
 			loadGame = true;
 			showDialog(PROGRESS_DIALOG);
-			final LoadPGN lpgn = this;
+			final EditPGN lpgn = this;
 			new Thread(new Runnable() {
 				public void run() {
 					readFile();
@@ -93,7 +93,7 @@ public class LoadPGN extends ListActivity {
 			} else {
 				pgnFile = new PGNFile(fileName);
 				showDialog(PROGRESS_DIALOG);
-				final LoadPGN lpgn = this;
+				final EditPGN lpgn = this;
 				new Thread(new Runnable() {
 					public void run() {
 						readFile();

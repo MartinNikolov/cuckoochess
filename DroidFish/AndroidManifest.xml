@@ -22,7 +22,7 @@
         		  android:label="Edit Board"
                   android:configChanges="orientation">
         </activity>
-        <activity android:name=".activities.LoadPGN"
+        <activity android:name=".activities.EditPGN"
         		  android:label="Edit File"
         		  android:configChanges="orientation">
         </activity>
