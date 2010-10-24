@@ -178,6 +178,10 @@ To edit game headers such as player names, long press the move list and select \
 select <i>Edit Comments</i>. To save your edited game, long press the chess board \
 and select <i>Save game to PGN file</i>.\n\
 \n\
+To add computer analysis to the game tree, long press the analysis information \
+when the computer is thinking and select <i>Add Analysis</i>. The current PV is \
+added as a variation in the game tree.\n\
+\n\
 <b>License</b>\n\
 GNU GPL v3\n\
 \n\

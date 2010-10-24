@@ -251,7 +251,7 @@ public class EditPGN extends ListActivity {
 			selectedGi = null;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Save game?");
-			final CharSequence[] items = { "Before", "After", "Replace" };
+			final CharSequence[] items = { "Before Selected", "After Selected", "Replace Selected" };
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					GameInfo giToReplace;

@@ -22,8 +22,12 @@
         		  android:label="Edit Board"
                   android:configChanges="orientation">
         </activity>
-        <activity android:name=".activities.EditPGN"
-        		  android:label="Edit File"
+        <activity android:name=".activities.EditPGNLoad"
+        		  android:label="Edit File / Load Game"
+        		  android:configChanges="orientation">
+        </activity>
+        <activity android:name=".activities.EditPGNSave"
+        		  android:label="Edit File / Save Game"
         		  android:configChanges="orientation">
         </activity>
         <activity android:name=".activities.CPUWarning"

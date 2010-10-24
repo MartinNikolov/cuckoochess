@@ -11,7 +11,8 @@ import org.petero.droidfish.activities.CPUWarning;
 import org.petero.droidfish.activities.EditBoard;
 import org.petero.droidfish.activities.EditComments;
 import org.petero.droidfish.activities.EditHeaders;
-import org.petero.droidfish.activities.EditPGN;
+import org.petero.droidfish.activities.EditPGNLoad;
+import org.petero.droidfish.activities.EditPGNSave;
 import org.petero.droidfish.activities.Preferences;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
@@ -80,7 +81,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement "limit strength" option
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
-	// FIXME!!! Save analysis (analyze mode and computer thinking mode) as PGN comments and/or variation
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
 	// FIXME!!! Animated piece movement
@@ -910,7 +910,7 @@ public class DroidFish extends Activity implements GUIInterface {
 					editor.commit();
 					String sep = File.separator;
 					String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
-					Intent i = new Intent(DroidFish.this, EditPGN.class);
+					Intent i = new Intent(DroidFish.this, EditPGNLoad.class);
 					i.setAction("org.petero.droidfish.loadFile");
 					i.putExtra("org.petero.droidfish.pathname", pathName);
 					startActivityForResult(i, RESULT_LOAD_PGN);
@@ -1170,7 +1170,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private final void savePGNToFile(String pgn, String filename, boolean silent) {
 		String sep = File.separator;
 		String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + filename;
-		Intent i = new Intent(DroidFish.this, EditPGN.class);
+		Intent i = new Intent(DroidFish.this, EditPGNSave.class);
 		i.setAction("org.petero.droidfish.saveFile");
 		i.putExtra("org.petero.droidfish.pathname", pathName);
 		i.putExtra("org.petero.droidfish.pgn", pgn);
