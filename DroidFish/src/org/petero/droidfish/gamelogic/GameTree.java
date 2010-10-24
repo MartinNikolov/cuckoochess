@@ -1315,6 +1315,32 @@ public class GameTree {
     		default: return "";
     		}
     	}
+  
+    	public final static int strToNag(String str) {
+    		if      (str.equals("!"))  return 1;
+    		else if (str.equals("?"))  return 2;
+    		else if (str.equals("!!")) return 3;
+    		else if (str.equals("??")) return 4;
+    		else if (str.equals("!?")) return 5;
+    		else if (str.equals("?!")) return 6;
+    		else if (str.equals("=")) return 11;
+    		else if (str.equals("∞")) return 13;
+    		else if (str.equals("+/=")) return 14;
+    		else if (str.equals("=/+")) return 15;
+    		else if (str.equals("+/-")) return 16;
+    		else if (str.equals("-/+")) return 17;
+    		else if (str.equals("+-")) return 18;
+    		else if (str.equals("-+")) return 19;
+    		else {
+				try {
+					str = str.replace("$", "");
+			        int nag = Integer.parseInt(str);
+			        return nag;
+				} catch (NumberFormatException nfe) {
+				}
+    			return 0;
+    		}
+    	}
     }
 
 	void setHeaders(ArrayList<String> tags, ArrayList<String> vals) {

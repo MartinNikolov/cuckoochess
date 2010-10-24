@@ -32,17 +32,31 @@
 			android:layout_height="wrap_content"
 			android:text="Move">
 		</TextView>
-		<TextView
-			android:id="@+id/ed_comments_move" 
-			android:background="@android:drawable/editbox_background"
+		<LinearLayout
+			xmlns:android="http://schemas.android.com/apk/res/android"
+		    android:orientation="horizontal"
 			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
+			android:layout_height="wrap_content">
 			android:layout_weight="1"
-			android:lines="1"
-			android:inputType="text">
-		</TextView>
+			<TextView
+				android:id="@+id/ed_comments_move" 
+				android:background="@android:drawable/editbox_background"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:lines="1"
+				android:inputType="text">
+			</TextView>
+			<EditText
+				android:id="@+id/ed_comments_nag" 
+				android:background="@android:drawable/editbox_background"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:lines="1"
+				android:minEms="3"
+				android:inputType="text">
+			</EditText>
+		</LinearLayout>
     </TableRow>
-
 
     <TableRow>
 		<TextView

@@ -1,6 +1,7 @@
 package org.petero.droidfish.activities;
 
 import org.petero.droidfish.R;
+import org.petero.droidfish.gamelogic.GameTree.Node;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,11 +13,9 @@ import android.widget.TextView;
 
 /** Activity to edit PGN comments. */
 public class EditComments extends Activity {
-	TextView preComment;
-	TextView postComment;
+	TextView preComment, postComment, nag;
 	private Button okButton;
 	private Button cancelButton;
-	int nag;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +24,7 @@ public class EditComments extends Activity {
         setContentView(R.layout.edit_comments);
         preComment = (TextView)findViewById(R.id.ed_comments_pre);
         TextView moveView = (TextView)findViewById(R.id.ed_comments_move);
+        nag = (TextView)findViewById(R.id.ed_comments_nag);
         postComment = (TextView)findViewById(R.id.ed_comments_post);
         okButton = (Button)findViewById(R.id.ed_comments_ok);
         cancelButton = (Button)findViewById(R.id.ed_comments_cancel);
@@ -36,10 +36,11 @@ public class EditComments extends Activity {
 		String pre = bundle.getString("preComment");
 		String post = bundle.getString("postComment");
 		String move = bundle.getString("move");
-		nag = bundle.getInt("nag");
+		int nagVal = bundle.getInt("nag");
 		preComment.setText(pre);
 		postComment.setText(post);
 		moveView.setText(move);
+		nag.setText(Node.nagStr(nagVal).trim());
 
 		okButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -57,11 +58,12 @@ public class EditComments extends Activity {
 	private final void sendBackResult() {
 		String pre = preComment.getText().toString().trim();
 		String post = postComment.getText().toString().trim();
+		int nagVal = Node.strToNag(nag.getText().toString());
 		
 		Bundle bundle = new Bundle();
 		bundle.putString("preComment", pre);
 		bundle.putString("postComment", post);
-		bundle.putInt("nag", nag);
+		bundle.putInt("nag", nagVal);
 		Intent data = new Intent();
 		data.putExtra("org.petero.droidfish.comments", bundle);
 		setResult(RESULT_OK, data);
