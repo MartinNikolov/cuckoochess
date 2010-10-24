@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -136,6 +138,23 @@ public class EditPGN extends ListActivity {
 		super.onPause();
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.edit_file_options_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.item_delete_file:
+			removeDialog(DELETE_PGN_FILE_DIALOG);
+			showDialog(DELETE_PGN_FILE_DIALOG);
+			break;
+		}
+		return false;
+	}
+
 	private final void showList() {
 		progress.dismiss();
 		setContentView(R.layout.select_game);
@@ -194,6 +213,7 @@ public class EditPGN extends ListActivity {
 	final static int PROGRESS_DIALOG = 0;
 	final static int DELETE_GAME_DIALOG = 1;
 	final static int SAVE_GAME_DIALOG = 2;
+	final static int DELETE_PGN_FILE_DIALOG = 3;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -248,7 +268,26 @@ public class EditPGN extends ListActivity {
 			});
 			AlertDialog alert = builder.create();
 			return alert;
-
+		}
+		case DELETE_PGN_FILE_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Delete file?");
+			String name = new File(pgnFile.getName()).getName();
+			String msg = String.format("Delete file %s?", name);
+			builder.setMessage(msg);
+			builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					pgnFile.delete();
+					finish();
+				}
+			});
+			builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					dialog.cancel();
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
 		}
 		default:
 			return null;

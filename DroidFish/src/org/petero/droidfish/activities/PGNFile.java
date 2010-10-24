@@ -350,4 +350,7 @@ public class PGNFile {
 		}
 	}
 
+	final boolean delete() {
+		return fileName.delete();
+	}
 }
