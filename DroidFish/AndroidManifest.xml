@@ -32,6 +32,9 @@
         <activity android:name=".activities.EditHeaders"
         		  android:label="Edit Headers">
         </activity>
+        <activity android:name=".activities.EditComments"
+        		  android:label="Edit Comments">
+        </activity>
     </application>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-sdk android:minSdkVersion="3"/>

@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.petero.droidfish.activities.CPUWarning;
 import org.petero.droidfish.activities.EditBoard;
+import org.petero.droidfish.activities.EditComments;
 import org.petero.droidfish.activities.EditHeaders;
 import org.petero.droidfish.activities.LoadPGN;
 import org.petero.droidfish.activities.Preferences;
@@ -75,7 +76,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
-	// FIXME!!! Edit PGN comments
+	// FIXME!!! Edit PGN NAGs
+	// FIXME!!! Improved PGN save: Overwrite old game. Insert at arbitrary position in PGN file.
 
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
@@ -330,6 +332,7 @@ public class DroidFish extends Activity implements GUIInterface {
         
         moveList.setOnLongClickListener(new OnLongClickListener() {
 			public boolean onLongClick(View v) {
+				removeDialog(MOVELIST_MENU_DIALOG);
 				showDialog(MOVELIST_MENU_DIALOG);
 				return true;
 			}
@@ -469,6 +472,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static private final int RESULT_SETTINGS = 1;
 	static private final int RESULT_LOAD_PGN = 2;
 	static private final int RESULT_EDITHEADERS = 3;
+	static private final int RESULT_EDITCOMMENTS = 4;
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -587,6 +591,16 @@ public class DroidFish extends Activity implements GUIInterface {
 				ArrayList<String> tags = bundle.getStringArrayList("tags");
 				ArrayList<String> tagValues = bundle.getStringArrayList("tagValues");
 				ctrl.setHeaders(tags, tagValues);
+			}
+			break;
+		case RESULT_EDITCOMMENTS:
+			if (resultCode == RESULT_OK) {
+				Bundle bundle = data.getBundleExtra("org.petero.droidfish.comments");
+				ChessController.CommentInfo commInfo = new ChessController.CommentInfo();
+				commInfo.preComment = bundle.getString("preComment");
+				commInfo.postComment = bundle.getString("postComment");
+				commInfo.nag = bundle.getInt("nag");
+				ctrl.setComments(commInfo);
 			}
 			break;
 		}
@@ -1036,11 +1050,15 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 		case MOVELIST_MENU_DIALOG: {
 			final int EDIT_HEADERS   = 0;
-			final int REMOVE_SUBTREE = 1;
+			final int EDIT_COMMENTS  = 1;
+			final int REMOVE_SUBTREE = 2;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
 			lst.add(getString(R.string.edit_headers));      actions.add(EDIT_HEADERS);
+	        if (ctrl.humansTurn()) {
+				lst.add(getString(R.string.edit_comments)); actions.add(EDIT_COMMENTS);
+			}
 			lst.add(getString(R.string.truncate_gametree)); actions.add(REMOVE_SUBTREE);
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1059,6 +1077,19 @@ public class DroidFish extends Activity implements GUIInterface {
 						bundle.putStringArrayList("tagValues", tagValues);
 						i.putExtra("org.petero.droidfish.headers", bundle);
 						startActivityForResult(i, RESULT_EDITHEADERS);
+						break;
+					}
+					case EDIT_COMMENTS: {
+						Intent i = new Intent(DroidFish.this, EditComments.class);
+						i.setAction("");
+						ChessController.CommentInfo commInfo = ctrl.getComments();
+						Bundle bundle = new Bundle();
+						bundle.putString("preComment", commInfo.preComment);
+						bundle.putString("postComment", commInfo.postComment);
+						bundle.putInt("nag", commInfo.nag);
+						bundle.putString("move", commInfo.move);
+						i.putExtra("org.petero.droidfish.comments", bundle);
+						startActivityForResult(i, RESULT_EDITCOMMENTS);
 						break;
 					}
 					case REMOVE_SUBTREE:

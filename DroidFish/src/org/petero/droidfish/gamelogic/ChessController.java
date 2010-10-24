@@ -13,6 +13,7 @@ import org.petero.droidfish.GameMode;
 import org.petero.droidfish.PGNOptions;
 import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.Game.GameState;
+import org.petero.droidfish.gamelogic.GameTree.Node;
 
 /**
  * The glue between the chess engine and the GUI.
@@ -706,13 +707,37 @@ public class ChessController {
     	}
     }
 
-	public void setHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
+	public final void setHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
 		game.tree.setHeaders(tags, tagValues);
     	gameTextListener.clear();
     	updateGUI();
 	}
 
-	public void getHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
+	public final void getHeaders(ArrayList<String> tags, ArrayList<String> tagValues) {
 		game.tree.getHeaders(tags, tagValues);
+	}
+
+	public static final class CommentInfo {
+		public String move;
+		public String preComment, postComment;
+		public int nag;
+	}
+	public final CommentInfo getComments() {
+		Node cur = game.tree.currentNode;
+		CommentInfo ret = new CommentInfo();
+		ret.move = cur.moveStr;
+		ret.preComment = cur.preComment;
+		ret.postComment = cur.postComment;
+		ret.nag = cur.nag;
+		return ret;
+	}
+
+	public final void setComments(CommentInfo commInfo) {
+		Node cur = game.tree.currentNode;
+		cur.preComment = commInfo.preComment;
+		cur.postComment = commInfo.postComment;
+		cur.nag = commInfo.nag;
+    	gameTextListener.clear();
+    	updateGUI();
 	}
 }
