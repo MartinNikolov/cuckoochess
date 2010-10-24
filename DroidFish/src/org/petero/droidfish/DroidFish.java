@@ -333,6 +333,13 @@ public class DroidFish extends Activity implements GUIInterface {
 				return true;
 			}
 		});
+        thinking.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				removeDialog(THINKING_MENU_DIALOG);
+				showDialog(THINKING_MENU_DIALOG);
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -720,6 +727,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static private final int VIEW_GAME_DIALOG = 8;
 	static private final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
 	static private final int MOVELIST_MENU_DIALOG = 10;
+	static private final int THINKING_MENU_DIALOG = 11;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -1092,6 +1100,44 @@ public class DroidFish extends Activity implements GUIInterface {
 					case REMOVE_SUBTREE:
 						ctrl.removeSubTree();
 						break;
+					}
+			    }
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case THINKING_MENU_DIALOG: {
+			{
+				List<Move> pvMovesTmp = pvMoves;
+				if (pvMovesTmp == null || (pvMovesTmp.size() == 0))
+					return null;
+			}
+			final int ADD_ANALYSIS = 0;
+			List<CharSequence> lst = new ArrayList<CharSequence>();
+			List<Integer> actions = new ArrayList<Integer>();
+			lst.add("Add Analysis"); actions.add(ADD_ANALYSIS);
+			final List<Integer> finalActions = actions;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.edit_game);
+			builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int item) {
+					switch (finalActions.get(item)) {
+					case ADD_ANALYSIS: {
+						List<Move> pvMovesTmp = pvMoves;
+						if (pvMovesTmp != null && (pvMovesTmp.size() > 0)) {
+							String[] tmp = thinkingStr.split(" ");
+							String preComment = "";
+							for (int i = 0; i < 2; i++) {
+								if (i < tmp.length) {
+									if (i > 0) preComment += " ";
+									preComment += tmp[i];
+								}
+							}
+							if (preComment.length() > 0) preComment += ":";
+							ctrl.addVariation(preComment, pvMovesTmp);
+						}
+						break;
+					}
 					}
 			    }
 			});

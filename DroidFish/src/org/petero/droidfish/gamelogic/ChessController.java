@@ -405,6 +405,20 @@ public class ChessController {
     	updateGUI();
     }
 
+	public final void addVariation(String preComment, List<Move> pvMoves) {
+		for (int i = 0; i < pvMoves.size(); i++) {
+			Move m = pvMoves.get(i);
+        	String moveStr = TextIO.moveToUCIString(m);
+			String pre = (i == 0) ? preComment : "";
+			int varNo = game.tree.addMove(moveStr, "", 0, pre, "");
+			game.tree.goForward(varNo);
+		}
+		for (int i = 0; i < pvMoves.size(); i++)
+			game.tree.goBack();
+    	gameTextListener.clear();
+		updateGUI();
+	}
+
 	public final void gotoMove(int moveNr) {
 		boolean needUpdate = false;
 		while (game.currPos().fullMoveCounter > moveNr) { // Go backward
@@ -431,7 +445,6 @@ public class ChessController {
     		updateGUI();
 		}
 	}
-
 
     public final void makeHumanMove(Move m) {
         if (humansTurn()) {
