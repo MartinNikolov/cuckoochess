@@ -99,7 +99,12 @@ public class EditPGN extends ListActivity {
 						readFile();
 						runOnUiThread(new Runnable() {
 							public void run() {
-								lpgn.showList();
+								if (gamesInFile.size() == 0) {
+									pgnFile.appendPGN(pgnToSave, getApplicationContext());
+									finish();
+								} else {
+									lpgn.showList();
+								}
 							}
 						});
 					}

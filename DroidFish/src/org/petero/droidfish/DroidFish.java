@@ -74,7 +74,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
-	// FIXME!!! Edit PGN NAGs
 
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 

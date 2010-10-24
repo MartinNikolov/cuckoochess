@@ -270,6 +270,7 @@ public class PGNFile {
 			FileWriter fw = new FileWriter(fileName, true);
 			fw.write(pgn);
 			fw.close();
+			Toast.makeText(context, "Game saved", Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			if (context != null) {
 				String msg = "Failed to save game";
@@ -325,6 +326,7 @@ public class PGNFile {
 			fileReader.close();
 			fileWriter.close();
 			tmpFile.renameTo(fileName);
+			Toast.makeText(context, "Game saved", Toast.LENGTH_SHORT).show();
 			return true;
 		} catch (IOException e) {
 			if (context != null) {
