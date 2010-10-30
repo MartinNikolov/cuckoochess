@@ -340,15 +340,14 @@ public class ChessController {
     }
     
     public final void undoMove() {
-    	Move m = game.getLastMove();
-    	if (m != null) {
+    	if (game.getLastMove() != null) {
     		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
         	undoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
-    		setAnimMove(game.currPos(), m, false);
+    		setAnimMove(game.currPos(), game.getNextMove(), false);
     		updateGUI();
     	}
     }
