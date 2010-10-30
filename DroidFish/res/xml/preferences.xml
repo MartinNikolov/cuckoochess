@@ -76,19 +76,11 @@
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="User Interface">
-		<ListPreference
-			android:key="scrollSensitivity"
-			android:title="Scrolling Speed"
-			android:summary="Scrolling speed for game navigation"
-			android:entryValues="@array/scroll_sensitivity_values"
-			android:entries="@array/scroll_sensitivity_texts"
-			android:defaultValue="2">
-		</ListPreference>
 		<CheckBoxPreference
-			android:key="invertScrollDirection"
-			android:title="Invert Scroll Direction"
-			android:summary="Enable this if you think scrolling moves in the wrong direction"
-			android:defaultValue="false">
+			android:key="animateMoves"
+			android:title="Animate Moves"
+			android:summary="Animate piece movements"
+			android:defaultValue="true">
 		</CheckBoxPreference>
 		<CheckBoxPreference
 			android:key="oneTouchMoves"
@@ -106,6 +98,20 @@
 			android:key="fullScreenMode"
 			android:title="Fullscreen Mode"
 			android:summary="Fullscreen mode hides the status bar"
+			android:defaultValue="false">
+		</CheckBoxPreference>
+		<ListPreference
+			android:key="scrollSensitivity"
+			android:title="Scrolling Speed"
+			android:summary="Scrolling speed for game navigation"
+			android:entryValues="@array/scroll_sensitivity_values"
+			android:entries="@array/scroll_sensitivity_texts"
+			android:defaultValue="2">
+		</ListPreference>
+		<CheckBoxPreference
+			android:key="invertScrollDirection"
+			android:title="Invert Scroll Direction"
+			android:summary="Enable this if you think scrolling moves in the wrong direction"
 			android:defaultValue="false">
 		</CheckBoxPreference>
 		<ListPreference

@@ -340,13 +340,15 @@ public class ChessController {
     }
     
     public final void undoMove() {
-    	if (game.getLastMove() != null) {
+    	Move m = game.getLastMove();
+    	if (m != null) {
     		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
         	undoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
+    		setAnimMove(game.currPos(), m, false);
     		updateGUI();
     	}
     }
@@ -363,18 +365,15 @@ public class ChessController {
     	}
     }
 
-    public final boolean canRedoMove() {
-    	return game.canRedoMove();
-    }
-    
     public final void redoMove() {
-    	if (canRedoMove()) {
+    	if (game.canRedoMove()) {
     		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
     		redoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
+    		setAnimMove(game.prevPos(), game.getLastMove(), true);
     		updateGUI();
     	}
     }
@@ -448,11 +447,13 @@ public class ChessController {
 
     public final void makeHumanMove(Move m) {
         if (humansTurn()) {
+        	Position oldPos = new Position(game.currPos());
             if (doMove(m)) {
             	ss.searchResultWanted = false;
                 stopAnalysis();
     			stopComputerThinking();
                 updateComputeThreads(true);
+                setAnimMove(oldPos, m, true);
                 updateGUI();
             } else {
                 gui.setSelection(-1);
@@ -579,6 +580,10 @@ public class ChessController {
         gui.setSelection(sq);
     }
 
+    private void setAnimMove(Position sourcePos, Move move, boolean forward) {
+    	gui.setAnimMove(sourcePos, move, forward);
+	}
+    
     private final synchronized void startComputerThinking() {
     	if (analysisThread != null) return;
     	if (game.getGameState() != GameState.ALIVE) return;
@@ -602,6 +607,7 @@ public class ChessController {
     					public void run() {
     						if (!localSS.searchResultWanted)
     							return;
+    						Position oldPos = new Position(g.currPos());
     						g.processString(cmd);
     						updateGamePaused();
     						gui.computerMoveMade();
@@ -610,6 +616,7 @@ public class ChessController {
     						stopAnalysis(); // To force analysis to restart for new position
     						updateComputeThreads(true);
     						setSelection();
+    						setAnimMove(oldPos, g.getLastMove(), true);
     						updateGUI();
     					}
     				});

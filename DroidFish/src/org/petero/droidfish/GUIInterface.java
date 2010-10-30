@@ -38,4 +38,7 @@ public interface GUIInterface {
 
 	/** Report remaining thinking time to GUI. */
 	public void setRemainingTime(long wTime, long bTime, long nextUpdate);
+
+	/** Report a move made that is a candidate for GUI animation. */
+	public void setAnimMove(Position sourcePos, Move move, boolean forward);
 }

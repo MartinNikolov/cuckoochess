@@ -83,7 +83,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Online play on FICS
 	// FIXME!!! Make program translatable
-	// FIXME!!! Animated piece movement
 	// FIXME!!! Implement "hint" feature
 
 	// FIXME!!! Add support for all time controls defined by the PGN standard
@@ -111,6 +110,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	private boolean invertScrollDirection;
 	private boolean soundEnabled;
 	private MediaPlayer moveSound;
+	private boolean animateMoves;
 
 	private final String bookDir = "DroidFish";
 	private final String pgnDir = "DroidFish" + File.separator + "pgn";
@@ -420,6 +420,7 @@ public class DroidFish extends Activity implements GUIInterface {
         moveList.setTextSize(fontSize);
         thinking.setTextSize(fontSize);
         soundEnabled = settings.getBoolean("soundEnabled", false);
+        animateMoves = settings.getBoolean("animateMoves", true);
 
         String bookFile = settings.getString("bookFile", "");
         setBookFile(bookFile);
@@ -642,6 +643,12 @@ public class DroidFish extends Activity implements GUIInterface {
 		moveList.setText(gameTextListener.getSpannableData());
 		if (gameTextListener.atEnd())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
+	}
+
+	/** Report a move made that is a candidate for GUI animation. */
+	public void setAnimMove(Position sourcePos, Move move, boolean forward) {
+		if (animateMoves)
+			cb.setAnimMove(sourcePos, move, forward);
 	}
 
 	@Override

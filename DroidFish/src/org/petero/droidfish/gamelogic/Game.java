@@ -67,6 +67,18 @@ public class Game {
 	final Position currPos() {
 		return tree.currentPos;
 	}
+	
+	final Position prevPos() {
+		Move m = tree.currentNode.move;
+		if (m != null) {
+			tree.goBack();
+			Position ret = new Position(currPos());
+			tree.goForward(-1);
+			return ret;
+	    } else {
+	    	return currPos();
+	    }
+	}
 
 	/**
      * Update the game state according to move/command string from a player.
