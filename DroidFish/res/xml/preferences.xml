@@ -131,32 +131,32 @@
 				<EditTextPreference
 					android:key="color_brightSquare"
 					android:title="Bright Squares"
-					android:defaultValue="#FFBEBE5A">
+					android:defaultValue="#FFFFFFFA">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_darkSquare"
 					android:title="Dark Squares"
-					android:defaultValue="#FF808080">
+					android:defaultValue="#FF83A5D2">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_selectedSquare"
 					android:title="Selected Square"
-					android:defaultValue="#FFFF0000">
+					android:defaultValue="#FF3232D1">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_cursorSquare"
 					android:title="Trackball Cursor"
-					android:defaultValue="#FF00FF00">
+					android:defaultValue="#FF5F5FFD">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_brightPiece"
 					android:title="White Pieces"
-					android:defaultValue="#FFFFFFFF">
+					android:defaultValue="#FFF0F0F0">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_darkPiece"
 					android:title="Black Pieces"
-					android:defaultValue="#FF000000">
+					android:defaultValue="#FF282828">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_arrow0"
@@ -166,7 +166,7 @@
 				<EditTextPreference
 					android:key="color_arrow1"
 					android:title="Arrow 2"
-					android:defaultValue="#A0FF1F1F">
+					android:defaultValue="#A01FFF1F">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_arrow2"
@@ -176,7 +176,7 @@
 				<EditTextPreference
 					android:key="color_arrow3"
 					android:title="Arrow 4"
-					android:defaultValue="#50FF1F1F">
+					android:defaultValue="#501FFF1F">
 				</EditTextPreference>
 				<EditTextPreference
 					android:key="color_arrow4"
@@ -186,7 +186,7 @@
 				<EditTextPreference
 					android:key="color_arrow5"
 					android:title="Arrow 6"
-					android:defaultValue="#28FF1F1F">
+					android:defaultValue="#281FFF1F">
 				</EditTextPreference>
 			</PreferenceCategory>
 			<PreferenceCategory
@@ -194,7 +194,7 @@
 				<EditTextPreference
 					android:key="color_currentMove"
 					android:title="Current Move"
-					android:defaultValue="#FF888888">
+					android:defaultValue="#FF3333FF">
 				</EditTextPreference>
 			</PreferenceCategory>
 		</PreferenceScreen>

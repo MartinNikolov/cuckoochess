@@ -37,7 +37,8 @@ public class ColorTheme {
 	};
 	private static final String prefPrefix = "color_";
 
-	final static String[] themeNames = { "Default", "XBoard", "Blue", "Grey" };
+	private final int defaultTheme = 2;
+	final static String[] themeNames = { "Original", "XBoard", "Blue", "Grey" };
 	private final static String themeColors[][] = {
 	{ 
 		"#FF808080", "#FFBEBE5A", "#FFFF0000", "#FF00FF00", "#FF000000", "#FFFFFFFF", "#FF888888",
@@ -60,7 +61,7 @@ public class ColorTheme {
 	final void readColors(SharedPreferences settings) {
 		for (int i = 0; i < numColors; i++) {
 			String prefName = prefPrefix + prefNames[i];
-			String defaultColor = themeColors[0][i];
+			String defaultColor = themeColors[defaultTheme][i];
 			String colorString = settings.getString(prefName, defaultColor);
 			try {
 				colorTable[i] = Color.parseColor(colorString);
