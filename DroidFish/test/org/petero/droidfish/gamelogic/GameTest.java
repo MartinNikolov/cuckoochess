@@ -252,7 +252,7 @@ public class GameTest {
      * Test of resign command, of class Game.
      */
     @Test
-    public void testResign() {
+    public void testResign() throws ChessParseError {
         Game game = new Game(null, null, 0, 0, 0);
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         game.processString("f3");
@@ -272,6 +272,11 @@ public class GameTest {
         assertEquals(Game.GameState.BLACK_MATE, game.getGameState());
         game.processString("resign");
         assertEquals(Game.GameState.BLACK_MATE, game.getGameState());   // Can't resign after game over
+
+        String fen = "8/1p6/2rp2p1/8/p3Qqk1/6R1/PP4PK/8 b - - 3 42";
+        game.setPos(TextIO.readFEN(fen));
+        game.processString("resign");
+        assertEquals(Game.GameState.RESIGN_BLACK, game.getGameState());
     }
     
     /**

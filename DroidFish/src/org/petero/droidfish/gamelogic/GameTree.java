@@ -760,6 +760,11 @@ public class GameTree {
 
 	final GameState getGameState() {
     	Position pos = currentPos;
+        String action = currentNode.playerAction;
+        if (action.equals("resign")) {
+        	// Player made null move to resign, causing whiteMove to toggle
+        	return pos.whiteMove ? GameState.RESIGN_BLACK : GameState.RESIGN_WHITE;
+        }
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if (moves.size() == 0) {
@@ -773,11 +778,6 @@ public class GameTree {
             return GameState.DRAW_NO_MATE;
         }
 
-        String action = currentNode.playerAction;
-        if (action.equals("resign")) {
-        	// Player made null move to resign, causing whiteMove to toggle
-        	return pos.whiteMove ? GameState.RESIGN_BLACK : GameState.RESIGN_WHITE;
-        }
         if (action.startsWith("draw accept")) {
         	return GameState.DRAW_AGREE;
         }
