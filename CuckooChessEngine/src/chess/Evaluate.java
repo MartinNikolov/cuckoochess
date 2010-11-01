@@ -646,14 +646,13 @@ public class Evaluate {
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);
         
         // Bishop pair bonus
-        final int pV = pieceValue[Piece.WPAWN];
         if (numWhite == 2) {
-            final int numPawns = pos.wMtrlPawns / pV;
-            score += 20 + (8 - numPawns) * 2;
+        	final int numPawns = pos.nPieces(Piece.WPAWN);
+        	score += 20 + (8 - numPawns) * 3;
         }
         if (numBlack == 2) {
-            final int numPawns = pos.bMtrlPawns / pV;
-            score -= 20 + (8 - numPawns) * 2;
+            final int numPawns = pos.nPieces(Piece.BPAWN);
+            score -= 20 + (8 - numPawns) * 3;
         }
 
         // FIXME!!! Bad bishop
