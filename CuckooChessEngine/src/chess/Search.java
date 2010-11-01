@@ -851,7 +851,7 @@ public class Search {
     /**
      * Find move with highest score and move it to the front of the list.
      */
-    final void selectBest(List<Move> moves, int startIdx) {
+    final static void selectBest(List<Move> moves, int startIdx) {
     	int mSize = moves.size();
         if (mSize - startIdx < 2)
             return;
