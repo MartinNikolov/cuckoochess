@@ -60,6 +60,12 @@
 			android:defaultValue="false">
 		</CheckBoxPreference>
 		<CheckBoxPreference
+			android:key="whiteBasedScores"
+			android:title="Analysis scores"
+			android:summary="Positive scores are good for white"
+			android:defaultValue="false">
+		</CheckBoxPreference>
+		<CheckBoxPreference
 			android:key="bookHints"
 			android:title="Show Book Hints"
 			android:summary="Display opening book move hints for human player"

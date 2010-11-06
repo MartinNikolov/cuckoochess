@@ -41,4 +41,7 @@ public interface GUIInterface {
 
 	/** Report a move made that is a candidate for GUI animation. */
 	public void setAnimMove(Position sourcePos, Move move, boolean forward);
+
+	/** Return true if positive analysis scores means good for white. */
+	public boolean whiteBasedScores();
 }

@@ -51,6 +51,7 @@ public class ChessController {
         private String pvStr = "";
         private List<Move> pvMoves = null;
         private List<Move> bookMoves = null;
+        private boolean whiteMove = true;
 
         public final void clearSearchInfo() {
         	pvDepth = 0;
@@ -65,15 +66,16 @@ public class ChessController {
             StringBuilder buf = new StringBuilder();
             if (pvDepth > 0) {
             	buf.append(String.format("[%d] ", pvDepth));
-            	if (pvUpperBound) {
-            		buf.append("<=");
-            	} else if (pvLowerBound) {
-            		buf.append(">=");
+            	boolean negateScore = !whiteMove && gui.whiteBasedScores();
+            	if (pvUpperBound || pvLowerBound) {
+            		boolean upper = pvUpperBound ^ negateScore;
+            		buf.append(upper ? "<=" : ">=");
             	}
+            	int score = negateScore ? -pvScore : pvScore;
             	if (pvIsMate) {
-            		buf.append(String.format("m%d", pvScore));
+            		buf.append(String.format("m%d", score));
             	} else {
-            		buf.append(String.format("%.2f", pvScore / 100.0));
+            		buf.append(String.format("%.2f", score / 100.0));
             	}
             	buf.append(pvStr);
             	buf.append("\n");
@@ -115,6 +117,7 @@ public class ChessController {
             pvIsMate = isMate;
             pvUpperBound = upperBound;
             pvLowerBound = lowerBound;
+            whiteMove = pos.whiteMove;
 
             StringBuilder buf = new StringBuilder();
             Position tmpPos = new Position(pos);
@@ -141,6 +144,10 @@ public class ChessController {
 			bookMoves = moveList;
 			setSearchInfo();
 		}
+		
+		public void prefsChanged() {
+			setSearchInfo();
+		}
     }
     SearchListener listener;
 
@@ -165,7 +172,7 @@ public class ChessController {
 			}
 		}
 	}
-	
+
 	private final void updateBookHints() {
 		if (gameMode != null) {
 			boolean analysis = gameMode.analysisMode();
@@ -181,7 +188,7 @@ public class ChessController {
     	boolean searchResultWanted = true;
     }
     SearchStatus ss = new SearchStatus();
-    
+
     public final void newGame(GameMode gameMode) {
         ss.searchResultWanted = false;
         stopComputerThinking();
@@ -252,8 +259,9 @@ public class ChessController {
 	public final void prefsChanged() {
 		updateBookHints();
 		updateMoveList();
+		listener.prefsChanged();
 	}
- 
+
 	private final void setPlayerNames(Game game) {
 		if (game != null) {
 			String engine = ComputerPlayer.engineName;

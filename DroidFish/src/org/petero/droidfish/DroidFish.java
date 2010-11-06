@@ -88,11 +88,11 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Add chess960 support
 	// FIXME!!! Make program translatable
 	// FIXME!!! Implement "hint" feature
-	// FIXME!!! Option to translate scores to "positive good for white" format.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
 	private boolean mShowThinking;
+	private boolean mWhiteBasedScores;
 	private boolean mShowBookHints;
 	private int maxNumArrows;
 	private GameMode gameMode;
@@ -396,6 +396,7 @@ public class DroidFish extends Activity implements GUIInterface {
         cb.oneTouchMoves = settings.getBoolean("oneTouchMoves", false);
 
         mShowThinking = settings.getBoolean("showThinking", false);
+        mWhiteBasedScores = settings.getBoolean("whiteBasedScores", false);
         tmp = settings.getString("thinkingArrows", "2");
         maxNumArrows = Integer.parseInt(tmp);
         mShowBookHints = settings.getBoolean("bookHints", false);
@@ -644,6 +645,11 @@ public class DroidFish extends Activity implements GUIInterface {
 		moveList.setText(gameTextListener.getSpannableData());
 		if (gameTextListener.atEnd())
 			moveListScroll.fullScroll(ScrollView.FOCUS_DOWN);
+	}
+
+	@Override
+	public boolean whiteBasedScores() {
+		return mWhiteBasedScores;
 	}
 
 	/** Report a move made that is a candidate for GUI animation. */
