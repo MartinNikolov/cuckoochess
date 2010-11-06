@@ -146,7 +146,7 @@ public class ChessBoard extends View {
             final int yCrd2 = getYCrd(Position.getY(to));
             final int xCrd = xCrd1 + (int)Math.round((xCrd2 - xCrd1) * animState);
             final int yCrd = yCrd1 + (int)Math.round((yCrd2 - yCrd1) * animState);
-        	drawPiece(canvas, xCrd + sqSize / 2, yCrd + sqSize / 2, piece);
+        	drawPiece(canvas, xCrd, yCrd, piece);
 		}
 	}
 	AnimInfo anim = new AnimInfo();
@@ -323,7 +323,7 @@ public class ChessBoard extends View {
                 int sq = Position.getSquare(x, y);
                 if (!animActive || !anim.squareHidden(sq)) {
                 	int p = pos.getPiece(sq);
-                	drawPiece(canvas, xCrd + sqSize / 2, yCrd + sqSize / 2, p);
+                	drawPiece(canvas, xCrd, yCrd, p);
                 }
             }
         }
@@ -425,10 +425,10 @@ public class ChessBoard extends View {
         	whitePiecePaint.setTextSize(sqSize);
             Rect bounds = new Rect();
             blackPiecePaint.getTextBounds("H", 0, 1, bounds);
-            int xCent = bounds.centerX();
-            int yCent = bounds.centerY();
-            canvas.drawText(psw, xCrd - xCent, yCrd - yCent, whitePiecePaint);
-            canvas.drawText(psb, xCrd - xCent, yCrd - yCent, blackPiecePaint);
+    		xCrd += (sqSize - (bounds.right + bounds.left)) / 2;
+    		yCrd += (sqSize - (bounds.top + bounds.bottom)) / 2;
+            canvas.drawText(psw, xCrd, yCrd, whitePiecePaint);
+            canvas.drawText(psb, xCrd, yCrd, blackPiecePaint);
         }
     }
 
