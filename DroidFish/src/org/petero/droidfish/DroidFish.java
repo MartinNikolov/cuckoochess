@@ -75,19 +75,20 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
-
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
+
+	// FIXME!!! Add support for all time controls defined by the PGN standard
+	// FIXME!!! How to handle hour-glass time control?
+	// FIXME!!! What should happen if you change time controls in the middle of a game?
 
 	// FIXME!!! Implement "limit strength" option
 	// FIXME!!! Implement pondering (permanent brain)
 	// FIXME!!! Implement multi-variation analysis mode
 	// FIXME!!! Online play on FICS
+	// FIXME!!! Add chess960 support
 	// FIXME!!! Make program translatable
 	// FIXME!!! Implement "hint" feature
-
-	// FIXME!!! Add support for all time controls defined by the PGN standard
-	// FIXME!!! How to handle hour-glass time control?
-	// FIXME!!! What should happen if you change time controls in the middle of a game?
+	// FIXME!!! Option to translate scores to "positive good for white" format.
 
 	private ChessBoard cb;
 	private ChessController ctrl = null;
