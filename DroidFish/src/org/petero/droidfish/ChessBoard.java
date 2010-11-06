@@ -28,6 +28,7 @@ public class ChessBoard extends View {
     public float cursorX, cursorY;
     public boolean cursorVisible;
     protected int x0, y0, sqSize;
+    int pieceXDelta, pieceYDelta; // top/left pixel draw position relative to square
     public boolean flipped;
     boolean oneTouchMoves;
     
@@ -48,6 +49,7 @@ public class ChessBoard extends View {
         cursorX = cursorY = 0;
         cursorVisible = false;
         x0 = y0 = sqSize = 0;
+        pieceXDelta = pieceYDelta = -1;
         flipped = false;
         oneTouchMoves = false;
 
@@ -289,6 +291,7 @@ public class ChessBoard extends View {
 		int sqSizeW = getSqSizeW(width);
 		int sqSizeH = getSqSizeH(height);
 		int sqSize = Math.min(sqSizeW, sqSizeH);
+		pieceXDelta = pieceYDelta = -1;
 		if (height > width) {
 			int p = getMaxHeightPercentage();
 			height = Math.min(getHeight(sqSize), height * p / 100);
@@ -308,6 +311,7 @@ public class ChessBoard extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
+//		long t0 = System.currentTimeMillis();
 		boolean animActive = anim.updateState();
 		final int width = getWidth();
 		final int height = getHeight();
@@ -348,6 +352,8 @@ public class ChessBoard extends View {
         	drawMoveHints(canvas);
 
         anim.draw(canvas);
+//		long t1 = System.currentTimeMillis();
+//		System.out.printf("draw: %d\n", t1-t0);
     }
 
 	private final void drawMoveHints(Canvas canvas) {
@@ -401,32 +407,34 @@ public class ChessBoard extends View {
 	}
 
 	protected final void drawPiece(Canvas canvas, int xCrd, int yCrd, int p) {
-        char c = 0;
+		String psb, psw;
         switch (p) {
         	default:
-            case Piece.EMPTY:   c = 0;   break;
-            case Piece.WKING:   c = 'H'; break;
-            case Piece.WQUEEN:  c = 'I'; break;
-            case Piece.WROOK:   c = 'J'; break;
-            case Piece.WBISHOP: c = 'K'; break;
-            case Piece.WKNIGHT: c = 'L'; break;
-            case Piece.WPAWN:   c = 'M'; break;
-            case Piece.BKING:   c = 'N'; break;
-            case Piece.BQUEEN:  c = 'O'; break;
-            case Piece.BROOK:   c = 'P'; break;
-            case Piece.BBISHOP: c = 'Q'; break;
-            case Piece.BKNIGHT: c = 'R'; break;
-            case Piece.BPAWN:   c = 'S'; break;
+            case Piece.EMPTY:   psb = null; psw = null; break;
+            case Piece.WKING:   psb = "H"; psw = "k"; break;
+            case Piece.WQUEEN:  psb = "I"; psw = "l"; break;
+            case Piece.WROOK:   psb = "J"; psw = "m"; break;
+            case Piece.WBISHOP: psb = "K"; psw = "n"; break;
+            case Piece.WKNIGHT: psb = "L"; psw = "o"; break;
+            case Piece.WPAWN:   psb = "M"; psw = "p"; break;
+            case Piece.BKING:   psb = "N"; psw = "q"; break;
+            case Piece.BQUEEN:  psb = "O"; psw = "r"; break;
+            case Piece.BROOK:   psb = "P"; psw = "s"; break;
+            case Piece.BBISHOP: psb = "Q"; psw = "t"; break;
+            case Piece.BKNIGHT: psb = "R"; psw = "u"; break;
+            case Piece.BPAWN:   psb = "S"; psw = "v"; break;
         }
-        if (c != 0) {
-            String psb = Character.toString(c);
-            String psw = Character.toString((char)(c + 'k' - 'H'));
+        if (psb != null) {
         	blackPiecePaint.setTextSize(sqSize);
         	whitePiecePaint.setTextSize(sqSize);
-            Rect bounds = new Rect();
-            blackPiecePaint.getTextBounds("H", 0, 1, bounds);
-    		xCrd += (sqSize - (bounds.right + bounds.left)) / 2;
-    		yCrd += (sqSize - (bounds.top + bounds.bottom)) / 2;
+        	if (pieceXDelta < 0) {
+        		Rect bounds = new Rect();
+        		blackPiecePaint.getTextBounds("H", 0, 1, bounds);
+        		pieceXDelta = (sqSize - (bounds.left + bounds.right)) / 2;
+        		pieceYDelta = (sqSize - (bounds.top + bounds.bottom)) / 2;
+        	}
+    		xCrd += pieceXDelta;
+    		yCrd += pieceYDelta;
             canvas.drawText(psw, xCrd, yCrd, whitePiecePaint);
             canvas.drawText(psb, xCrd, yCrd, blackPiecePaint);
         }
