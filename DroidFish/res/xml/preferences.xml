@@ -61,8 +61,8 @@
 		</CheckBoxPreference>
 		<CheckBoxPreference
 			android:key="whiteBasedScores"
-			android:title="Analysis scores"
-			android:summary="Positive scores are good for white"
+			android:title="White-based scores"
+			android:summary="Positive analysis scores are good for white"
 			android:defaultValue="false">
 		</CheckBoxPreference>
 		<CheckBoxPreference
