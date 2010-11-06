@@ -132,12 +132,16 @@ public class ChessBoard extends View {
 			double animState = (now - startTime) / (double)(stopTime - startTime);
 			drawAnimPiece(canvas, piece2, from2, to2, animState);
 			drawAnimPiece(canvas, piece1, from1, to1, animState);
+			long now2 = System.currentTimeMillis();
+			long delay = 20 - (now2 - now);
+//			System.out.printf("delay:%d\n", delay);
+			if (delay < 1) delay = 1;
 	        handlerTimer.postDelayed(new Runnable() {
 				@Override
 				public void run() {
 					invalidate();
 				}
-	        }, 25);
+	        }, delay);
 		}
 		private void drawAnimPiece(Canvas canvas, int piece, int from, int to, double animState) {
 			if (piece == Piece.EMPTY)
@@ -175,7 +179,8 @@ public class ChessBoard extends View {
 		{
 			int dx = Position.getX(move.to) - Position.getX(move.from);
 			int dy = Position.getY(move.to) - Position.getY(move.from);
-			double t = Math.sqrt(dx * dx + dy * dy) * 100;
+			double dist = Math.sqrt(dx * dx + dy * dy);
+			double t = Math.sqrt(dist) * 100;
 			animTime = (int)Math.round(t);
 		}
 		if (animTime > 0) {
