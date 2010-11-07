@@ -354,7 +354,7 @@ public class SearchTest {
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         sc.scoreMoveList(moves, 0);
         for (int i = 1; i < moves.size(); i++) {
-            sc.selectBest(moves, i);
+            Search.selectBest(moves, i);
             int sc1 = moves.get(i - 1).score;
             int sc2 = moves.get(i).score;
             assertTrue(sc2 <= sc1);
@@ -367,7 +367,7 @@ public class SearchTest {
         sc.scoreMoveList(moves.subList(2, moves.size()), 0);
         assertEquals(17, moves.get(0).score);
         for (int i = 2; i < moves.size(); i++) {
-            sc.selectBest(moves, i);
+            Search.selectBest(moves, i);
             int sc1 = moves.get(i - 1).score;
             int sc2 = moves.get(i).score;
             assertTrue(sc2 <= sc1);
