@@ -326,25 +326,28 @@ public class ChessController {
     	return gameMode.analysisMode() || !humansTurn();
     }
 
-    private final void undoMoveNoUpdate() {
-    	if (game.getLastMove() != null) {
-    		ss.searchResultWanted = false;
-    		game.undoMove();
-    		if (!humansTurn()) {
-    			if (game.getLastMove() != null) {
-    				game.undoMove();
-    				if (!humansTurn()) {
-    					game.redoMove();
-    				}
-    			} else {
-    				// Don't undo first white move if playing black vs computer,
-    				// because that would cause computer to immediately make
-    				// a new move and the whole redo history will be lost.
-    				if (gameMode.playerWhite() || gameMode.playerBlack())
-    					game.redoMove();
+    private final boolean undoMoveNoUpdate() {
+    	if (game.getLastMove() == null)
+    		return false;
+    	ss.searchResultWanted = false;
+    	game.undoMove();
+    	if (!humansTurn()) {
+    		if (game.getLastMove() != null) {
+    			game.undoMove();
+    			if (!humansTurn()) {
+    				game.redoMove();
+    			}
+    		} else {
+    			// Don't undo first white move if playing black vs computer,
+    			// because that would cause computer to immediately make
+    			// a new move and the whole redo history will be lost.
+    			if (gameMode.playerWhite() || gameMode.playerBlack()) {
+    				game.redoMove();
+    				return false;
     			}
     		}
     	}
+    	return true;
     }
     
     public final void undoMove() {
@@ -352,10 +355,11 @@ public class ChessController {
     		ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
-        	undoMoveNoUpdate();
+			boolean didUndo = undoMoveNoUpdate();
     		updateComputeThreads(true);
     		setSelection();
-    		setAnimMove(game.currPos(), game.getNextMove(), false);
+    		if (didUndo)
+    			setAnimMove(game.currPos(), game.getNextMove(), false);
     		updateGUI();
     	}
     }

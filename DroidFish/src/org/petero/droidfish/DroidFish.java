@@ -654,7 +654,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
 	/** Report a move made that is a candidate for GUI animation. */
 	public void setAnimMove(Position sourcePos, Move move, boolean forward) {
-		if (animateMoves)
+		if (animateMoves && (move != null))
 			cb.setAnimMove(sourcePos, move, forward);
 	}
 
