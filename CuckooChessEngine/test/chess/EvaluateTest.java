@@ -283,6 +283,7 @@ public class EvaluateTest {
         UndoInfo ui = new UndoInfo();
         tmpPos.makeMove(TextIO.stringToMove(tmpPos, moveStr), ui);
         int score2 = evalWhite(tmpPos);
+//        System.out.printf("move:%s s1:%d s2:%d\n", moveStr, score1, score2);
         return score2 - score1;
     }
 }
