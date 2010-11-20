@@ -201,23 +201,23 @@ public class ChessController {
         }
        	game = new Game(computerPlayer, gameTextListener, timeControl, movesPerSession, timeIncrement);
 		setPlayerNames(game);
-       	updateGamePaused();
+       	updateGameMode();
     }
 
     public final void startGame() {
         updateComputeThreads(true);
         setSelection(); 
         updateGUI();
-       	updateGamePaused();
+       	updateGameMode();
     }
     
     private boolean guiPaused = false;
     public final void setGuiPaused(boolean paused) {
     	guiPaused = paused;
-    	updateGamePaused();
+    	updateGameMode();
     }
 
-    private final void updateGamePaused() { // FIXME! Rename
+    private final void updateGameMode() {
     	if (game != null) {
     		boolean gamePaused = !gameMode.clocksActive() || (humansTurn() && guiPaused);
     		game.setGamePaused(gamePaused);
@@ -252,7 +252,7 @@ public class ChessController {
 			gameMode = newMode;
 			if (!gameMode.playerWhite() || !gameMode.playerBlack())
 				setPlayerNames(game); // If computer player involved, set player names
-			updateGamePaused();
+			updateGameMode();
 			updateComputeThreads(true);
 			updateGUI();
 		}
@@ -306,7 +306,7 @@ public class ChessController {
     	game = newGame;
     	game.setComputerPlayer(computerPlayer);
     	gameTextListener.clear();
-    	updateGamePaused();
+    	updateGameMode();
     	stopAnalysis();
     	stopComputerThinking();
     	computerPlayer.clearTT();
@@ -628,7 +628,7 @@ public class ChessController {
     							return;
     						Position oldPos = new Position(g.currPos());
     						g.processString(cmd);
-    						updateGamePaused();
+    						updateGameMode();
     						gui.computerMoveMade();
     						listener.clearSearchInfo();
     						stopComputerThinking();
