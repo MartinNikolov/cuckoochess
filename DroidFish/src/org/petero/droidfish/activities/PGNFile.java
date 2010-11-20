@@ -188,11 +188,13 @@ public class PGNFile {
 							final int newPercent = (int)(filePos * 100 / fileLen);
 							if (newPercent > percent) {
 								percent =  newPercent;
-								activity.runOnUiThread(new Runnable() {
-									public void run() {
-										progress.setProgress(newPercent);
-									}
-								});
+								if (progress != null) {
+									activity.runOnUiThread(new Runnable() {
+										public void run() {
+											progress.setProgress(newPercent);
+										}
+									});
+								}
 							}
 							prevGi = gi;
 						}

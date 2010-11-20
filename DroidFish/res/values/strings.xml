@@ -245,6 +245,10 @@ you are not actively using the program.\
 	<string name="goto_start_game">Goto Start of Game</string>
 	<string name="goto_start_variation">Goto Start of Variation</string>
 	<string name="goto_prev_variation">Goto Previous Variation</string>
+	<string name="goto_prev_game">Goto Previous Game</string>
 	<string name="goto_end_variation">Goto End of Variation</string>
 	<string name="goto_next_variation">Goto Next Variation</string>
+	<string name="goto_next_game">Goto Next Game</string>
+	<string name="no_prev_game">No previous game</string>
+	<string name="no_next_game">No next game</string>
 </resources>

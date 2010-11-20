@@ -1196,6 +1196,7 @@ public class DroidFish extends Activity implements GUIInterface {
 			final int GOTO_START_GAME = 0;
 			final int GOTO_START_VAR  = 1;
 			final int GOTO_PREV_VAR   = 2;
+			final int GOTO_PREV_GAME  = 3;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
@@ -1203,6 +1204,10 @@ public class DroidFish extends Activity implements GUIInterface {
 			lst.add(getString(R.string.goto_start_variation)); actions.add(GOTO_START_VAR);
 			if (ctrl.currVariation() > 0) {
 				lst.add(getString(R.string.goto_prev_variation)); actions.add(GOTO_PREV_VAR);
+			}
+			final String pgnFile = settings.getString("currentPGNFile", "");
+			if ((pgnFile.length() > 0) && !gameMode.clocksActive()) {
+				lst.add(getString(R.string.goto_prev_game)); actions.add(GOTO_PREV_GAME);
 			}
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1213,6 +1218,14 @@ public class DroidFish extends Activity implements GUIInterface {
 					case GOTO_START_GAME: ctrl.gotoMove(0); break;
 					case GOTO_START_VAR:  ctrl.gotoStartOfVariation(); break;
 					case GOTO_PREV_VAR:   ctrl.changeVariation(-1); break;
+					case GOTO_PREV_GAME:
+						String sep = File.separator;
+						String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
+						Intent i = new Intent(DroidFish.this, EditPGNLoad.class);
+						i.setAction("org.petero.droidfish.loadFilePrevGame");
+						i.putExtra("org.petero.droidfish.pathname", pathName);
+						startActivityForResult(i, RESULT_LOAD_PGN);
+						break;
 					}
 				}
 			});
@@ -1220,14 +1233,19 @@ public class DroidFish extends Activity implements GUIInterface {
 			return alert;
 		}
 		case GO_FORWARD_MENU_DIALOG: {
-			final int GOTO_END_VAR  = 0;
-			final int GOTO_NEXT_VAR = 1;
+			final int GOTO_END_VAR   = 0;
+			final int GOTO_NEXT_VAR  = 1;
+			final int GOTO_NEXT_GAME = 2;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
 			lst.add(getString(R.string.goto_end_variation)); actions.add(GOTO_END_VAR);
 			if (ctrl.currVariation() < ctrl.numVariations() - 1) {
 				lst.add(getString(R.string.goto_next_variation)); actions.add(GOTO_NEXT_VAR);
+			}
+			final String pgnFile = settings.getString("currentPGNFile", "");
+			if ((pgnFile.length() > 0) && !gameMode.clocksActive()) {
+				lst.add(getString(R.string.goto_next_game)); actions.add(GOTO_NEXT_GAME);
 			}
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1237,6 +1255,14 @@ public class DroidFish extends Activity implements GUIInterface {
 					switch (finalActions.get(item)) {
 					case GOTO_END_VAR:  ctrl.gotoMove(Integer.MAX_VALUE); break;
 					case GOTO_NEXT_VAR: ctrl.changeVariation(1); break;
+					case GOTO_NEXT_GAME:
+						String sep = File.separator;
+						String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
+						Intent i = new Intent(DroidFish.this, EditPGNLoad.class);
+						i.setAction("org.petero.droidfish.loadFileNextGame");
+						i.putExtra("org.petero.droidfish.pathname", pathName);
+						startActivityForResult(i, RESULT_LOAD_PGN);
+						break;
 					}
 				}
 			});

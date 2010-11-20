@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 
@@ -85,6 +86,40 @@ public class EditPGN extends ListActivity {
 					});
 				}
 			}).start();
+		} else if (action.equals("org.petero.droidfish.loadFileNextGame") ||
+				   action.equals("org.petero.droidfish.loadFilePrevGame")) {
+			action.equals("org.petero.droidfish.loadFileNextGame");
+			pgnFile = new PGNFile(fileName);
+			loadGame = true;
+//			showDialog(PROGRESS_DIALOG);
+			boolean next = action.equals("org.petero.droidfish.loadFileNextGame");
+			final int loadItem = defaultItem + (next ? 1 : -1);
+			System.out.printf("loadItem:%d\n", loadItem);
+			if (loadItem < 0) {
+				Toast.makeText(getApplicationContext(), R.string.no_prev_game,
+							   Toast.LENGTH_SHORT).show();
+				setResult(RESULT_CANCELED);
+				finish();
+			} else {
+				new Thread(new Runnable() {
+					public void run() {
+						readFile();
+						runOnUiThread(new Runnable() {
+							public void run() {
+								if (loadItem >= gamesInFile.size()) {
+									Toast.makeText(getApplicationContext(), R.string.no_next_game,
+												   Toast.LENGTH_SHORT).show();
+									setResult(RESULT_CANCELED);
+									finish();
+								} else {
+									defaultItem = loadItem;
+									sendBackResult(gamesInFile.get(loadItem));
+								}
+							}
+						});
+					}
+				}).start();
+			}
 		} else if (action.equals("org.petero.droidfish.saveFile")) {
 			loadGame = false;
 			pgnToSave = i.getStringExtra("org.petero.droidfish.pgn");
