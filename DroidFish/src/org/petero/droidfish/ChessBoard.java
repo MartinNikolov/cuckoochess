@@ -30,6 +30,7 @@ public class ChessBoard extends View {
     protected int x0, y0, sqSize;
     int pieceXDelta, pieceYDelta; // top/left pixel draw position relative to square
     public boolean flipped;
+    public boolean drawSquareLabels;
     boolean oneTouchMoves;
     
     List<Move> moveHints;
@@ -40,6 +41,7 @@ public class ChessBoard extends View {
     private Paint cursorSquarePaint;
     private Paint whitePiecePaint;
     private Paint blackPiecePaint;
+    private Paint labelPaint;
     private ArrayList<Paint> moveMarkPaint;
     
 	public ChessBoard(Context context, AttributeSet attrs) {
@@ -51,6 +53,7 @@ public class ChessBoard extends View {
         x0 = y0 = sqSize = 0;
         pieceXDelta = pieceYDelta = -1;
         flipped = false;
+        drawSquareLabels = false;
         oneTouchMoves = false;
 
         darkPaint = new Paint();
@@ -69,6 +72,9 @@ public class ChessBoard extends View {
         
         blackPiecePaint = new Paint();
         blackPiecePaint.setAntiAlias(true);
+
+        labelPaint = new Paint();
+        labelPaint.setAntiAlias(true);
         
         moveMarkPaint = new ArrayList<Paint>();
         for (int i = 0; i < 6; i++) {
@@ -94,6 +100,7 @@ public class ChessBoard extends View {
         cursorSquarePaint.setColor(ct.getColor(ColorTheme.CURSOR_SQUARE));
         whitePiecePaint.setColor(ct.getColor(ColorTheme.BRIGHT_PIECE));
         blackPiecePaint.setColor(ct.getColor(ColorTheme.DARK_PIECE));
+        labelPaint.setColor(ct.getColor(ColorTheme.SQUARE_LABEL));
         for (int i = 0; i < 6; i++)
         	moveMarkPaint.get(i).setColor(ct.getColor(ColorTheme.ARROW_0 + i));
 
@@ -271,6 +278,17 @@ public class ChessBoard extends View {
     }
 
     /**
+     * Set/clear the board flipped status.
+     * @param flipped
+     */
+    final public void setDrawSquareLabels(boolean drawSquareLabels) {
+    	if (this.drawSquareLabels != drawSquareLabels) {
+    		this.drawSquareLabels = drawSquareLabels;
+    		invalidate();
+    	}
+    }
+
+    /**
      * Set/clear the selected square.
      * @param square The square to select, or -1 to clear selection.
      */
@@ -297,6 +315,7 @@ public class ChessBoard extends View {
 		int sqSizeH = getSqSizeH(height);
 		int sqSize = Math.min(sqSizeW, sqSizeH);
 		pieceXDelta = pieceYDelta = -1;
+		labelBounds = null;
 		if (height > width) {
 			int p = getMaxHeightPercentage();
 			height = Math.min(getHeight(sqSize), height * p / 100);
@@ -321,7 +340,10 @@ public class ChessBoard extends View {
 		final int width = getWidth();
 		final int height = getHeight();
         sqSize = Math.min(getSqSizeW(width), getSqSizeH(height));
-		computeOrigin(width, height);
+    	blackPiecePaint.setTextSize(sqSize);
+    	whitePiecePaint.setTextSize(sqSize);
+		labelPaint.setTextSize(sqSize/4);
+        computeOrigin(width, height);
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 final int xCrd = getXCrd(x);
@@ -333,6 +355,14 @@ public class ChessBoard extends View {
                 if (!animActive || !anim.squareHidden(sq)) {
                 	int p = pos.getPiece(sq);
                 	drawPiece(canvas, xCrd, yCrd, p);
+                }
+                if (drawSquareLabels) {
+                	if (x == (flipped ? 7 : 0)) {
+                		drawLabel(canvas, xCrd, yCrd, false, false, "12345678".charAt(y));
+                	}
+                	if (y == (flipped ? 7 : 0)) {
+                		drawLabel(canvas, xCrd, yCrd, true, true, "abcdefgh".charAt(x));
+                	}
                 }
             }
         }
@@ -430,8 +460,6 @@ public class ChessBoard extends View {
             case Piece.BPAWN:   psb = "S"; psw = "v"; break;
         }
         if (psb != null) {
-        	blackPiecePaint.setTextSize(sqSize);
-        	whitePiecePaint.setTextSize(sqSize);
         	if (pieceXDelta < 0) {
         		Rect bounds = new Rect();
         		blackPiecePaint.getTextBounds("H", 0, 1, bounds);
@@ -445,6 +473,30 @@ public class ChessBoard extends View {
         }
     }
 
+	private Rect labelBounds = null;
+
+	private void drawLabel(Canvas canvas, int xCrd, int yCrd, boolean right,
+                           boolean bottom, char c) {
+		String s = new String();
+		s += c;
+		if (labelBounds == null) {
+			labelBounds = new Rect();
+			labelPaint.getTextBounds("f", 0, 1, labelBounds);
+		}
+		int margin = sqSize / 16;
+		if (right) {
+				xCrd += sqSize - labelBounds.right - margin;
+			} else {
+			xCrd += -labelBounds.left + margin;
+		}
+		if (bottom) {
+			yCrd += sqSize - labelBounds.bottom - margin;
+		} else {
+			yCrd += -labelBounds.top + margin;
+		}
+		canvas.drawText(s, xCrd, yCrd, labelPaint);
+	}
+	
     protected int getXCrd(int x) { return x0 + sqSize * (flipped ? 7 - x : x); }
     protected int getYCrd(int y) { return y0 + sqSize * (flipped ? y : 7 - y); }
     protected int getXSq(int xCrd) { int t = (xCrd - x0) / sqSize; return flipped ? 7 - t : t; }

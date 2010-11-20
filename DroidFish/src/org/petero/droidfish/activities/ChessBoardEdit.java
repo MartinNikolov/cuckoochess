@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 public class ChessBoardEdit extends ChessBoard {
 	public ChessBoardEdit(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		drawSquareLabels = true;
 	}
 	
 	private final static int gap = 2;

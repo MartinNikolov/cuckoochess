@@ -106,6 +106,12 @@
 			android:summary="Fullscreen mode hides the status bar"
 			android:defaultValue="false">
 		</CheckBoxPreference>
+		<CheckBoxPreference
+			android:key="drawSquareLabels"
+			android:title="Square Labels"
+			android:summary="Display square labels: a-h and 1-8"
+			android:defaultValue="false">
+		</CheckBoxPreference>
 		<ListPreference
 			android:key="scrollSensitivity"
 			android:title="Scrolling Speed"
@@ -193,6 +199,11 @@
 					android:key="color_arrow5"
 					android:title="Arrow 6"
 					android:defaultValue="#281FFF1F">
+				</EditTextPreference>
+				<EditTextPreference
+					android:key="color_squareLabel"
+					android:title="Square Labels"
+					android:defaultValue="#FFFF0000">
 				</EditTextPreference>
 			</PreferenceCategory>
 			<PreferenceCategory
