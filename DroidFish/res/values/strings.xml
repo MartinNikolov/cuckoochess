@@ -239,4 +239,11 @@ you are not actively using the program.\
 	<string name="edit_game">Edit Game</string>
 	<string name="edit_headers">Edit Headers</string>
 	<string name="edit_comments">Edit Comments</string>
+	<string name="go_back">Go Back</string>
+	<string name="go_forward">Go Forward</string>
+	<string name="goto_start_game">Goto Start of Game</string>
+	<string name="goto_start_variation">Goto Start of Variation</string>
+	<string name="goto_prev_variation">Goto Previous Variation</string>
+	<string name="goto_end_variation">Goto End of Variation</string>
+	<string name="goto_next_variation">Goto Next Variation</string>
 </resources>

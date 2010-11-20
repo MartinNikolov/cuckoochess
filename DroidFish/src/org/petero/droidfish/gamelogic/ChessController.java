@@ -393,6 +393,10 @@ public class ChessController {
     public final int numVariations() {
     	return game.numVariations();
     }
+    
+    public final int currVariation() {
+    	return game.currVariation();
+    }
 
     public final void changeVariation(int delta) {
     	if (game.numVariations() > 1) {
@@ -462,6 +466,20 @@ public class ChessController {
     		setSelection();
     		updateGUI();
 		}
+	}
+
+	public final void gotoStartOfVariation() {
+		stopAnalysis();
+		stopComputerThinking();
+		while (true) {
+			if (!undoMoveNoUpdate())
+				break;
+	    	if (game.numVariations() > 1)
+	    		break;
+		}
+		updateComputeThreads(true);
+		setSelection();
+		updateGUI();
 	}
 
     public final void makeHumanMove(Move m) {

@@ -65,6 +65,7 @@ import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,7 +76,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Current position in game should be visible: moveListScroll.scrollTo(0, y);
 
 	// FIXME!!! PGN view option: game continuation (for training)
-	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
 
@@ -341,6 +341,25 @@ public class DroidFish extends Activity implements GUIInterface {
 			public boolean onLongClick(View v) {
 				removeDialog(THINKING_MENU_DIALOG);
 				showDialog(THINKING_MENU_DIALOG);
+				return true;
+			}
+		});
+
+        ImageButton undoButton = (ImageButton)findViewById(R.id.undoButton);
+        undoButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				removeDialog(GO_BACK_MENU_DIALOG);
+				showDialog(GO_BACK_MENU_DIALOG);
+				return true;
+			}
+		});
+        ImageButton redoButton = (ImageButton)findViewById(R.id.redoButton);
+        redoButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				removeDialog(GO_FORWARD_MENU_DIALOG);
+				showDialog(GO_FORWARD_MENU_DIALOG);
 				return true;
 			}
 		});
@@ -742,6 +761,8 @@ public class DroidFish extends Activity implements GUIInterface {
 	static private final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
 	static private final int MOVELIST_MENU_DIALOG = 10;
 	static private final int THINKING_MENU_DIALOG = 11;
+	static private final int GO_BACK_MENU_DIALOG = 12;
+	static private final int GO_FORWARD_MENU_DIALOG = 13;
 	
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -1167,6 +1188,57 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 					}
 			    }
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case GO_BACK_MENU_DIALOG: {
+			final int GOTO_START_GAME = 0;
+			final int GOTO_START_VAR  = 1;
+			final int GOTO_PREV_VAR   = 2;
+
+			List<CharSequence> lst = new ArrayList<CharSequence>();
+			List<Integer> actions = new ArrayList<Integer>();
+			lst.add(getString(R.string.goto_start_game));      actions.add(GOTO_START_GAME);
+			lst.add(getString(R.string.goto_start_variation)); actions.add(GOTO_START_VAR);
+			if (ctrl.currVariation() > 0) {
+				lst.add(getString(R.string.goto_prev_variation)); actions.add(GOTO_PREV_VAR);
+			}
+			final List<Integer> finalActions = actions;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.go_back);
+			builder.setItems(lst.toArray(new CharSequence[2]), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					switch (finalActions.get(item)) {
+					case GOTO_START_GAME: ctrl.gotoMove(0); break;
+					case GOTO_START_VAR:  ctrl.gotoStartOfVariation(); break;
+					case GOTO_PREV_VAR:   ctrl.changeVariation(-1); break;
+					}
+				}
+			});
+			AlertDialog alert = builder.create();
+			return alert;
+		}
+		case GO_FORWARD_MENU_DIALOG: {
+			final int GOTO_END_VAR  = 0;
+			final int GOTO_NEXT_VAR = 1;
+
+			List<CharSequence> lst = new ArrayList<CharSequence>();
+			List<Integer> actions = new ArrayList<Integer>();
+			lst.add(getString(R.string.goto_end_variation)); actions.add(GOTO_END_VAR);
+			if (ctrl.currVariation() < ctrl.numVariations() - 1) {
+				lst.add(getString(R.string.goto_next_variation)); actions.add(GOTO_NEXT_VAR);
+			}
+			final List<Integer> finalActions = actions;
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.go_forward);
+			builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					switch (finalActions.get(item)) {
+					case GOTO_END_VAR:  ctrl.gotoMove(Integer.MAX_VALUE); break;
+					case GOTO_NEXT_VAR: ctrl.changeVariation(1); break;
+					}
+				}
 			});
 			AlertDialog alert = builder.create();
 			return alert;

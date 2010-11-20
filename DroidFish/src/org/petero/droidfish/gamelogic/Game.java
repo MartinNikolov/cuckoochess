@@ -251,6 +251,15 @@ public class Game {
     	return nChildren;
     }
 
+    public final int currVariation() {
+    	if (tree.currentNode == tree.rootNode)
+    		return 0;
+    	tree.goBack();
+    	int defChild = tree.currentNode.defaultChild;
+    	tree.goForward(-1);
+    	return defChild;
+    }
+
     public final void changeVariation(int delta) {
     	if (tree.currentNode == tree.rootNode)
     		return;
