@@ -249,6 +249,25 @@ public class GameTest {
     }
 
     /**
+     * Test of draw offer/accept/request command.
+     */
+    @Test
+    public void testDrawBug() throws ChessParseError {
+        Game game = new Game(null, null, 0, 0, 0);
+        assertEquals(false, game.haveDrawOffer());
+        game.processString("e4");
+        game.processString("c5");
+        assertEquals(Game.GameState.ALIVE, game.getGameState());
+		game.processString("draw accept");
+        assertEquals(Game.GameState.ALIVE, game.getGameState());
+		game.processString("draw rep");
+        assertEquals(Game.GameState.ALIVE, game.getGameState());
+		game.processString("draw 50");
+        assertEquals(Game.GameState.ALIVE, game.getGameState());
+        assertEquals(Piece.EMPTY, game.tree.currentPos.getPiece(TextIO.getSquare("e5")));
+    }
+
+    /**
      * Test of resign command, of class Game.
      */
     @Test

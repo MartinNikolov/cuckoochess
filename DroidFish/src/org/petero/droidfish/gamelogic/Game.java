@@ -357,9 +357,13 @@ public class Game {
         if (drawCmd.startsWith("rep") || drawCmd.startsWith("50")) {
             boolean rep = drawCmd.startsWith("rep");
             Move m = null;
-            String ms = drawCmd.substring(drawCmd.indexOf(" ") + 1);
-            if (ms.length() > 0) {
-                m = TextIO.stringToMove(pos, ms);
+            String ms = null;
+            int firstSpace = drawCmd.indexOf(" ");
+            if (firstSpace >= 0) {
+            	ms = drawCmd.substring(firstSpace + 1);
+            	if (ms.length() > 0) {
+            		m = TextIO.stringToMove(pos, ms);
+            	}
             }
             boolean valid;
             if (rep) {
