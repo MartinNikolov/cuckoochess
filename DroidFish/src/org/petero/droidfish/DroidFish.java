@@ -14,6 +14,7 @@ import org.petero.droidfish.activities.EditHeaders;
 import org.petero.droidfish.activities.EditPGNLoad;
 import org.petero.droidfish.activities.EditPGNSave;
 import org.petero.droidfish.activities.Preferences;
+import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
@@ -34,6 +35,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
@@ -818,7 +821,15 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 		case ABOUT_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.app_name).setMessage(R.string.about_info);
+			String aboutString = String.format(getString(R.string.about_info),
+											   ComputerPlayer.engineName);
+			String title = getString(R.string.app_name);
+			try {
+				PackageInfo pi = getPackageManager().getPackageInfo("org.petero.droidfish", 0);
+				title += " " + pi.versionName;
+			} catch (NameNotFoundException e) {
+			}
+			builder.setTitle(title).setMessage(aboutString);
 			AlertDialog alert = builder.create();
 			return alert;
 		}
