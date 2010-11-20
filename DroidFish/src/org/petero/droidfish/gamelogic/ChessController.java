@@ -217,11 +217,13 @@ public class ChessController {
     	updateGamePaused();
     }
 
-    private final void updateGamePaused() {
+    private final void updateGamePaused() { // FIXME! Rename
     	if (game != null) {
     		boolean gamePaused = !gameMode.clocksActive() || (humansTurn() && guiPaused);
     		game.setGamePaused(gamePaused);
     		updateRemainingTime();
+    		boolean addFirst = gameMode.clocksActive();
+    		game.setAddFirst(addFirst);
     	}
     }
 
@@ -412,6 +414,13 @@ public class ChessController {
     	updateComputeThreads(true);
     	setSelection();
     	updateGUI();
+    }
+
+    public final void moveVariation(int delta) {
+    	if (game.numVariations() > 1) {
+			game.moveVariation(delta);
+    		updateGUI();
+    	}
     }
 
 	public final void addVariation(String preComment, List<Move> pvMoves) {

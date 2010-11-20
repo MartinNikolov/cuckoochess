@@ -22,6 +22,7 @@ public class Game {
     private ComputerPlayer computerPlayer;
     TimeControl timeController;
     private boolean gamePaused;
+    private boolean addFirst;
 
     PgnToken.PgnTokenReceiver gameTextListener;
 
@@ -50,6 +51,10 @@ public class Game {
 			this.gamePaused = gamePaused;
 	        updateTimeControl(false);
 		}
+	}
+
+	public final void setAddFirst(boolean addFirst) {
+		this.addFirst = addFirst;
 	}
 
 	final void setPos(Position pos) {
@@ -156,8 +161,9 @@ public class Game {
         	String moveStr = TextIO.moveToUCIString(m);
         	varNo = tree.addMove(moveStr, playerAction, 0, "", "");
         }
-        tree.reorderVariation(varNo, 0);
-        tree.goForward(0);
+        int newPos = addFirst ? 0 : varNo;
+        tree.reorderVariation(varNo, newPos);
+        tree.goForward(newPos);
         int remaining = timeController.moveMade(System.currentTimeMillis(), !gamePaused);
         tree.setRemainingTime(remaining);
         updateTimeControl(true);
@@ -255,6 +261,21 @@ public class Game {
     	newChild = Math.max(newChild, 0);
     	newChild = Math.min(newChild, nChildren - 1);
     	tree.goForward(newChild);
+        pendingDrawOffer = false;
+        updateTimeControl(true);
+    }
+
+    public final void moveVariation(int delta) {
+    	if (tree.currentNode == tree.rootNode)
+    		return;
+    	tree.goBack();
+    	int varNo = tree.currentNode.defaultChild;
+    	int nChildren = tree.variations().size();
+    	int newPos = varNo + delta;
+    	newPos = Math.max(newPos, 0);
+    	newPos = Math.min(newPos, nChildren - 1);
+        tree.reorderVariation(varNo, newPos);
+    	tree.goForward(newPos);
         pendingDrawOffer = false;
         updateTimeControl(true);
     }

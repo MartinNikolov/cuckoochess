@@ -72,7 +72,6 @@ public class DroidFish extends Activity implements GUIInterface {
 	// FIXME!!! Current position in game should be visible: moveListScroll.scrollTo(0, y);
 
 	// FIXME!!! PGN view option: game continuation (for training)
-	// FIXME!!! PGN view option: Promote played variations to mainline (default true)
 	// FIXME!!! Implement "revert to mainline": Go back, set default to follow mainline back/forward from point.
 	// FIXME!!! Command to go to next/previous move in PGN export order.
 	// FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
@@ -598,15 +597,15 @@ public class DroidFish extends Activity implements GUIInterface {
 		}
 	}
 
-	public void onUndoButtonClicked(View view) {
+	public final void onUndoButtonClicked(View view) {
 		ctrl.undoMove();
 	}
 
-	public void onRedoButtonClicked(View view) {
+	public final void onRedoButtonClicked(View view) {
 		ctrl.redoMove();
 	}
 
-	public void onModeButtonClicked(View view) {
+	public final void onModeButtonClicked(View view) {
     	showDialog(GAME_MODE_DIALOG);
 	}
 
@@ -1062,6 +1061,8 @@ public class DroidFish extends Activity implements GUIInterface {
 			final int EDIT_HEADERS   = 0;
 			final int EDIT_COMMENTS  = 1;
 			final int REMOVE_SUBTREE = 2;
+			final int MOVE_VAR_UP    = 3;
+			final int MOVE_VAR_DOWN  = 4;
 
 			List<CharSequence> lst = new ArrayList<CharSequence>();
 			List<Integer> actions = new ArrayList<Integer>();
@@ -1070,6 +1071,10 @@ public class DroidFish extends Activity implements GUIInterface {
 				lst.add(getString(R.string.edit_comments)); actions.add(EDIT_COMMENTS);
 			}
 			lst.add(getString(R.string.truncate_gametree)); actions.add(REMOVE_SUBTREE);
+			if (ctrl.numVariations() > 1) {
+				lst.add(getString(R.string.move_var_up)); actions.add(MOVE_VAR_UP);
+				lst.add(getString(R.string.move_var_down)); actions.add(MOVE_VAR_DOWN);
+			}
 			final List<Integer> finalActions = actions;
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.edit_game);
@@ -1104,6 +1109,12 @@ public class DroidFish extends Activity implements GUIInterface {
 					}
 					case REMOVE_SUBTREE:
 						ctrl.removeSubTree();
+						break;
+					case MOVE_VAR_UP:
+						ctrl.moveVariation(-1);
+						break;
+					case MOVE_VAR_DOWN:
+						ctrl.moveVariation(1);
 						break;
 					}
 			    }
