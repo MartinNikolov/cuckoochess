@@ -91,10 +91,8 @@ public class EditPGN extends ListActivity {
 			action.equals("org.petero.droidfish.loadFileNextGame");
 			pgnFile = new PGNFile(fileName);
 			loadGame = true;
-//			showDialog(PROGRESS_DIALOG);
 			boolean next = action.equals("org.petero.droidfish.loadFileNextGame");
 			final int loadItem = defaultItem + (next ? 1 : -1);
-			System.out.printf("loadItem:%d\n", loadItem);
 			if (loadItem < 0) {
 				Toast.makeText(getApplicationContext(), R.string.no_prev_game,
 							   Toast.LENGTH_SHORT).show();
