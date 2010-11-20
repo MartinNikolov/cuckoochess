@@ -87,20 +87,6 @@
     	<item>12</item>
 	    <item>16</item>
 	</string-array>
-	<string-array name="game_mode_texts">
-	    <item>Play White</item>
-    	<item>Play Black</item>
-	    <item>Two Players</item>
-    	<item>Analysis</item>
-	    <item>Computer vs Computer</item>
-	</string-array>
-	<string-array name="game_mode_values">
-	    <item>1</item>
-    	<item>2</item>
-	    <item>3</item>
-    	<item>4</item>
-	    <item>5</item>
-	</string-array>
 	<string-array name="thinking_arrows_texts">
 	    <item>No arrows</item>
 	    <item>Max 1 Arrow</item>
@@ -242,10 +228,12 @@ you are not actively using the program.\
 	<string name="please_wait">Please wait...</string>
 	<string name="no_pgn_files">No files found in directory DroidFish/pgn on the SD card</string>
 	<string name="select_color_theme">Select Color Theme</string>
-	<string name="replay_game">Replay Game</string>
-	<string name="analyze_game">Analyze Game</string>
+	<string name="edit_replay_game">Edit/re-play Game</string>
+	<string name="analysis_mode">Analysis Mode</string>
 	<string name="play_white">Play White</string>
 	<string name="play_black">Play Black</string>
+	<string name="two_players">Two Players</string>
+	<string name="comp_vs_comp">Computer vs Computer</string>
 	<string name="edit_game">Edit Game</string>
 	<string name="edit_headers">Edit Headers</string>
 	<string name="edit_comments">Edit Comments</string>

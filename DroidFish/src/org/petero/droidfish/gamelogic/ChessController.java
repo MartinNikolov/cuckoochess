@@ -219,12 +219,12 @@ public class ChessController {
 
     private final void updateGamePaused() {
     	if (game != null) {
-    		boolean gamePaused = gameMode.analysisMode() || (humansTurn() && guiPaused);
+    		boolean gamePaused = !gameMode.clocksActive() || (humansTurn() && guiPaused);
     		game.setGamePaused(gamePaused);
     		updateRemainingTime();
     	}
     }
-    
+
     private final void updateComputeThreads(boolean clearPV) {
     	boolean analysis = gameMode.analysisMode();
     	boolean computersTurn = !humansTurn();
@@ -270,8 +270,7 @@ public class ChessController {
 			game.tree.setPlayerNames(white, black);
 		}
 	}
-	
-	
+
 	public final void fromByteArray(byte[] data) {
 		game.fromByteArray(data);
     }

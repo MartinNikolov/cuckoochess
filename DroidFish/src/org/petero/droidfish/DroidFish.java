@@ -588,7 +588,6 @@ public class DroidFish extends Activity implements GUIInterface {
 				try {
 					String pgn = data.getAction();
 					ctrl.setFENOrPGN(pgn);
-	            	showDialog(VIEW_GAME_DIALOG);
 				} catch (ChessParseError e) {
 					Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
@@ -613,6 +612,18 @@ public class DroidFish extends Activity implements GUIInterface {
 			}
 			break;
 		}
+	}
+
+	public void onUndoButtonClicked(View view) {
+		ctrl.undoMove();
+	}
+
+	public void onRedoButtonClicked(View view) {
+		ctrl.redoMove();
+	}
+
+	public void onModeButtonClicked(View view) {
+    	showDialog(GAME_MODE_DIALOG);
 	}
 
 	private final void setBoardFlip() {
@@ -741,7 +752,7 @@ public class DroidFish extends Activity implements GUIInterface {
 	static private final int SELECT_PGN_FILE_DIALOG = 5;
 	static private final int SELECT_PGN_FILE_SAVE_DIALOG = 6;
 	static private final int SET_COLOR_THEME_DIALOG = 7;
-	static private final int VIEW_GAME_DIALOG = 8;
+	static private final int GAME_MODE_DIALOG = 8;
 	static private final int SELECT_PGN_SAVE_NEWFILE_DIALOG = 9;
 	static private final int MOVELIST_MENU_DIALOG = 10;
 	static private final int THINKING_MENU_DIALOG = 11;
@@ -1027,33 +1038,27 @@ public class DroidFish extends Activity implements GUIInterface {
 			});
 			return builder.create();
 		}
-		case VIEW_GAME_DIALOG: {
+		case GAME_MODE_DIALOG: {
 			final CharSequence[] items = {
-				getString(R.string.replay_game), getString(R.string.analyze_game),
-				getString(R.string.play_white), getString(R.string.play_black)
+				getString(R.string.analysis_mode),
+				getString(R.string.edit_replay_game),
+				getString(R.string.play_white),
+				getString(R.string.play_black),
+				getString(R.string.two_players),
+				getString(R.string.comp_vs_comp)
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					int gameModeType = -1;
-					boolean startAtEnd = false;
 					switch (item) {
-					case 0: // Replay
-						gameModeType = GameMode.TWO_PLAYERS;
-						break;
-					case 1: // Analyze
-						gameModeType = GameMode.ANALYSIS;
-						break;
-					case 2: // Play white
-						gameModeType = GameMode.PLAYER_WHITE;
-						startAtEnd = true;
-						break;
-					case 3: // Play black
-						gameModeType = GameMode.PLAYER_BLACK;
-						startAtEnd = true;
-						break;
-					default:
-						break;
+					case 0: gameModeType = GameMode.ANALYSIS;      break;
+					case 1: gameModeType = GameMode.EDIT_GAME;     break;
+					case 2: gameModeType = GameMode.PLAYER_WHITE;  break;
+					case 3: gameModeType = GameMode.PLAYER_BLACK;  break;
+					case 4: gameModeType = GameMode.TWO_PLAYERS;   break;
+					case 5: gameModeType = GameMode.TWO_COMPUTERS; break;
+					default: break;
 					}
 					dialog.dismiss();
 					if (gameModeType >= 0) {
@@ -1064,7 +1069,6 @@ public class DroidFish extends Activity implements GUIInterface {
 						gameMode = new GameMode(gameModeType);
 						ctrl.setGameMode(gameMode);
 					}
-					ctrl.gotoMove(startAtEnd ? Integer.MAX_VALUE : 0);
 				}
 			});
 			AlertDialog alert = builder.create();
