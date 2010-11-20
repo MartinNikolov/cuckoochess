@@ -515,22 +515,6 @@ public class DroidFish extends Activity implements GUIInterface {
 			startActivityForResult(i, RESULT_SETTINGS);
 			return true;
 		}
-		case R.id.item_undo:
-			ctrl.undoMove();
-			new Handler().postDelayed(new Runnable() {
-				public void run() {
-					openOptionsMenu();
-				}
-			}, 0);
-			return true;
-		case R.id.item_redo:
-			ctrl.redoMove();
-			new Handler().postDelayed(new Runnable() {
-				public void run() {
-					openOptionsMenu();
-				}
-			}, 0);
-			return true;
 		case R.id.item_goto_move: {
 			showDialog(SELECT_MOVE_DIALOG);
 			return true;
