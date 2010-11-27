@@ -9,9 +9,12 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,13 +31,31 @@ public class LoadScid extends ListActivity {
     }
 
     private static Vector<GameInfo> gamesInFile = new Vector<GameInfo>();
+    private static boolean cacheValid = false;
     private String fileName;
     private ProgressDialog progress;
-    private static int defaultItem = 0;
+
+    private SharedPreferences settings;
+    private int defaultItem = 0;
+    private String lastFileName = "";
+    private long lastModTime = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        if (savedInstanceState != null) {
+            defaultItem = savedInstanceState.getInt("defaultScidItem");
+            lastFileName = savedInstanceState.getString("lastScidFileName");
+            if (lastFileName == null) lastFileName = "";
+            lastModTime = savedInstanceState.getLong("lastScidModTime");
+        } else {
+            defaultItem = settings.getInt("defaultScidItem", 0);
+            lastFileName = settings.getString("lastScidFileName", "");
+            lastModTime = settings.getLong("lastScidModTime", 0);
+        }
+
         Intent i = getIntent();
         fileName = i.getAction();
         showDialog(PROGRESS_DIALOG);
@@ -49,6 +70,24 @@ public class LoadScid extends ListActivity {
                 });
             }
         }).start();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("defaultScidItem", defaultItem);
+        outState.putString("lastScidFileName", lastFileName);
+        outState.putLong("lastScidModTime", lastModTime);
+    }
+
+    @Override
+    protected void onPause() {
+        Editor editor = settings.edit();
+        editor.putInt("defaultScidItem", defaultItem);
+        editor.putString("lastScidFileName", lastFileName);
+        editor.putLong("lastScidModTime", lastModTime);
+        editor.commit();
+        super.onPause();
     }
 
     private final void showList() {
@@ -84,14 +123,11 @@ public class LoadScid extends ListActivity {
         }
     }
 
-    static long lastModTime = -1;
-    static String lastFileName = "";
-
     private final void readFile() {
         if (!fileName.equals(lastFileName))
             defaultItem = 0;
         long modTime = new File(fileName).lastModified();
-        if ((modTime == lastModTime) && fileName.equals(lastFileName))
+        if (cacheValid && (modTime == lastModTime) && fileName.equals(lastFileName))
             return;
         lastModTime = modTime;
         lastFileName = fileName;
@@ -121,6 +157,7 @@ public class LoadScid extends ListActivity {
                 }
             }
         }
+        cacheValid = true;
     }
 
     private Cursor getListCursor() {
