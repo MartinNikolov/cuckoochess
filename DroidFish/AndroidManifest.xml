@@ -30,6 +30,10 @@
         		  android:label="Edit File / Save Game"
         		  android:configChanges="orientation">
         </activity>
+        <activity android:name=".activities.LoadScid"
+                  android:label="Load Scid Game"
+                  android:configChanges="orientation">
+        </activity>
         <activity android:name=".activities.CPUWarning"
         		  android:label="CPU Warning">
         </activity>
