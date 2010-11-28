@@ -88,7 +88,6 @@ public class EditPGN extends ListActivity {
 			}).start();
 		} else if (action.equals("org.petero.droidfish.loadFileNextGame") ||
 				   action.equals("org.petero.droidfish.loadFilePrevGame")) {
-			action.equals("org.petero.droidfish.loadFileNextGame");
 			pgnFile = new PGNFile(fileName);
 			loadGame = true;
 			boolean next = action.equals("org.petero.droidfish.loadFileNextGame");

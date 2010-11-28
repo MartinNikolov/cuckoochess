@@ -92,7 +92,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
-    // FIXME!!! Load next/previous game should work on scid files too.
     // FIXME!!! File operations submenu.
 
     private ChessBoard cb;
@@ -971,6 +970,7 @@ public class DroidFish extends Activity implements GUIInterface {
                     Editor editor = settings.edit();
                     String pgnFile = fileNames[item].toString();
                     editor.putString("currentPGNFile", pgnFile);
+                    editor.putInt("currFT", FT_PGN);
                     editor.commit();
                     String sep = File.separator;
                     String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
@@ -1008,11 +1008,13 @@ public class DroidFish extends Activity implements GUIInterface {
                     Editor editor = settings.edit();
                     String scidFile = fileNames[item].toString();
                     editor.putString("currentScidFile", scidFile);
+                    editor.putInt("currFT", FT_SCID);
                     editor.commit();
                     String sep = File.separator;
                     String pathName = Environment.getExternalStorageDirectory() + sep + scidDir + sep + scidFile;
                     Intent i = new Intent(DroidFish.this, LoadScid.class);
-                    i.setAction(pathName);
+                    i.setAction("org.petero.droidfish.loadScid");
+                    i.putExtra("org.petero.droidfish.pathname", pathName);
                     startActivityForResult(i, RESULT_LOAD_PGN);
                     dialog.dismiss();
                 }
@@ -1262,8 +1264,9 @@ public class DroidFish extends Activity implements GUIInterface {
             if (ctrl.currVariation() > 0) {
                 lst.add(getString(R.string.goto_prev_variation)); actions.add(GOTO_PREV_VAR);
             }
-            final String pgnFile = settings.getString("currentPGNFile", "");
-            if ((pgnFile.length() > 0) && !gameMode.clocksActive()) {
+            final int currFT = currFileType();
+            final String currFileName = currFileName();
+            if (currFT != FT_NONE) {
                 lst.add(getString(R.string.load_prev_game)); actions.add(LOAD_PREV_GAME);
             }
             final List<Integer> finalActions = actions;
@@ -1277,10 +1280,17 @@ public class DroidFish extends Activity implements GUIInterface {
                     case GOTO_PREV_VAR:   ctrl.changeVariation(-1); break;
                     case LOAD_PREV_GAME:
                         String sep = File.separator;
-                        String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
-                        Intent i = new Intent(DroidFish.this, EditPGNLoad.class);
-                        i.setAction("org.petero.droidfish.loadFilePrevGame");
-                        i.putExtra("org.petero.droidfish.pathname", pathName);
+                        String pathName = Environment.getExternalStorageDirectory() + sep;
+                        Intent i;
+                        if (currFT == FT_PGN) {
+                            i = new Intent(DroidFish.this, EditPGNLoad.class);
+                            i.setAction("org.petero.droidfish.loadFilePrevGame");
+                            i.putExtra("org.petero.droidfish.pathname", pathName + pgnDir + sep + currFileName);
+                        } else {
+                            i = new Intent(DroidFish.this, LoadScid.class);
+                            i.setAction("org.petero.droidfish.loadScidPrevGame");
+                            i.putExtra("org.petero.droidfish.pathname", pathName + scidDir + sep + currFileName);
+                        }
                         startActivityForResult(i, RESULT_LOAD_PGN);
                         break;
                     }
@@ -1300,8 +1310,9 @@ public class DroidFish extends Activity implements GUIInterface {
             if (ctrl.currVariation() < ctrl.numVariations() - 1) {
                 lst.add(getString(R.string.goto_next_variation)); actions.add(GOTO_NEXT_VAR);
             }
-            final String pgnFile = settings.getString("currentPGNFile", "");
-            if ((pgnFile.length() > 0) && !gameMode.clocksActive()) {
+            final int currFT = currFileType();
+            final String currFileName = currFileName();
+            if (currFT != FT_NONE) {
                 lst.add(getString(R.string.load_next_game)); actions.add(LOAD_NEXT_GAME);
             }
             final List<Integer> finalActions = actions;
@@ -1314,10 +1325,17 @@ public class DroidFish extends Activity implements GUIInterface {
                     case GOTO_NEXT_VAR: ctrl.changeVariation(1); break;
                     case LOAD_NEXT_GAME:
                         String sep = File.separator;
-                        String pathName = Environment.getExternalStorageDirectory() + sep + pgnDir + sep + pgnFile;
-                        Intent i = new Intent(DroidFish.this, EditPGNLoad.class);
-                        i.setAction("org.petero.droidfish.loadFileNextGame");
-                        i.putExtra("org.petero.droidfish.pathname", pathName);
+                        String pathName = Environment.getExternalStorageDirectory() + sep;
+                        Intent i;
+                        if (currFT == FT_PGN) {
+                            i = new Intent(DroidFish.this, EditPGNLoad.class);
+                            i.setAction("org.petero.droidfish.loadFileNextGame");
+                            i.putExtra("org.petero.droidfish.pathname", pathName + pgnDir + sep + currFileName);
+                        } else {
+                            i = new Intent(DroidFish.this, LoadScid.class);
+                            i.setAction("org.petero.droidfish.loadScidNextGame");
+                            i.putExtra("org.petero.droidfish.pathname", pathName + scidDir + sep + currFileName);
+                        }
                         startActivityForResult(i, RESULT_LOAD_PGN);
                         break;
                     }
@@ -1328,6 +1346,26 @@ public class DroidFish extends Activity implements GUIInterface {
         }
         }
         return null;
+    }
+
+    final static int FT_NONE = 0;
+    final static int FT_PGN  = 1;
+    final static int FT_SCID = 2;
+
+    private final int currFileType() {
+        if (gameMode.clocksActive())
+            return FT_NONE;
+        int ft = settings.getInt("currFT", FT_NONE);
+        return ft;
+    }
+
+    private final String currFileName() {
+        int ft = settings.getInt("currFT", FT_NONE);
+        switch (ft) {
+        case FT_PGN:  return settings.getString("currentPGNFile", "");
+        case FT_SCID: return settings.getString("currentScidFile", "");
+        default: return "";
+        }
     }
 
     private final String[] findFilesInDirectory(String dirName, final String endsWith) {
@@ -1658,7 +1696,7 @@ public class DroidFish extends Activity implements GUIInterface {
         }
     }
 
-    private boolean hasScidProvider() {
+    private final boolean hasScidProvider() {
         List<ProviderInfo> providers = getPackageManager().queryContentProviders(null, 0, 0);
         for (ProviderInfo info : providers)
             if (info.authority.equals("org.scid.database.scidprovider"))

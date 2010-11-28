@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class LoadScid extends ListActivity {
@@ -57,19 +58,54 @@ public class LoadScid extends ListActivity {
         }
 
         Intent i = getIntent();
-        fileName = i.getAction();
-        showDialog(PROGRESS_DIALOG);
-        final LoadScid lpgn = this;
-        new Thread(new Runnable() {
-            public void run() {
-                readFile();
-                runOnUiThread(new Runnable() {
+        String action = i.getAction();
+        fileName = i.getStringExtra("org.petero.droidfish.pathname");
+        if (action.equals("org.petero.droidfish.loadScid")) {
+            showDialog(PROGRESS_DIALOG);
+            final LoadScid lpgn = this;
+            new Thread(new Runnable() {
+                public void run() {
+                    readFile();
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            lpgn.showList();
+                        }
+                    });
+                }
+            }).start();
+        } else if (action.equals("org.petero.droidfish.loadScidNextGame") ||
+                   action.equals("org.petero.droidfish.loadScidPrevGame")) {
+            boolean next = action.equals("org.petero.droidfish.loadScidNextGame");
+            final int loadItem = defaultItem + (next ? 1 : -1);
+            if (loadItem < 0) {
+                Toast.makeText(getApplicationContext(), R.string.no_prev_game,
+                        Toast.LENGTH_SHORT).show();
+                setResult(RESULT_CANCELED);
+                finish();
+            } else {
+                new Thread(new Runnable() {
                     public void run() {
-                        lpgn.showList();
+                        readFile();
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                if (loadItem >= gamesInFile.size()) {
+                                    Toast.makeText(getApplicationContext(), R.string.no_next_game,
+                                                   Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_CANCELED);
+                                    finish();
+                                } else {
+                                    defaultItem = loadItem;
+                                    sendBackResult(gamesInFile.get(loadItem));
+                                }
+                            }
+                        });
                     }
-                });
+                }).start();
             }
-        }).start();
+        } else { // Unsupported action
+            setResult(RESULT_CANCELED);
+            finish();
+        }
     }
 
     @Override
