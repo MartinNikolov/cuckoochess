@@ -904,15 +904,13 @@ public class DroidFish extends Activity implements GUIInterface {
         }
         case ABOUT_DIALOG: {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            String aboutString = String.format(getString(R.string.about_info),
-                                               ComputerPlayer.engineName);
             String title = getString(R.string.app_name);
             try {
                 PackageInfo pi = getPackageManager().getPackageInfo("org.petero.droidfish", 0);
                 title += " " + pi.versionName;
             } catch (NameNotFoundException e) {
             }
-            builder.setTitle(title).setMessage(aboutString);
+            builder.setTitle(title).setMessage(R.string.about_info);
             AlertDialog alert = builder.create();
             return alert;
         }

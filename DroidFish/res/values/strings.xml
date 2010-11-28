@@ -123,7 +123,7 @@
 	</string-array>
 	<string name="about_info">\
 <b>About</b>\n\
-<i>DroidFish</i> is an Android port of the famous <i>%s</i> chess engine. \
+<i>DroidFish</i> is an Android port of the famous <i>stockfish 1.9.1</i> chess engine. \
 <i>Stockfish</i> is one of the strongest chess engines in the world. \
 The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\n\
 \n\
@@ -168,6 +168,11 @@ and select <i>Save game to PGN file</i>.\n\
 To add computer analysis to the game tree, long press the analysis information \
 when the computer is thinking and select <i>Add Analysis</i>. The current PV is \
 added as a variation in the game tree.\n\
+\n\
+<b>Scid files</b>\n\
+If you have <i>Scid on the go</i> installed, you can read Scid database files \
+directly from DroidFish. Long press the chess board and select <i>Load game from \
+Scid file</i>.\n\
 \n\
 <b>License</b>\n\
 GNU GPL v3\n\
