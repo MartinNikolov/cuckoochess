@@ -64,10 +64,11 @@ public class ColorTheme {
 			String prefName = prefPrefix + prefNames[i];
 			String defaultColor = themeColors[defaultTheme][i];
 			String colorString = settings.getString(prefName, defaultColor);
+            colorTable[i] = 0;
 			try {
 				colorTable[i] = Color.parseColor(colorString);
 			} catch (IllegalArgumentException e) {
-				colorTable[i] = 0;
+			} catch (StringIndexOutOfBoundsException e) {
 			}
 		}
 	}
