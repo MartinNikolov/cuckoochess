@@ -24,7 +24,6 @@
             android:id="@+id/modeButton"
             android:layout_width="36dp"
             android:layout_height="32dp"
-            android:onClick="onModeButtonClicked"
             android:src="@drawable/mode">
         </ImageButton>
 		<ImageButton
@@ -32,7 +31,6 @@
             android:layout_width="36dp"
             android:layout_height="32dp"
             android:longClickable="true"
-            android:onClick="onUndoButtonClicked"
             android:src="@drawable/left_small">
         </ImageButton>
 		<ImageButton
@@ -40,7 +38,6 @@
             android:layout_width="36dp"
             android:layout_height="32dp"
             android:longClickable="true"
-            android:onClick="onRedoButtonClicked"
             android:src="@drawable/right_small">
         </ImageButton>
 	</LinearLayout>

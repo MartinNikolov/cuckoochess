@@ -92,6 +92,8 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
+    // FIXME!!! Load next/previous game should work on scid files too.
+    // FIXME!!! File operations submenu.
 
     private ChessBoard cb;
     private ChessController ctrl = null;
@@ -348,7 +350,20 @@ public class DroidFish extends Activity implements GUIInterface {
             }
         });
 
+        ImageButton modeButton = (ImageButton)findViewById(R.id.modeButton);
+        modeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialog(GAME_MODE_DIALOG);
+            }
+        });
         ImageButton undoButton = (ImageButton)findViewById(R.id.undoButton);
+        undoButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ctrl.undoMove();
+            }
+        });
         undoButton.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -358,6 +373,12 @@ public class DroidFish extends Activity implements GUIInterface {
             }
         });
         ImageButton redoButton = (ImageButton)findViewById(R.id.redoButton);
+        redoButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ctrl.redoMove();
+            }
+        });
         redoButton.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -620,18 +641,6 @@ public class DroidFish extends Activity implements GUIInterface {
             }
             break;
         }
-    }
-
-    public final void onUndoButtonClicked(View view) {
-        ctrl.undoMove();
-    }
-
-    public final void onRedoButtonClicked(View view) {
-        ctrl.redoMove();
-    }
-
-    public final void onModeButtonClicked(View view) {
-        showDialog(GAME_MODE_DIALOG);
     }
 
     private final void setBoardFlip() {
