@@ -136,6 +136,7 @@ public class LoadScid extends ListActivity {
         Cursor cursor = getListCursor();
         if (cursor != null) {
             int noGames = cursor.getCount();
+            gamesInFile.ensureCapacity(noGames);
             int percent = -1;
             if (cursor.moveToFirst()) {
                 addGameInfo(cursor);
@@ -160,14 +161,16 @@ public class LoadScid extends ListActivity {
         cacheValid = true;
     }
 
+    private int idIdx;
+    private int summaryIdx;
+
     private Cursor getListCursor() {
         String scidFileName = fileName.substring(0, fileName.indexOf("."));
         String[] proj = new String[]{"_id", "summary"};
-//        long t1 = System.currentTimeMillis();
         Cursor cursor = managedQuery(Uri.parse("content://org.scid.database.scidprovider/games"),
                                      proj, scidFileName, null, null);
-//        long t2 = System.currentTimeMillis();
-//        System.out.printf("queryTime: %d\n", (int)(t2 - t1));
+        idIdx = cursor.getColumnIndex("_id");
+        summaryIdx = cursor.getColumnIndex("summary");
         return cursor;
     }
 
@@ -182,9 +185,8 @@ public class LoadScid extends ListActivity {
 
     private void addGameInfo(Cursor cursor) {
         GameInfo gi = new GameInfo();
-        final int gameId = cursor.getInt(cursor.getColumnIndex("_id"));
-        gi.gameId = gameId;
-        gi.summary = cursor.getString(cursor.getColumnIndex("summary"));
+        gi.gameId = cursor.getInt(idIdx);
+        gi.summary = cursor.getString(summaryIdx);
         gamesInFile.add(gi);
     }
 
