@@ -559,6 +559,11 @@ public class DroidFish extends Activity implements GUIInterface {
             startActivityForResult(i, RESULT_SETTINGS);
             return true;
         }
+        case R.id.item_file_menu: {
+            removeDialog(FILE_MENU_DIALOG);
+            showDialog(FILE_MENU_DIALOG);
+            return true;
+        }
         case R.id.item_goto_move: {
             showDialog(SELECT_MOVE_DIALOG);
             return true;
@@ -775,6 +780,7 @@ public class DroidFish extends Activity implements GUIInterface {
     static private final int GO_BACK_MENU_DIALOG = 12;
     static private final int GO_FORWARD_MENU_DIALOG = 13;
     static private final int SELECT_SCID_FILE_DIALOG = 14;
+    static private final int FILE_MENU_DIALOG = 15;
 
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -815,7 +821,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.tools_menu);
-            builder.setItems(lst.toArray(new CharSequence[4]), new DialogInterface.OnClickListener() {
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case COPY_GAME: {
@@ -853,6 +859,42 @@ public class DroidFish extends Activity implements GUIInterface {
                     case SAVE_GAME:
                         removeDialog(SELECT_PGN_FILE_SAVE_DIALOG);
                         showDialog(SELECT_PGN_FILE_SAVE_DIALOG);
+                        break;
+                    }
+                }
+            });
+            AlertDialog alert = builder.create();
+            return alert;
+        }
+        case FILE_MENU_DIALOG: {
+            final int LOAD_GAME      = 0;
+            final int SAVE_GAME      = 1;
+            final int LOAD_SCID_GAME = 2;
+
+            List<CharSequence> lst = new ArrayList<CharSequence>();
+            List<Integer> actions = new ArrayList<Integer>();
+            lst.add(getString(R.string.load_game));     actions.add(LOAD_GAME);
+            lst.add(getString(R.string.save_game));     actions.add(SAVE_GAME);
+            if (hasScidProvider()) {
+                lst.add(getString(R.string.load_scid_game)); actions.add(LOAD_SCID_GAME);
+            }
+            final List<Integer> finalActions = actions;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.load_save_menu);
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int item) {
+                    switch (finalActions.get(item)) {
+                    case LOAD_GAME:
+                        removeDialog(SELECT_PGN_FILE_DIALOG);
+                        showDialog(SELECT_PGN_FILE_DIALOG);
+                        break;
+                    case SAVE_GAME:
+                        removeDialog(SELECT_PGN_FILE_SAVE_DIALOG);
+                        showDialog(SELECT_PGN_FILE_SAVE_DIALOG);
+                        break;
+                    case LOAD_SCID_GAME:
+                        removeDialog(SELECT_SCID_FILE_DIALOG);
+                        showDialog(SELECT_SCID_FILE_DIALOG);
                         break;
                     }
                 }
@@ -1169,7 +1211,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.edit_game);
-            builder.setItems(lst.toArray(new CharSequence[2]), new DialogInterface.OnClickListener() {
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case EDIT_HEADERS: {
@@ -1226,7 +1268,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.edit_game);
-            builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case ADD_ANALYSIS: {
@@ -1272,7 +1314,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.go_back);
-            builder.setItems(lst.toArray(new CharSequence[2]), new DialogInterface.OnClickListener() {
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case GOTO_START_GAME: ctrl.gotoMove(0); break;
@@ -1318,7 +1360,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.go_forward);
-            builder.setItems(lst.toArray(new CharSequence[1]), new DialogInterface.OnClickListener() {
+            builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case GOTO_END_VAR:  ctrl.gotoMove(Integer.MAX_VALUE); break;

@@ -201,7 +201,8 @@ you are not actively using the program.\
 	<string name="truncate_gametree">Truncate Game Tree</string>
 	<string name="move_var_up">Move Variation Up</string>
 	<string name="move_var_down">Move Variation Down</string>
-	<string name="tools_menu">Tools</string>
+    <string name="tools_menu">Tools</string>
+    <string name="load_save_menu">Load/Save Game</string>
 	<string name="goto_move">Goto move</string>
 	<string name="invalid_number_format">Invalid number format</string>
 	<string name="side_to_move">Side to Move</string>

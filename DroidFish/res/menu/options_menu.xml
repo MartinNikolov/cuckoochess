@@ -7,9 +7,9 @@
   		android:icon="@drawable/start">
 	</item>
 	<item
-		android:id="@+id/item_goto_move"
-		android:title="Goto Move"
-  		android:icon="@android:drawable/ic_menu_mylocation">
+		android:id="@+id/item_file_menu"
+		android:title="File"
+  		android:icon="@android:drawable/ic_menu_save">
 	</item>
 	<item
 		android:id="@+id/item_resign"
@@ -26,6 +26,11 @@
 	  	android:title="Settings"
   		android:icon="@android:drawable/ic_menu_preferences">
 	</item>
+    <item
+        android:id="@+id/item_goto_move"
+        android:title="Goto Move"
+        android:icon="@android:drawable/ic_menu_mylocation">
+    </item>
 	<item
 		android:id="@+id/item_force_move"
 		android:title="Force Computer Move">
