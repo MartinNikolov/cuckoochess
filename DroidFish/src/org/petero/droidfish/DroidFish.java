@@ -15,7 +15,6 @@ import org.petero.droidfish.activities.EditPGNLoad;
 import org.petero.droidfish.activities.EditPGNSave;
 import org.petero.droidfish.activities.LoadScid;
 import org.petero.droidfish.activities.Preferences;
-import org.petero.droidfish.engine.ComputerPlayer;
 import org.petero.droidfish.gamelogic.ChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
@@ -92,7 +91,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
-    // FIXME!!! File operations submenu.
 
     private ChessBoard cb;
     private ChessController ctrl = null;
