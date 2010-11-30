@@ -5,13 +5,16 @@
 
 package org.petero.droidfish.engine;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
+import org.petero.droidfish.gamelogic.Pair;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.SearchListener;
 import org.petero.droidfish.gamelogic.TextIO;
-import org.petero.droidfish.gamelogic.Pair;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 /**
@@ -33,8 +36,11 @@ public class ComputerPlayer {
     		npp.initialize();
     		npp.writeLineToProcess("uci");
     		readUCIOptions();
+    		int nThreads = getNumCPUs();
+    		if (nThreads > 8) nThreads = 8;
     		npp.writeLineToProcess("setoption name Hash value 16");
     		npp.writeLineToProcess("setoption name Ponder value false");
+    		npp.writeLineToProcess(String.format("setoption name Threads value %d", nThreads));
     		npp.writeLineToProcess("ucinewgame");
     		syncReady();
     	}
@@ -43,7 +49,25 @@ public class ComputerPlayer {
     	book = new Book(false);
     }
 
-	public final void setListener(SearchListener listener) {
+	private static int getNumCPUs() {
+        try {
+            FileReader fr = new FileReader("/proc/stat");
+            BufferedReader inBuf = new BufferedReader(fr);
+            String line;
+            int nCPUs = 0;
+            while ((line = inBuf.readLine()) != null) {
+                if ((line.length() >= 4) && line.startsWith("cpu") && Character.isDigit(line.charAt(3)))
+                    nCPUs++;
+            }
+            inBuf.close();
+            if (nCPUs < 1) nCPUs = 1;
+            return nCPUs;
+        } catch (IOException e) {
+            return 1;
+        }
+    }
+
+    public final void setListener(SearchListener listener) {
         this.listener = listener;
     }
 
