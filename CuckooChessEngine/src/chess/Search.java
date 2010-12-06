@@ -440,10 +440,6 @@ public class Search {
                 	if (score > MATE0 / 2)
                 		return beta;
                     return score;
-                } else {
-                    if ((score == -(MATE0-(ply+3))) && (ply < 2 * depth)) {
-                    	posExtend = 1; // mate threat extension
-                    }
                 }
             }
         }
