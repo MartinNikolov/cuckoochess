@@ -350,6 +350,33 @@ public class TextIO {
         return ret.toString();
     }
 
+    /** Convert a move object to UCI string format. */
+    public static final String moveToUCIString(Move m) {
+        String ret = squareToString(m.from);
+        ret += squareToString(m.to);
+        switch (m.promoteTo) {
+            case Piece.WQUEEN:
+            case Piece.BQUEEN:
+                ret += "q";
+                break;
+            case Piece.WROOK:
+            case Piece.BROOK:
+                ret += "r";
+                break;
+            case Piece.WBISHOP:
+            case Piece.BBISHOP:
+                ret += "b";
+                break;
+            case Piece.WKNIGHT:
+            case Piece.BKNIGHT:
+                ret += "n";
+                break;
+            default:
+                break;
+        }
+        return ret;
+    }
+
     private static boolean isCapture(Position pos, Move move) {
         if (pos.getPiece(move.to) == Piece.EMPTY) {
             int p = pos.getPiece(move.from);
