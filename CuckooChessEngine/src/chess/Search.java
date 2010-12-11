@@ -142,7 +142,6 @@ public class Search {
         }
         try {
         for (depth = 1; ; depth++) {
-            // FIXME!!! Order moves based on number of nodes in previous iteration
             initNodeStats();
             if (listener != null) listener.notifyDepth(depth);
             int alpha = depth > 1 ? Math.max(bestScoreLastIter - aspirationDelta, -Search.MATE0) : -Search.MATE0;

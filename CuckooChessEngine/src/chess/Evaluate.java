@@ -5,6 +5,9 @@
 
 package chess;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Position evaluation routines.
  * 
@@ -158,12 +161,25 @@ public class Evaluate {
     
     int [][] pieces;
     int [] nPieces;
-    
+    static byte[] kpkTable = null;
+
     /** Constructor. */
     public Evaluate() {
         firstPawn = new int[2][8];
         pieces = new int[Piece.nPieceTypes][64];
         nPieces = new int[Piece.nPieceTypes];
+        if (kpkTable == null) {
+            kpkTable = new byte[2*32*64*48/8];
+            InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
+            try {
+                int len = inStream.read(kpkTable);
+                if (len != kpkTable.length)
+                    throw new RuntimeException();
+                inStream.close();
+            } catch (IOException e) {
+                throw new RuntimeException();
+            }
+        }
     }
 
     /**
@@ -741,6 +757,10 @@ public class Evaluate {
                         score += 300;       // Enough excess material, should win
                     }
                     handled = true;
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.WPAWN] == 1)) { // KPK
+                    score = kpkEval(pos.getKingSq(true), pos.getKingSq(false),
+                                    pieces[Piece.WPAWN][0], pos.whiteMove);
+                    handled = true;
                 }
             }
         }
@@ -772,6 +792,10 @@ public class Evaluate {
                         score -= 300;       // Enough excess material, should win
                     }
                     handled = true;
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.BPAWN] == 1)) { // KPK
+                    score = -kpkEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
+                                     63-pieces[Piece.BPAWN][0], !pos.whiteMove);
+                    handled = true;
                 }
             }
         }
@@ -782,9 +806,29 @@ public class Evaluate {
             }
         }
 
-        // FIXME!!! Implement end game knowledge or EGTB for kpk
         // FIXME!!! Bishop + a|h pawn is draw if bad bishop and other king controls promotion square
         return score;
+    }
+
+    private static final int kpkEval(int wKing, int bKing, int wPawn, boolean whiteMove) {
+        if (Position.getX(wKing) >= 4) { // Mirror X
+            wKing ^= 7;
+            bKing ^= 7;
+            wPawn ^= 7;
+        }
+        int index = whiteMove ? 0 : 1;
+        index = index * 32 + Position.getY(wKing)*4+Position.getX(wKing);
+        index = index * 64 + bKing;
+        index = index * 48 + wPawn - 8;
+
+        int bytePos = index / 8;
+        int bitPos = index % 8;
+        boolean draw = (((int)kpkTable[bytePos]) & (1 << bitPos)) == 0;
+        if (draw)
+            return 0;
+        final int qV = pieceValue[Piece.WQUEEN];
+        final int pV = pieceValue[Piece.WPAWN];
+        return qV - pV / 4 * (7-Position.getY(wPawn));
     }
 
     /**
