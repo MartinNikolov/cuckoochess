@@ -427,10 +427,7 @@ public class Search {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
             }
-            int mtrl = Evaluate.material(pos, pos.whiteMove);
-            int pV = Evaluate.pieceValue[Piece.WPAWN];
-            int pMtrl = pV * pos.nPieces(pos.whiteMove ? Piece.WPAWN : Piece.BPAWN);
-            if (mtrl > pMtrl) {
+            if (pos.whiteMove ? (pos.wMtrl > pos.wMtrlPawns) : (pos.bMtrl > pos.bMtrlPawns)) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
                 boolean nextInCheck = MoveGen.inCheck(pos);

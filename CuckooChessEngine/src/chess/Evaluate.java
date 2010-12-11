@@ -195,10 +195,6 @@ public class Evaluate {
         return pos.wMtrl - pos.bMtrl;
     }
     
-    static final int material(Position pos, boolean white) {
-        return white ? pos.wMtrl : pos.bMtrl;
-    }
-
     /** Compute score based on piece square tables. Positive values are good for white. */
     private final int pieceSquareEval(Position pos) {
         int score = 0;
@@ -647,11 +643,11 @@ public class Evaluate {
         
         // Bishop pair bonus
         if (numWhite == 2) {
-        	final int numPawns = pos.nPieces(Piece.WPAWN);
+        	final int numPawns = nPieces[Piece.WPAWN];
         	score += 20 + (8 - numPawns) * 3;
         }
         if (numBlack == 2) {
-            final int numPawns = pos.nPieces(Piece.BPAWN);
+            final int numPawns = nPieces[Piece.BPAWN];
             score -= 20 + (8 - numPawns) * 3;
         }
 
@@ -726,8 +722,8 @@ public class Evaluate {
         if (!handled) {
             if (bMtrlPawns == 0) {
                 if (wMtrlNoPawns - bMtrlNoPawns > bV) {
-                    int wKnights = pos.nPieces(Piece.WKNIGHT);
-                    int wBishops = pos.nPieces(Piece.WBISHOP);
+                    int wKnights = nPieces[Piece.WKNIGHT];
+                    int wBishops = nPieces[Piece.WBISHOP];
                     if ((wKnights == 2) && (wMtrlNoPawns == 2 * nV) && (bMtrlNoPawns == 0)) {
                         score /= 50;    // KNNK is a draw
                     } else if ((wKnights == 1) && (wBishops == 1) && (wMtrlNoPawns == nV + bV) && (bMtrlNoPawns == 0)) {
@@ -757,8 +753,8 @@ public class Evaluate {
         if (!handled) {
             if (wMtrlPawns == 0) {
                 if (bMtrlNoPawns - wMtrlNoPawns > bV) {
-                    int bKnights = pos.nPieces(Piece.BKNIGHT);
-                    int bBishops = pos.nPieces(Piece.BBISHOP);
+                    int bKnights = nPieces[Piece.BKNIGHT];
+                    int bBishops = nPieces[Piece.BBISHOP];
                     if ((bKnights == 2) && (bMtrlNoPawns == 2 * nV) && (wMtrlNoPawns == 0)) {
                         score /= 50;    // KNNK is a draw
                     } else if ((bKnights == 1) && (bBishops == 1) && (bMtrlNoPawns == nV + bV) && (wMtrlNoPawns == 0)) {
