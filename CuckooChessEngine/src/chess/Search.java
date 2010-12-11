@@ -509,20 +509,25 @@ public class Search {
             int newCaptureSquare = -1;
             boolean isCapture = false;
             boolean isPromotion = (m.promoteTo != Piece.EMPTY);
+            int sVal = Integer.MIN_VALUE;
             if (pos.getPiece(m.to) != Piece.EMPTY) {
                 isCapture = true;
                 int fVal = Evaluate.pieceValue[pos.getPiece(m.from)];
                 int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
                 final int pV = Evaluate.pieceValue[Piece.WPAWN];
                 if (Math.abs(tVal - fVal) < pV / 2) {    // "Equal" capture
-                    int sVal = SEE(m);
+                    sVal = SEE(m);
                     if (Math.abs(sVal) < pV / 2)
                         newCaptureSquare = m.to;
                 }
             }
             int moveExtend = 0;
-            if (m.to == recaptureSquare) {
-                moveExtend = 1;
+            if ((m.to == recaptureSquare) && (posExtend == 0)) {
+                if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
+                int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                final int pV = Evaluate.pieceValue[Piece.WPAWN];
+                if (sVal > tVal - pV / 2)
+                    moveExtend = 1;
             }
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
