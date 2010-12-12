@@ -133,7 +133,7 @@ public class Search {
         maxTimeMillis = initialMaxTimeMillis;
         maxNodes = initialMaxNodes;
         Position origPos = new Position(pos);
-        final int aspirationDelta = 50;
+        final int aspirationDelta = 25;
         int bestScoreLastIter = 0;
         Move bestMove = scMoves.get(0).move;
         this.verbose = verbose;
