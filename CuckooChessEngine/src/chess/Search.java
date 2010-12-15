@@ -670,12 +670,13 @@ public class Search {
                 }
                 if ((pos.getPiece(m.to) == Piece.EMPTY) && (m.promoteTo == Piece.EMPTY)) {
                     // Non-capture
-                    if (!tryChecks) {
+                    if (!tryChecks)
                         continue;
-                    }
                     givesCheck = MoveGen.givesCheck(pos, m);
                     givesCheckComputed = true;
                     if (!givesCheck)
+                        continue;
+                    if (SEE(m) < 0) // Needed because m.score is not computed for non-captures
                         continue;
                 }
             }
