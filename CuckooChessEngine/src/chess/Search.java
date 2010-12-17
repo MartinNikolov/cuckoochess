@@ -525,10 +525,11 @@ public class Search {
                 if (sVal > tVal - pV / 2)
                     moveExtend = 1;
             }
+            boolean mayReduce = (!isCapture || m.score < 0) && !isPromotion;
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
             boolean doFutility = false;
-            if (futilityPrune && !isCapture && !isPromotion && haveLegalMoves) {
+            if (futilityPrune && mayReduce && haveLegalMoves) {
                 if (!givesCheck)
                 	doFutility = true;
             }
@@ -538,7 +539,7 @@ public class Search {
             } else {
             	int extend = Math.max(posExtend, moveExtend);
             	int lmr = 0;
-            	if ((depth >= 3) && !inCheck && !isCapture && (beta == alpha + 1) &&
+            	if ((depth >= 3) && mayReduce && (beta == alpha + 1) &&
             			(extend == 0) && !isPromotion) {
             		if (!givesCheck) {
             			lmrCount++;
