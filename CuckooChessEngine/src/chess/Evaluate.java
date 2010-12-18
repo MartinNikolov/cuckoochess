@@ -442,7 +442,7 @@ public class Evaluate {
 	 * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
 	 */
 	private int [][] firstPawn;
-    
+
     /** Compute nPawns[][] corresponding to pos. */
     final void computePawnHashData(Position pos, PawnHashData ph) {
     	byte[][] nPawns = ph.nPawns;
@@ -722,6 +722,7 @@ public class Evaluate {
         final int rV = pieceValue[Piece.WROOK];
     	if (pos.wMtrl + pos.bMtrl > 6 * rV)
     		return score;
+        final int pV = pieceValue[Piece.WPAWN];
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
         final int wMtrlPawns = pos.wMtrlPawns;
@@ -764,10 +765,28 @@ public class Evaluate {
                 }
             }
         }
-        if (!handled) {
-            if ((score > 0) && (wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
+        if (!handled && (score > 0)) {
+            if ((wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
                 score /= 8;         // Too little excess material, probably draw
                 handled = true;
+            } else if ((pos.wMtrl == pV + bV) && (nPieces[Piece.WPAWN] == 1) && (nPieces[Piece.WBISHOP] == 1)) {
+                // Check for rook pawn + wrong color bishop
+                int pFile = Position.getX(pieces[Piece.WPAWN][0]);
+                if ((pFile == 0) || (pFile == 7)) {
+                    int bSq = pieces[Piece.WBISHOP][0];
+                    boolean bDark = Position.darkSquare(Position.getX(bSq),
+                                                        Position.getY(bSq));
+                    if (bDark == (pFile == 0)) {
+                        int oKing = pos.getKingSq(false);
+                        int kx = Position.getX(oKing);
+                        int ky = Position.getY(oKing);
+                        if (((pFile == 0) && (kx <= 1) && (ky >= 6)) ||
+                            ((pFile == 7) && (kx >= 6) && (ky >= 6))) {
+                            score /= 50;
+                            handled = true;
+                        }
+                    }
+                }
             }
         }
         if (!handled) {
@@ -799,14 +818,31 @@ public class Evaluate {
                 }
             }
         }
-        if (!handled) {
-            if ((score < 0) && (bMtrlPawns == 0) && (bMtrlNoPawns <= wMtrlNoPawns + bV)) {
+        if (!handled && (score < 0)) {
+            if ((bMtrlPawns == 0) && (bMtrlNoPawns <= wMtrlNoPawns + bV)) {
                 score /= 8;         // Too little excess material, probably draw
                 handled = true;
+            } else if ((pos.bMtrl == pV + bV) && (nPieces[Piece.BPAWN] == 1) && (nPieces[Piece.BBISHOP] == 1)) {
+                // Check for rook pawn + wrong color bishop
+                int pFile = Position.getX(pieces[Piece.BPAWN][0]);
+                if ((pFile == 0) || (pFile == 7)) {
+                    int bSq = pieces[Piece.BBISHOP][0];
+                    boolean bDark = Position.darkSquare(Position.getX(bSq),
+                                                        Position.getY(bSq));
+                    if (bDark == (pFile == 7)) {
+                        int oKing = pos.getKingSq(true);
+                        int kx = Position.getX(oKing);
+                        int ky = Position.getY(oKing);
+                        if (((pFile == 0) && (kx <= 1) && (ky <= 1)) ||
+                            ((pFile == 7) && (kx >= 6) && (ky <= 1))) {
+                            score /= 50;
+                            handled = true;
+                        }
+                    }
+                }
             }
         }
 
-        // FIXME!!! Bishop + a|h pawn is draw if bad bishop and other king controls promotion square
         return score;
     }
 
