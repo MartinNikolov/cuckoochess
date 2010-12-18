@@ -197,7 +197,13 @@ public class EvaluateTest {
         int s2 = evalWhite(pos);
         assertTrue(s2 < s1);    // Half-open g-file is bad for white
 
-        // FIXME!!! Should not play Kf1: rnbqk1nr/pppp1ppp/8/8/1bBpP3/8/PPP2PPP/RNBQK1NR w KQkq - 2 4
+        // Trapping rook with own king is bad
+        pos = TextIO.readFEN("rnbqk1nr/pppp1ppp/8/8/1bBpP3/8/PPP2PPP/RNBQK1NR w KQkq - 2 4");
+        s1 = evalWhite(pos);
+        pos.setPiece(TextIO.getSquare("e1"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("f1"), Piece.WKING);
+        s2 = evalWhite(pos);
+        assertTrue(s2 < s1);
     }
 
     /**

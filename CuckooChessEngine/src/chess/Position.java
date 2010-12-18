@@ -464,4 +464,9 @@ public class Position {
             throw new UnsupportedOperationException("SHA-1 not available");
         }
     }
+
+    /** Useful for debugging. */
+    public final String toString() {
+        return TextIO.asciiBoard(this);
+    }
 }

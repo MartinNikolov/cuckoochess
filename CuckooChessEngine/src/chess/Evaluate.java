@@ -613,6 +613,13 @@ public class Evaluate {
                 	if (ph.nPawns[1-i][x] == 0) halfOpenFiles++;
                 }
                 safety = Math.min(safety, 6);
+                if (((xk == 5) || (xk == 6)) && (yk == (white ? 0 : 7))) {
+                    int myRook = white ? Piece.WROOK : Piece.BROOK;
+                    if (((pos.getPiece(yb + 6) == myRook) && (ph.nPawns[i][6] > 0)) ||
+                        ((pos.getPiece(yb + 7) == myRook) && (ph.nPawns[i][7] > 0))) {
+                        safety -= 5; // Trapped rook
+                    }
+                }
             }
             final int kSafety = (safety - 6) * 15 - halfOpenFiles * 20;
             if (white) {
