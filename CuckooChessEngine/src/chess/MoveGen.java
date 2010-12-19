@@ -406,7 +406,7 @@ public class MoveGen {
     	}
     	return false;
     }
-    
+
     /**
      * Return true if the side to move can take the opponents king.
      */
