@@ -26,9 +26,19 @@ public class Search {
     int posHashListSize;		// Number of used entries in posHashList
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
-    UndoInfo[] undoInfoVec;
-    Move[] hashMoveVec;
     int depth;
+
+    private static final class SearchTreeInfo {
+        UndoInfo undoInfo;
+        Move hashMove;
+        boolean allowNullMove;
+        SearchTreeInfo() {
+            undoInfo = new UndoInfo();
+            hashMove = new Move(0, 0, 0);
+            allowNullMove = true;
+        }
+    }
+    SearchTreeInfo[] searchTreeInfo;
 
     // Time management
     long tStart;            // Time when search started
@@ -67,11 +77,9 @@ public class Search {
         searchNeedMoreTime = false;
         maxNodes = -1;
         final int vecLen = 200;
-        undoInfoVec = new UndoInfo[vecLen];
-        hashMoveVec = new Move[vecLen];
+        searchTreeInfo = new SearchTreeInfo[vecLen];
         for (int i = 0; i < vecLen; i++) {
-        	undoInfoVec[i] = new UndoInfo();
-        	hashMoveVec[i] = new Move(0, 0, 0);
+            searchTreeInfo[i] = new SearchTreeInfo();
         }
     }
 
@@ -139,6 +147,9 @@ public class Search {
         this.verbose = verbose;
         if ((maxDepth < 0) || (maxDepth > 100)) {
         	maxDepth = 100;
+        }
+        for (int i = 0; i < searchTreeInfo.length; i++) {
+            searchTreeInfo[i].allowNullMove = true;
         }
         try {
         for (depth = 1; ; depth++) {
@@ -379,6 +390,7 @@ public class Search {
         // Check transposition table
         TTEntry ent = tt.probe(pos.historyHash());
         Move hashMove = null;
+        SearchTreeInfo sti = searchTreeInfo[ply];
         if (ent.type != TTEntry.T_EMPTY) {
             int score = ent.getScore(ply);
             evalScore = ent.evalScore;
@@ -390,7 +402,7 @@ public class Search {
                     return score;
                 }
             }
-            hashMove = hashMoveVec[ply];
+            hashMove = sti.hashMove;
             ent.getMove(hashMove);
         }
         
@@ -408,7 +420,7 @@ public class Search {
                     score = MATE0 - ply;
                 }
             }
-            
+
             int type = TTEntry.T_EXACT;
             if (score <= alpha) {
                 type = TTEntry.T_LE;
@@ -421,7 +433,7 @@ public class Search {
         }
 
         // Try null-move pruning
-        if (    (depth > 3) && (beta == alpha + 1) && !inCheck &&
+        if (    (depth >= 3) && (beta == alpha + 1) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
@@ -429,8 +441,10 @@ public class Search {
             if (pos.whiteMove ? (pos.wMtrl > pos.wMtrlPawns) : (pos.bMtrl > pos.bMtrlPawns)) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
-                boolean nextInCheck = MoveGen.inCheck(pos);
+                boolean nextInCheck = false;
+                searchTreeInfo[ply+1].allowNullMove = false;
                 int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, nextInCheck);
+                searchTreeInfo[ply+1].allowNullMove = true;
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                 	if (score > MATE0 / 2)
@@ -438,6 +452,7 @@ public class Search {
                     return score;
                 }
             }
+            // FIXME! Implement threat move detection
         }
 
         boolean futilityPrune = false;
@@ -461,17 +476,17 @@ public class Search {
                 }
             }
         }
-        
+
         if ((depth > 4) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
             // No hash move at PV node. Try internal iterative deepening.
-            negaScout(alpha, beta, ply, depth - 4, -1, inCheck);
+            negaScout(alpha, beta, ply, (depth > 8) ? (depth - 5) : (depth - 4), -1, inCheck);
             ent = tt.probe(pos.historyHash());
             if (ent.type != TTEntry.T_EMPTY) {
-            	hashMove = hashMoveVec[ply];
+            	hashMove = sti.hashMove;
                 ent.getMove(hashMove);
             }
         }
-        
+
         // Start searching move alternatives
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         boolean seeDone = false;
@@ -482,7 +497,7 @@ public class Search {
             hashMoveSelected = false;
         }
         
-        UndoInfo ui = undoInfoVec[ply];
+        UndoInfo ui = sti.undoInfo;
         boolean haveLegalMoves = false;
         int illegalScore = -(MATE0-(ply+1));
         int b = beta;
@@ -646,7 +661,7 @@ public class Search {
         	moves = moveGen.pseudoLegalMoves(pos);
         	scoreMoveList(moves, ply);
         }
-        UndoInfo ui = undoInfoVec[ply];
+        UndoInfo ui = searchTreeInfo[ply].undoInfo;
         final int nMoves = moves.size();
         for (int mi = 0; mi < nMoves; mi++) {
             if (mi < 8) {
