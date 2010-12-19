@@ -30,12 +30,16 @@ public class Search {
 
     private static final class SearchTreeInfo {
         UndoInfo undoInfo;
-        Move hashMove;
-        boolean allowNullMove;
+        Move hashMove;         // Temporary storage for local hashMove variable
+        boolean allowNullMove; // Don't allow two null-moves in a row
+        Move bestMove;         // Copy of the best found move at this ply
+        Move currentMove;      // Move currently being searched
+        int lmr;               // LMR reduction amount
         SearchTreeInfo() {
             undoInfo = new UndoInfo();
             hashMove = new Move(0, 0, 0);
             allowNullMove = true;
+            bestMove = new Move(0, 0, 0);
         }
     }
     SearchTreeInfo[] searchTreeInfo;
@@ -169,6 +173,8 @@ public class Search {
                 posHashList[posHashListSize++] = pos.zobristHash();
                 boolean givesCheck = MoveGen.givesCheck(pos, m);
                 pos.makeMove(m, ui);
+                searchTreeInfo[0].currentMove = m;
+                searchTreeInfo[0].lmr = 0;
                 int beta;
                 if (depth > 1) {
                     beta = (mi == 0) ? Math.min(bestScoreLastIter + aspirationDelta, Search.MATE0) : alpha + 1;
@@ -426,6 +432,7 @@ public class Search {
         }
 
         // Try null-move pruning
+        sti.currentMove = emptyMove;
         if (    (depth >= 3) && (beta == alpha + 1) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
@@ -434,18 +441,29 @@ public class Search {
             if (pos.whiteMove ? (pos.wMtrl > pos.wMtrlPawns) : (pos.bMtrl > pos.bMtrlPawns)) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
-                boolean nextInCheck = false;
                 searchTreeInfo[ply+1].allowNullMove = false;
-                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, nextInCheck);
+                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, false);
                 searchTreeInfo[ply+1].allowNullMove = true;
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                 	if (score > MATE0 / 2)
                 		return beta;
                     return score;
+                } else {
+                    if (searchTreeInfo[ply-1].lmr > 0) {
+                        Move m1 = searchTreeInfo[ply-1].currentMove;
+                        Move m2 = searchTreeInfo[ply+1].bestMove; // threat move
+                        if (m1.from != m1.to) {
+                            if ((m1.to == m2.from) || (m1.from == m2.to)) {
+                                // if the threat move was made possible by a reduced
+                                // move on the previous ply, the reduction was unsafe.
+                                // Return alpha to trigger a non-reduced re-search.
+                                return alpha;
+                            }
+                        }
+                    }
                 }
             }
-            // FIXME! Implement threat move detection
         }
 
         boolean futilityPrune = false;
@@ -558,6 +576,7 @@ public class Search {
             	}
             	posHashList[posHashListSize++] = pos.zobristHash();
             	pos.makeMove(m, ui);
+            	sti.currentMove = m;
                 int newDepth = depth - 1 + extend - lmr;
 /*            	int nodes0 = nodes;
             	int qNodes0 = qNodes;
@@ -568,8 +587,11 @@ public class Search {
                         System.out.printf("      ");
             	    System.out.printf("%-6s...\n", TextIO.moveToUCIString(m));
             	} */
+                sti.lmr = lmr;
             	score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
-            	if ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore)) {
+            	if (((lmr > 0) && (score > alpha)) ||
+            	    ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore))) {
+            	    sti.lmr = 0;
             		newDepth += lmr;
             		score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
             	}
@@ -592,6 +614,9 @@ public class Search {
             if (score > alpha) {
                 alpha = score;
                 bestMove = mi;
+                sti.bestMove.from      = m.from;
+                sti.bestMove.to        = m.to;
+                sti.bestMove.promoteTo = m.promoteTo;
             }
             if (alpha >= beta) {
                 if (pos.getPiece(m.to) == Piece.EMPTY) {
