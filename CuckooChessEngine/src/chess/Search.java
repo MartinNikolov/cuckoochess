@@ -128,7 +128,7 @@ public class Search {
             }
         }
     }
-    
+
     final public Move iterativeDeepening(ArrayList<Move> scMovesIn,
             int initialMinTimeMillis, int initialMaxTimeMillis,
             int maxDepth, int initialMaxNodes, boolean verbose) {
@@ -414,13 +414,6 @@ public class Search {
             totalNodes--;
             q0Eval = evalScore;
             int score = quiesce(alpha, beta, ply, 0, inCheck);
-            if (score >= beta) {
-                if (MoveGen.canTakeKing(pos)) {
-                    // To make stale-mate detection work
-                    score = MATE0 - ply;
-                }
-            }
-
             int type = TTEntry.T_EXACT;
             if (score <= alpha) {
                 type = TTEntry.T_LE;
@@ -646,8 +639,15 @@ public class Search {
         			q0Eval = score;
         	}
         }
-        if (score >= beta)
+        if (score >= beta) {
+            if ((depth == 0) && (score < MATE0 - ply)) {
+                if (MoveGen.canTakeKing(pos)) {
+                    // To make stale-mate detection work
+                    score = MATE0 - ply;
+                }
+            }
             return score;
+        }
         if (score > alpha)
             alpha = score;
         int bestScore = score;
