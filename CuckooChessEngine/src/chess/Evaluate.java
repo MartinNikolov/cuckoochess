@@ -139,12 +139,15 @@ public class Evaluate {
     private static final class PawnHashData {
     	PawnHashData() {
             nPawns = new byte[2][8];
+            passedPawns = new byte[2][8];
     	}
     	long key;
     	byte [][] nPawns;  // nPawns[0/1][file] contains the number of white/black pawns on a file.
     	int score;         // Positive score means good for white
     	int passedBonusW;
     	int passedBonusB;
+    	byte [][] passedPawns; // passedPawns[0/1][file] contains the row of the most advanced
+    	                       // passed pawn on a file, or 0 if there is no free pawn on that file.
     }
     PawnHashData ph;
     static PawnHashData[] pawnHash;
@@ -448,6 +451,7 @@ public class Evaluate {
     /** Compute nPawns[][] corresponding to pos. */
 	private final void computePawnHashData(Position pos, PawnHashData ph) {
     	byte[][] nPawns = ph.nPawns;
+    	byte[][] passedPawns = ph.passedPawns;
         for (int x = 0; x < 8; x++) {
             nPawns[0][x] = 0;
             nPawns[1][x] = 0;
@@ -512,6 +516,7 @@ public class Evaluate {
         int passedBonusW = 0;
         int passedBonusB = 0;
         for (int x = 0; x < 8; x++) {
+            passedPawns[0][x] = 0;
         	if (nPawns[0][x] > 0) {
         		int y = 6;
         		while (pos.getPiece(Position.getSquare(x, y)) != Piece.WPAWN)
@@ -526,8 +531,10 @@ public class Evaluate {
         				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y - 1)) == Piece.WPAWN)) {
         				passedBonusW += 15;  // Guarded passed pawn
         			}
+                    passedPawns[0][x] = (byte)y;
         		}
         	}
+            passedPawns[1][x] = 0;
         	if (nPawns[1][x] > 0) {
         		int y = 1;
         		while (pos.getPiece(Position.getSquare(x, y)) != Piece.BPAWN)
@@ -542,6 +549,7 @@ public class Evaluate {
         				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y + 1)) == Piece.BPAWN)) {
         				passedBonusB += 15;  // Guarded passed pawn
         			}
+                    passedPawns[1][x] = (byte)y;
         		}
             }
         }
@@ -852,7 +860,48 @@ public class Evaluate {
                 }
             }
         }
-
+        if (!handled) {
+            // In pawn end games, passed pawns not reachable by
+            // opponent king are very dangerous
+            int danger = 0;
+            if (bMtrlNoPawns == 0) {
+                int kingPos = pos.getKingSq(false);
+                int kingX = Position.getX(kingPos);
+                int kingY = Position.getY(kingPos);
+                for (int x = 0; x < 8; x++) {
+                    int y = ph.passedPawns[0][x];
+                    if (y > 0) {
+                        int pawnDist = Math.min(5, 7 - y);
+                        int kingDistX = Math.abs(kingX - x);
+                        int kingDistY = Math.abs(kingY - 7);
+                        int kingDist = Math.max(kingDistX, kingDistY);
+                        if (!pos.whiteMove)
+                            kingDist--;
+                        if (pawnDist < kingDist)
+                            danger += 500;
+                    }
+                }
+            }
+            if (wMtrlNoPawns == 0) {
+                int kingPos = pos.getKingSq(true);
+                int kingX = Position.getX(kingPos);
+                int kingY = Position.getY(kingPos);
+                for (int x = 0; x < 8; x++) {
+                    int y = ph.passedPawns[1][x];
+                    if (y > 0) {
+                        int pawnDist = Math.min(5, y);
+                        int kingDistX = Math.abs(kingX - x);
+                        int kingDistY = Math.abs(kingY - 0);
+                        int kingDist = Math.max(kingDistX, kingDistY);
+                        if (pos.whiteMove)
+                            kingDist--;
+                        if (pawnDist < kingDist)
+                            danger -= 500;
+                    }
+                }
+            }
+            score += danger;
+        }
         return score;
     }
 

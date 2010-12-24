@@ -272,6 +272,20 @@ public class EvaluateTest {
         assertTrue(score < nV - 2 * pV);
     }
 
+    /**
+     * Test of endGameEval method, of class Evaluate.
+     */
+    @Test
+    public void testPassedPawns() throws ChessParseError {
+        System.out.println("passedPawns");
+        Position pos = TextIO.readFEN("8/8/8/P3k/8/8/p/K w");
+        int score = evalWhite(pos);
+        assertTrue(score > 300); // Unstoppable passed pawn
+        pos.whiteMove = false;
+        score = evalWhite(pos);
+        assertTrue(score <= 0); // Not unstoppable
+    }
+
     /** Return static evaluation score for white, regardless of whose turn it is to move. */
     private final int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();
