@@ -204,6 +204,8 @@ public class Evaluate {
         if (!pos.whiteMove)
             score = -score;
         return score;
+        
+        // FIXME! Add evaluation bonus for free pawn outside "king square" in pawn endgames
     }
 
     /** Compute white_material - black_material. */

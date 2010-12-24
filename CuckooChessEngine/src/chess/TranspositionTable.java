@@ -120,14 +120,27 @@ public class TranspositionTable {
                 altEnt.evalScore = ent.evalScore;
             }
         }
-        ent.key = key;
-        ent.setMove(sm);
-        ent.setScore(sm.score, ply);
-        ent.depth = (byte)depth;
-        ent.generation = generation;
-        ent.type = (byte)type;
-        ent.hashSlot = hashSlot;
-        ent.evalScore = (short)evalScore;
+        boolean doStore = true;
+        if ((ent.key == key) && (ent.depth > depth) && (ent.type == type)) {
+            if (type == TTEntry.T_EXACT) {
+                doStore = false;
+            } else if ((type == TTEntry.T_GE) && (sm.score <= ent.score)) {
+                doStore = false;
+            } else if ((type == TTEntry.T_LE) && (sm.score >= ent.score)) {
+                doStore = false;
+            }
+        }
+        if (doStore) {
+            if ((ent.key != key) || (sm.from != sm.to))
+                ent.setMove(sm);
+            ent.key = key;
+            ent.setScore(sm.score, ply);
+            ent.depth = (byte)depth;
+            ent.generation = generation;
+            ent.type = (byte)type;
+            ent.hashSlot = hashSlot;
+            ent.evalScore = (short)evalScore;
+        }
     }
 
     /** Retrieve an entry from the hash table corresponding to "pos". */
