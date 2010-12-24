@@ -372,7 +372,7 @@ public class Evaluate {
     }
 
     /** Score castling ability. */
-    final int castleBonus(Position pos) {
+    private final int castleBonus(Position pos) {
     	if (pos.getCastleMask() == 0) return 0;
         final int qV = pieceValue[Piece.WQUEEN];
         final int rV = pieceValue[Piece.WROOK];
@@ -422,7 +422,7 @@ public class Evaluate {
         return wBonus - bBonus;
     }
 
-    final int pawnBonus(Position pos) {
+    private final int pawnBonus(Position pos) {
     	long key = pos.pawnZobristHash();
     	PawnHashData phd = pawnHash[(int)key & (pawnHash.length - 1)];
     	if (phd.key != key)
@@ -446,7 +446,7 @@ public class Evaluate {
 	private int [][] firstPawn;
 
     /** Compute nPawns[][] corresponding to pos. */
-    final void computePawnHashData(Position pos, PawnHashData ph) {
+	private final void computePawnHashData(Position pos, PawnHashData ph) {
     	byte[][] nPawns = ph.nPawns;
         for (int x = 0; x < 8; x++) {
             nPawns[0][x] = 0;
@@ -455,24 +455,23 @@ public class Evaluate {
             firstPawn[1][x] = 0;
         }
 
-        for (int sq = 0; sq < 64; sq++) {
-        	int p = pos.getPiece(sq);
-        	switch (p) {
-        	case Piece.WPAWN: {
-        		int x = Position.getX(sq);
-        		int y = Position.getY(sq);
-                nPawns[0][x]++;
-            	firstPawn[0][x] = Math.min(firstPawn[0][x], y);
-            	break;
-        	}
-        	case Piece.BPAWN: {
-        		int x = Position.getX(sq);
-        		int y = Position.getY(sq);
-            	nPawns[1][x]++;
-            	firstPawn[1][x] = Math.max(firstPawn[1][x], y);
-            	break;
-        	}
-        	}
+        int np = nPieces[Piece.WPAWN];
+        int[] pawns = pieces[Piece.WPAWN];
+        for (int i = 0; i < np; i++) {
+            int sq = pawns[i];
+            int x = Position.getX(sq);
+            int y = Position.getY(sq);
+            nPawns[0][x]++;
+            firstPawn[0][x] = Math.min(firstPawn[0][x], y);
+        }
+        np = nPieces[Piece.BPAWN];
+        pawns = pieces[Piece.BPAWN];
+        for (int i = 0; i < np; i++) {
+            int sq = pawns[i];
+            int x = Position.getX(sq);
+            int y = Position.getY(sq);
+            nPawns[1][x]++;
+            firstPawn[1][x] = Math.max(firstPawn[1][x], y);
         }
 
     	int score = 0;
@@ -554,7 +553,7 @@ public class Evaluate {
     }
 
     /** Compute rook bonus. Rook on open/half-open file. */
-    final int rookBonus(Position pos) {
+	private final int rookBonus(Position pos) {
         int score = 0;
         int nP = nPieces[Piece.WROOK];
         for (int i = 0; i < nP; i++) {
@@ -695,7 +694,7 @@ public class Evaluate {
     }
     
     /** Count the number of pseudo-legal moves for a bishop of given color on square (x0,y0). */
-    final static int bishopMobility(Position pos, int x0, int y0, int sq0) {
+    private final static int bishopMobility(Position pos, int x0, int y0, int sq0) {
         int mobility = 0;
         mobility += dirMobility(pos, sq0, Math.min(  x0,   y0), -9);
         mobility += dirMobility(pos, sq0, Math.min(  x0, 7-y0),  7);
@@ -705,7 +704,7 @@ public class Evaluate {
     }
 
     /** Count the number of pseudo-legal moves for a rook of given color on square (x0,y0). */
-    final static int rookMobility(Position pos, int x0, int y0, int sq0) {
+    private final static int rookMobility(Position pos, int x0, int y0, int sq0) {
         int mobility = 0;
         mobility += dirMobility(pos, sq0,   x0, -1);
         mobility += dirMobility(pos, sq0, 7-x0,  1);
@@ -906,7 +905,7 @@ public class Evaluate {
      * Interpolate between (x1,y1) and (x2,y2).
      * If x < x1, return y1, if x > x2 return y2. Otherwise, use linear interpolation.
      */
-    static final int interpolate(int x, int x1, int y1, int x2, int y2) {
+    private static final int interpolate(int x, int x1, int y1, int x2, int y2) {
     	if (x > x2) {
     		return y2;
     	} else if (x < x1) {
