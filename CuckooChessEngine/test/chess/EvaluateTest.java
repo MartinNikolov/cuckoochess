@@ -192,8 +192,8 @@ public class EvaluateTest {
         System.out.println("kingSafety");
         Position pos = TextIO.readFEN("r3kb1r/p1p1pppp/b2q1n2/4N3/3P4/2N1PQ2/P2B1PPP/R3R1K1 w kq - 0 1");
         int s1 = evalWhite(pos);
-        pos.setPiece(Position.getSquare(6,6), Piece.EMPTY);
-        pos.setPiece(Position.getSquare(1,6), Piece.BPAWN);
+        pos.setPiece(TextIO.getSquare("g7"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("b7"), Piece.BPAWN);
         int s2 = evalWhite(pos);
         assertTrue(s2 < s1);    // Half-open g-file is bad for white
 

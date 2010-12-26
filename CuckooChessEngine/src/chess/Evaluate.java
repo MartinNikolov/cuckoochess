@@ -166,6 +166,10 @@ public class Evaluate {
     int [] nPieces;
     static byte[] kpkTable = null;
 
+    // King safety variables
+    private long wKingZone, bKingZone;       // Squares close to king that are worth attacking
+    private int wKingAttacks, bKingAttacks; // Number of attacks close to white/black king
+    
     /** Constructor. */
     public Evaluate() {
         firstPawn = new int[2][8];
@@ -194,21 +198,23 @@ public class Evaluate {
     final public int evalPos(Position pos) {
     	int score = pos.wMtrl - pos.bMtrl;
 
+        wKingAttacks = bKingAttacks = 0;
+        wKingZone = BitBoard.kingAttacks[pos.getKingSq(true)]; wKingZone |= wKingZone << 8;
+        bKingZone = BitBoard.kingAttacks[pos.getKingSq(false)]; bKingZone |= bKingZone >>> 8;
+
         score += pieceSquareEval(pos);
         score += pawnBonus(pos);
         score += tradeBonus(pos);
         score += castleBonus(pos);
 
         score += rookBonus(pos);
-        score += kingSafety(pos);
         score += bishopEval(pos, score);
+        score += kingSafety(pos);
         score = endGameEval(pos, score);
 
         if (!pos.whiteMove)
             score = -score;
         return score;
-        
-        // FIXME! Add evaluation bonus for free pawn outside "king square" in pawn endgames
     }
 
     /** Compute white_material - black_material. */
@@ -314,13 +320,17 @@ public class Evaluate {
             case Piece.WQUEEN:
             {
             	score += qt1[7-y][x];
+                mobilityAttacks = 0L;
             	score += queenMobScore[rookMobility(pos, x, y, sq) + bishopMobility(pos, x, y, sq)];
+                bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone) * 2;
             	break;
             }
             case Piece.BQUEEN:
             {
             	score -= qt1[y][x];
+                mobilityAttacks = 0L;
             	score -= queenMobScore[rookMobility(pos, x, y, sq) + bishopMobility(pos, x, y, sq)];
+                wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone) * 2;
             	break;
             }
             case Piece.WROOK:
@@ -571,7 +581,9 @@ public class Evaluate {
             if (ph.nPawns[0][x] == 0) { // At least half-open file
                 score += ph.nPawns[1][x] == 0 ? 25 : 12;
             }
+            mobilityAttacks = 0L;
             score += rookMobScore[rookMobility(pos, x, y, sq)];
+            bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
         }
         nP = nPieces[Piece.BROOK];
         for (int i = 0; i < nP; i++) {
@@ -581,7 +593,9 @@ public class Evaluate {
             if (ph.nPawns[1][x] == 0) {
                 score -= ph.nPawns[0][x] == 0 ? 25 : 12;
             }
+            mobilityAttacks = 0L;
             score -= rookMobScore[rookMobility(pos, x, y, sq)];
+            wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
         }
         return score;
     }
@@ -614,9 +628,9 @@ public class Evaluate {
                 final int xb = Math.min(xk + 1, 7);
                 for (int x = xa; x <= xb; x++) {
                 	int p = pos.getPiece(yb + x + yd);
-                	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
+                	if (p == ownPawn) safety += 3; else if (p == otherPawn) safety -= 2;
                 	p = pos.getPiece(yb + x + 2 * yd);
-                	if (p == ownPawn) safety += 1; else if (p == otherPawn) safety -= 2;
+                	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
                 	p = pos.getPiece(yb + x + 3 * yd);
                 	if (p == otherPawn) safety -= 1;
                 	if (ph.nPawns[1-i][x] == 0) halfOpenFiles++;
@@ -630,13 +644,14 @@ public class Evaluate {
                     }
                 }
             }
-            final int kSafety = (safety - 6) * 15 - halfOpenFiles * 20;
+            final int kSafety = (safety - 9) * 15 - halfOpenFiles * 25;
             if (white) {
                 score += kSafety;
             } else {
                 score -= kSafety;
             }
         }
+        score += (bKingAttacks - wKingAttacks) * 4;
         final int kSafety = interpolate(m, minM, 0, maxM, score);
         return kSafety;
 
@@ -659,7 +674,9 @@ public class Evaluate {
         		whiteDark = true;
         	else
         		whiteLight = true;
+            mobilityAttacks = 0L;
         	score += bishMobScore[bishopMobility(pos, x, y, sq)];
+            bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
         }
         nP = nPieces[Piece.BBISHOP];
         for (int i = 0; i < nP; i++) {
@@ -670,7 +687,9 @@ public class Evaluate {
         		blackDark = true;
         	else
         		blackLight = true;
+            mobilityAttacks = 0L;
         	score -= bishMobScore[bishopMobility(pos, x, y, sq)];
+            wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
         }
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);
@@ -721,16 +740,21 @@ public class Evaluate {
         return mobility;
     }
 
+    private static long mobilityAttacks;
+
     private static final int dirMobility(Position pos, int sq, int loops, int delta) {
         int mobility = 0;
+        long atk = mobilityAttacks;
         while (loops > 0) {
         	sq += delta;
+        	atk |= 1L << sq;
         	int p = pos.getPiece(sq);
         	if (p != Piece.EMPTY)
         		break;
        		mobility++;
         	loops--;
         }
+        mobilityAttacks = atk;
         return mobility;
     }
 
