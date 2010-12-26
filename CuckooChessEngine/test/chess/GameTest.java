@@ -397,4 +397,29 @@ public class GameTest {
         game.processString("setpos 8/8/8/8/8/8/8/K3nnk1 w - - 0 1");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
     }
+
+    /**
+     * Test of perfT method, of class Game.
+     */
+    @Test
+    public void testPerfT() {
+        System.out.println("perfT");
+        Game game = new Game(new HumanPlayer(), new HumanPlayer());
+        game.processString("new");
+        doTestPerfT(game.pos, 5, new int[]{20,400,8902,197281,4865609,119060324});
+
+        game.processString("setpos r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+        doTestPerfT(game.pos, 4, new int[]{48,2039,97862,4085603,193690690});
+    }
+
+    private void doTestPerfT(Position pos, int maxDepth, int[] expectedNodeCounts) {
+        for (int d = 1; d <= maxDepth; d++) {
+            MoveGen moveGen = new MoveGen();
+            long t0 = System.nanoTime();
+            long nodes = Game.perfT(moveGen, pos, d);
+            long t1 = System.nanoTime();
+            System.out.printf("perft(%d) = %d, t=%.6fs\n", d, nodes, (t1 - t0)*1e-9);
+            assertEquals(expectedNodeCounts[d-1], nodes);
+        }
+    }
 }
