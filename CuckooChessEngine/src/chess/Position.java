@@ -19,6 +19,10 @@ import java.security.NoSuchAlgorithmException;
 public class Position {
     private int[] squares;
 
+    // Bitboards
+    long[] pieceTypeBB;
+    long whiteBB, blackBB;
+
     public boolean whiteMove;
 
     /** Bit definitions for the castleMask bit mask. */
@@ -44,12 +48,16 @@ public class Position {
     int bMtrl;      // Total value of all black pieces and pawns
     int wMtrlPawns; // Total value of all white pawns
     int bMtrlPawns; // Total value of all black pawns
-    
+
     /** Initialize board to empty position. */
     public Position() {
         squares = new int[64];
         for (int i = 0; i < 64; i++)
             squares[i] = Piece.EMPTY;
+        pieceTypeBB = new long[Piece.nPieceTypes];
+        for (int i = 0; i < Piece.nPieceTypes; i++)
+            pieceTypeBB[i] = 0L;
+        whiteBB = blackBB = 0L;
         whiteMove = true;
         castleMask = 0;
         epSquare = -1;
@@ -65,6 +73,11 @@ public class Position {
         squares = new int[64];
         for (int i = 0; i < 64; i++)
             squares[i] = other.squares[i];
+        pieceTypeBB = new long[Piece.nPieceTypes];
+        for (int i = 0; i < Piece.nPieceTypes; i++)
+            pieceTypeBB[i] = other.pieceTypeBB[i];
+        whiteBB = other.whiteBB;
+        blackBB = other.blackBB;
         whiteMove = other.whiteMove;
         castleMask = other.castleMask;
         epSquare = other.epSquare;
@@ -202,6 +215,23 @@ public class Position {
 
         // Update board
         squares[square] = piece;
+
+        // Update bitboards
+        long sqMask = 1L << square;
+        pieceTypeBB[removedPiece] &= ~sqMask;
+        pieceTypeBB[piece] |= sqMask;
+        if (removedPiece != Piece.EMPTY) {
+            if (Piece.isWhite(removedPiece))
+                whiteBB &= ~sqMask;
+            else
+                blackBB &= ~sqMask;
+        }
+        if (piece != Piece.EMPTY) {
+            if (Piece.isWhite(piece))
+                whiteBB |= sqMask;
+            else
+                blackBB |= sqMask;
+        }
 
         // Update king position 
         if (piece == Piece.WKING) {
