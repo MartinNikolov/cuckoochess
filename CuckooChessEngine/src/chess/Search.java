@@ -776,22 +776,8 @@ public class Search {
         for (int d = 0; d < 8; d++) {
         	dirIdx[d] = SEEnextAttacker(square, d, 0);
         }
-        int wNatks = 0;
-        int bNatks = 0;
-        {
-        	int x = Position.getX(square);
-        	int y = Position.getY(square);
-        	int p;
-        	int sq = square;
-        	if (x < 6 && y < 7) { p = pos.getPiece(sq + 10); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x < 7 && y < 6) { p = pos.getPiece(sq + 17); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x > 0 && y < 6) { p = pos.getPiece(sq + 15); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x > 1 && y < 7) { p = pos.getPiece(sq +  6); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x > 1 && y > 0) { p = pos.getPiece(sq - 10); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x > 0 && y > 1) { p = pos.getPiece(sq - 17); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x < 7 && y > 1) { p = pos.getPiece(sq - 15); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        	if (x < 6 && y > 0) { p = pos.getPiece(sq -  6); if (p == Piece.WKNIGHT) wNatks++; else if (p == Piece.BKNIGHT) bNatks++; }
-        }
+        int wNatks = Long.bitCount(BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.WKNIGHT]);
+        int bNatks = Long.bitCount(BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.BKNIGHT]);
 
         final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
 

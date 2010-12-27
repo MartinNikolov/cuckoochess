@@ -5,6 +5,7 @@ public class BitBoard {
     /** Squares attacked by a king on a given square. */
     static long[] kingAttacks;
     static long[] knightAttacks;
+    static long[] wPawnAttacks, bPawnAttacks;
 
     static final long maskAToGFiles = 0x7F7F7F7F7F7F7F7FL;
     static final long maskBToHFiles = 0xFEFEFEFEFEFEFEFEL;
@@ -45,6 +46,17 @@ public class BitBoard {
                         (((m << 17) | (m >>> 15)) & maskBToHFiles) |
                         (((m << 10) | (m >>>  6)) & maskCToHFiles);
             knightAttacks[sq] = mask;
+        }
+
+        // Compute pawn attacks
+        wPawnAttacks = new long[64];
+        bPawnAttacks = new long[64];
+        for (int sq = 0; sq < 64; sq++) {
+            long m = 1L << sq;
+            long mask = ((m << 7) & maskAToGFiles) | ((m << 9) & maskBToHFiles);
+            wPawnAttacks[sq] = mask;
+            mask = ((m >>> 9) & maskAToGFiles) | ((m >>> 7) & maskBToHFiles);
+            bPawnAttacks[sq] = mask;
         }
     }
 }
