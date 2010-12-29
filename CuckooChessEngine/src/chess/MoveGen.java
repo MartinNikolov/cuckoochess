@@ -22,36 +22,36 @@ public class MoveGen {
      * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
      */
     public final ArrayList<Move> pseudoLegalMoves(Position pos) {
-        long squares;
-        if (pos.whiteMove)
-            squares = (pos.pieceTypeBB[Piece.WQUEEN ] | 
-                       pos.pieceTypeBB[Piece.WROOK  ] | 
-                       pos.pieceTypeBB[Piece.WBISHOP]);
-        else
-            squares = (pos.pieceTypeBB[Piece.BQUEEN ] | 
-                       pos.pieceTypeBB[Piece.BROOK  ] | 
-                       pos.pieceTypeBB[Piece.BBISHOP]);
         ArrayList<Move> moveList = getMoveListObj();
-        while (squares != 0) {
-            int sq = Long.numberOfTrailingZeros(squares);
-            int x = Position.getX(sq);
-            int y = Position.getY(sq);
-            int p = pos.getPiece(sq);
-            if ((p == Piece.WROOK) || (p == Piece.BROOK) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                if (addDirection(moveList, pos, sq, 7-x,  1)) return moveList;
-                if (addDirection(moveList, pos, sq, 7-y,  8)) return moveList;
-                if (addDirection(moveList, pos, sq,   x, -1)) return moveList;
-                if (addDirection(moveList, pos, sq,   y, -8)) return moveList;
-            }
-            if ((p == Piece.WBISHOP) || (p == Piece.BBISHOP) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                if (addDirection(moveList, pos, sq, Math.min(7-x, 7-y),  9)) return moveList;
-                if (addDirection(moveList, pos, sq, Math.min(  x, 7-y),  7)) return moveList;
-                if (addDirection(moveList, pos, sq, Math.min(  x,   y), -9)) return moveList;
-                if (addDirection(moveList, pos, sq, Math.min(7-x,   y), -7)) return moveList;
-            }
-            squares &= squares-1;
-        }
+        long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.WQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.WROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.WBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
             // King moves
             {
                 int sq = pos.getKingSq(true);
@@ -102,6 +102,33 @@ public class MoveGen {
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
             if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
         } else {
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.BQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.BROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.BBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+            
             // King moves
             {
                 int sq = pos.getKingSq(false);
@@ -158,36 +185,37 @@ public class MoveGen {
 
     public final ArrayList<Move> pseudoLegalCaptures(Position pos) {
     	// FIXME!!! Write test cases
-        long squares;
-        if (pos.whiteMove)
-            squares = (pos.pieceTypeBB[Piece.WQUEEN ] | 
-                       pos.pieceTypeBB[Piece.WROOK  ] | 
-                       pos.pieceTypeBB[Piece.WBISHOP]);
-        else
-            squares = (pos.pieceTypeBB[Piece.BQUEEN ] | 
-                       pos.pieceTypeBB[Piece.BROOK  ] | 
-                       pos.pieceTypeBB[Piece.BBISHOP]);
+        // FIXME!!! Should generate pawn promotions (to queen/knight)
         ArrayList<Move> moveList = getMoveListObj();
-        while (squares != 0) {
-            int sq = Long.numberOfTrailingZeros(squares);
-            int x = Position.getX(sq);
-            int y = Position.getY(sq);
-            int p = pos.getPiece(sq);
-            if ((p == Piece.WROOK) || (p == Piece.BROOK) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                if (addCaptureDirection(moveList, pos, sq, 7-x,  1)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq, 7-y,  8)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq,   x, -1)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq,   y, -8)) return moveList;
-            }
-            if ((p == Piece.WBISHOP) || (p == Piece.BBISHOP) || (p == Piece.WQUEEN) || (p == Piece.BQUEEN)) {
-                if (addCaptureDirection(moveList, pos, sq, Math.min(7-x, 7-y),  9)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq, Math.min(  x, 7-y),  7)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq, Math.min(  x,   y), -9)) return moveList;
-                if (addCaptureDirection(moveList, pos, sq, Math.min(7-x,   y), -7)) return moveList;
-            }
-            squares &= squares-1;
-        }
+        long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.WQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.WROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.WBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.WKNIGHT];
             while (knights != 0) {
@@ -211,6 +239,33 @@ public class MoveGen {
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
             if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
         } else {
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.BQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.BROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.BBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+            
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.BKNIGHT];
             while (knights != 0) {
@@ -418,7 +473,7 @@ public class MoveGen {
     /**
      * Return true if the side to move can take the opponents king.
      */
-    public static final boolean canTakeKing(Position pos) { // FIXME!!! Optimize
+    public static final boolean canTakeKing(Position pos) {
         pos.setWhiteMove(!pos.whiteMove);
         boolean ret = inCheck(pos);
         pos.setWhiteMove(!pos.whiteMove);
@@ -429,16 +484,18 @@ public class MoveGen {
      * Return true if a square is attacked by the opposite side.
      */
     public static final boolean sqAttacked(Position pos, int sq) {
-        int x = Position.getX(sq);
-        int y = Position.getY(sq);
-        boolean isWhiteMove = pos.whiteMove;
-
-        if (isWhiteMove) {
+        if (pos.whiteMove) {
             if ((BitBoard.knightAttacks[sq] & pos.pieceTypeBB[Piece.BKNIGHT]) != 0)
                 return true;
             if ((BitBoard.kingAttacks[sq] & pos.pieceTypeBB[Piece.BKING]) != 0)
                 return true;
             if ((BitBoard.wPawnAttacks[sq] & pos.pieceTypeBB[Piece.BPAWN]) != 0)
+                return true;
+            long occupied = pos.whiteBB | pos.blackBB;
+            long bbQueen = pos.pieceTypeBB[Piece.BQUEEN];
+            if ((BitBoard.bishopAttacks(sq, occupied) & (pos.pieceTypeBB[Piece.BBISHOP] | bbQueen)) != 0)
+                return true;
+            if ((BitBoard.rookAttacks(sq, occupied) & (pos.pieceTypeBB[Piece.BROOK] | bbQueen)) != 0)
                 return true;
         } else {
             if ((BitBoard.knightAttacks[sq] & pos.pieceTypeBB[Piece.WKNIGHT]) != 0)
@@ -447,26 +504,13 @@ public class MoveGen {
                 return true;
             if ((BitBoard.bPawnAttacks[sq] & pos.pieceTypeBB[Piece.WPAWN]) != 0)
                 return true;
+            long occupied = pos.whiteBB | pos.blackBB;
+            long bbQueen = pos.pieceTypeBB[Piece.WQUEEN];
+            if ((BitBoard.bishopAttacks(sq, occupied) & (pos.pieceTypeBB[Piece.WBISHOP] | bbQueen)) != 0)
+                return true;
+            if ((BitBoard.rookAttacks(sq, occupied) & (pos.pieceTypeBB[Piece.WROOK] | bbQueen)) != 0)
+                return true;
         }
-
-        final int oQueen= isWhiteMove ? Piece.BQUEEN: Piece.WQUEEN;
-        final int oRook = isWhiteMove ? Piece.BROOK : Piece.WROOK;
-        final int oBish = isWhiteMove ? Piece.BBISHOP : Piece.WBISHOP;
-
-        int p;
-        if (y > 0) {
-            p = checkDirection(pos, sq,   y, -8); if ((p == oQueen) || (p == oRook)) return true;
-            p = checkDirection(pos, sq, Math.min(  x,   y), -9); if ((p == oQueen) || (p == oBish)) return true;
-            p = checkDirection(pos, sq, Math.min(7-x,   y), -7); if ((p == oQueen) || (p == oBish)) return true;
-        }
-        if (y < 7) {
-            p = checkDirection(pos, sq, 7-y,  8); if ((p == oQueen) || (p == oRook)) return true;
-            p = checkDirection(pos, sq, Math.min(7-x, 7-y),  9); if ((p == oQueen) || (p == oBish)) return true;
-            p = checkDirection(pos, sq, Math.min(  x, 7-y),  7); if ((p == oQueen) || (p == oBish)) return true;
-        }
-        p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
-        p = checkDirection(pos, sq,   x, -1); if ((p == oQueen) || (p == oRook)) return true;
-        
         return false;
     }
 
@@ -544,79 +588,6 @@ public class MoveGen {
             mask &= (mask - 1);
         }
         return false;
-    }
-
-    /**
-     * Add all moves from square sq0 in direction delta.
-     * @param maxSteps Max steps until reaching a border. Set to 1 for non-sliding pieces.
-     * @ return True if the enemy king could be captured, false otherwise.
-     */
-    private final boolean addDirection(ArrayList<Move> moveList, Position pos, int sq0, int maxSteps, int delta) {
-    	int sq = sq0;
-    	boolean wtm = pos.whiteMove;
-    	final int oKing = (wtm ? Piece.BKING : Piece.WKING);
-        while (maxSteps > 0) {
-        	sq += delta;
-            int p = pos.getPiece(sq);
-            if (p == Piece.EMPTY) {
-                moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-            } else {
-                if (Piece.isWhite(p) != wtm) {
-                    if (p == oKing) {
-                        returnMoveList(moveList);
-                        moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-                        moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-                        return true;
-                    } else {
-                        moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-                    }
-                }
-                break;
-            }
-            maxSteps--;
-        }
-        return false;
-    }
-
-    private final boolean addCaptureDirection(ArrayList<Move> moveList, Position pos, int sq0, int maxSteps, int delta) {
-    	int sq = sq0;
-        while (maxSteps > 0) {
-        	sq += delta;
-            int p = pos.getPiece(sq);
-            if (p != Piece.EMPTY) {
-                if (Piece.isWhite(p) != pos.whiteMove) {
-                    if (p == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
-                        returnMoveList(moveList);
-                        moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-                        moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-                        return true;
-                    } else {
-                        moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-                    }
-                }
-                break;
-            }
-            maxSteps--;
-        }
-        return false;
-    }
-
-    /**
-     * Check if there is an attacking piece in a given direction starting from sq.
-     * The direction is given by delta.
-     * @param maxSteps Max steps until reaching a border. Set to 1 for non-sliding pieces.
-     * @return The first piece in the given direction, or EMPTY if there is no piece
-     *         in that direction.
-     */
-    private static final int checkDirection(Position pos, int sq, int maxSteps, int delta) {
-    	while (maxSteps > 0) {
-    		sq += delta;
-    		int p = pos.getPiece(sq);
-    		if (p != Piece.EMPTY)
-    			return p;
-    		maxSteps--;
-    	}
-    	return Piece.EMPTY;
     }
 
     // Code to handle the Move cache.

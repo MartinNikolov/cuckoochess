@@ -59,4 +59,169 @@ public class BitBoard {
             bPawnAttacks[sq] = mask;
         }
     }
+
+    private static long[][] rTables;
+    private static long[] rMasks;
+    private final static int[] rBits = { 12, 11, 11, 11, 11, 11, 11, 12,
+                                         11, 10, 10, 10, 10, 10, 10, 11,
+                                         11, 10, 10, 10, 10, 10, 10, 11,
+                                         11, 10, 10, 10, 10, 10, 10, 11,
+                                         11, 10, 10, 10, 10, 10, 10, 11,
+                                         11, 10, 10, 10, 10, 10, 10, 11,
+                                         10,  9,  9,  9,  9,  9, 10, 10,
+                                         11, 10, 10, 10, 10, 11, 11, 11 };
+    private final static long[] rMagics = {
+        0x0080011084624000L, 0x1440031000200141L, 0x2080082004801000L, 0x0100040900100020L,
+        0x0200020010200408L, 0x0300010008040002L, 0x040024081000a102L, 0x0080003100054680L,
+        0x1100800040008024L, 0x8440401000200040L, 0x0432001022008044L, 0x0402002200100840L,
+        0x4024808008000400L, 0x100a000410820008L, 0x8042001144020028L, 0x2451000041002082L,
+        0x1080004000200056L, 0xd41010c020004000L, 0x0004410020001104L, 0x0000818050000800L,
+        0x0000050008010010L, 0x0230808002000400L, 0x2000440090022108L, 0x0488020000811044L,
+        0x8000410100208006L, 0x2000a00240100140L, 0x2088802200401600L, 0x0a10100180080082L,
+        0x0000080100110004L, 0x0021002300080400L, 0x8400880400010230L, 0x2001008200004401L,
+        0x0000400022800480L, 0x00200040e2401000L, 0x4004100084802000L, 0x0218800800801002L,
+        0x0420800800800400L, 0x002a000402001008L, 0x0e0b000401008200L, 0x0815908072000401L,
+        0x1840008002498021L, 0x1070122002424000L, 0x1040200100410010L, 0x0600080010008080L,
+        0x0215001008010004L, 0x0000020004008080L, 0x1300021051040018L, 0x0004040040820001L,
+        0x48fffe99fecfaa00L, 0x48fffe99fecfaa00L, 0x497fffadff9c2e00L, 0x613fffddffce9200L,
+        0xffffffe9ffe7ce00L, 0xfffffff5fff3e600L, 0x2000080281100400L, 0x510ffff5f63c96a0L,
+        0xebffffb9ff9fc526L, 0x61fffeddfeedaeaeL, 0x53bfffedffdeb1a2L, 0x127fffb9ffdfb5f6L,
+        0x411fffddffdbf4d6L, 0x0005000208040001L, 0x264038060100d004L, 0x7645fffecbfea79eL,
+    };
+    private static long[][] bTables;
+    private static long[] bMasks;
+    private final static int[] bBits = { 5, 4, 5, 5, 5, 5, 4, 5,
+                                         4, 4, 5, 5, 5, 5, 4, 4,
+                                         4, 4, 7, 7, 7, 7, 4, 4,
+                                         5, 5, 7, 9, 9, 7, 5, 5,
+                                         5, 5, 7, 9, 9, 7, 5, 5,
+                                         4, 4, 7, 7, 7, 7, 4, 4,
+                                         4, 4, 5, 5, 5, 5, 4, 4,
+                                         5, 4, 5, 5, 5, 5, 4, 5 };
+    private final static long[] bMagics = {
+        0xffedf9fd7cfcffffL, 0xfc0962854a77f576L, 0x9010210041047000L, 0x52242420800c0000L,
+        0x884404220480004aL, 0x0002080248000802L, 0xfc0a66c64a7ef576L, 0x7ffdfdfcbd79ffffL,
+        0xfc0846a64a34fff6L, 0xfc087a874a3cf7f6L, 0x02000888010a2211L, 0x0040044040801808L,
+        0x0880040420000000L, 0x0000084110109000L, 0xfc0864ae59b4ff76L, 0x3c0860af4b35ff76L,
+        0x73c01af56cf4cffbL, 0x41a01cfad64aaffcL, 0x1010000200841104L, 0x802802142a006000L,
+        0x0a02000412020020L, 0x0000800040504030L, 0x7c0c028f5b34ff76L, 0xfc0a028e5ab4df76L,
+        0x0020082044905488L, 0xa572211102080220L, 0x0014020001280300L, 0x0220208058008042L,
+        0x0001010000104016L, 0x0005114028080800L, 0x0202640000848800L, 0x040040900a008421L,
+        0x400e094000600208L, 0x800a100400120890L, 0x0041229001480020L, 0x0000020080880082L,
+        0x0040002020060080L, 0x1819100100c02400L, 0x04112a4082c40400L, 0x0001240130210500L,
+        0xdcefd9b54bfcc09fL, 0xf95ffa765afd602bL, 0x008200222800a410L, 0x0100020102406400L,
+        0x80a8040094000200L, 0x002002006200a041L, 0x43ff9a5cf4ca0c01L, 0x4bffcd8e7c587601L,
+        0xfc0ff2865334f576L, 0xfc0bf6ce5924f576L, 0x0900420442088104L, 0x0062042084040010L,
+        0x01380810220a0240L, 0x0000101002082800L, 0xc3ffb7dc36ca8c89L, 0xc3ff8a54f4ca2c89L,
+        0xfffffcfcfd79edffL, 0xfc0863fccb147576L, 0x0050009040441000L, 0x00139a0000840400L,
+        0x9080000412220a00L, 0x0000002020010a42L, 0xfc087e8e4bb2f736L, 0x43ff9e4ef4ca2c89L,
+    };
+
+    private static final long createPattern(int i, long mask) {
+        long ret = 0L;
+        for (int j = 0; ; j++) {
+            long nextMask = mask & (mask - 1);
+            long bit = mask ^ nextMask;
+            if ((i & (1L << j)) != 0)
+                ret |= bit;
+            mask = nextMask;
+            if (mask == 0)
+                break;
+        }
+        return ret;
+    }
+    
+    private static final long addRookRays(int x, int y, long occupied, boolean inner) {
+        long mask = 0;
+        mask = addRay(mask, x, y,  1,  0, occupied, inner);
+        mask = addRay(mask, x, y, -1,  0, occupied, inner);
+        mask = addRay(mask, x, y,  0,  1, occupied, inner);
+        mask = addRay(mask, x, y,  0, -1, occupied, inner);
+        return mask;
+    }
+    private static final long addBishopRays(int x, int y, long occupied, boolean inner) {
+        long mask = 0;
+        mask = addRay(mask, x, y,  1,  1, occupied, inner);
+        mask = addRay(mask, x, y, -1, -1, occupied, inner);
+        mask = addRay(mask, x, y,  1, -1, occupied, inner);
+        mask = addRay(mask, x, y, -1,  1, occupied, inner);
+        return mask;
+    }
+
+    private static final long addRay(long mask, int x, int y, int dx, int dy, 
+                                     long occupied, boolean inner) {
+        int lo = inner ? 1 : 0;
+        int hi = inner ? 6 : 7;
+        while (true) {
+            if (dx != 0) {
+                x += dx; if ((x < lo) || (x > hi)) break;
+            }
+            if (dy != 0) {
+                y += dy; if ((y < lo) || (y > hi)) break;
+            }
+            int sq = Position.getSquare(x, y);
+            mask |= 1L << sq;
+            if ((occupied & (1L << sq)) != 0)
+                break;
+        }
+        return mask;
+    }
+
+    static { // Rook magics
+        rTables = new long[64][];
+        rMasks = new long[64];
+        for (int sq = 0; sq < 64; sq++) {
+            int x = Position.getX(sq);
+            int y = Position.getY(sq);
+            rMasks[sq] = addRookRays(x, y, 0L, true);
+            int tableSize = 1 << rBits[sq];
+            long[] table = new long[tableSize];
+            for (int i = 0; i < tableSize; i++) table[i] = -1;
+            int nPatterns = 1 << Long.bitCount(rMasks[sq]);
+            for (int i = 0; i < nPatterns; i++) {
+                long p = createPattern(i, rMasks[sq]);
+                int entry = (int)((p * rMagics[sq]) >>> (64 - rBits[sq]));
+                long atks = addRookRays(x, y, p, false);
+                if (table[entry] == -1) {
+                    table[entry] = atks;
+                } else if (table[entry] != atks) {
+                    throw new RuntimeException();
+                }
+            }
+            rTables[sq] = table;
+        }
+    }
+
+    static { // Bishop magics
+        bTables = new long[64][];
+        bMasks = new long[64];
+        for (int sq = 0; sq < 64; sq++) {
+            int x = Position.getX(sq);
+            int y = Position.getY(sq);
+            bMasks[sq] = addBishopRays(x, y, 0L, true);
+            int tableSize = 1 << bBits[sq];
+            long[] table = new long[tableSize];
+            for (int i = 0; i < tableSize; i++) table[i] = -1;
+            int nPatterns = 1 << Long.bitCount(bMasks[sq]);
+            for (int i = 0; i < nPatterns; i++) {
+                long p = createPattern(i, bMasks[sq]);
+                int entry = (int)((p * bMagics[sq]) >>> (64 - bBits[sq]));
+                long atks = addBishopRays(x, y, p, false);
+                if (table[entry] == -1) {
+                    table[entry] = atks;
+                } else if (table[entry] != atks) {
+                    throw new RuntimeException();
+                }
+            }
+            bTables[sq] = table;
+        }
+    }
+
+    static final long bishopAttacks(int sq, long occupied) {
+        return bTables[sq][(int)(((occupied & bMasks[sq]) * bMagics[sq]) >>> (64 - bBits[sq]))];
+    }
+
+    static final long rookAttacks(int sq, long occupied) {
+        return rTables[sq][(int)(((occupied & rMasks[sq]) * rMagics[sq]) >>> (64 - rBits[sq]))];
+    }
 }

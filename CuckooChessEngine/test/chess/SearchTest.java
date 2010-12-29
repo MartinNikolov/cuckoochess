@@ -187,8 +187,6 @@ public class SearchTest {
         Search sc = new Search(pos, nullHist, 0, tt);
         Move bestM = idSearch(sc, 28);
         assertEquals(TextIO.stringToMove(pos, "Kb1"), new Move(bestM));
-        
-        // FIXME!!! Strange mate fail highs if you re-search 8/1P6/K3k3/8/8/8/8/8 w - - 0 1 (null move fixed it?)
     }
     
     private Move idSearch(Search sc, int maxDepth) {
