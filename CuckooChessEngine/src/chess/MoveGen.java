@@ -183,8 +183,202 @@ public class MoveGen {
         return moveList;
     }
 
+    /** Generate captures, checks, and possibly some other moves that are too hard to filter out. */
+    public final ArrayList<Move> pseudoLegalCapturesAndChecks(Position pos) {
+        // FIXME! Don't generate all pawn moves
+        // FIXME! Don't generate bishop/rook promotions.
+        ArrayList<Move> moveList = getMoveListObj();
+        long occupied = pos.whiteBB | pos.blackBB;
+        if (pos.whiteMove) {
+            int bKingSq = pos.getKingSq(false);
+            long kRookAtk = BitBoard.rookAttacks(bKingSq, occupied);
+            long kBishAtk = BitBoard.bishopAttacks(bKingSq, occupied);
+            long discovered = kRookAtk | kBishAtk; // Squares that could generate discovered checks
+
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.WQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
+                if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk | kBishAtk);
+                m &= ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.WROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied);
+                if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk);
+                m &= ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.WBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied);
+                if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kBishAtk);
+                m &= ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // King moves
+            {
+                int sq = pos.getKingSq(true);
+                long m = BitBoard.kingAttacks[sq];
+                m &= ((discovered & (1L<<sq)) == 0) ? pos.blackBB : ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                final int k0 = 4;
+                if (sq == k0) {
+                    final long OO_SQ = 0x60L;
+                    final long OOO_SQ = 0xEL;
+                    if (((pos.getCastleMask() & (1 << Position.H1_CASTLE)) != 0) &&
+                        ((OO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
+                        (pos.getPiece(k0 + 3) == Piece.WROOK) &&
+                        !sqAttacked(pos, k0) &&
+                        !sqAttacked(pos, k0 + 1)) {
+                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                    }
+                    if (((pos.getCastleMask() & (1 << Position.A1_CASTLE)) != 0) &&
+                        ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
+                        (pos.getPiece(k0 - 4) == Piece.WROOK) &&
+                        !sqAttacked(pos, k0) &&
+                        !sqAttacked(pos, k0 - 1)) {
+                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                    }
+                }
+            }
+
+            // Knight moves
+            long knights = pos.pieceTypeBB[Piece.WKNIGHT];
+            long kKnightAtk = BitBoard.knightAttacks[bKingSq];
+            while (knights != 0) {
+                int sq = Long.numberOfTrailingZeros(knights);
+                long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB;
+                if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kKnightAtk);
+                m &= ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                knights &= knights-1;
+            }
+
+            // Pawn moves
+            long pawns = pos.pieceTypeBB[Piece.WPAWN];
+            long m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, -8)) return moveList;
+            m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, -16)) return moveList;
+
+            int epSquare = pos.getEpSquare();
+            long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
+            m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, -7)) return moveList;
+
+            m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
+        } else {
+            int wKingSq = pos.getKingSq(true);
+            long kRookAtk = BitBoard.rookAttacks(wKingSq, occupied);
+            long kBishAtk = BitBoard.bishopAttacks(wKingSq, occupied);
+            long discovered = kRookAtk | kBishAtk; // Squares that could generate discovered checks
+
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.BQUEEN];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
+                if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk | kBishAtk;
+                m &= ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.BROOK];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied);
+                if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk;
+                m &= ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.BBISHOP];
+            while (squares != 0) {
+                int sq = Long.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied);
+                if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kBishAtk;
+                m &= ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+            
+            // King moves
+            {
+                int sq = pos.getKingSq(false);
+                long m = BitBoard.kingAttacks[sq];
+                m &= ((discovered & (1L<<sq)) == 0) ? pos.whiteBB : ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                final int k0 = 60;
+                if (sq == k0) {
+                    final long OO_SQ = 0x6000000000000000L;
+                    final long OOO_SQ = 0xE00000000000000L;
+                    if (((pos.getCastleMask() & (1 << Position.H8_CASTLE)) != 0) &&
+                        ((OO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
+                        (pos.getPiece(k0 + 3) == Piece.BROOK) &&
+                        !sqAttacked(pos, k0) &&
+                        !sqAttacked(pos, k0 + 1)) {
+                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                    }
+                    if (((pos.getCastleMask() & (1 << Position.A8_CASTLE)) != 0) &&
+                        ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
+                        (pos.getPiece(k0 - 4) == Piece.BROOK) &&
+                        !sqAttacked(pos, k0) &&
+                        !sqAttacked(pos, k0 - 1)) {
+                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                    }
+                }
+            }
+
+            // Knight moves
+            long knights = pos.pieceTypeBB[Piece.BKNIGHT];
+            long kKnightAtk = BitBoard.knightAttacks[wKingSq];
+            while (knights != 0) {
+                int sq = Long.numberOfTrailingZeros(knights);
+                long m = BitBoard.knightAttacks[sq] & ~pos.blackBB;
+                if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kKnightAtk;
+                m &= ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                knights &= knights-1;
+            }
+
+            // Pawn moves
+            long pawns = pos.pieceTypeBB[Piece.BPAWN];
+            long m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, 8)) return moveList;
+            m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, 16)) return moveList;
+
+            int epSquare = pos.getEpSquare();
+            long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
+            m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, 9)) return moveList;
+
+            m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, 7)) return moveList;
+        }
+
+        return moveList;
+    }
+
     public final ArrayList<Move> pseudoLegalCaptures(Position pos) {
-    	// FIXME!!! Write test cases
         // FIXME!!! Should generate pawn promotions (to queen/knight)
         ArrayList<Move> moveList = getMoveListObj();
         long occupied = pos.whiteBB | pos.blackBB;

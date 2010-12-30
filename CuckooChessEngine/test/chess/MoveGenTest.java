@@ -352,9 +352,24 @@ public class MoveGenTest {
         assertEquals(1, strMoves.size());
         assertEquals("f6xe7", strMoves.get(0));
     }
+
+    /** Test that captureList and captureAndcheckList are generated correctly. */
+    @Test
+    public void testCaptureList() throws ChessParseError {
+        System.out.println("captureList");
+        Position pos = TextIO.readFEN("rnbqkbnr/ppp2ppp/3p1p2/R7/4N3/8/PPPPQPPP/2B1KB1R w Kkq - 0 1");
+        getMoveList(pos, false);
+        
+        pos = TextIO.readFEN("rnb1kbn1/ppp1qppp/5p2/4p3/3N3r/3P4/PPP2PPP/R1BQKB1R b KQq - 0 1");
+        getMoveList(pos, false);
+        
+        pos = TextIO.readFEN("rnb1k1n1/ppp1qppp/5p2/b3p3/1r1N4/3P4/PPP2PPP/R1BQKB1R b KQq - 0 1");
+        getMoveList(pos, false);
+    }
     
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        MoveGen moveGen = new MoveGen();
+        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         if (onlyLegal) {
             moves = MoveGen.removeIllegal(pos, moves);
         }
@@ -362,8 +377,42 @@ public class MoveGenTest {
         for (Move m : moves) {
             String mStr = TextIO.moveToString(pos, m, true);
             strMoves.add(mStr);
-//            System.out.println(mStr);
         }
+
+        List<String> capList1 = getCaptureList(pos, false, onlyLegal);
+        assertTrue(strMoves.containsAll(capList1));
+
+        List<String> capList2 = getCaptureList(pos, true, onlyLegal);
+        assertTrue(strMoves.containsAll(capList2));
+        for (String sm : strMoves) {
+            Move m = TextIO.stringToMove(pos, sm);
+            if (m == null) // Move was illegal (but pseudo-legal)
+                continue;
+            if (MoveGen.givesCheck(pos, m))
+                assertTrue(capList2.contains(sm));
+            if (pos.getPiece(m.to) != Piece.EMPTY) {
+                assertTrue(capList1.contains(sm));
+                assertTrue(capList2.contains(sm));
+            }
+        }
+
         return strMoves;
     }
+    
+    private List<String> getCaptureList(Position pos, boolean includeChecks, boolean onlyLegal) {
+        ArrayList<Move> moves;
+        if (includeChecks) {
+            moves = new MoveGen().pseudoLegalCapturesAndChecks(pos);
+        } else {
+            moves = new MoveGen().pseudoLegalCaptures(pos);
+        }
+        if (onlyLegal)
+            moves = MoveGen.removeIllegal(pos, moves);
+        ArrayList<String> strMoves = new ArrayList<String>();
+        for (Move m : moves) {
+            String mStr = TextIO.moveToString(pos, m, true);
+            strMoves.add(mStr);
+        }
+        return strMoves;
+     }
 }

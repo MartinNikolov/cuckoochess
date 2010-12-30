@@ -266,31 +266,36 @@ public class Evaluate {
 
         // Pawns
         {
-            int wp1 = 0, wp2 = 0, bp1 = 0, bp2 = 0;
+            final int t1 = qV + 2 * rV + 2 * bV;
+            final int t2 = rV;
             int p = Piece.WPAWN;
             long m = pos.pieceTypeBB[p];
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                wp1 += pt1[63-sq];
-                wp2 += pt2[63-sq];
-                m &= m-1;
+            if (m != 0) {
+                int wp1 = 0, wp2 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    wp1 += pt1[63-sq];
+                    wp2 += pt2[63-sq];
+                    m &= m-1;
+                } while (m != 0);
+                final int tw = bMtrl - bMtrlPawns;
+                score += interpolate(tw, t2, wp2, t1, wp1) / 2;
             }
             p = Piece.BPAWN;
             m = pos.pieceTypeBB[p];
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                bp1 += pt1[sq];
-                bp2 += pt2[sq];
-                m &= m-1;
+            if (m != 0) {
+                int bp1 = 0, bp2 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    bp1 += pt1[sq];
+                    bp2 += pt2[sq];
+                    m &= m-1;
+                } while (m != 0);
+                final int tb = wMtrl - wMtrlPawns;
+                score -= interpolate(tb, t2, bp2, t1, bp1) / 2;
             }
-            final int t1 = qV + 2 * rV + 2 * bV;
-            final int t2 = rV;
-            final int tw = bMtrl - bMtrlPawns;
-            score += interpolate(tw, t2, wp2, t1, wp1) / 2;
-            final int tb = wMtrl - wMtrlPawns;
-            score -= interpolate(tb, t2, bp2, t1, bp1) / 2;
         }
 
         // Knights
@@ -299,26 +304,30 @@ public class Evaluate {
             long m = pos.pieceTypeBB[p];
             final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
             final int t2 = nV + 8 * pV;
-            int n1 = 0, n2 = 0;
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                n1 += nt1[63-sq];
-                n2 += nt2[63-sq];
-                m &= m-1;
+            if (m != 0) {
+                int n1 = 0, n2 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    n1 += nt1[63-sq];
+                    n2 += nt2[63-sq];
+                    m &= m-1;
+                } while (m != 0);
+                score += interpolate(bMtrl, t2, n2, t1, n1);
             }
-            score += interpolate(bMtrl, t2, n2, t1, n1);
             p = Piece.BKNIGHT;
             m = pos.pieceTypeBB[p];
-            n1 = n2 = 0;
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                n1 += nt1[sq];
-                n2 += nt2[sq];
-                m &= m-1;
+            if (m != 0) {
+                int n1 = 0, n2 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    n1 += nt1[sq];
+                    n2 += nt2[sq];
+                    m &= m-1;
+                } while (m != 0);
+                score -= interpolate(wMtrl, t2, n2, t1, n1);
             }
-            score -= interpolate(wMtrl, t2, n2, t1, n1);
         }
 
         // Bishops
@@ -371,30 +380,34 @@ public class Evaluate {
         {
             int p = Piece.WROOK;
             long m = pos.pieceTypeBB[p];
-            int r1 = 0;
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                r1 += rt1[63-sq];
-                m &= m-1;
+            if (m != 0) {
+                int r1 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    r1 += rt1[63-sq];
+                    m &= m-1;
+                } while (m != 0);
+                final int nP = bMtrlPawns / pV;
+                final int s = r1 * Math.min(nP, 6) / 6;
+                score += s;
             }
-            final int nP = bMtrlPawns / pV;
-            final int s = r1 * Math.min(nP, 6) / 6;
-            score += s;
         }
         {
             int p = Piece.BROOK;
             long m = pos.pieceTypeBB[p];
-            int r1 = 0;
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
-                r1 += rt1[sq];
-                m &= m-1;
+            if (m != 0) {
+                int r1 = 0;
+                do {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    pieces[p][nPieces[p]++] = sq;
+                    r1 += rt1[sq];
+                    m &= m-1;
+                } while (m != 0);
+                final int nP = wMtrlPawns / pV;
+                final int s = r1 * Math.min(nP, 6) / 6;
+                score -= s;
             }
-            final int nP = wMtrlPawns / pV;
-            final int s = r1 * Math.min(nP, 6) / 6;
-            score -= s;
         }
 
         return score;
@@ -672,6 +685,7 @@ public class Evaluate {
                 }
                 safety = Math.min(safety, 6);
                 if (((xk == 5) || (xk == 6)) && (yk == (white ? 0 : 7))) {
+                    // FIXME! Handle rook trapped on a/b files too
                     int myRook = white ? Piece.WROOK : Piece.BROOK;
                     if (((pos.getPiece(yb + 6) == myRook) && (ph.nPawns[i][6] > 0)) ||
                         ((pos.getPiece(yb + 7) == myRook) && (ph.nPawns[i][7] > 0))) {
@@ -815,6 +829,7 @@ public class Evaluate {
                 score /= 8;         // Too little excess material, probably draw
                 handled = true;
             } else if ((pos.wMtrl == pV + bV) && (nPieces[Piece.WPAWN] == 1) && (nPieces[Piece.WBISHOP] == 1)) {
+                // FIXME! Use bitboards. Handle multiple pawns/bishops.
                 // Check for rook pawn + wrong color bishop
                 int pFile = Position.getX(pieces[Piece.WPAWN][0]);
                 if ((pFile == 0) || (pFile == 7)) {

@@ -677,14 +677,16 @@ public class Search {
             alpha = score;
         int bestScore = score;
         final boolean tryChecks = (depth > -3);
-        final boolean onlyCaptures = !inCheck && !tryChecks;
         ArrayList<Move> moves;
-        if (onlyCaptures) {
+        if (inCheck) {
+            moves = moveGen.pseudoLegalMoves(pos);
+            scoreMoveList(moves, ply);
+        } else if (tryChecks) {
+            moves = moveGen.pseudoLegalCapturesAndChecks(pos);
+            scoreMoveList(moves, ply);
+        } else {
         	moves = moveGen.pseudoLegalCaptures(pos);
         	scoreCaptureList(moves, ply);
-        } else {
-        	moves = moveGen.pseudoLegalMoves(pos);
-        	scoreMoveList(moves, ply);
         }
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
         final int nMoves = moves.size();
