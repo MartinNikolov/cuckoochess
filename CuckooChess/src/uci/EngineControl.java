@@ -168,13 +168,14 @@ public class EngineControl {
             boolean white = pos.whiteMove;
             int time = white ? sPar.wTime : sPar.bTime;
             int inc  = white ? sPar.wInc : sPar.bInc;
-            int timeLimit = (time + inc * (moves - 1) - 1000) / moves;
+            final int margin = 1000;
+            int timeLimit = (time + inc * (moves - 1) - margin) / moves;
             minTimeLimit = (int)(timeLimit * 0.85);
             maxTimeLimit = (int)(minTimeLimit * 2.5);
 
             // Leave at least 1s on the clock, but can't use negative time
-            minTimeLimit = clamp(minTimeLimit, 0, time - 1000);
-            maxTimeLimit = clamp(maxTimeLimit, 0, time - 1000);
+            minTimeLimit = clamp(minTimeLimit, 1, time - margin);
+            maxTimeLimit = clamp(maxTimeLimit, 1, time - margin);
         }
     }
 

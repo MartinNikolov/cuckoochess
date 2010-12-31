@@ -50,6 +50,7 @@ public class Search {
     long maxTimeMillis;     // Maximum allowed thinking time
     boolean searchNeedMoreTime; // True if negaScout should use up to maxTimeMillis time.
     int maxNodes;           // Maximum number of nodes to search (approximately)
+    int nodesToGo;          // Number of nodes until next time check
     
     // Search statistics stuff
     int nodes;
@@ -144,6 +145,7 @@ public class Search {
         minTimeMillis = initialMinTimeMillis;
         maxTimeMillis = initialMaxTimeMillis;
         maxNodes = initialMaxNodes;
+        nodesToGo = 0;
         Position origPos = new Position(pos);
         final int aspirationDelta = 25;
         int bestScoreLastIter = 0;
@@ -356,7 +358,8 @@ public class Search {
      */
     final public int negaScout(int alpha, int beta, int ply, int depth, int recaptureSquare,
     						   final boolean inCheck) throws StopSearch {
-        if (depth > 2) {
+        if (--nodesToGo <= 0) {
+            nodesToGo = 5000;
             long tNow = System.currentTimeMillis();
             long timeLimit = searchNeedMoreTime ? maxTimeMillis : minTimeMillis;
             if (    ((timeLimit >= 0) && (tNow - tStart >= timeLimit)) ||
