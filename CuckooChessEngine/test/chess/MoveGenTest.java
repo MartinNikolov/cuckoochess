@@ -365,6 +365,18 @@ public class MoveGenTest {
         
         pos = TextIO.readFEN("rnb1k1n1/ppp1qppp/5p2/b3p3/1r1N4/3P4/PPP2PPP/R1BQKB1R b KQq - 0 1");
         getMoveList(pos, false);
+        
+        pos = TextIO.readFEN("8/8/8/8/3k4/8/4P3/4K3 w - - 0 1");
+        getMoveList(pos, false);
+        
+        pos = TextIO.readFEN("8/8/8/3k4/8/8/4P3/4K3 w - - 0 1");
+        getMoveList(pos, false);
+        
+        pos = TextIO.readFEN("8/8/8/3k4/4p3/8/3KP3/8 b - - 0 1");
+        getMoveList(pos, false);
+
+        pos = TextIO.readFEN("3k4/r2p2K1/8/8/8/8/8/8 b - - 0 1");
+        getMoveList(pos, false);
     }
     
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
@@ -388,11 +400,39 @@ public class MoveGenTest {
             Move m = TextIO.stringToMove(pos, sm);
             if (m == null) // Move was illegal (but pseudo-legal)
                 continue;
-            if (MoveGen.givesCheck(pos, m))
-                assertTrue(capList2.contains(sm));
+            boolean qProm = false; // Promotion types considered in qsearch
+            switch (m.promoteTo) {
+            case Piece.WQUEEN: case Piece.BQUEEN:
+            case Piece.WKNIGHT: case Piece.BKNIGHT:
+            case Piece.EMPTY:
+                qProm = true;
+                break;
+            default:
+                break;
+            }
+            if (MoveGen.givesCheck(pos, m)) {
+                if (qProm)
+                    assertTrue(capList2.contains(sm));
+            } else {
+                switch (m.promoteTo) {
+                case Piece.WQUEEN: case Piece.BQUEEN:
+                case Piece.WKNIGHT: case Piece.BKNIGHT:
+                    assertTrue(capList1.contains(sm)); // All queen/knight promotions
+                    assertTrue(capList2.contains(sm)); // All queen/knight promotions
+                    break;
+                case Piece.EMPTY:
+                    break;
+                default:
+                    assertTrue(!capList1.contains(sm)); // No rook/bishop promotions
+                    assertTrue(!capList2.contains(sm)); // No rook/bishop promotions
+                    break;
+                }
+            }
             if (pos.getPiece(m.to) != Piece.EMPTY) {
-                assertTrue(capList1.contains(sm));
-                assertTrue(capList2.contains(sm));
+                if (qProm) {
+                    assertTrue(capList1.contains(sm));
+                    assertTrue(capList2.contains(sm));
+                }
             }
         }
 

@@ -90,17 +90,17 @@ public class MoveGen {
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
             long m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -8)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -8, true)) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -16)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -16, true)) return moveList;
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -7, true)) return moveList;
 
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -9, true)) return moveList;
         } else {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
@@ -167,17 +167,17 @@ public class MoveGen {
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
             long m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 8)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 8, true)) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 16)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 16, true)) return moveList;
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 9, true)) return moveList;
 
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 7, true)) return moveList;
         }
 
         return moveList;
@@ -185,15 +185,19 @@ public class MoveGen {
 
     /** Generate captures, checks, and possibly some other moves that are too hard to filter out. */
     public final ArrayList<Move> pseudoLegalCapturesAndChecks(Position pos) {
-        // FIXME! Don't generate all pawn moves
-        // FIXME! Don't generate bishop/rook promotions.
         ArrayList<Move> moveList = getMoveListObj();
         long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             int bKingSq = pos.getKingSq(false);
+            long discovered = 0; // Squares that could generate discovered checks
             long kRookAtk = BitBoard.rookAttacks(bKingSq, occupied);
+            if ((BitBoard.rookAttacks(bKingSq, occupied & ~kRookAtk) &
+                    (pos.pieceTypeBB[Piece.WQUEEN] | pos.pieceTypeBB[Piece.WROOK])) != 0)
+                discovered |= kRookAtk;
             long kBishAtk = BitBoard.bishopAttacks(bKingSq, occupied);
-            long discovered = kRookAtk | kBishAtk; // Squares that could generate discovered checks
+            if ((BitBoard.bishopAttacks(bKingSq, occupied & ~kBishAtk) &
+                    (pos.pieceTypeBB[Piece.WQUEEN] | pos.pieceTypeBB[Piece.WBISHOP])) != 0)
+                discovered |= kBishAtk;
 
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.WQUEEN];
@@ -268,24 +272,38 @@ public class MoveGen {
             }
 
             // Pawn moves
+            // Captures
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
-            long m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -8)) return moveList;
-            m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -16)) return moveList;
-
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
-            m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7)) return moveList;
-
+            long m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, -7, false)) return moveList;
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -9, false)) return moveList;
+
+            // Discovered checks and promotions
+            long pawnAll = discovered | BitBoard.maskRow7;
+            m = ((pawns & pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, -8, false)) return moveList;
+            m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, -16, false)) return moveList;
+
+            // Normal checks
+            m = ((pawns & ~pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -8, false)) return moveList;
+            m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -16, false)) return moveList;
         } else {
             int wKingSq = pos.getKingSq(true);
+            long discovered = 0; // Squares that could generate discovered checks
             long kRookAtk = BitBoard.rookAttacks(wKingSq, occupied);
+            if ((BitBoard.rookAttacks(wKingSq, occupied & ~kRookAtk) &
+                    (pos.pieceTypeBB[Piece.BQUEEN] | pos.pieceTypeBB[Piece.BROOK])) != 0)
+                discovered |= kRookAtk;
             long kBishAtk = BitBoard.bishopAttacks(wKingSq, occupied);
-            long discovered = kRookAtk | kBishAtk; // Squares that could generate discovered checks
+            if ((BitBoard.bishopAttacks(wKingSq, occupied & ~kBishAtk) &
+                    (pos.pieceTypeBB[Piece.BQUEEN] | pos.pieceTypeBB[Piece.BBISHOP])) != 0)
+                discovered |= kBishAtk;
 
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
@@ -360,26 +378,33 @@ public class MoveGen {
             }
 
             // Pawn moves
+            // Captures
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
-            long m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 8)) return moveList;
-            m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 16)) return moveList;
-
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
-            m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9)) return moveList;
-
+            long m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, 9, false)) return moveList;
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 7, false)) return moveList;
+
+            // Discovered checks and promotions
+            long pawnAll = discovered | BitBoard.maskRow2;
+            m = ((pawns & pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, 8, false)) return moveList;
+            m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m, 16, false)) return moveList;
+
+            // Normal checks
+            m = ((pawns & ~pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 8, false)) return moveList;
+            m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            if (addPawnMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 16, false)) return moveList;
         }
 
         return moveList;
     }
 
     public final ArrayList<Move> pseudoLegalCaptures(Position pos) {
-        // FIXME!!! Should generate pawn promotions (to queen/knight)
         ArrayList<Move> moveList = getMoveListObj();
         long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
@@ -426,12 +451,16 @@ public class MoveGen {
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
+            m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
+            m &= BitBoard.maskRow8;
+            if (addPawnMovesByMask(moveList, pos, m, -8, false)) return moveList;
+
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -7, false)) return moveList;
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, -9, false)) return moveList;
         } else {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
@@ -476,12 +505,16 @@ public class MoveGen {
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
+            m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            m &= BitBoard.maskRow1;
+            if (addPawnMovesByMask(moveList, pos, m, 8, false)) return moveList;
+
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 9, false)) return moveList;
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7)) return moveList;
+            if (addPawnMovesByMask(moveList, pos, m, 7, false)) return moveList;
         }
         return moveList;
     }
@@ -729,7 +762,8 @@ public class MoveGen {
         return ret;
     }
 
-    private final boolean addPawnMovesByMask(ArrayList<Move> moveList, Position pos, long mask, int delta) {
+    private final boolean addPawnMovesByMask(ArrayList<Move> moveList, Position pos, long mask,
+                                             int delta, boolean allPromotions) {
         if (mask == 0)
             return false;
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
@@ -748,13 +782,17 @@ public class MoveGen {
             if (sq >= 56) { // White promotion
                 moveList.add(getMoveObj(sq0, sq, Piece.WQUEEN));
                 moveList.add(getMoveObj(sq0, sq, Piece.WKNIGHT));
-                moveList.add(getMoveObj(sq0, sq, Piece.WROOK));
-                moveList.add(getMoveObj(sq0, sq, Piece.WBISHOP));
+                if (allPromotions) {
+                    moveList.add(getMoveObj(sq0, sq, Piece.WROOK));
+                    moveList.add(getMoveObj(sq0, sq, Piece.WBISHOP));
+                }
             } else { // Black promotion
                 moveList.add(getMoveObj(sq0, sq, Piece.BQUEEN));
                 moveList.add(getMoveObj(sq0, sq, Piece.BKNIGHT));
-                moveList.add(getMoveObj(sq0, sq, Piece.BROOK));
-                moveList.add(getMoveObj(sq0, sq, Piece.BBISHOP));
+                if (allPromotions) {
+                    moveList.add(getMoveObj(sq0, sq, Piece.BROOK));
+                    moveList.add(getMoveObj(sq0, sq, Piece.BBISHOP));
+                }
             }
             promMask &= (promMask - 1);
         }
