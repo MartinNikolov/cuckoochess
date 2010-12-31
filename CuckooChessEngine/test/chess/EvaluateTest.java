@@ -204,6 +204,13 @@ public class EvaluateTest {
         pos.setPiece(TextIO.getSquare("f1"), Piece.WKING);
         s2 = evalWhite(pos);
         assertTrue(s2 < s1);
+
+        pos = TextIO.readFEN("rnbqk1nr/pppp1ppp/8/8/1bBpPB2/8/PPP1QPPP/RN1K2NR w kq - 0 1");
+        s1 = evalWhite(pos);
+        pos.setPiece(TextIO.getSquare("d1"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("c1"), Piece.WKING);
+        s2 = evalWhite(pos);
+        assertTrue(s2 < s1);
     }
 
     /**

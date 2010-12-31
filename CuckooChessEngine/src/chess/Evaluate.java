@@ -684,12 +684,27 @@ public class Evaluate {
                 	if (ph.nPawns[1-i][x] == 0) halfOpenFiles++;
                 }
                 safety = Math.min(safety, 6);
-                if (((xk == 5) || (xk == 6)) && (yk == (white ? 0 : 7))) {
-                    // FIXME! Handle rook trapped on a/b files too
-                    int myRook = white ? Piece.WROOK : Piece.BROOK;
-                    if (((pos.getPiece(yb + 6) == myRook) && (ph.nPawns[i][6] > 0)) ||
-                        ((pos.getPiece(yb + 7) == myRook) && (ph.nPawns[i][7] > 0))) {
-                        safety -= 5; // Trapped rook
+                if (white) {
+                    if (((pos.pieceTypeBB[Piece.WKING] & 0x60L) != 0) && // King on f1 or g1
+                        ((pos.pieceTypeBB[Piece.WROOK] & 0xC0L) != 0) && // Rook on g1 or h1
+                        ((ph.nPawns[0][6] > 0) && (ph.nPawns[0][7] > 0))) {
+                        safety -= 6;
+                    } else
+                    if (((pos.pieceTypeBB[Piece.WKING] & 0x6L) != 0) && // King on b1 or c1
+                        ((pos.pieceTypeBB[Piece.WROOK] & 0x3L) != 0) && // Rook on a1 or b1
+                        ((ph.nPawns[0][0] > 0) && (ph.nPawns[0][1] > 0))) {
+                        safety -= 6;
+                    }
+                } else {
+                    if (((pos.pieceTypeBB[Piece.BKING] & 0x6000000000000000L) != 0) && // King on f8 or g8
+                        ((pos.pieceTypeBB[Piece.BROOK] & 0xC000000000000000L) != 0) && // Rook on g8 or h8
+                        ((ph.nPawns[1][6] > 0) && (ph.nPawns[1][7] > 0))) {
+                        safety -= 6;
+                    } else
+                    if (((pos.pieceTypeBB[Piece.BKING] & 0x600000000000000L) != 0) && // King on b8 or c8
+                        ((pos.pieceTypeBB[Piece.BROOK] & 0x300000000000000L) != 0) && // Rook on a8 or b8
+                        ((ph.nPawns[1][0] > 0) && (ph.nPawns[1][1] > 0))) {
+                        safety -= 6;
                     }
                 }
             }
