@@ -250,7 +250,7 @@ public class GameTest {
         game.processString("Ng3");
         game.processString("Nh8");
         game.processString("draw rep Nh1");
-//        assertEquals(Game.GameState.DRAW_REP, game.getGameState()); // FIXME!!! Test fails
+        assertEquals(Game.GameState.DRAW_REP, game.getGameState());
     }
 
     /**

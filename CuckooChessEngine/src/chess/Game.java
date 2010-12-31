@@ -52,6 +52,7 @@ public class Game {
 
         UndoInfo ui = new UndoInfo();
         pos.makeMove(m, ui);
+        TextIO.fixupEPSquare(pos);
         while (currentMove < moveList.size()) {
             moveList.remove(currentMove);
             uiInfoList.remove(currentMove);
