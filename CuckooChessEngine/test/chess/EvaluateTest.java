@@ -286,14 +286,91 @@ public class EvaluateTest {
         assertTrue(score <= 0); // Not unstoppable
     }
 
+    /**
+     * Test of endGameEval method, of class Evaluate.
+     */
+    @Test
+    public void testBishAndRookPawns() throws ChessParseError {
+        System.out.println("bishAndRookPawns");
+        final int pV = Evaluate.pieceValue[Piece.WPAWN];
+        final int bV = Evaluate.pieceValue[Piece.WBISHOP];
+        final int winScore = pV + bV;
+        final int drawish = (pV + bV) / 20;
+        Position pos = TextIO.readFEN("k7/8/8/8/2B5/2K5/P7/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        pos = TextIO.readFEN("k7/8/8/8/3B4/2K5/P7/8 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+
+        pos = TextIO.readFEN("8/2k5/8/8/3B4/2K5/P7/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        pos = TextIO.readFEN("8/2k5/8/8/3B4/2K4P/8/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        pos = TextIO.readFEN("8/2k5/8/8/4B3/2K4P/8/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        pos = TextIO.readFEN("8/6k1/8/8/4B3/2K4P/8/8 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+
+        pos = TextIO.readFEN("8/6k1/8/8/4B3/2K4P/7P/8 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+
+        pos = TextIO.readFEN("8/6k1/8/8/2B1B3/2K4P/7P/8 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+
+        pos = TextIO.readFEN("8/6k1/8/2B5/4B3/2K4P/7P/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        pos = TextIO.readFEN("8/6k1/8/8/4B3/2K4P/P7/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+        
+        pos = TextIO.readFEN("8/6k1/8/8/4B3/2K3PP/8/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+    }
+
     /** Return static evaluation score for white, regardless of whose turn it is to move. */
     private final int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();
         int ret = eval.evalPos(pos);
+        Position symPos = swapColors(pos);
+        int symScore = eval.evalPos(symPos);
+        assertEquals(ret, symScore);
         if (!pos.whiteMove) {
             ret = -ret;
         }
         return ret;
+    }
+    
+    private final static Position swapColors(Position pos) {
+        Position sym = new Position();
+        sym.whiteMove = !pos.whiteMove;
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                int p = pos.getPiece(Position.getSquare(x, y));
+                p = Piece.isWhite(p) ? Piece.makeBlack(p) : Piece.makeWhite(p);
+                sym.setPiece(Position.getSquare(x, 7-y), p);
+            }
+        }
+
+        int castleMask = 0;
+        if (pos.a1Castle()) castleMask |= 1 << Position.A8_CASTLE;
+        if (pos.h1Castle()) castleMask |= 1 << Position.H8_CASTLE;
+        if (pos.a8Castle()) castleMask |= 1 << Position.A1_CASTLE;
+        if (pos.h8Castle()) castleMask |= 1 << Position.H1_CASTLE;
+        sym.setCastleMask(castleMask);
+
+        if (pos.getEpSquare() >= 0) {
+            int x = Position.getX(pos.getEpSquare());
+            int y = Position.getY(pos.getEpSquare());
+            sym.setEpSquare(Position.getSquare(x, 7-y));
+        }
+
+        sym.halfMoveClock = pos.halfMoveClock;
+        sym.fullMoveCounter = pos.fullMoveCounter;
+
+        return sym;
     }
 
     /** Compute change in eval score for white after making "moveStr" in position "pos". */

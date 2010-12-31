@@ -781,7 +781,6 @@ public class Evaluate {
         final int rV = pieceValue[Piece.WROOK];
     	if (pos.wMtrl + pos.bMtrl > 6 * rV)
     		return score;
-        final int pV = pieceValue[Piece.WPAWN];
         final int bV = pieceValue[Piece.WBISHOP];
         final int nV = pieceValue[Piece.WKNIGHT];
         final int wMtrlPawns = pos.wMtrlPawns;
@@ -795,113 +794,7 @@ public class Evaluate {
             score /= 50;
             handled = true;
         }
-        if (!handled) {
-            if (bMtrlPawns == 0) {
-                if (wMtrlNoPawns - bMtrlNoPawns > bV) {
-                    int wKnights = nPieces[Piece.WKNIGHT];
-                    int wBishops = nPieces[Piece.WBISHOP];
-                    if ((wKnights == 2) && (wMtrlNoPawns == 2 * nV) && (bMtrlNoPawns == 0)) {
-                        score /= 50;    // KNNK is a draw
-                    } else if ((wKnights == 1) && (wBishops == 1) && (wMtrlNoPawns == nV + bV) && (bMtrlNoPawns == 0)) {
-                        score /= 10;
-                        score += nV + bV + 300;
-                        final int kSq = pos.getKingSq(false);
-                        final int x = Position.getX(kSq);
-                        final int y = Position.getY(kSq);
-                        if (bishopOnDark(pos)) {
-                            score += (7 - distToH1A8[7-y][7-x]) * 10;
-                        } else {
-                            score += (7 - distToH1A8[7-y][x]) * 10;
-                        }
-                    } else {
-                        score += 300;       // Enough excess material, should win
-                    }
-                    handled = true;
-                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.WPAWN] == 1)) { // KPK
-                    score = kpkEval(pos.getKingSq(true), pos.getKingSq(false),
-                                    pieces[Piece.WPAWN][0], pos.whiteMove);
-                    handled = true;
-                }
-            }
-        }
-        if (!handled && (score > 0)) {
-            if ((wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
-                score /= 8;         // Too little excess material, probably draw
-                handled = true;
-            } else if ((pos.wMtrl == pV + bV) && (nPieces[Piece.WPAWN] == 1) && (nPieces[Piece.WBISHOP] == 1)) {
-                // FIXME! Use bitboards. Handle multiple pawns/bishops.
-                // Check for rook pawn + wrong color bishop
-                int pFile = Position.getX(pieces[Piece.WPAWN][0]);
-                if ((pFile == 0) || (pFile == 7)) {
-                    int bSq = pieces[Piece.WBISHOP][0];
-                    boolean bDark = Position.darkSquare(Position.getX(bSq),
-                                                        Position.getY(bSq));
-                    if (bDark == (pFile == 0)) {
-                        int oKing = pos.getKingSq(false);
-                        int kx = Position.getX(oKing);
-                        int ky = Position.getY(oKing);
-                        if (((pFile == 0) && (kx <= 1) && (ky >= 6)) ||
-                            ((pFile == 7) && (kx >= 6) && (ky >= 6))) {
-                            score /= 50;
-                            handled = true;
-                        }
-                    }
-                }
-            }
-        }
-        if (!handled) {
-            if (wMtrlPawns == 0) {
-                if (bMtrlNoPawns - wMtrlNoPawns > bV) {
-                    int bKnights = nPieces[Piece.BKNIGHT];
-                    int bBishops = nPieces[Piece.BBISHOP];
-                    if ((bKnights == 2) && (bMtrlNoPawns == 2 * nV) && (wMtrlNoPawns == 0)) {
-                        score /= 50;    // KNNK is a draw
-                    } else if ((bKnights == 1) && (bBishops == 1) && (bMtrlNoPawns == nV + bV) && (wMtrlNoPawns == 0)) {
-                        score /= 10;
-                        score -= nV + bV + 300;
-                        final int kSq = pos.getKingSq(true);
-                        final int x = Position.getX(kSq);
-                        final int y = Position.getY(kSq);
-                        if (bishopOnDark(pos)) {
-                            score -= (7 - distToH1A8[7-y][7-x]) * 10;
-                        } else {
-                            score -= (7 - distToH1A8[7-y][x]) * 10;
-                        }
-                    } else {
-                        score -= 300;       // Enough excess material, should win
-                    }
-                    handled = true;
-                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.BPAWN] == 1)) { // KPK
-                    score = -kpkEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
-                                     63-pieces[Piece.BPAWN][0], !pos.whiteMove);
-                    handled = true;
-                }
-            }
-        }
-        if (!handled && (score < 0)) {
-            if ((bMtrlPawns == 0) && (bMtrlNoPawns <= wMtrlNoPawns + bV)) {
-                score /= 8;         // Too little excess material, probably draw
-                handled = true;
-            } else if ((pos.bMtrl == pV + bV) && (nPieces[Piece.BPAWN] == 1) && (nPieces[Piece.BBISHOP] == 1)) {
-                // Check for rook pawn + wrong color bishop
-                int pFile = Position.getX(pieces[Piece.BPAWN][0]);
-                if ((pFile == 0) || (pFile == 7)) {
-                    int bSq = pieces[Piece.BBISHOP][0];
-                    boolean bDark = Position.darkSquare(Position.getX(bSq),
-                                                        Position.getY(bSq));
-                    if (bDark == (pFile == 7)) {
-                        int oKing = pos.getKingSq(true);
-                        int kx = Position.getX(oKing);
-                        int ky = Position.getY(oKing);
-                        if (((pFile == 0) && (kx <= 1) && (ky <= 1)) ||
-                            ((pFile == 7) && (kx >= 6) && (ky <= 1))) {
-                            score /= 50;
-                            handled = true;
-                        }
-                    }
-                }
-            }
-        }
+
         if (!handled) {
             // In pawn end games, passed pawns not reachable by
             // opponent king are very dangerous
@@ -943,6 +836,107 @@ public class Evaluate {
                 }
             }
             score += danger;
+        }
+        
+        if (!handled && (score > 0)) {
+            if ((wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
+                score /= 8;         // Too little excess material, probably draw
+                handled = true;
+            } else if ((pos.pieceTypeBB[Piece.WROOK] | pos.pieceTypeBB[Piece.WKNIGHT] |
+                        pos.pieceTypeBB[Piece.WQUEEN]) == 0) {
+                // Check for rook pawn + wrong color bishop
+                if (((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskBToHFiles) == 0) &&
+                    ((pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskLightSq) == 0) &&
+                    ((pos.pieceTypeBB[Piece.BKING] & 0x0303000000000000L) != 0)) {
+                    score /= 50;
+                    handled = true;
+                } else
+                if (((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskAToGFiles) == 0) &&
+                    ((pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskDarkSq) == 0) &&
+                    ((pos.pieceTypeBB[Piece.BKING] & 0xC0C0000000000000L) != 0)) {
+                    score /= 50;
+                    handled = true;
+                }
+            }
+        }
+        if (!handled) {
+            if (bMtrlPawns == 0) {
+                if (wMtrlNoPawns - bMtrlNoPawns > bV) {
+                    int wKnights = nPieces[Piece.WKNIGHT];
+                    int wBishops = nPieces[Piece.WBISHOP];
+                    if ((wKnights == 2) && (wMtrlNoPawns == 2 * nV) && (bMtrlNoPawns == 0)) {
+                        score /= 50;    // KNNK is a draw
+                    } else if ((wKnights == 1) && (wBishops == 1) && (wMtrlNoPawns == nV + bV) && (bMtrlNoPawns == 0)) {
+                        score /= 10;
+                        score += nV + bV + 300;
+                        final int kSq = pos.getKingSq(false);
+                        final int x = Position.getX(kSq);
+                        final int y = Position.getY(kSq);
+                        if (bishopOnDark(pos)) {
+                            score += (7 - distToH1A8[7-y][7-x]) * 10;
+                        } else {
+                            score += (7 - distToH1A8[7-y][x]) * 10;
+                        }
+                    } else {
+                        score += 300;       // Enough excess material, should win
+                    }
+                    handled = true;
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.WPAWN] == 1)) { // KPK
+                    score = kpkEval(pos.getKingSq(true), pos.getKingSq(false),
+                                    pieces[Piece.WPAWN][0], pos.whiteMove);
+                    handled = true;
+                }
+            }
+        }
+        if (!handled && (score < 0)) {
+            if ((bMtrlPawns == 0) && (bMtrlNoPawns <= wMtrlNoPawns + bV)) {
+                score /= 8;         // Too little excess material, probably draw
+                handled = true;
+            } else if ((pos.pieceTypeBB[Piece.BROOK] | pos.pieceTypeBB[Piece.BKNIGHT] |
+                        pos.pieceTypeBB[Piece.BQUEEN]) == 0) {
+                // Check for rook pawn + wrong color bishop
+                if (((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskBToHFiles) == 0) &&
+                    ((pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskDarkSq) == 0) &&
+                    ((pos.pieceTypeBB[Piece.WKING] & 0x0303L) != 0)) {
+                    score /= 50;
+                    handled = true;
+                } else
+                if (((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskAToGFiles) == 0) &&
+                    ((pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskLightSq) == 0) &&
+                    ((pos.pieceTypeBB[Piece.WKING] & 0xC0C0L) != 0)) {
+                    score /= 50;
+                    handled = true;
+                }
+            }
+        }
+        if (!handled) {
+            if (wMtrlPawns == 0) {
+                if (bMtrlNoPawns - wMtrlNoPawns > bV) {
+                    int bKnights = nPieces[Piece.BKNIGHT];
+                    int bBishops = nPieces[Piece.BBISHOP];
+                    if ((bKnights == 2) && (bMtrlNoPawns == 2 * nV) && (wMtrlNoPawns == 0)) {
+                        score /= 50;    // KNNK is a draw
+                    } else if ((bKnights == 1) && (bBishops == 1) && (bMtrlNoPawns == nV + bV) && (wMtrlNoPawns == 0)) {
+                        score /= 10;
+                        score -= nV + bV + 300;
+                        final int kSq = pos.getKingSq(true);
+                        final int x = Position.getX(kSq);
+                        final int y = Position.getY(kSq);
+                        if (bishopOnDark(pos)) {
+                            score -= (7 - distToH1A8[7-y][7-x]) * 10;
+                        } else {
+                            score -= (7 - distToH1A8[7-y][x]) * 10;
+                        }
+                    } else {
+                        score -= 300;       // Enough excess material, should win
+                    }
+                    handled = true;
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.BPAWN] == 1)) { // KPK
+                    score = -kpkEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
+                                     63-pieces[Piece.BPAWN][0], !pos.whiteMove);
+                    handled = true;
+                }
+            }
         }
         return score;
     }
