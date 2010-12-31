@@ -92,7 +92,7 @@ public class MoveGen {
             long m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m, -8, true)) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -16, true)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m, -16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
@@ -169,7 +169,7 @@ public class MoveGen {
             long m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m, 8, true)) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 16, true)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m, 16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
@@ -286,13 +286,13 @@ public class MoveGen {
             m = ((pawns & pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m, -8, false)) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -16, false)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m, -16);
 
             // Normal checks
             m = ((pawns & ~pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -8, false)) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -16, false)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -16);
         } else {
             int wKingSq = pos.getKingSq(true);
             long discovered = 0; // Squares that could generate discovered checks
@@ -392,13 +392,13 @@ public class MoveGen {
             m = ((pawns & pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m, 8, false)) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 16, false)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m, 16);
 
             // Normal checks
             m = ((pawns & ~pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
             if (addPawnMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 8, false)) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 16, false)) return moveList;
+            addPawnDoubleMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 16);
         }
 
         return moveList;
@@ -803,7 +803,15 @@ public class MoveGen {
         }
         return false;
     }
-    
+
+    private final void addPawnDoubleMovesByMask(ArrayList<Move> moveList, Position pos,
+                                                long mask, int delta) {
+        while (mask != 0) {
+            int sq = Long.numberOfTrailingZeros(mask);
+            moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
+            mask &= (mask - 1);
+        }
+    }
     
     private final boolean addMovesByMask(ArrayList<Move> moveList, Position pos, int sq0, long mask) {
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
