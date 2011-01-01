@@ -759,6 +759,7 @@ public class Evaluate {
         // FIXME!!! Bad bishop
 
         if ((numWhite == 1) && (numBlack == 1) && (whiteDark != blackDark)) {
+//            (nPieces[Piece.WKNIGHT] == nPieces[Piece.BKNIGHT])) {
             final int penalty = (oldScore + score) / 2;
             final int qV = pieceValue[Piece.WQUEEN];
             final int rV = pieceValue[Piece.WROOK];

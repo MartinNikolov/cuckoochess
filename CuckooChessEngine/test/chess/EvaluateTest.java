@@ -150,6 +150,13 @@ public class EvaluateTest {
         pos.makeMove(TextIO.stringToMove(pos, "cxd4"), ui);
         score2 = evalWhite(pos);
         assertTrue(score2 < score1);    // White ahead, trading pawns is bad
+
+        pos = TextIO.readFEN("8/8/1b2b3/4kp2/5N2/4NKP1/6B1/8 w - - 0 62");
+        score1 = evalWhite(pos);
+        pos.makeMove(TextIO.stringToMove(pos, "Nxe6"), ui);
+        pos.makeMove(TextIO.stringToMove(pos, "Kxe6"), ui);
+        score2 = evalWhite(pos);
+//        assertTrue(score2 > score1); // White ahead, trading pieces is good  FIXME! Fails
     }
 
     /**

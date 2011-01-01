@@ -499,6 +499,7 @@ public class Position {
 
     /** Useful for debugging. */
     public final String toString() {
-        return TextIO.asciiBoard(this);
+        return TextIO.asciiBoard(this) + (whiteMove ? "white\n" : "black\n") +
+                Long.toHexString(zobristHash()) + "\n";
     }
 }
