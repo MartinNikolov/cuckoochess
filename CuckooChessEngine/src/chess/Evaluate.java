@@ -758,8 +758,8 @@ public class Evaluate {
 
         // FIXME!!! Bad bishop
 
-        if ((numWhite == 1) && (numBlack == 1) && (whiteDark != blackDark)) {
-//            (nPieces[Piece.WKNIGHT] == nPieces[Piece.BKNIGHT])) {
+        if ((numWhite == 1) && (numBlack == 1) && (whiteDark != blackDark) &&
+            (pos.wMtrl - pos.wMtrlPawns == pos.bMtrl - pos.bMtrlPawns)) {
             final int penalty = (oldScore + score) / 2;
             final int qV = pieceValue[Piece.WQUEEN];
             final int rV = pieceValue[Piece.WROOK];
@@ -954,6 +954,9 @@ public class Evaluate {
                 }
             }
         }
+
+        // FIXME! Add evaluation of KQKP
+
         return score;
     }
 

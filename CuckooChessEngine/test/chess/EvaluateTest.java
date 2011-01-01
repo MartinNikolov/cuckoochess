@@ -156,7 +156,7 @@ public class EvaluateTest {
         pos.makeMove(TextIO.stringToMove(pos, "Nxe6"), ui);
         pos.makeMove(TextIO.stringToMove(pos, "Kxe6"), ui);
         score2 = evalWhite(pos);
-//        assertTrue(score2 > score1); // White ahead, trading pieces is good  FIXME! Fails
+        assertTrue(score2 > score1); // White ahead, trading pieces is good
     }
 
     /**
