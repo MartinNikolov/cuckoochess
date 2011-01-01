@@ -306,8 +306,9 @@ public class Position {
         
         int p = squares[move.from];
         int capP = squares[move.to];
+        long fromMask = 1L << move.from;
 
-        if ((capP != Piece.EMPTY) || (p == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
+        if ((capP != Piece.EMPTY) || (((pieceTypeBB[Piece.WPAWN] | pieceTypeBB[Piece.BPAWN]) & fromMask) != 0)) {
             halfMoveClock = 0;
         } else {
             halfMoveClock++;
@@ -317,9 +318,8 @@ public class Position {
         }
 
         // Handle castling
-        int king = wtm ? Piece.WKING : Piece.BKING;
-        int k0 = move.from;
-        if (p == king) {
+        if (((pieceTypeBB[Piece.WKING] | pieceTypeBB[Piece.BKING]) & fromMask) != 0) {
+            int k0 = move.from;
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 1, squares[k0 + 3]);
                 setPiece(k0 + 3, Piece.EMPTY);
@@ -335,13 +335,15 @@ public class Position {
                 setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
             }
         }
-        int rook = wtm ? Piece.WROOK : Piece.BROOK;
-        if (p == rook) {
-            removeCastleRights(move.from);
+        if ((BitBoard.maskCorners & fromMask) != 0) {
+            int rook = wtm ? Piece.WROOK : Piece.BROOK;
+            if (p == rook)
+                removeCastleRights(move.from);
         }
-        int oRook = wtm ? Piece.BROOK : Piece.WROOK;
-        if (capP == oRook) {
-            removeCastleRights(move.to);
+        if ((BitBoard.maskCorners & (1L << move.to)) != 0) {
+            int oRook = wtm ? Piece.BROOK : Piece.WROOK;
+            if (capP == oRook)
+                removeCastleRights(move.to);
         }
 
         // Handle en passant and epSquare
@@ -399,8 +401,8 @@ public class Position {
         
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
-        int k0 = move.from;
         if (p == king) {
+            int k0 = move.from;
             if (move.to == k0 + 2) { // O-O
                 setPiece(k0 + 3, squares[k0 + 1]);
                 setPiece(k0 + 1, Piece.EMPTY);

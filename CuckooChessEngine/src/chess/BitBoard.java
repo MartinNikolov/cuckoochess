@@ -25,6 +25,8 @@ public class BitBoard {
     static final long maskDarkSq    = 0xAA55AA55AA55AA55L;
     static final long maskLightSq   = 0x55AA55AA55AA55AAL;
 
+    static final long maskCorners   = 0x8100000000000081L;
+
     static {
         // Compute king attacks
         kingAttacks = new long[64];
