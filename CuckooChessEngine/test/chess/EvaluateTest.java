@@ -344,6 +344,32 @@ public class EvaluateTest {
         assertTrue(evalWhite(pos) > winScore);
     }
 
+    /**
+     * Test of endGameEval method, of class Evaluate.
+     */
+    @Test
+    public void testKQKP() throws ChessParseError {
+        System.out.println("KQKP");
+        final int pV = Evaluate.pieceValue[Piece.WPAWN];
+        final int qV = Evaluate.pieceValue[Piece.WQUEEN];
+        final int winScore = qV - pV - 200;
+        final int drawish = (pV + qV) / 20;
+
+        // Pawn on a2
+        Position pos = TextIO.readFEN("8/8/1K6/8/8/Q7/p7/1k6 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+        pos = TextIO.readFEN("8/8/8/1K6/8/Q7/p7/1k6 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+        pos = TextIO.readFEN("3Q4/8/8/8/K7/8/1kp5/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+
+        // Pawn on c2
+        pos = TextIO.readFEN("3Q4/8/8/8/3K4/8/1kp5/8 w - - 0 1");
+        assertTrue(evalWhite(pos) < drawish);
+        pos = TextIO.readFEN("3Q4/8/8/8/8/4K3/1kp5/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+    }
+
     /** Return static evaluation score for white, regardless of whose turn it is to move. */
     private final int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();

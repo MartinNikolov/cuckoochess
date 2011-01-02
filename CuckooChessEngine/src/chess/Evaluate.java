@@ -810,7 +810,6 @@ public class Evaluate {
             score /= 50;
             handled = true;
         }
-
         if (!handled) {
             // In pawn end games, passed pawns not reachable by
             // opponent king are very dangerous
@@ -853,7 +852,18 @@ public class Evaluate {
             }
             score += danger;
         }
-        
+        final int qV = pieceValue[Piece.WQUEEN];
+        final int pV = pieceValue[Piece.WPAWN];
+        if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) && (nPieces[Piece.WQUEEN] == 1)) {
+            score = evalKQKP(pos.getKingSq(true), pieces[Piece.WQUEEN][0],
+                             pos.getKingSq(false), pieces[Piece.BPAWN][0]);
+            handled = true;
+        }
+        if (!handled && (pos.bMtrl == qV) && (pos.wMtrl == pV) && (nPieces[Piece.BQUEEN] == 1)) {
+            score = -evalKQKP(63-pos.getKingSq(false), 63-pieces[Piece.BQUEEN][0],
+                              63-pos.getKingSq(true), 63-pieces[Piece.WPAWN][0]);
+            handled = true;
+        }
         if (!handled && (score > 0)) {
             if ((wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
                 score /= 8;         // Too little excess material, probably draw
@@ -954,9 +964,42 @@ public class Evaluate {
                 }
             }
         }
+        return score;
+    }
 
-        // FIXME! Add evaluation of KQKP
+    private static final int evalKQKP(int wKing, int wQueen, int bKing, int bPawn) {
+        boolean canWin = false;
+        if (((1L << bKing) & 0xFFFF) == 0) {
+            canWin = true; // King doesn't support pawn
+        } else if (Math.abs(Position.getX(bPawn) - Position.getX(bKing)) > 2) {
+            canWin = true; // King doesn't support pawn
+        } else {
+            switch (bPawn) {
+            case 8:  // a2
+                canWin = ((1L << wKing) & 0x0F1F1F1F1FL) != 0;
+                break;
+            case 10: // c2
+                canWin = ((1L << wKing) & 0x071F1F1FL) != 0;
+                break;
+            case 13: // f2
+                canWin = ((1L << wKing) & 0xE0F8F8F8L) != 0;
+                break;
+            case 15: // h2
+                canWin = ((1L << wKing) & 0xF0F8F8F8F8L) != 0;
+                break;
+            default:
+                canWin = true;
+                break;
+            }
+        }
 
+        final int qV = pieceValue[Piece.WQUEEN];
+        final int pV = pieceValue[Piece.WPAWN];
+        final int dist = Math.max(Math.abs(Position.getX(wKing)-Position.getX(bPawn)),
+                                  Math.abs(Position.getY(wKing)-Position.getY(bPawn)));
+        int score = qV - pV - 20 * dist;
+        if (!canWin)
+            score /= 50;
         return score;
     }
 
