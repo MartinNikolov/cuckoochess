@@ -35,7 +35,7 @@
 ////
 
 const int PLY_MAX = 100;
-const int PLY_MAX_PLUS_2 = 102;
+const int PLY_MAX_PLUS_2 = PLY_MAX + 2;
 
 
 ////
@@ -47,6 +47,7 @@ const int PLY_MAX_PLUS_2 = 102;
 /// search thread has its own array of SearchStack objects, indexed by the
 /// current ply.
 struct EvalInfo;
+struct SplitPoint;
 
 struct SearchStack {
   Move currentMove;
@@ -56,7 +57,9 @@ struct SearchStack {
   Move killers[2];
   Depth reduction;
   Value eval;
+  Value evalMargin;
   bool skipNullMove;
+  SplitPoint* sp;
 };
 
 
@@ -68,8 +71,7 @@ extern void init_search();
 extern void init_threads();
 extern void exit_threads();
 extern int perft(Position& pos, Depth depth);
-extern int64_t nodes_searched();
-extern bool think(const Position& pos, bool infinite, bool ponder, int time[], int increment[],
+extern bool think(Position& pos, bool infinite, bool ponder, int time[], int increment[],
                   int movesToGo, int maxDepth, int maxNodes, int maxTime, Move searchMoves[]);
 
 #endif // !defined(SEARCH_H_INCLUDED)

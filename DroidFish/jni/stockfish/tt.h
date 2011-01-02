@@ -64,6 +64,7 @@ public:
       staticValue = int16_t(statV);
       staticValueMargin  = int16_t(kd);
   }
+  void set_generation(int g) { data = move() | (type() << 21) | (g << 23); }
 
   uint32_t key() const { return key32; }
   Depth depth() const { return Depth(depth16); }
@@ -102,6 +103,9 @@ struct TTCluster {
 
 class TranspositionTable {
 
+  TranspositionTable(const TranspositionTable&);
+  TranspositionTable& operator=(const TranspositionTable&);
+
 public:
   TranspositionTable();
   ~TranspositionTable();
@@ -111,11 +115,12 @@ public:
   TTEntry* retrieve(const Key posKey) const;
   void new_search();
   TTEntry* first_entry(const Key posKey) const;
+  void refresh(const TTEntry* tte) const;
 
 private:
   size_t size;
   TTCluster* entries;
-  uint8_t generation;
+  uint8_t generation; // To properly compare, size must be smaller then TT stored value
 };
 
 extern TranspositionTable TT;
@@ -128,6 +133,15 @@ extern TranspositionTable TT;
 inline TTEntry* TranspositionTable::first_entry(const Key posKey) const {
 
   return entries[uint32_t(posKey) & (size - 1)].data;
+}
+
+
+/// TranspositionTable::refresh updates the 'generation' value of the TTEntry
+/// to avoid aging. Normally called after a TT hit, before to return.
+
+inline void TranspositionTable::refresh(const TTEntry* tte) const {
+
+  const_cast<TTEntry*>(tte)->set_generation(generation);
 }
 
 #endif // !defined(TT_H_INCLUDED)

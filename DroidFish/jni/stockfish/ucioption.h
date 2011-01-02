@@ -17,28 +17,64 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #if !defined(UCIOPTION_H_INCLUDED)
 #define UCIOPTION_H_INCLUDED
 
-////
-//// Includes
-////
-
+#include <cassert>
+#include <cstdlib>
+#include <map>
 #include <string>
 
-////
-//// Prototypes
-////
+class Option {
+public:
+  Option() {} // To allow insertion in a std::map
+  Option(const char* defaultValue);
+  Option(bool defaultValue, std::string type = "check");
+  Option(int defaultValue, int minValue, int maxValue);
 
+  void set_value(const std::string& value);
+  template<typename T> T value() const;
+
+private:
+  friend void init_uci_options();
+  friend void print_uci_options();
+
+  std::string defaultValue, currentValue, type;
+  size_t idx;
+  int minValue, maxValue;
+};
+
+template<typename T>
+inline T Option::value() const {
+
+  assert(type == "spin");
+  return T(atoi(currentValue.c_str()));
+}
+
+template<>
+inline std::string Option::value<std::string>() const {
+
+  assert(type == "string");
+  return currentValue;
+}
+
+template<>
+inline bool Option::value<bool>() const {
+
+  assert(type == "check" || type == "button");
+  return currentValue == "true";
+}
+
+
+// Custom comparator because UCI options should not be case sensitive
+struct CaseInsensitiveLess {
+  bool operator() (const std::string&, const std::string&) const;
+};
+
+typedef std::map<std::string, Option, CaseInsensitiveLess> OptionsMap;
+
+extern OptionsMap Options;
 extern void init_uci_options();
 extern void print_uci_options();
-extern bool get_option_value_bool(const std::string& optionName);
-extern int get_option_value_int(const std::string& optionName);
-extern std::string get_option_value_string(const std::string& optionName);
-extern bool button_was_pressed(const std::string& buttonName);
-extern void set_option_value(const std::string& optionName,const std::string& newValue);
-extern void push_button(const std::string& buttonName);
-
 
 #endif // !defined(UCIOPTION_H_INCLUDED)

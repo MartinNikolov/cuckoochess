@@ -58,7 +58,7 @@ using namespace std;
 /// Version number. If this is left empty, the current date (in the format
 /// YYMMDD) is used as a version number.
 
-static const string EngineVersion = "1.9.1";
+static const string EngineVersion = "2.0";
 static const string AppName = "Stockfish";
 static const string AppTag  = "";
 
@@ -67,8 +67,8 @@ static const string AppTag  = "";
 //// Variables
 ////
 
-uint64_t dbg_cnt0 = 0;
-uint64_t dbg_cnt1 = 0;
+static uint64_t dbg_cnt0 = 0;
+static uint64_t dbg_cnt1 = 0;
 
 bool dbg_show_mean = false;
 bool dbg_show_hit_rate = false;
@@ -127,42 +127,29 @@ void dbg_print_mean() {
        << (float)dbg_cnt1 / (dbg_cnt0 ? dbg_cnt0 : 1) << endl;
 }
 
-void dbg_print_hit_rate(ofstream& logFile) {
-
-  logFile << "Total " << dbg_cnt0 << " Hit " << dbg_cnt1
-          << " hit rate (%) " << (dbg_cnt1*100)/(dbg_cnt0 ? dbg_cnt0 : 1) << endl;
-}
-
-void dbg_print_mean(ofstream& logFile) {
-
-  logFile << "Total " << dbg_cnt0 << " Mean "
-          << (float)dbg_cnt1 / (dbg_cnt0 ? dbg_cnt0 : 1) << endl;
-}
 
 /// engine_name() returns the full name of the current Stockfish version.
-/// This will be either "Stockfish YYMMDD" (where YYMMDD is the date when the
-/// program was compiled) or "Stockfish <version number>", depending on whether
-/// the constant EngineVersion (defined in misc.h) is empty.
+/// This will be either "Stockfish YYMMDD" (where YYMMDD is the date when
+/// the program was compiled) or "Stockfish <version number>", depending
+/// on whether the constant EngineVersion (defined in misc.h) is empty.
 
 const string engine_name() {
 
+  const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
   const string cpu64(CpuIs64Bit ? " 64bit" : "");
 
   if (!EngineVersion.empty())
       return AppName + " " + EngineVersion + cpu64;
 
-  string date(__DATE__); // From compiler, format is "Sep 21 2008"
-  string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+  stringstream s, date(__DATE__); // From compiler, format is "Sep 21 2008"
+  string month, day, year;
 
-  size_t mon = 1 + months.find(date.substr(0, 3)) / 4;
+  date >> month >> day >> year;
 
-  stringstream s;
-  string day = (date[4] == ' ' ? date.substr(5, 1) : date.substr(4, 2));
-
-  string name = AppName + " " + AppTag + " ";
-
-  s << name << date.substr(date.length() - 2) << setfill('0')
-    << setw(2) << mon << setw(2) << day << cpu64;
+  s << setfill('0') << AppName + " " + AppTag + " "
+    << year.substr(2, 2) << setw(2)
+    << (1 + months.find(month) / 4) << setw(2)
+    << day << cpu64;
 
   return s.str();
 }
@@ -218,20 +205,18 @@ int cpu_count() {
 #endif
 
 
-/*
-  From Beowulf, from Olithink
-*/
+/// Check for console input. Original code from Beowulf and Olithink
+
 #ifndef _WIN32
-/* Non-windows version */
-int Bioskey()
+
+int data_available()
 {
-  fd_set          readfds;
+  fd_set readfds;
   struct timeval  timeout;
 
   FD_ZERO(&readfds);
   FD_SET(fileno(stdin), &readfds);
-  /* Set to timeout immediately */
-  timeout.tv_sec = 0;
+  timeout.tv_sec = 0; // Set to timeout immediately
   timeout.tv_usec = 0;
   select(16, &readfds, 0, 0, &timeout);
 
@@ -239,58 +224,48 @@ int Bioskey()
 }
 
 #else
-/* Windows-version */
-#include <windows.h>
-#include <conio.h>
-int Bioskey()
-{
-    static int      init = 0,
-                    pipe;
-    static HANDLE   inh;
-    DWORD           dw;
-    /* If we're running under XBoard then we can't use _kbhit() as the input
-     * commands are sent to us directly over the internal pipe */
 
-#if defined(FILE_CNT)
-    if (stdin->_cnt > 0)
-        return stdin->_cnt;
-#endif
-    if (!init) {
-        init = 1;
+int data_available()
+{
+    static HANDLE inh = NULL;
+    static bool usePipe;
+    INPUT_RECORD rec[256];
+    DWORD dw, recCnt;
+
+    if (!inh)
+    {
         inh = GetStdHandle(STD_INPUT_HANDLE);
-        pipe = !GetConsoleMode(inh, &dw);
-        if (!pipe) {
+        usePipe = !GetConsoleMode(inh, &dw);
+        if (!usePipe)
+        {
             SetConsoleMode(inh, dw & ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT));
             FlushConsoleInputBuffer(inh);
         }
     }
-    if (pipe) {
-        if (!PeekNamedPipe(inh, NULL, 0, NULL, &dw, NULL))
-            return 1;
-        return dw;
-    } else {
-        // Count the number of unread input records, including keyboard,
-        // mouse, and window-resizing input records.
-        GetNumberOfConsoleInputEvents(inh, &dw);
-        if (dw <= 0)
-            return 0;
 
-        // Read data from console without removing it from the buffer
-        INPUT_RECORD rec[256];
-        DWORD recCnt;
-        if (!PeekConsoleInput(inh, rec, Min(dw, 256), &recCnt))
-            return 0;
+    // If we're running under XBoard then we can't use PeekConsoleInput() as
+    // the input commands are sent to us directly over the internal pipe.
+    if (usePipe)
+        return PeekNamedPipe(inh, NULL, 0, NULL, &dw, NULL) ? dw : 1;
 
-        // Search for at least one keyboard event
-        for (DWORD i = 0; i < recCnt; i++)
-            if (rec[i].EventType == KEY_EVENT)
-                return 1;
+    // Count the number of unread input records, including keyboard,
+    // mouse, and window-resizing input records.
+    GetNumberOfConsoleInputEvents(inh, &dw);
 
+    // Read data from console without removing it from the buffer
+    if (dw <= 0 || !PeekConsoleInput(inh, rec, Min(dw, 256), &recCnt))
         return 0;
-    }
+
+    // Search for at least one keyboard event
+    for (DWORD i = 0; i < recCnt; i++)
+        if (rec[i].EventType == KEY_EVENT)
+            return 1;
+
+    return 0;
 }
 
 #endif
+
 
 /// prefetch() preloads the given address in L1/L2 cache. This is a non
 /// blocking function and do not stalls the CPU waiting for data to be

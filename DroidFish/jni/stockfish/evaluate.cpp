@@ -45,11 +45,6 @@ namespace {
     // Pointer to pawn hash table entry
     PawnInfo* pi;
 
-    // updateKingTables[color] is set to true if we have enough material
-    // to trigger the opponent's king safety calculation. When is false we
-    // skip the time consuming update of the king attackers tables.
-    bool updateKingTables[2];
-
     // attackedBy[color][piece type] is a bitboard representing all squares
     // attacked by a given color and piece type, attackedBy[color][0] contains
     // all squares attacked by the given color.
@@ -235,7 +230,7 @@ namespace {
   Score evaluate_pieces_of_color(const Position& pos, EvalInfo& ei, Score& mobility);
 
   template<Color Us, bool HasPopCnt>
-  Score evaluate_king(const Position& pos, EvalInfo& ei, Value& margin);
+  Score evaluate_king(const Position& pos, EvalInfo& ei, Value margins[]);
 
   template<Color Us>
   Score evaluate_threats(const Position& pos, EvalInfo& ei);
@@ -246,7 +241,10 @@ namespace {
   template<Color Us>
   Score evaluate_passed_pawns(const Position& pos, EvalInfo& ei);
 
-  Score apply_weight(Score v, Score weight);
+  template<bool HasPopCnt>
+  Score evaluate_unstoppable_pawns(const Position& pos, EvalInfo& ei);
+
+  inline Score apply_weight(Score v, Score weight);
   Value scale_by_game_phase(const Score& v, Phase ph, ScaleFactor sf);
   Score weight_option(const std::string& mgOpt, const std::string& egOpt, Score internalWeight);
   void init_safety();
@@ -281,6 +279,7 @@ template<bool HasPopCnt>
 Value do_evaluate(const Position& pos, Value& margin) {
 
   EvalInfo ei;
+  Value margins[2];
   Score mobilityWhite, mobilityBlack;
 
   assert(pos.is_ok());
@@ -291,9 +290,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // in the position object (material + piece square tables).
   Score bonus = pos.value();
 
-  // margin is the uncertainty estimation of position's evaluation
-  // and typically is used by the search for pruning decisions.
-  margin = VALUE_ZERO;
+  // margins[] store the uncertainty estimation of position's evaluation
+  // that typically is used by the search for pruning decisions.
+  margins[WHITE] = margins[BLACK] = VALUE_ZERO;
 
   // Probe the material hash table
   MaterialInfo* mi = MaterialTable[pos.thread()]->get_material_info(pos);
@@ -302,7 +301,10 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // If we have a specialized evaluation function for the current material
   // configuration, call it and return.
   if (mi->specialized_eval_exists())
+  {
+      margin = VALUE_ZERO;
       return mi->evaluate(pos);
+  }
 
   // Probe the pawn hash table
   ei.pi = PawnTable[pos.thread()]->get_pawn_info(pos);
@@ -320,8 +322,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   // Evaluate kings after all other pieces because we need complete attack
   // information when computing the king safety evaluation.
-  bonus +=  evaluate_king<WHITE, HasPopCnt>(pos, ei, margin)
-          - evaluate_king<BLACK, HasPopCnt>(pos, ei, margin);
+  bonus +=  evaluate_king<WHITE, HasPopCnt>(pos, ei, margins)
+          - evaluate_king<BLACK, HasPopCnt>(pos, ei, margins);
 
   // Evaluate tactical threats, we need full attack information including king
   bonus +=  evaluate_threats<WHITE>(pos, ei)
@@ -331,18 +333,21 @@ Value do_evaluate(const Position& pos, Value& margin) {
   bonus +=  evaluate_passed_pawns<WHITE>(pos, ei)
           - evaluate_passed_pawns<BLACK>(pos, ei);
 
-  Phase phase = mi->game_phase();
+  // If one side has only a king, check whether exists any unstoppable passed pawn
+  if (!pos.non_pawn_material(WHITE) || !pos.non_pawn_material(BLACK))
+      bonus += evaluate_unstoppable_pawns<HasPopCnt>(pos, ei);
 
   // Evaluate space for both sides, only in middle-game.
-  if (phase > PHASE_ENDGAME && mi->space_weight() > 0)
+  if (mi->space_weight())
   {
       int s = evaluate_space<WHITE, HasPopCnt>(pos, ei) - evaluate_space<BLACK, HasPopCnt>(pos, ei);
       bonus += apply_weight(make_score(s * mi->space_weight(), 0), Weights[Space]);
   }
 
   // Scale winning side if position is more drawish that what it appears
-  ScaleFactor sf = eg_value(bonus) > VALUE_ZERO ? mi->scale_factor(pos, WHITE)
+  ScaleFactor sf = eg_value(bonus) > VALUE_DRAW ? mi->scale_factor(pos, WHITE)
                                                 : mi->scale_factor(pos, BLACK);
+  Phase phase = mi->game_phase();
 
   // If we don't already have an unusual scale factor, check for opposite
   // colored bishop endgames, and use a lower scale for those.
@@ -366,6 +371,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   }
 
   // Interpolate between the middle game and the endgame score
+  margin = margins[pos.side_to_move()];
   Value v = scale_by_game_phase(bonus, phase, sf);
   return pos.side_to_move() == WHITE ? v : -v;
 }
@@ -408,7 +414,7 @@ void quit_eval() {
 
 /// read_weights() reads evaluation weights from the corresponding UCI parameters
 
-void read_weights(Color us) {
+void read_evaluation_uci_options(Color us) {
 
   // King safety is asymmetrical. Our king danger level is weighted by
   // "Cowardice" UCI parameter, instead the opponent one by "Aggressiveness".
@@ -424,7 +430,7 @@ void read_weights(Color us) {
 
   // If running in analysis mode, make sure we use symmetrical king safety. We do this
   // by replacing both Weights[kingDangerUs] and Weights[kingDangerThem] by their average.
-  if (get_option_value_bool("UCI_AnalyseMode"))
+  if (Options["UCI_AnalyseMode"].value<bool>())
       Weights[kingDangerUs] = Weights[kingDangerThem] = (Weights[kingDangerUs] + Weights[kingDangerThem]) / 2;
 
   init_safety();
@@ -443,15 +449,18 @@ namespace {
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
     Bitboard b = ei.attackedBy[Them][KING] = pos.attacks_from<KING>(pos.king_square(Them));
-    ei.kingZone[Us] = (b | (Us == WHITE ? b >> 8 : b << 8));
     ei.attackedBy[Us][PAWN] = ei.pi->pawn_attacks(Us);
-    ei.updateKingTables[Us] = pos.piece_count(Us, QUEEN) && pos.non_pawn_material(Us) >= QueenValueMidgame + RookValueMidgame;
-    if (ei.updateKingTables[Us])
+
+    // Init king safety tables only if we are going to use them
+    if (   pos.piece_count(Us, QUEEN)
+        && pos.non_pawn_material(Us) >= QueenValueMidgame + RookValueMidgame)
     {
+        ei.kingZone[Us] = (b | (Us == WHITE ? b >> 8 : b << 8));
         b &= ei.attackedBy[Us][PAWN];
-        ei.kingAttackersCount[Us] = b ? count_1s<Max15>(b) / 2 : EmptyBoardBB;
-        ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = EmptyBoardBB;
-    }
+        ei.kingAttackersCount[Us] = b ? count_1s<Max15>(b) / 2 : 0;
+        ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
+    } else
+        ei.kingZone[Us] = ei.kingAttackersCount[Us] = 0;
   }
 
 
@@ -515,7 +524,7 @@ namespace {
         ei.attackedBy[Us][Piece] |= b;
 
         // King attacks
-        if (ei.updateKingTables[Us] && (b & ei.kingZone[Us]))
+        if (b & ei.kingZone[Us])
         {
             ei.kingAttackersCount[Us]++;
             ei.kingAttackersWeight[Us] += KingAttackWeights[Piece];
@@ -653,7 +662,7 @@ namespace {
   // evaluate_king<>() assigns bonuses and penalties to a king of a given color
 
   template<Color Us, bool HasPopCnt>
-  Score evaluate_king(const Position& pos, EvalInfo& ei, Value& margin) {
+  Score evaluate_king(const Position& pos, EvalInfo& ei, Value margins[]) {
 
     const BitCountType Max15 = HasPopCnt ? CNT_POPCNT : CpuIs64Bit ? CNT64_MAX15 : CNT32_MAX15;
     const Color Them = (Us == WHITE ? BLACK : WHITE);
@@ -667,8 +676,7 @@ namespace {
 
     // King safety. This is quite complicated, and is almost certainly far
     // from optimally tuned.
-    if (   ei.updateKingTables[Them]
-        && ei.kingAttackersCount[Them] >= 2
+    if (   ei.kingAttackersCount[Them] >= 2
         && ei.kingAdjacentZoneAttacksCount[Them])
     {
         // Find the attacked squares around the king which has no defenders
@@ -755,8 +763,7 @@ namespace {
         // be very big, and so capturing a single attacking piece can therefore
         // result in a score change far bigger than the value of the captured piece.
         bonus -= KingDangerTable[Us][attackUnits];
-        if (pos.side_to_move() == Us)
-            margin += mg_value(KingDangerTable[Us][attackUnits]);
+        margins[Us] += mg_value(KingDangerTable[Us][attackUnits]);
     }
     return bonus;
   }
@@ -859,6 +866,168 @@ namespace {
     return apply_weight(bonus, Weights[PassedPawns]);
   }
 
+  // evaluate_unstoppable_pawns() evaluates the unstoppable passed pawns for both sides
+  template<bool HasPopCnt>
+  Score evaluate_unstoppable_pawns(const Position& pos, EvalInfo& ei) {
+
+    const BitCountType Max15 = HasPopCnt ? CNT_POPCNT : CpuIs64Bit ? CNT64_MAX15 : CNT32_MAX15;
+
+    // Step 1. Hunt for unstoppable pawns. If we find at least one, record how many plies
+    // are required for promotion
+    int pliesToGo[2] = {256, 256};
+
+    for (Color c = WHITE; c <= BLACK; c++)
+    {
+        // Skip if other side has non-pawn pieces
+        if (pos.non_pawn_material(opposite_color(c)))
+            continue;
+
+        Bitboard b = ei.pi->passed_pawns(c);
+
+        while (b)
+        {
+            Square s = pop_1st_bit(&b);
+            Square queeningSquare = relative_square(c, make_square(square_file(s), RANK_8));
+
+            int mtg = RANK_8 - relative_rank(c, s) - int(relative_rank(c, s) == RANK_2);
+            int oppmtg = square_distance(pos.king_square(opposite_color(c)), queeningSquare) - int(c != pos.side_to_move());
+            bool pathDefended = ((ei.attackedBy[c][0] & squares_in_front_of(c, s)) == squares_in_front_of(c, s));
+
+            if (mtg >= oppmtg && !pathDefended)
+                continue;
+
+            int blockerCount = count_1s<Max15>(squares_in_front_of(c, s) & pos.occupied_squares());
+            mtg += blockerCount;
+
+            if (mtg >= oppmtg && !pathDefended)
+                continue;
+
+            int ptg = 2 * mtg - int(c == pos.side_to_move());
+
+            if (ptg < pliesToGo[c])
+                pliesToGo[c] = ptg;
+        }
+    }
+
+    // Step 2. If either side cannot promote at least three plies before the other side then
+    // situation becomes too complex and we give up. Otherwise we determine the possibly "winning side"
+    if (abs(pliesToGo[WHITE] - pliesToGo[BLACK]) < 3)
+        return make_score(0, 0);
+
+    Color winnerSide = (pliesToGo[WHITE] < pliesToGo[BLACK] ? WHITE : BLACK);
+    Color loserSide = opposite_color(winnerSide);
+
+    // Step 3. Can the losing side possibly create a new passed pawn and thus prevent the loss?
+    // We collect the potential candidates in potentialBB.
+    Bitboard pawnBB = pos.pieces(PAWN, loserSide);
+    Bitboard potentialBB = pawnBB;
+    const Bitboard passedBB = ei.pi->passed_pawns(loserSide);
+
+    while(pawnBB)
+    {
+        Square psq = pop_1st_bit(&pawnBB);
+
+        // Check direct advancement
+        int mtg = RANK_8 - relative_rank(loserSide, psq) - int(relative_rank(loserSide, psq) == RANK_2);
+        int ptg = 2 * mtg - int(loserSide == pos.side_to_move());
+
+        // Check if (without even considering any obstacles) we're too far away
+        if (pliesToGo[winnerSide] + 3 <= ptg)
+        {
+            clear_bit(&potentialBB, psq);
+            continue;
+        }
+
+        // If this is passed pawn, then it _may_ promote in time. We give up.
+        if (bit_is_set(passedBB, psq))
+            return make_score(0, 0);
+
+        // Doubled pawn is worthless
+        if (squares_in_front_of(loserSide, psq) & (pos.pieces(PAWN, loserSide)))
+        {
+            clear_bit(&potentialBB, psq);
+            continue;
+        }
+    }
+
+    // Step 4. Check new passed pawn creation through king capturing and sacrifises
+    pawnBB = potentialBB;
+
+    while(pawnBB)
+    {
+        Square psq = pop_1st_bit(&pawnBB);
+
+        int mtg = RANK_8 - relative_rank(loserSide, psq) - int(relative_rank(loserSide, psq) == RANK_2);
+        int ptg = 2 * mtg - int(loserSide == pos.side_to_move());
+
+        // Generate list of obstacles
+        Bitboard obsBB = passed_pawn_mask(loserSide, psq) & pos.pieces(PAWN, winnerSide);
+        const bool pawnIsOpposed = squares_in_front_of(loserSide, psq) & obsBB;
+        assert(obsBB);
+
+        // How many plies does it take to remove all the obstacles?
+        int sacptg = 0;
+        int realObsCount = 0;
+        int minKingDist = 256;
+
+        while(obsBB)
+        {
+            Square obSq = pop_1st_bit(&obsBB);
+            int minMoves = 256;
+
+            // Check pawns that can give support to overcome obstacle (Eg. wp: a4,b4 bp: b2. b4 is giving support)
+            if (!pawnIsOpposed && square_file(psq) != square_file(obSq))
+            {
+                Bitboard supBB =   in_front_bb(winnerSide, Square(obSq + (winnerSide == WHITE ? 8 : -8)))
+                                 & neighboring_files_bb(psq) & potentialBB;
+
+                while(supBB) // This while-loop could be replaced with supSq = LSB/MSB(supBB) (depending on color)
+                {
+                    Square supSq = pop_1st_bit(&supBB);
+                    int dist = square_distance(obSq, supSq);
+                    minMoves = Min(minMoves, dist - 2);
+                }
+
+            }
+
+            // Check pawns that can be sacrifised
+            Bitboard sacBB = passed_pawn_mask(winnerSide, obSq) & neighboring_files_bb(obSq) & potentialBB & ~(1ULL << psq);
+
+            while(sacBB) // This while-loop could be replaced with sacSq = LSB/MSB(sacBB) (depending on color)
+            {
+                Square sacSq = pop_1st_bit(&sacBB);
+                int dist = square_distance(obSq, sacSq);
+                minMoves = Min(minMoves, dist - 2);
+            }
+
+            // If obstacle can be destroyed with immediate pawn sacrifise, it's not real obstacle
+            if (minMoves <= 0)
+                continue;
+
+            // Pawn sac calculations
+            sacptg += minMoves * 2;
+
+            // King capture calc
+            realObsCount++;
+            int kingDist = square_distance(pos.king_square(loserSide), obSq);
+            minKingDist = Min(minKingDist, kingDist);
+        }
+
+        // Check if pawn sac plan _may_ save the day
+        if (pliesToGo[winnerSide] + 3 > ptg + sacptg)
+            return make_score(0, 0);
+
+        // Check if king capture plan _may_ save the day (contains some false positives)
+        int kingptg = (minKingDist + realObsCount) * 2;
+        if (pliesToGo[winnerSide] + 3 > ptg + kingptg)
+            return make_score(0, 0);
+    }
+
+    // Step 5. Assign bonus
+    const int Sign[2] = {1, -1};
+    return Sign[winnerSide] * make_score(0, (Value) 0x500 - 0x20 * pliesToGo[winnerSide]);
+  }
+
 
   // evaluate_space() computes the space evaluation for a given side. The
   // space evaluation is a simple bonus based on the number of safe squares
@@ -920,8 +1089,8 @@ namespace {
   Score weight_option(const std::string& mgOpt, const std::string& egOpt, Score internalWeight) {
 
     // Scale option value from 100 to 256
-    int mg = get_option_value_int(mgOpt) * 256 / 100;
-    int eg = get_option_value_int(egOpt) * 256 / 100;
+    int mg = Options[mgOpt].value<int>() * 256 / 100;
+    int eg = Options[egOpt].value<int>() * 256 / 100;
 
     return apply_weight(make_score(mg, eg), internalWeight);
   }

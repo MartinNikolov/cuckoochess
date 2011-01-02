@@ -38,7 +38,7 @@
 //// Constants and variables
 ////
 
-const int MAX_THREADS = 8;
+const int MAX_THREADS = 16;
 const int MAX_ACTIVE_SPLIT_POINTS = 8;
 
 
@@ -55,6 +55,7 @@ struct SplitPoint {
   bool pvNode, mateThreat;
   Value beta;
   int ply;
+  int master;
   Move threatMove;
   SearchStack sstack[MAX_THREADS][PLY_MAX_PLUS_2];
 
@@ -64,10 +65,11 @@ struct SplitPoint {
 
   // Shared data
   Lock lock;
+  volatile int64_t nodes;
   volatile Value alpha;
   volatile Value bestValue;
   volatile int moveCount;
-  volatile bool stopRequest;
+  volatile bool betaCutoff;
   volatile int slaves[MAX_THREADS];
 };
 
@@ -75,16 +77,15 @@ struct SplitPoint {
 
 enum ThreadState
 {
+  THREAD_INITIALIZING,  // thread is initializing itself
   THREAD_SEARCHING,     // thread is performing work
-  THREAD_AVAILABLE,     // thread is polling for work
-  THREAD_SLEEPING,      // we are not thinking, so thread is sleeping
+  THREAD_AVAILABLE,     // thread is waiting for work
   THREAD_BOOKED,        // other thread (master) has booked us as a slave
   THREAD_WORKISWAITING, // master has ordered us to start
   THREAD_TERMINATED     // we are quitting and thread is terminated
 };
 
 struct Thread {
-  uint64_t nodes;
   volatile ThreadState state;
   SplitPoint* volatile splitPoint;
   volatile int activeSplitPoints;

@@ -28,10 +28,16 @@
 #include <iostream>
 #include <string>
 
-#include "benchmark.h"
+#include "bitboard.h"
 #include "bitcount.h"
+#include "endgame.h"
+#include "evaluate.h"
+#include "material.h"
 #include "misc.h"
-#include "uci.h"
+#include "position.h"
+#include "search.h"
+#include "thread.h"
+#include "ucioption.h"
 
 #ifdef USE_CALLGRIND
 #include <valgrind/callgrind.h>
@@ -39,19 +45,28 @@
 
 using namespace std;
 
+extern bool execute_uci_command(const string& cmd);
+extern void benchmark(int argc, char* argv[]);
 
 ////
 //// Functions
 ////
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
   // Disable IO buffering
   cout.rdbuf()->pubsetbuf(NULL, 0);
   cin.rdbuf()->pubsetbuf(NULL, 0);
 
-  // Initialization through global resources manager
-  Application::initialize();
+  // Startup initializations
+  init_bitboards();
+  init_uci_options();
+  Position::init_zobrist();
+  Position::init_piece_square_tables();
+  init_eval(1);
+  init_bitbases();
+  init_search();
+  init_threads();
 
 #ifdef USE_CALLGRIND
   CALLGRIND_START_INSTRUMENTATION;
@@ -66,26 +81,30 @@ int main(int argc, char *argv[]) {
       if (CpuHasPOPCNT)
           cout << "Good! CPU has hardware POPCNT." << endl;
 
-      // Enter UCI mode
-      uci_main_loop();
+      // Wait for a command from the user, and passes this command to
+      // execute_uci_command() and also intercepts EOF from stdin, by
+      // translating EOF to the "quit" command. This ensures that we
+      // exit gracefully if the GUI dies unexpectedly.
+      string cmd;
+
+      do {
+          // Wait for a command from stdin
+          if (!getline(cin, cmd))
+              cmd = "quit";
+
+      } while (execute_uci_command(cmd));
   }
   else // Process command line arguments
   {
-      if (string(argv[1]) != "bench" || argc < 4 || argc > 8)
-          cout << "Usage: stockfish bench <hash size> <threads> "
-               << "[time = 60s] [fen positions file = default] "
-               << "[time, depth, perft or node limited = time] "
-               << "[timing file name = none]" << endl;
+      if (string(argv[1]) != "bench" || argc > 7)
+          cout << "Usage: stockfish bench [hash size = 128] [threads = 1] "
+               << "[limit = 12] [fen positions file = default] "
+               << "[depth, time, perft or node limited = depth]" << endl;
       else
-      {
-          string time = argc > 4 ? argv[4] : "60";
-          string fen  = argc > 5 ? argv[5] : "default";
-          string lim  = argc > 6 ? argv[6] : "time";
-          string tim  = argc > 7 ? argv[7] : "";
-          benchmark(string(argv[2]) + " " + string(argv[3]) + " " + time + " " + fen + " " + lim + " " + tim);
-      }
+          benchmark(argc, argv);
   }
 
-  Application::free_resources();
+  exit_threads();
+  quit_eval();
   return 0;
 }

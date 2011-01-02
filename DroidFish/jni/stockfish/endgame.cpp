@@ -24,7 +24,6 @@
 
 #include <cassert>
 
-#include "bitbase.h"
 #include "bitcount.h"
 #include "endgame.h"
 
@@ -102,6 +101,7 @@ namespace {
 /// init_bitbases() is called during program initialization, and simply loads
 /// bitbases from disk into memory.  At the moment, there is only the bitbase
 /// for KP vs K, but we may decide to add other bitbases later.
+extern void generate_kpk_bitbase(uint8_t bitbase[]);
 
 void init_bitbases() {
   generate_kpk_bitbase(KPKBitbase);
@@ -367,12 +367,12 @@ Value EvaluationFunction<KBBKN>::apply(const Position& pos) const {
 /// king alone are always draw.
 template<>
 Value EvaluationFunction<KmmKm>::apply(const Position&) const {
-  return VALUE_ZERO;
+  return VALUE_DRAW;
 }
 
 template<>
 Value EvaluationFunction<KNNK>::apply(const Position&) const {
-  return VALUE_ZERO;
+  return VALUE_DRAW;
 }
 
 /// KBPKScalingFunction scales endgames where the stronger side has king,
@@ -699,11 +699,12 @@ ScaleFactor ScalingFunction<KBPKB>::apply(const Position& pos) const {
           return SCALE_FACTOR_ZERO;
       else
       {
-          Bitboard ray = ray_bb(pawnSq, (strongerSide == WHITE)? SIGNED_DIR_N : SIGNED_DIR_S);
-          if (ray & pos.pieces(KING, weakerSide))
+          Bitboard path = squares_in_front_of(strongerSide, pawnSq);
+
+          if (path & pos.pieces(KING, weakerSide))
               return SCALE_FACTOR_ZERO;
 
-          if (  (pos.attacks_from<BISHOP>(weakerBishopSq) & ray)
+          if (  (pos.attacks_from<BISHOP>(weakerBishopSq) & path)
               && square_distance(weakerBishopSq, pawnSq) >= 3)
               return SCALE_FACTOR_ZERO;
       }

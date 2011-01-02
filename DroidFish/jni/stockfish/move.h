@@ -31,6 +31,8 @@
 #include "piece.h"
 #include "square.h"
 
+// Maximum number of allowed moves per position
+const int MOVES_MAX = 256;
 
 ////
 //// Types
@@ -62,25 +64,24 @@ struct MoveStack {
   int score;
 };
 
-// Note that operator< is set up such that sorting will be in descending order
-inline bool operator<(const MoveStack& f, const MoveStack& s) { return s.score < f.score; }
+inline bool operator<(const MoveStack& f, const MoveStack& s) { return f.score < s.score; }
 
-// An helper insertion sort implementation
-template<typename T>
-inline void insertion_sort(T* firstMove, T* lastMove)
+// An helper insertion sort implementation, works with pointers and iterators
+template<typename T, typename K>
+inline void insertion_sort(K firstMove, K lastMove)
 {
     T value;
-    T *cur, *p, *d;
+    K cur, p, d;
 
     if (firstMove != lastMove)
         for (cur = firstMove + 1; cur != lastMove; cur++)
         {
             p = d = cur;
             value = *p--;
-            if (value < *p)
+            if (*p < value)
             {
                 do *d = *p;
-                while (--d != firstMove && value < *--p);
+                while (--d != firstMove && *--p < value);
                 *d = value;
             }
         }
@@ -115,7 +116,7 @@ inline void sort_moves(T* firstMove, T* lastMove, T** lastPositive)
     } while (p != d);
 
     // Sort just positive scored moves, remaining only when we get there
-    insertion_sort<T>(firstMove, p);
+    insertion_sort<T, T*>(firstMove, p);
     *lastPositive = p;
 }
 
@@ -130,7 +131,7 @@ inline T pick_best(T* curMove, T* lastMove)
     bestMove = *curMove;
     while (++curMove != lastMove)
     {
-        if (*curMove < bestMove)
+        if (bestMove < *curMove)
         {
             tmp = *curMove;
             *curMove = bestMove;
@@ -202,8 +203,8 @@ inline Move make_ep_move(Square from, Square to) {
 ////
 
 extern std::ostream& operator<<(std::ostream& os, Move m);
-extern Move move_from_string(const Position& pos, const std::string &str);
-extern const std::string move_to_string(Move m, bool chess960);
+extern Move move_from_uci(const Position& pos, const std::string &str);
+extern const std::string move_to_uci(Move m, bool chess960);
 extern bool move_is_ok(Move m);
 
 

@@ -38,6 +38,7 @@
 
 #include "move.h"
 #include "position.h"
+#include "rkiss.h"
 
 
 ////
@@ -56,7 +57,7 @@ class Book : private std::ifstream {
   Book(const Book&); // just decleared..
   Book& operator=(const Book&); // ..to avoid a warning
 public:
-  Book() {}
+  Book();
   ~Book();
   void open(const std::string& fName);
   void close();
@@ -74,14 +75,7 @@ private:
 
   std::string fileName;
   int bookSize;
+  RKISS RKiss;
 };
-
-
-////
-//// Global variables
-////
-
-extern Book OpeningBook;
-
 
 #endif // !defined(BOOK_H_INCLUDED)

@@ -17,7 +17,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #if !defined(TYPES_H_INCLUDED)
 #define TYPES_H_INCLUDED
 
@@ -26,6 +25,10 @@
 #include <inttypes.h>
 
 #else
+
+// Disable some silly and noisy warning from MSVC compiler
+#pragma warning(disable: 4800) // Forcing value to bool 'true' or 'false'
+#pragma warning(disable: 4127) // Conditional expression is constant
 
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
@@ -47,6 +50,7 @@ typedef uint64_t Key;
 // Bitboard type
 typedef uint64_t Bitboard;
 
+#include <cstdlib>
 
 ////
 //// Configuration
@@ -153,10 +157,10 @@ template<typename T>
 inline T operator- (const T d) { OK(T); return T(-int(d)); }
 
 template<typename T>
-inline void operator++ (T& d, int) { OK(T); d = T(int(d) + 1); }
+inline T operator++ (T& d, int) { OK(T); d = T(int(d) + 1); return d; }
 
 template<typename T>
-inline void operator-- (T& d, int) { OK(T); d = T(int(d) - 1); }
+inline T operator-- (T& d, int) { OK(T); d = T(int(d) - 1); return d; }
 
 template<typename T>
 inline void operator+= (T& d1, const T d2) { OK(T); d1 = d1 + d2; }

@@ -26,7 +26,6 @@
 
 #include "bitboard.h"
 #include "bitcount.h"
-#include "direction.h"
 
 
 #if defined(IS_64BIT)
@@ -226,7 +225,6 @@ Bitboard SetMaskBB[65];
 Bitboard ClearMaskBB[65];
 
 Bitboard StepAttackBB[16][64];
-Bitboard RayBB[64][8];
 Bitboard BetweenBB[64][64];
 
 Bitboard SquaresInFrontMask[2][64];
@@ -247,10 +245,10 @@ uint8_t BitCount8Bit[256];
 namespace {
 
   void init_masks();
-  void init_ray_bitboards();
   void init_attacks();
   void init_between_bitboards();
   void init_pseudo_attacks();
+  SquareDelta squares_delta(Square orig, Square dest);
   Bitboard index_to_bitboard(int index, Bitboard mask);
   Bitboard sliding_attacks(int sq, Bitboard block, int dirs, int deltas[][2],
                            int fmin, int fmax, int rmin, int rmax);
@@ -289,7 +287,6 @@ void init_bitboards() {
   int bishopDeltas[4][2] = {{1,1},{-1,1},{1,-1},{-1,-1}};
 
   init_masks();
-  init_ray_bitboards();
   init_attacks();
   init_between_bitboards();
   init_sliding_attacks(RAttacks, RAttackIndex, RMask, RShift, RMult, rookDeltas);
@@ -403,23 +400,8 @@ namespace {
             AttackSpanMask[c][s] = in_front_bb(c, s) & neighboring_files_bb(s);
         }
 
-    for (Bitboard b = 0ULL; b < 256ULL; b++)
+    for (Bitboard b = 0; b < 256; b++)
         BitCount8Bit[b] = (uint8_t)count_1s<CNT32>(b);
-  }
-
-  int remove_bit_8(int i) { return ((i & ~15) >> 1) | (i & 7); }
-
-  void init_ray_bitboards() {
-
-    int d[8] = {1, -1, 16, -16, 17, -17, 15, -15};
-
-    for (int i = 0; i < 128; i = (i + 9) & ~8)
-        for (int j = 0; j < 8; j++)
-        {
-            RayBB[remove_bit_8(i)][j] = EmptyBoardBB;
-            for (int k = i + d[j]; (k & 0x88) == 0; k += d[j])
-                set_bit(&(RayBB[remove_bit_8(i)][j]), Square(remove_bit_8(k)));
-        }
   }
 
   void init_attacks() {
@@ -472,22 +454,40 @@ namespace {
     return result;
   }
 
+  SquareDelta squares_delta(Square orig, Square dest) {
+
+    const SquareDelta deltas[] = { DELTA_N, DELTA_NE, DELTA_E, DELTA_SE,
+                                   DELTA_S, DELTA_SW, DELTA_W, DELTA_NW };
+
+    for (int idx = 0; idx < 8; idx++)
+    {
+        Square s = orig + deltas[idx];
+
+        while (square_is_ok(s) && square_distance(s, s - deltas[idx]) == 1)
+        {
+            if (s == dest)
+                return deltas[idx];
+
+            s += deltas[idx];
+        }
+    }
+    return DELTA_NONE;
+  }
+
   void init_between_bitboards() {
 
-    const SquareDelta step[8] = { DELTA_E, DELTA_W, DELTA_N, DELTA_S,
-                                  DELTA_NE, DELTA_SW, DELTA_NW, DELTA_SE };
+    Square s1, s2, s3;
+    SquareDelta d;
 
-    for (Square s1 = SQ_A1; s1 <= SQ_H8; s1++)
-        for (Square s2 = SQ_A1; s2 <= SQ_H8; s2++)
+    for (s1 = SQ_A1; s1 <= SQ_H8; s1++)
+        for (s2 = SQ_A1; s2 <= SQ_H8; s2++)
         {
             BetweenBB[s1][s2] = EmptyBoardBB;
-            SignedDirection d = signed_direction_between_squares(s1, s2);
+            d = squares_delta(s1, s2);
 
-            if (d != SIGNED_DIR_NONE)
-            {
-                for (Square s3 = s1 + step[d]; s3 != s2; s3 += step[d])
+            if (d != DELTA_NONE)
+                for (s3 = s1 + d; s3 != s2; s3 += d)
                     set_bit(&(BetweenBB[s1][s2]), s3);
-            }
       }
   }
 
@@ -511,7 +511,7 @@ namespace {
     for (int i = 0, index = 0; i < 64; i++)
     {
         attackIndex[i] = index;
-        mask[i] = sliding_attacks(i, 0ULL, 4, deltas, 1, 6, 1, 6);
+        mask[i] = sliding_attacks(i, 0, 4, deltas, 1, 6, 1, 6);
 
 #if defined(IS_64BIT)
         int j = (1 << (64 - shift[i]));

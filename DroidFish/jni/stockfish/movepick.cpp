@@ -75,7 +75,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
   int searchTT = ttm;
   ttMoves[0].move = ttm;
   badCaptureThreshold = 0;
-  badCaptures = moves + 256;
+  badCaptures = moves + MOVES_MAX;
 
   pinned = p.pinned_pieces(pos.side_to_move());
 
@@ -99,7 +99,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
 
       phasePtr = MainSearchPhaseTable;
   }
-  else if (d == DEPTH_ZERO)
+  else if (d >= DEPTH_QS_CHECKS)
       phasePtr = QsearchWithChecksPhaseTable;
   else
   {
@@ -151,7 +151,7 @@ void MovePicker::go_next_phase() {
       // Bad captures SEE value is already calculated so just pick
       // them in order to get SEE move ordering.
       curMove = badCaptures;
-      lastMove = moves + 256;
+      lastMove = moves + MOVES_MAX;
       return;
 
   case PH_EVASIONS:
@@ -313,7 +313,7 @@ Move MovePicker::get_next_move() {
 
               // Sort negative scored moves only when we get there
               if (curMove == lastGoodNonCapture)
-                  insertion_sort(lastGoodNonCapture, lastMove);
+                  insertion_sort<MoveStack>(lastGoodNonCapture, lastMove);
 
               move = (curMove++)->move;
               if (   move != ttMoves[0].move

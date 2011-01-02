@@ -26,7 +26,6 @@
 //// Includes
 ////
 
-#include "direction.h"
 #include "piece.h"
 #include "square.h"
 #include "types.h"
@@ -68,7 +67,6 @@ extern Bitboard SetMaskBB[65];
 extern Bitboard ClearMaskBB[65];
 
 extern Bitboard StepAttackBB[16][64];
-extern Bitboard RayBB[64][8];
 extern Bitboard BetweenBB[64][64];
 
 extern Bitboard SquaresInFrontMask[2][64];
@@ -209,14 +207,6 @@ inline Bitboard behind_bb(Color c, Square s) {
 }
 
 
-/// ray_bb() gives a bitboard representing all squares along the ray in a
-/// given direction from a given square.
-
-inline Bitboard ray_bb(Square s, SignedDirection d) {
-  return RayBB[s][d];
-}
-
-
 /// Functions for computing sliding attack bitboards. rook_attacks_bb(),
 /// bishop_attacks_bb() and queen_attacks_bb() all take a square and a
 /// bitboard of occupied squares as input, and return a bitboard representing
@@ -304,6 +294,15 @@ inline Bitboard passed_pawn_mask(Color c, Square s) {
 
 inline Bitboard attack_span_mask(Color c, Square s) {
   return AttackSpanMask[c][s];
+}
+
+
+/// squares_aligned returns true if the squares s1, s2 and s3 are aligned
+/// either on a straight or on a diagonal line.
+
+inline bool squares_aligned(Square s1, Square s2, Square s3) {
+  return  (BetweenBB[s1][s2] | BetweenBB[s1][s3] | BetweenBB[s2][s3])
+        & ((1ULL << s1) | (1ULL << s2) | (1ULL << s3));
 }
 
 

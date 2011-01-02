@@ -21,25 +21,12 @@
 #if !defined(POSITION_H_INCLUDED)
 #define POSITION_H_INCLUDED
 
-// Disable some silly and noisy warning from MSVC compiler
-#if defined(_MSC_VER)
-
-// Forcing value to bool 'true' or 'false' (performance warning)
-#pragma warning(disable: 4800)
-
-// Conditional expression is constant
-#pragma warning(disable: 4127)
-
-
-#endif
-
 ////
 //// Includes
 ////
 
 #include "bitboard.h"
 #include "color.h"
-#include "direction.h"
 #include "move.h"
 #include "piece.h"
 #include "square.h"
@@ -146,7 +133,6 @@ public:
   };
 
   // Constructors
-  explicit Position(int threadID);
   Position(const Position& pos, int threadID);
   Position(const std::string& fen, int threadID);
 
@@ -210,6 +196,7 @@ public:
   // Information about attacks to or from a given square
   Bitboard attackers_to(Square s) const;
   Bitboard attacks_from(Piece p, Square s) const;
+  static Bitboard attacks_from(Piece p, Square s, Bitboard occ);
   template<PieceType> Bitboard attacks_from(Square s) const;
   template<PieceType> Bitboard attacks_from(Square s, Color c) const;
 
@@ -278,8 +265,9 @@ public:
 
   // Reset the gamePly variable to 0
   void reset_game_ply();
-
   void inc_startpos_ply_counter();
+  int64_t nodes_searched() const;
+  void set_nodes_searched(int64_t n);
 
   // Position consistency check, for debugging
   bool is_ok(int* failedStep = NULL) const;
@@ -293,8 +281,8 @@ private:
   // Initialization helper functions (used while setting up a position)
   void clear();
   void put_piece(Piece p, Square s);
-  void allow_oo(Color c);
-  void allow_ooo(Color c);
+  void do_allow_oo(Color c);
+  void do_allow_ooo(Color c);
   bool set_castling_rights(char token);
 
   // Helper functions for doing and undoing moves
@@ -338,6 +326,7 @@ private:
   bool isChess960;
   int startPosPlyCounter;
   int threadID;
+  int64_t nodes;
   StateInfo* st;
 
   // Static variables
@@ -348,12 +337,22 @@ private:
   static Score PieceSquareTable[16][64];
   static Key zobExclusion;
   static const Value seeValues[8];
+  static const Value PieceValueMidgame[17];
+  static const Value PieceValueEndgame[17];
 };
 
 
 ////
 //// Inline functions
 ////
+
+inline int64_t Position::nodes_searched() const {
+  return nodes;
+}
+
+inline void Position::set_nodes_searched(int64_t n) {
+  nodes = n;
+}
 
 inline Piece Position::piece_on(Square s) const {
   return board[s];
@@ -392,7 +391,7 @@ inline Bitboard Position::occupied_squares() const {
 }
 
 inline Bitboard Position::empty_squares() const {
-  return ~(occupied_squares());
+  return ~occupied_squares();
 }
 
 inline Bitboard Position::pieces_of_color(Color c) const {
@@ -536,12 +535,10 @@ inline bool Position::move_is_passed_pawn_push(Move m) const {
 }
 
 inline int Position::rule_50_counter() const {
-
   return st->rule50;
 }
 
 inline int Position::startpos_ply_counter() const {
-
   return startPosPlyCounter;
 }
 
@@ -553,12 +550,10 @@ inline bool Position::opposite_colored_bishops() const {
 }
 
 inline bool Position::has_pawn_on_7th(Color c) const {
-
   return pieces(PAWN, c) & relative_rank_bb(c, RANK_7);
 }
 
 inline bool Position::is_chess960() const {
-
   return isChess960;
 }
 
@@ -580,6 +575,14 @@ inline PieceType Position::captured_piece_type() const {
 
 inline int Position::thread() const {
   return threadID;
+}
+
+inline void Position::do_allow_oo(Color c) {
+  st->castleRights |= (1 + int(c));
+}
+
+inline void Position::do_allow_ooo(Color c) {
+  st->castleRights |= (4 + 4*int(c));
 }
 
 #endif // !defined(POSITION_H_INCLUDED)
