@@ -234,6 +234,9 @@ public class Evaluate {
         final int bMtrl = pos.bMtrl;
         final int wMtrlPawns = pos.wMtrlPawns;
         final int bMtrlPawns = pos.bMtrlPawns;
+        
+        // FIXME! Test incrementally updated piece square table score
+        // FIXME! Use incrementally updated pieces[], nPieces[] arrays (or remove them)
 
         for (int p = 0; p < Piece.nPieceTypes; p++)
         	nPieces[p] = 0;
@@ -634,6 +637,9 @@ public class Evaluate {
             score += rookMobScore[rookMobility(pos, sq)];
             bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
         }
+        if ((Long.bitCount(pos.pieceTypeBB[Piece.WROOK] & 0x00ff000000000000L) > 1) &&
+            ((pos.pieceTypeBB[Piece.BKING] & 0xff00000000000000L) != 0))
+            score += 20; // Two rooks on 7:th row
         nP = nPieces[Piece.BROOK];
         for (int i = 0; i < nP; i++) {
         	int sq = pieces[Piece.BROOK][i];
@@ -645,6 +651,9 @@ public class Evaluate {
             score -= rookMobScore[rookMobility(pos, sq)];
             wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
         }
+        if ((Long.bitCount(pos.pieceTypeBB[Piece.BROOK] & 0xff00L) > 1) &&
+            ((pos.pieceTypeBB[Piece.WKING] & 0xffL) != 0))
+          score -= 20; // Two rooks on 2:nd row
         return score;
     }
 
@@ -788,7 +797,7 @@ public class Evaluate {
         long occupied = pos.whiteBB | pos.blackBB;
         long atk = BitBoard.rookAttacks(sq, occupied);
         mobilityAttacks |= atk;
-        return Long.bitCount(atk & ~occupied);
+        return Long.bitCount(atk & ~occupied); // FIXME! Test to only mask out own pieces
     }
 
     /** Implements special knowledge for some endgame situations. */
@@ -965,6 +974,9 @@ public class Evaluate {
             }
         }
         return score;
+
+        // FIXME! Add evaluation of KRKP
+        // FIXME! Add evaluation of KRPKP   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
     }
 
     private static final int evalKQKP(int wKing, int wQueen, int bKing, int bPawn) {

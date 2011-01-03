@@ -128,6 +128,10 @@ public class EvaluateTest {
         assertTrue(moveScore(pos, "Rd8") <= 0);     // Rook on 8:th rank not particularly good
         pos.setPiece(TextIO.getSquare("a1"), Piece.WROOK);
         assertTrue(moveScore(pos, "Rac1") > 0);     // Rook on c-f files considered good
+
+        pos = TextIO.readFEN("r4rk1/pppRRppp/1q4b1/n7/8/2N3B1/PPP1QPPP/6K1 w - - 0 1");
+        score = evalWhite(pos);
+        assertTrue(score > 100); // Two rooks on 7:th rank is very good
     }
 
     /**

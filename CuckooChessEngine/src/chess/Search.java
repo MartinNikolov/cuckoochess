@@ -554,6 +554,8 @@ public class Search {
                 if (sVal > tVal - pV / 2)
                     moveExtend = 1;
             }
+            // FIXME! Test extending when going into pawn endgame
+            // FIXME! Test extending pawn pushes to 7:th rank
             boolean mayReduce = (!isCapture || m.score < 0) && !isPromotion;
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
@@ -724,6 +726,8 @@ public class Search {
                         continue;
                     if (SEE(m) < 0) // Needed because m.score is not computed for non-captures
                         continue;
+                } else {
+                    // FIXME! Test delta pruning: if captured piece + 200 < alpha, and not late endgame, skip move
                 }
             }
 
