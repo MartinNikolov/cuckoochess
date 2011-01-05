@@ -524,8 +524,6 @@ public class MoveGen {
      */
     public static final boolean inCheck(Position pos) {
         int kingSq = pos.getKingSq(pos.whiteMove);
-        if (kingSq < 0)
-            return false;
         return sqAttacked(pos, kingSq);
     }
 

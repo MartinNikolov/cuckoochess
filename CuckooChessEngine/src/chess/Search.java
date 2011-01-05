@@ -678,6 +678,7 @@ public class Search {
             }
             return score;
         }
+        final int evalScore = score;
         if (score > alpha)
             alpha = score;
         int bestScore = score;
@@ -727,7 +728,23 @@ public class Search {
                     if (SEE(m) < 0) // Needed because m.score is not computed for non-captures
                         continue;
                 } else {
-                    // FIXME! Test delta pruning: if captured piece + 200 < alpha, and not late endgame, skip move
+                    int capt = Evaluate.pieceValue[pos.getPiece(m.to)];
+                    int prom = Evaluate.pieceValue[m.promoteTo];
+                    int optimisticScore = evalScore + capt + prom + 200;
+                    if (optimisticScore < alpha) { // Delta pruning
+                        if ((pos.wMtrlPawns > 0) && (pos.wMtrl > capt + pos.wMtrlPawns) &&
+                            (pos.bMtrlPawns > 0) && (pos.bMtrl > capt + pos.bMtrlPawns)) {
+                            if (depth -1 > -4) {
+                                givesCheck = MoveGen.givesCheck(pos, m);
+                                givesCheckComputed = true;
+                            }
+                            if (!givesCheck) {
+                                if (optimisticScore > bestScore)
+                                    bestScore = optimisticScore;
+                                continue;
+                            }
+                        }
+                    }
                 }
             }
 
