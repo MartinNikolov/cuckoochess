@@ -162,8 +162,6 @@ public class Evaluate {
         }
     }
     
-    int [][] pieces;
-    int [] nPieces;
     static byte[] kpkTable = null;
 
     // King safety variables
@@ -173,8 +171,6 @@ public class Evaluate {
     /** Constructor. */
     public Evaluate() {
         firstPawn = new int[2][8];
-        pieces = new int[Piece.nPieceTypes][64];
-        nPieces = new int[Piece.nPieceTypes];
         if (kpkTable == null) {
             kpkTable = new byte[2*32*64*48/8];
             InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
@@ -236,16 +232,10 @@ public class Evaluate {
         final int bMtrlPawns = pos.bMtrlPawns;
         
         // FIXME! Test incrementally updated piece square table score
-        // FIXME! Use incrementally updated pieces[], nPieces[] arrays (or remove them)
-
-        for (int p = 0; p < Piece.nPieceTypes; p++)
-        	nPieces[p] = 0;
 
         // Kings
         {
             int sq = pos.getKingSq(true);
-            final int p = Piece.WKING;
-            pieces[p][nPieces[p]++] = sq;
             final int k1 = kt1[63-sq];
             final int k2 = kt2[63-sq];
             final int t1 = qV + 2 * rV + 2 * bV;
@@ -256,8 +246,6 @@ public class Evaluate {
         }
         {
             int sq = pos.getKingSq(false);
-            final int p = Piece.BKING;
-            pieces[p][nPieces[p]++] = sq;
             final int k1 = kt1[sq];
             final int k2 = kt2[sq];
             final int t1 = qV + 2 * rV + 2 * bV;
@@ -271,13 +259,11 @@ public class Evaluate {
         {
             final int t1 = qV + 2 * rV + 2 * bV;
             final int t2 = rV;
-            int p = Piece.WPAWN;
-            long m = pos.pieceTypeBB[p];
+            long m = pos.pieceTypeBB[Piece.WPAWN];
             if (m != 0) {
                 int wp1 = 0, wp2 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     wp1 += pt1[63-sq];
                     wp2 += pt2[63-sq];
                     m &= m-1;
@@ -285,13 +271,11 @@ public class Evaluate {
                 final int tw = bMtrl - bMtrlPawns;
                 score += interpolate(tw, t2, wp2, t1, wp1) / 2;
             }
-            p = Piece.BPAWN;
-            m = pos.pieceTypeBB[p];
+            m = pos.pieceTypeBB[Piece.BPAWN];
             if (m != 0) {
                 int bp1 = 0, bp2 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     bp1 += pt1[sq];
                     bp2 += pt2[sq];
                     m &= m-1;
@@ -311,7 +295,6 @@ public class Evaluate {
                 int n1 = 0, n2 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     n1 += nt1[63-sq];
                     n2 += nt2[63-sq];
                     m &= m-1;
@@ -324,7 +307,6 @@ public class Evaluate {
                 int n1 = 0, n2 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     n1 += nt1[sq];
                     n2 += nt2[sq];
                     m &= m-1;
@@ -339,7 +321,6 @@ public class Evaluate {
             long m = pos.pieceTypeBB[p];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
                 score += bt1[63-sq];
                 m &= m-1;
             }
@@ -347,7 +328,6 @@ public class Evaluate {
             m = pos.pieceTypeBB[p];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
                 score -= bt1[sq];
                 m &= m-1;
             }
@@ -359,7 +339,6 @@ public class Evaluate {
             long m = pos.pieceTypeBB[p];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
                 score += qt1[63-sq];
                 mobilityAttacks = 0L;
                 score += queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
@@ -370,7 +349,6 @@ public class Evaluate {
             m = pos.pieceTypeBB[p];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                pieces[p][nPieces[p]++] = sq;
                 score -= qt1[sq];
                 mobilityAttacks = 0L;
                 score -= queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
@@ -387,7 +365,6 @@ public class Evaluate {
                 int r1 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     r1 += rt1[63-sq];
                     m &= m-1;
                 } while (m != 0);
@@ -403,7 +380,6 @@ public class Evaluate {
                 int r1 = 0;
                 do {
                     int sq = Long.numberOfTrailingZeros(m);
-                    pieces[p][nPieces[p]++] = sq;
                     r1 += rt1[sq];
                     m &= m-1;
                 } while (m != 0);
@@ -522,23 +498,23 @@ public class Evaluate {
             firstPawn[1][x] = 0;
         }
 
-        int np = nPieces[Piece.WPAWN];
-        int[] pawns = pieces[Piece.WPAWN];
-        for (int i = 0; i < np; i++) {
-            int sq = pawns[i];
+        long m = pos.pieceTypeBB[Piece.WPAWN];
+        while (m != 0) {
+            int sq = Long.numberOfTrailingZeros(m);
             int x = Position.getX(sq);
             int y = Position.getY(sq);
             nPawns[0][x]++;
             firstPawn[0][x] = Math.min(firstPawn[0][x], y);
+            m &= m-1;
         }
-        np = nPieces[Piece.BPAWN];
-        pawns = pieces[Piece.BPAWN];
-        for (int i = 0; i < np; i++) {
-            int sq = pawns[i];
+        m = pos.pieceTypeBB[Piece.BPAWN];
+        while (m != 0) {
+            int sq = Long.numberOfTrailingZeros(m);
             int x = Position.getX(sq);
             int y = Position.getY(sq);
             nPawns[1][x]++;
             firstPawn[1][x] = Math.max(firstPawn[1][x], y);
+            m &= m-1;
         }
 
     	int score = 0;
@@ -626,9 +602,9 @@ public class Evaluate {
     /** Compute rook bonus. Rook on open/half-open file. */
 	private final int rookBonus(Position pos) {
         int score = 0;
-        int nP = nPieces[Piece.WROOK];
-        for (int i = 0; i < nP; i++) {
-        	int sq = pieces[Piece.WROOK][i];
+        long m = pos.pieceTypeBB[Piece.WROOK];
+        while (m != 0) {
+        	int sq = Long.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if (ph.nPawns[0][x] == 0) { // At least half-open file
                 score += ph.nPawns[1][x] == 0 ? 25 : 12;
@@ -636,13 +612,14 @@ public class Evaluate {
             mobilityAttacks = 0L;
             score += rookMobScore[rookMobility(pos, sq)];
             bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
+            m &= m-1;
         }
         if ((Long.bitCount(pos.pieceTypeBB[Piece.WROOK] & 0x00ff000000000000L) > 1) &&
             ((pos.pieceTypeBB[Piece.BKING] & 0xff00000000000000L) != 0))
             score += 20; // Two rooks on 7:th row
-        nP = nPieces[Piece.BROOK];
-        for (int i = 0; i < nP; i++) {
-        	int sq = pieces[Piece.BROOK][i];
+        m = pos.pieceTypeBB[Piece.BROOK];
+        while (m != 0) {
+        	int sq = Long.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if (ph.nPawns[1][x] == 0) {
                 score -= ph.nPawns[0][x] == 0 ? 25 : 12;
@@ -650,6 +627,7 @@ public class Evaluate {
             mobilityAttacks = 0L;
             score -= rookMobScore[rookMobility(pos, sq)];
             wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
+            m &= m-1;
         }
         if ((Long.bitCount(pos.pieceTypeBB[Piece.BROOK] & 0xff00L) > 1) &&
             ((pos.pieceTypeBB[Piece.WKING] & 0xffL) != 0))
@@ -734,19 +712,21 @@ public class Evaluate {
     /** Compute bishop evaluation. */
     private final int bishopEval(Position pos, int oldScore) {
         int score = 0;
-        int nP = nPieces[Piece.WBISHOP];
-        for (int i = 0; i < nP; i++) {
-        	int sq = pieces[Piece.WBISHOP][i];
+        long m = pos.pieceTypeBB[Piece.WBISHOP];
+        while (m != 0) {
+            int sq = Long.numberOfTrailingZeros(m);
             mobilityAttacks = 0L;
         	score += bishMobScore[bishopMobility(pos, sq)];
             bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
+            m &= m-1;
         }
-        nP = nPieces[Piece.BBISHOP];
-        for (int i = 0; i < nP; i++) {
-        	int sq = pieces[Piece.BBISHOP][i];
+        m = pos.pieceTypeBB[Piece.BBISHOP];
+        while (m != 0) {
+        	int sq = Long.numberOfTrailingZeros(m);
             mobilityAttacks = 0L;
         	score -= bishMobScore[bishopMobility(pos, sq)];
             wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
+            m &= m-1;
         }
         boolean whiteDark  = (pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskDarkSq ) != 0;
         boolean whiteLight = (pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskLightSq) != 0;
@@ -757,11 +737,11 @@ public class Evaluate {
 
         // Bishop pair bonus
         if (numWhite == 2) {
-        	final int numPawns = nPieces[Piece.WPAWN];
+        	final int numPawns = Long.bitCount(pos.pieceTypeBB[Piece.WPAWN]);
         	score += 20 + (8 - numPawns) * 3;
         }
         if (numBlack == 2) {
-            final int numPawns = nPieces[Piece.BPAWN];
+            final int numPawns = Long.bitCount(pos.pieceTypeBB[Piece.BPAWN]);
             score -= 20 + (8 - numPawns) * 3;
         }
 
@@ -863,14 +843,22 @@ public class Evaluate {
         }
         final int qV = pieceValue[Piece.WQUEEN];
         final int pV = pieceValue[Piece.WPAWN];
-        if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) && (nPieces[Piece.WQUEEN] == 1)) {
-            score = evalKQKP(pos.getKingSq(true), pieces[Piece.WQUEEN][0],
-                             pos.getKingSq(false), pieces[Piece.BPAWN][0]);
+        if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) &&
+            (Long.bitCount(pos.pieceTypeBB[Piece.WQUEEN]) == 1)) {
+            int wk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
+            int wq = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WQUEEN]);
+            int bk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
+            int bp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
+            score = evalKQKP(wk, wq, bk, bp);
             handled = true;
         }
-        if (!handled && (pos.bMtrl == qV) && (pos.wMtrl == pV) && (nPieces[Piece.BQUEEN] == 1)) {
-            score = -evalKQKP(63-pos.getKingSq(false), 63-pieces[Piece.BQUEEN][0],
-                              63-pos.getKingSq(true), 63-pieces[Piece.WPAWN][0]);
+        if (!handled && (pos.bMtrl == qV) && (pos.wMtrl == pV) && 
+            (Long.bitCount(pos.pieceTypeBB[Piece.BQUEEN]) == 1)) {
+            int bk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
+            int bq = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BQUEEN]);
+            int wk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
+            int wp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
+            score = -evalKQKP(63-bk, 63-bq, 63-wk, 63-wp);
             handled = true;
         }
         if (!handled && (score > 0)) {
@@ -897,8 +885,8 @@ public class Evaluate {
         if (!handled) {
             if (bMtrlPawns == 0) {
                 if (wMtrlNoPawns - bMtrlNoPawns > bV) {
-                    int wKnights = nPieces[Piece.WKNIGHT];
-                    int wBishops = nPieces[Piece.WBISHOP];
+                    int wKnights = Long.bitCount(pos.pieceTypeBB[Piece.WKNIGHT]);
+                    int wBishops = Long.bitCount(pos.pieceTypeBB[Piece.WBISHOP]);
                     if ((wKnights == 2) && (wMtrlNoPawns == 2 * nV) && (bMtrlNoPawns == 0)) {
                         score /= 50;    // KNNK is a draw
                     } else if ((wKnights == 1) && (wBishops == 1) && (wMtrlNoPawns == nV + bV) && (bMtrlNoPawns == 0)) {
@@ -907,7 +895,7 @@ public class Evaluate {
                         final int kSq = pos.getKingSq(false);
                         final int x = Position.getX(kSq);
                         final int y = Position.getY(kSq);
-                        if (bishopOnDark(pos)) {
+                        if ((pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskDarkSq) != 0) {
                             score += (7 - distToH1A8[7-y][7-x]) * 10;
                         } else {
                             score += (7 - distToH1A8[7-y][x]) * 10;
@@ -916,9 +904,10 @@ public class Evaluate {
                         score += 300;       // Enough excess material, should win
                     }
                     handled = true;
-                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.WPAWN] == 1)) { // KPK
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (wMtrlPawns == pV)) { // KPK
+                    int wp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
                     score = kpkEval(pos.getKingSq(true), pos.getKingSq(false),
-                                    pieces[Piece.WPAWN][0], pos.whiteMove);
+                                    wp, pos.whiteMove);
                     handled = true;
                 }
             }
@@ -947,8 +936,8 @@ public class Evaluate {
         if (!handled) {
             if (wMtrlPawns == 0) {
                 if (bMtrlNoPawns - wMtrlNoPawns > bV) {
-                    int bKnights = nPieces[Piece.BKNIGHT];
-                    int bBishops = nPieces[Piece.BBISHOP];
+                    int bKnights = Long.bitCount(pos.pieceTypeBB[Piece.BKNIGHT]);
+                    int bBishops = Long.bitCount(pos.pieceTypeBB[Piece.BBISHOP]);
                     if ((bKnights == 2) && (bMtrlNoPawns == 2 * nV) && (wMtrlNoPawns == 0)) {
                         score /= 50;    // KNNK is a draw
                     } else if ((bKnights == 1) && (bBishops == 1) && (bMtrlNoPawns == nV + bV) && (wMtrlNoPawns == 0)) {
@@ -957,7 +946,7 @@ public class Evaluate {
                         final int kSq = pos.getKingSq(true);
                         final int x = Position.getX(kSq);
                         final int y = Position.getY(kSq);
-                        if (bishopOnDark(pos)) {
+                        if ((pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskDarkSq) != 0) {
                             score -= (7 - distToH1A8[7-y][7-x]) * 10;
                         } else {
                             score -= (7 - distToH1A8[7-y][x]) * 10;
@@ -966,9 +955,10 @@ public class Evaluate {
                         score -= 300;       // Enough excess material, should win
                     }
                     handled = true;
-                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (nPieces[Piece.BPAWN] == 1)) { // KPK
+                } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (bMtrlPawns == pV)) { // KPK
+                    int bp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
                     score = -kpkEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
-                                     63-pieces[Piece.BPAWN][0], !pos.whiteMove);
+                                     63-bp, !pos.whiteMove);
                     handled = true;
                 }
             }
@@ -1034,30 +1024,6 @@ public class Evaluate {
         final int qV = pieceValue[Piece.WQUEEN];
         final int pV = pieceValue[Piece.WPAWN];
         return qV - pV / 4 * (7-Position.getY(wPawn));
-    }
-
-    /**
-     * Decide if there is a bishop on a white square.
-     * Note that this method assumes that there is at most one bishop.
-     */
-    private final boolean bishopOnDark(Position pos) {
-    	int nP = nPieces[Piece.WBISHOP];
-    	if (nP > 0) {
-    		int sq = pieces[Piece.WBISHOP][0];
-            final int x = Position.getX(sq);
-            final int y = Position.getY(sq);
-            if (Position.darkSquare(x, y))
-            	return true;
-    	}
-    	nP = nPieces[Piece.BBISHOP];
-    	if (nP > 0) {
-    		int sq = pieces[Piece.BBISHOP][0];
-            final int x = Position.getX(sq);
-            final int y = Position.getY(sq);
-            if (Position.darkSquare(x, y))
-            	return true;
-    	}
-    	return false;
     }
 
     /**
