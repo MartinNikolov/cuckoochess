@@ -34,94 +34,127 @@ public class Evaluate {
     }
     
     /** Piece/square table for king during middle game. */
-    static final int[] kt1 = { -22,-35,-40,-40,-40,-40,-35,-22,
-  							   -22,-35,-40,-40,-40,-40,-35,-22,
-    						   -25,-35,-40,-45,-45,-40,-35,-25,
-    						   -15,-30,-35,-40,-40,-35,-30,-15,
-    						   -10,-15,-20,-25,-25,-20,-15,-10,
-    							 4, -2, -5,-15,-15, -5, -2,  4,
-    							16, 14,  7, -3, -3,  7, 14, 16,
-    							24, 24,  9,  0,  0,  9, 24, 24 };
+    static final int[] kt1b = { -22,-35,-40,-40,-40,-40,-35,-22,
+  							    -22,-35,-40,-40,-40,-40,-35,-22,
+    						    -25,-35,-40,-45,-45,-40,-35,-25,
+    						    -15,-30,-35,-40,-40,-35,-30,-15,
+    						    -10,-15,-20,-25,-25,-20,-15,-10,
+    					          4, -2, -5,-15,-15, -5, -2,  4,
+    				 			 16, 14,  7, -3, -3,  7, 14, 16,
+    			 				 24, 24,  9,  0,  0,  9, 24, 24 };
     
     /** Piece/square table for king during end game. */
-    static final int[] kt2 = {  0,  8, 16, 24, 24, 16,  8,  0,
-    						    8, 16, 24, 32, 32, 24, 16,  8,
-    						   16, 24, 32, 40, 40, 32, 24, 16,
-    						   24, 32, 40, 48, 48, 40, 32, 24,
-    						   24, 32, 40, 48, 48, 40, 32, 24,
-    						   16, 24, 32, 40, 40, 32, 24, 16,
-    						    8, 16, 24, 32, 32, 24, 16,  8,
-    						    0,  8, 16, 24, 24, 16,  8,  0 };
+    static final int[] kt2b = {  0,  8, 16, 24, 24, 16,  8,  0,
+    						     8, 16, 24, 32, 32, 24, 16,  8,
+    						    16, 24, 32, 40, 40, 32, 24, 16,
+    						    24, 32, 40, 48, 48, 40, 32, 24,
+    						    24, 32, 40, 48, 48, 40, 32, 24,
+    						    16, 24, 32, 40, 40, 32, 24, 16,
+    						     8, 16, 24, 32, 32, 24, 16,  8,
+    						     0,  8, 16, 24, 24, 16,  8,  0 };
 
     /** Piece/square table for pawns during middle game. */
-    static final int[] pt1 = {   0,  0,  0,  0,  0,  0,  0,  0,
-    							16, 32, 48, 64, 64, 48, 32, 16,
-    							 6, 24, 40, 56, 56, 40, 24,  6,
-    						   -10,  8, 20, 40, 40, 20,  8,-10,
-    						   -12,  8, 10, 32, 32, 10,  8,-12,
-    						   -12,  8,  4, 10, 10,  4,  8,-12,
-    						   -12,  8,  8, -7, -7,  8,  8,-12,
-    							 0,  0,  0,  0,  0,  0,  0,  0 };
+    static final int[] pt1b = {   0,  0,  0,  0,  0,  0,  0,  0,
+    						 	 16, 32, 48, 64, 64, 48, 32, 16,
+    							  6, 24, 40, 56, 56, 40, 24,  6,
+    						    -10,  8, 20, 40, 40, 20,  8,-10,
+    						    -12,  8, 10, 32, 32, 10,  8,-12,
+    						    -12,  8,  4, 10, 10,  4,  8,-12,
+    						    -12,  8,  8, -7, -7,  8,  8,-12,
+    						 	 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for pawns during end game. */
-    static final int[] pt2 = {   0,  0,  0,  0,  0,  0,  0,  0,
-    							50, 80, 90, 90, 90, 90, 80, 50,
-    							34, 64, 69, 69, 69, 69, 64, 34,
-    							10, 48, 48, 48, 48, 48, 48, 10,
-    						   -18, 22, 22, 22, 22, 22, 22,-18,
-    						   -34,  6,  6,  6,  6,  6,  6,-34,
-    						   -40,  0,  0,  0,  0,  0,  0,-40,
-    							 0,  0,  0,  0,  0,  0,  0,  0 };
+    static final int[] pt2b = {   0,  0,  0,  0,  0,  0,  0,  0,
+    							 50, 80, 90, 90, 90, 90, 80, 50,
+    							 34, 64, 69, 69, 69, 69, 64, 34,
+    							 10, 48, 48, 48, 48, 48, 48, 10,
+    						    -18, 22, 22, 22, 22, 22, 22,-18,
+    						    -34,  6,  6,  6,  6,  6,  6,-34,
+    						    -40,  0,  0,  0,  0,  0,  0,-40,
+    						 	  0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for knights during middle game. */
-    static final int[] nt1 = { -50,-40,-30,-20,-20,-30,-40,-50,
-    						   -40,-30,-10,  0,  0,-10,-30,-40,
-    						   -20,  5, 10, 15, 15, 10,  5,-20,
-    						   -17,  0, 10, 20, 20, 10,  0,-17,
-    						   -17,  0,  3, 20, 20,  3,  0,-17,
-    						   -20,-10,  0,  5,  5,  0,-10,-20,
-    						   -40,-30,-10,  0,  0,-10,-30,-40,
-    						   -50,-40,-30,-20,-20,-30,-40,-50 };
+    static final int[] nt1b = { -50,-40,-30,-20,-20,-30,-40,-50,
+    						    -40,-30,-10,  0,  0,-10,-30,-40,
+    						    -20,  5, 10, 15, 15, 10,  5,-20,
+    						    -17,  0, 10, 20, 20, 10,  0,-17,
+    						    -17,  0,  3, 20, 20,  3,  0,-17,
+    						    -20,-10,  0,  5,  5,  0,-10,-20,
+    						    -40,-30,-10,  0,  0,-10,-30,-40,
+    						    -50,-40,-30,-20,-20,-30,-40,-50 };
 
     /** Piece/square table for knights during end game. */
-    static final int[] nt2 = { -50,-40,-30,-20,-20,-30,-40,-50,
-    						   -40,-30,-10, -5, -5,-10,-30,-40,
-    						   -30,-10,  0, 10, 10,  0,-10,-30,
-    						   -20, -5, 10, 20, 20, 10, -5,-20,
-    						   -20, -5, 10, 20, 20, 10, -5,-20,
-    						   -30,-10,  0, 10, 10,  0,-10,-30,
-    						   -40,-30,-10, -5, -5,-10,-30,-40,
-    						   -50,-40,-30,-20,-20,-30,-40,-50 };
+    static final int[] nt2b = { -50,-40,-30,-20,-20,-30,-40,-50,
+    						    -40,-30,-10, -5, -5,-10,-30,-40,
+    						    -30,-10,  0, 10, 10,  0,-10,-30,
+    						    -20, -5, 10, 20, 20, 10, -5,-20,
+    						    -20, -5, 10, 20, 20, 10, -5,-20,
+    						    -30,-10,  0, 10, 10,  0,-10,-30,
+    						    -40,-30,-10, -5, -5,-10,-30,-40,
+    						    -50,-40,-30,-20,-20,-30,-40,-50 };
 
     /** Piece/square table for bishops during middle game. */
-    static final int[] bt1 = {  0,  0,  0,  0,  0,  0,  0,  0,
-    							0,  8,  4,  4,  4,  4,  8,  0,
-    							0,  4,  8,  8,  8,  8,  4,  0,
-    							0,  4,  8,  8,  8,  8,  4,  0,
-    							0,  4,  8,  8,  8,  8,  4,  0,
-    							0,  6,  8,  8,  8,  8,  6,  0,
-    							0,  8,  4,  4,  4,  4,  8,  0,
-    							0,  0,  0,  0,  0,  0,  0,  0 };
+    static final int[] bt1b = {  0,  0,  0,  0,  0,  0,  0,  0,
+    							 0,  8,  4,  4,  4,  4,  8,  0,
+    							 0,  4,  8,  8,  8,  8,  4,  0,
+    							 0,  4,  8,  8,  8,  8,  4,  0,
+    							 0,  4,  8,  8,  8,  8,  4,  0,
+    							 0,  6,  8,  8,  8,  8,  6,  0,
+    							 0,  8,  4,  4,  4,  4,  8,  0,
+    							 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for queens during middle game. */
-    static final int[] qt1 = { -10, -5,  0,  0,  0,  0, -5,-10,
-				 				-5,  0,  5,  5,  5,  5,  0, -5,
-				 				 0,  5,  5,  6,  6,  5,  5,  0,
-				 				 0,  5,  6,  6,  6,  6,  5,  0,
-				 				 0,  5,  6,  6,  6,  6,  5,  0,
-				 				 0,  5,  5,  6,  6,  5,  5,  0,
-				 				-5,  0,  5,  5,  5,  5,  0, -5,
-				 			   -10, -5,  0,  0,  0,  0, -5,-10 };
+    static final int[] qt1b = { -10, -5,  0,  0,  0,  0, -5,-10,
+				 				 -5,  0,  5,  5,  5,  5,  0, -5,
+				 				  0,  5,  5,  6,  6,  5,  5,  0,
+				 				  0,  5,  6,  6,  6,  6,  5,  0,
+				 				  0,  5,  6,  6,  6,  6,  5,  0,
+				 				  0,  5,  5,  6,  6,  5,  5,  0,
+				 				 -5,  0,  5,  5,  5,  5,  0, -5,
+				 			    -10, -5,  0,  0,  0,  0, -5,-10 };
 
     /** Piece/square table for rooks during middle game. */
-    static final int[] rt1 = {  0,  3,  5,  5,  5,  5,  3,  0,
-				 			   15, 20, 20, 20, 20, 20, 20, 15,
-				 			    0,  0,  0,  0,  0,  0,  0,  0,
-				 			    0,  0,  0,  0,  0,  0,  0,  0,
-				 			   -2,  0,  0,  0,  0,  0,  0, -2,
-				 			   -2,  0,  0,  2,  2,  0,  0, -2,
-				 			   -3,  2,  5,  5,  5,  5,  2, -3,
-				 			    0,  3,  5,  5,  5,  5,  3,  0 };
+    static final int[] rt1b = {  0,  3,  5,  5,  5,  5,  3,  0,
+				 			    15, 20, 20, 20, 20, 20, 20, 15,
+				 			     0,  0,  0,  0,  0,  0,  0,  0,
+				 			     0,  0,  0,  0,  0,  0,  0,  0,
+				 			    -2,  0,  0,  0,  0,  0,  0, -2,
+				 			    -2,  0,  0,  2,  2,  0,  0, -2,
+				 			    -3,  2,  5,  5,  5,  5,  2, -3,
+				 			     0,  3,  5,  5,  5,  5,  3,  0 };
+
+    static final int[] kt1w, qt1w, rt1w, bt1w, nt1w, pt1w, kt2w, nt2w, pt2w;
+    static {
+        kt1w = new int[64];
+        qt1w = new int[64];
+        rt1w = new int[64];
+        bt1w = new int[64];
+        nt1w = new int[64];
+        pt1w = new int[64];
+        kt2w = new int[64];
+        nt2w = new int[64];
+        pt2w = new int[64];
+        for (int i = 0; i < 64; i++) {
+            kt1w[i] = kt1b[63-i];
+            qt1w[i] = qt1b[63-i];
+            rt1w[i] = rt1b[63-i];
+            bt1w[i] = bt1b[63-i];
+            nt1w[i] = nt1b[63-i];
+            pt1w[i] = pt1b[63-i];
+            kt2w[i] = kt2b[63-i];
+            nt2w[i] = nt2b[63-i];
+            pt2w[i] = pt2b[63-i];
+        }
+    }
+
+    private static final int[] empty = { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+                                         0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+                                         0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+                                         0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+    static final int[][] psTab1 = { empty, kt1w, qt1w, rt1w, bt1w, nt1w, pt1w,
+                                           kt1b, qt1b, rt1b, bt1b, nt1b, pt1b };
+    static final int[][] psTab2 = { empty, kt2w, qt1w, rt1w, bt1w, nt2w, pt2w,
+                                           kt2b, qt1b, rt1b, bt1b, nt2b, pt2b };
 
     static final int[][] distToH1A8 = { { 0, 1, 2, 3, 4, 5, 6, 7 },
 										{ 1, 2, 3, 4, 5, 6, 7, 6 },
@@ -231,55 +264,37 @@ public class Evaluate {
         final int wMtrlPawns = pos.wMtrlPawns;
         final int bMtrlPawns = pos.bMtrlPawns;
         
-        // FIXME! Test incrementally updated piece square table score
-
         // Kings
         {
-            int sq = pos.getKingSq(true);
-            final int k1 = kt1[63-sq];
-            final int k2 = kt2[63-sq];
             final int t1 = qV + 2 * rV + 2 * bV;
             final int t2 = rV;
-            final int t = bMtrl - bMtrlPawns;
-            final int s = interpolate(t, t2, k2, t1, k1);
-            score += s;
-        }
-        {
-            int sq = pos.getKingSq(false);
-            final int k1 = kt1[sq];
-            final int k2 = kt2[sq];
-            final int t1 = qV + 2 * rV + 2 * bV;
-            final int t2 = rV;
-            final int t = wMtrl - wMtrlPawns;
-            final int s = interpolate(t, t2, k2, t1, k1);
-            score -= s;
+            {
+                final int k1 = pos.psScore1[Piece.WKING];
+                final int k2 = pos.psScore2[Piece.WKING];
+                final int t = bMtrl - bMtrlPawns;
+                score += interpolate(t, t2, k2, t1, k1);
+            }
+            {
+                final int k1 = pos.psScore1[Piece.BKING];
+                final int k2 = pos.psScore2[Piece.BKING];
+                final int t = wMtrl - wMtrlPawns;
+                score -= interpolate(t, t2, k2, t1, k1);
+            }
         }
 
         // Pawns
         {
             final int t1 = qV + 2 * rV + 2 * bV;
             final int t2 = rV;
-            long m = pos.pieceTypeBB[Piece.WPAWN];
-            if (m != 0) {
-                int wp1 = 0, wp2 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    wp1 += pt1[63-sq];
-                    wp2 += pt2[63-sq];
-                    m &= m-1;
-                } while (m != 0);
+            int wp1 = pos.psScore1[Piece.WPAWN];
+            int wp2 = pos.psScore2[Piece.WPAWN];
+            if ((wp1 != 0) || (wp2 != 0)) {
                 final int tw = bMtrl - bMtrlPawns;
                 score += interpolate(tw, t2, wp2, t1, wp1) / 2;
             }
-            m = pos.pieceTypeBB[Piece.BPAWN];
-            if (m != 0) {
-                int bp1 = 0, bp2 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    bp1 += pt1[sq];
-                    bp2 += pt2[sq];
-                    m &= m-1;
-                } while (m != 0);
+            int bp1 = pos.psScore1[Piece.BPAWN];
+            int bp2 = pos.psScore2[Piece.BPAWN];
+            if ((bp1 != 0) || (bp2 != 0)) {
                 final int tb = wMtrl - wMtrlPawns;
                 score -= interpolate(tb, t2, bp2, t1, bp1) / 2;
             }
@@ -287,69 +302,41 @@ public class Evaluate {
 
         // Knights
         {
-            int p = Piece.WKNIGHT;
-            long m = pos.pieceTypeBB[p];
             final int t1 = qV + 2 * rV + 1 * bV + 1 * nV + 6 * pV;
             final int t2 = nV + 8 * pV;
-            if (m != 0) {
-                int n1 = 0, n2 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    n1 += nt1[63-sq];
-                    n2 += nt2[63-sq];
-                    m &= m-1;
-                } while (m != 0);
+            int n1 = pos.psScore1[Piece.WKNIGHT];
+            int n2 = pos.psScore2[Piece.WKNIGHT];
+            if ((n1 != 0) || (n2 != 0)) {
                 score += interpolate(bMtrl, t2, n2, t1, n1);
             }
-            p = Piece.BKNIGHT;
-            m = pos.pieceTypeBB[p];
-            if (m != 0) {
-                int n1 = 0, n2 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    n1 += nt1[sq];
-                    n2 += nt2[sq];
-                    m &= m-1;
-                } while (m != 0);
+            n1 = pos.psScore1[Piece.BKNIGHT];
+            n2 = pos.psScore2[Piece.BKNIGHT];
+            if ((n1 != 0) || (n2 != 0)) {
                 score -= interpolate(wMtrl, t2, n2, t1, n1);
             }
         }
 
         // Bishops
         {
-            int p = Piece.WBISHOP;
-            long m = pos.pieceTypeBB[p];
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                score += bt1[63-sq];
-                m &= m-1;
-            }
-            p = Piece.BBISHOP;
-            m = pos.pieceTypeBB[p];
-            while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
-                score -= bt1[sq];
-                m &= m-1;
-            }
+            score += pos.psScore1[Piece.WBISHOP];
+            score -= pos.psScore1[Piece.BBISHOP];
         }
 
         // Queens
         {
-            int p = Piece.WQUEEN;
-            long m = pos.pieceTypeBB[p];
+            score += pos.psScore1[Piece.WQUEEN];
+            long m = pos.pieceTypeBB[Piece.WQUEEN];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                score += qt1[63-sq];
                 mobilityAttacks = 0L;
                 score += queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
                 bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone) * 2;
                 m &= m-1;
             }
-            p = Piece.BQUEEN;
-            m = pos.pieceTypeBB[p];
+            score -= pos.psScore1[Piece.BQUEEN];
+            m = pos.pieceTypeBB[Piece.BQUEEN];
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
-                score -= qt1[sq];
                 mobilityAttacks = 0L;
                 score -= queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
                 wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone) * 2;
@@ -359,30 +346,14 @@ public class Evaluate {
 
         // Rooks
         {
-            int p = Piece.WROOK;
-            long m = pos.pieceTypeBB[p];
-            if (m != 0) {
-                int r1 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    r1 += rt1[63-sq];
-                    m &= m-1;
-                } while (m != 0);
+            int r1 = pos.psScore1[Piece.WROOK];
+            if (r1 != 0) {
                 final int nP = bMtrlPawns / pV;
                 final int s = r1 * Math.min(nP, 6) / 6;
                 score += s;
             }
-        }
-        {
-            int p = Piece.BROOK;
-            long m = pos.pieceTypeBB[p];
-            if (m != 0) {
-                int r1 = 0;
-                do {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    r1 += rt1[sq];
-                    m &= m-1;
-                } while (m != 0);
+            r1 = pos.psScore1[Piece.BROOK];
+            if (r1 != 0) {
                 final int nP = wMtrlPawns / pV;
                 final int s = r1 * Math.min(nP, 6) / 6;
                 score -= s;
@@ -420,14 +391,14 @@ public class Evaluate {
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
 
-        final int k1 = kt1[7*8+6] - kt1[7*8+4];
-        final int k2 = kt2[7*8+6] - kt2[7*8+4];
+        final int k1 = kt1b[7*8+6] - kt1b[7*8+4];
+        final int k2 = kt2b[7*8+6] - kt2b[7*8+4];
         final int t1 = qV + 2 * rV + 2 * bV;
         final int t2 = rV;
         final int t = pos.bMtrl - pos.bMtrlPawns;
         final int ks = interpolate(t, t2, k2, t1, k1);
 
-        final int castleValue = ks + rt1[7*8+5] - rt1[7*8+7];
+        final int castleValue = ks + rt1b[7*8+5] - rt1b[7*8+7];
         if (castleValue <= 0) {
             return 0;
         }

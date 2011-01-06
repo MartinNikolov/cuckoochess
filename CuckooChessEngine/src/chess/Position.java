@@ -22,6 +22,9 @@ public class Position {
     // Bitboards
     long[] pieceTypeBB;
     long whiteBB, blackBB;
+    
+    // Piece square table scores
+    short[]  psScore1, psScore2;
 
     public boolean whiteMove;
 
@@ -55,8 +58,13 @@ public class Position {
         for (int i = 0; i < 64; i++)
             squares[i] = Piece.EMPTY;
         pieceTypeBB = new long[Piece.nPieceTypes];
-        for (int i = 0; i < Piece.nPieceTypes; i++)
+        psScore1 = new short[Piece.nPieceTypes];
+        psScore2 = new short[Piece.nPieceTypes];
+        for (int i = 0; i < Piece.nPieceTypes; i++) {
             pieceTypeBB[i] = 0L;
+            psScore1[i] = 0;
+            psScore2[i] = 0;
+        }
         whiteBB = blackBB = 0L;
         whiteMove = true;
         castleMask = 0;
@@ -74,8 +82,13 @@ public class Position {
         for (int i = 0; i < 64; i++)
             squares[i] = other.squares[i];
         pieceTypeBB = new long[Piece.nPieceTypes];
-        for (int i = 0; i < Piece.nPieceTypes; i++)
+        psScore1 = new short[Piece.nPieceTypes];
+        psScore2 = new short[Piece.nPieceTypes];
+        for (int i = 0; i < Piece.nPieceTypes; i++) {
             pieceTypeBB[i] = other.pieceTypeBB[i];
+            psScore1[i] = other.psScore1[i];
+            psScore2[i] = other.psScore2[i];
+        }
         whiteBB = other.whiteBB;
         blackBB = other.blackBB;
         whiteMove = other.whiteMove;
@@ -239,6 +252,12 @@ public class Position {
         } else if (piece == Piece.BKING) {
             bKingSq = square;
         }
+
+        // Update piece/square table scores
+        psScore1[removedPiece] -= Evaluate.psTab1[removedPiece][square];
+        psScore2[removedPiece] -= Evaluate.psTab2[removedPiece][square];
+        psScore1[piece]        += Evaluate.psTab1[piece][square];
+        psScore2[piece]        += Evaluate.psTab2[piece][square];
     }
 
     /** Return true if white long castling right has not been lost. */
