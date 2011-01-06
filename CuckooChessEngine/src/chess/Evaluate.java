@@ -548,7 +548,7 @@ public class Evaluate {
                 wasPawn = false;
             }
         }
-        score -= (wDouble - bDouble) * 20;
+        score -= (wDouble - bDouble) * 20;  // FIXME! Try larger values
         score -= (wIslands - bIslands) * 15;
         
         // Evaluate passed pawn bonus

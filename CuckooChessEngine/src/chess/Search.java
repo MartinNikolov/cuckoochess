@@ -556,7 +556,7 @@ public class Search {
             }
             // FIXME! Test extending when going into pawn endgame
             // FIXME! Test extending pawn pushes to 7:th rank
-            boolean mayReduce = (!isCapture || m.score < 0) && !isPromotion;
+            boolean mayReduce = (m.score < 53) && (!isCapture || m.score < 0) && !isPromotion;
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
             boolean doFutility = false;
@@ -570,11 +570,12 @@ public class Search {
             } else {
             	int extend = Math.max(posExtend, moveExtend);
             	int lmr = 0;
-            	if ((depth >= 3) && mayReduce && (beta == alpha + 1) &&
-            			(extend == 0) && !isPromotion) {
+            	if ((depth >= 3) && mayReduce && (beta == alpha + 1) && (extend == 0)) {
             		if (!givesCheck) {
             			lmrCount++;
-            			if (lmrCount > 3) {
+            			if ((lmrCount > 3) && (depth > 3)) {
+            			    lmr = 2;
+            			} else {
             				lmr = 1;
             			}
             		}
@@ -956,6 +957,7 @@ public class Search {
             if (m.equals(hashMove)) {
                 moves.set(i, moves.get(0));
                 moves.set(0, m);
+                m.score = 10000;
                 return true;
             }
         }
