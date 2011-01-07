@@ -514,6 +514,9 @@ bool think(Position& pos, bool infinite, bool ponder, int time[], int increment[
               << move_to_san(pos, ponderMove) // Works also with MOVE_NONE
               << endl;
 
+      // Return from think() with unchanged position
+      pos.undo_move(bestMove);
+
       LogFile.close();
   }
 
@@ -904,7 +907,7 @@ namespace {
 
     // Write PV lines to transposition table, in case the relevant entries
     // have been overwritten during the search.
-    for (int i = 0; i < MultiPV; i++)
+    for (int i = 0; i < Min(MultiPV, (int)rml.size()); i++)
         rml[i].insert_pv_in_tt(pos);
 
     return alpha;
