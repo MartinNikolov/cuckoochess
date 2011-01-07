@@ -197,6 +197,15 @@ public class SearchTest {
         Move bestM = idSearch(sc, 3);
         assertTrue(bestM.score < 0);
     }
+
+    @Test
+    public void testStalemateTrap() throws ChessParseError {
+        System.out.println("stalemate trap");
+        Position pos = TextIO.readFEN("7k/1P3R1P/6r1/5K2/8/8/6R1/8 b - - 98 194");
+        Search sc = new Search(pos, nullHist, 0, tt);
+        Move bestM = idSearch(sc, 3);
+        assertEquals(0, bestM.score);
+    }
     
     private Move idSearch(Search sc, int maxDepth) {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);

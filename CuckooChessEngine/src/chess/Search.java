@@ -381,6 +381,8 @@ public class Search {
 
         // Draw tests
         if (canClaimDraw50(pos)) {
+            if (MoveGen.canTakeKing(pos))
+                return MATE0 - ply;
             if (inCheck) {
                 ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
                 moves = MoveGen.removeIllegal(pos, moves);
