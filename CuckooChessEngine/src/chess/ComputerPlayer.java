@@ -15,7 +15,7 @@ import java.util.Random;
  * @author petero
  */
 public class ComputerPlayer implements Player {
-    public static String engineName = "CuckooChess 1.07a8";
+    public static String engineName = "CuckooChess 1.07a9";
 
     int minTimeMillis;
     int maxTimeMillis;
@@ -215,6 +215,5 @@ public class ComputerPlayer implements Player {
     	return (int)Math.ceil(w);
     }
 
-    // FIXME!!! Test LDS in quiesce (for checks and/or SEE<0 captures)
     // FIXME!!! Test Botvinnik-Markoff extension
 }

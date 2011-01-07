@@ -170,15 +170,12 @@ public class Evaluate {
     static final int[] queenMobScore = {-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,19,20,20,20,20,20,20,20,20,20,20,20,20};
 
     private static final class PawnHashData {
-    	PawnHashData() {
-            passedPawns = new byte[2][8];
-    	}
     	long key;
     	int score;         // Positive score means good for white
-    	int passedBonusW;
-    	int passedBonusB;
-    	byte [][] passedPawns; // passedPawns[0/1][file] contains the row of the most advanced
-    	                       // passed pawn on a file, or 0 if there is no free pawn on that file.
+    	short passedBonusW;
+    	short passedBonusB;
+    	long passedPawnsW;     // The most advanced passed pawns for each file
+    	long passedPawnsB;
     }
     PawnHashData ph;
     static PawnHashData[] pawnHash;
@@ -486,13 +483,13 @@ public class Evaluate {
         }
         score -= (wDouble - bDouble) * 20;  // FIXME! Try larger values
         score -= (wIslands - bIslands) * 15;
-        
+
         // Evaluate passed pawn bonus
         int passedBonusW = 0;
         int passedBonusB = 0;
-        byte[][] passedPawns = ph.passedPawns;
+        long passedPawnsW = 0;
+        long passedPawnsB = 0;
         for (int x = 0; x < 8; x++) {
-            passedPawns[0][x] = 0;
             long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
         	if (m != 0) {
         	    int sq = 63-Long.numberOfLeadingZeros(m);
@@ -502,10 +499,9 @@ public class Evaluate {
         			passedBonusW += 20 + y * 4;
         			if ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.bPawnAttacks[sq]) != 0)
         				passedBonusW += 15;  // Guarded passed pawn
-                    passedPawns[0][x] = (byte)y;
+        			passedPawnsW |= 1L << sq;
         		}
         	}
-            passedPawns[1][x] = 0;
             m = pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[x];
         	if (m != 0) {
         	    int sq = Long.numberOfTrailingZeros(m);
@@ -515,15 +511,17 @@ public class Evaluate {
         			passedBonusB += 20 + (7-y) * 4;
                     if ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.wPawnAttacks[sq]) != 0)
         				passedBonusB += 15;  // Guarded passed pawn
-                    passedPawns[1][x] = (byte)y;
+                    passedPawnsB |= 1L << sq;
         		}
             }
         }
 
         ph.key = pos.pawnZobristHash();
         ph.score = score;
-        ph.passedBonusW = passedBonusW;
-        ph.passedBonusB = passedBonusB;
+        ph.passedBonusW = (short)passedBonusW;
+        ph.passedBonusB = (short)passedBonusB;
+        ph.passedPawnsW = passedPawnsW;
+        ph.passedPawnsB = passedPawnsB;
     }
 
     /** Compute rook bonus. Rook on open/half-open file. */
@@ -741,36 +739,40 @@ public class Evaluate {
                 int kingPos = pos.getKingSq(false);
                 int kingX = Position.getX(kingPos);
                 int kingY = Position.getY(kingPos);
-                for (int x = 0; x < 8; x++) {
-                    int y = ph.passedPawns[0][x];
-                    if (y > 0) {
-                        int pawnDist = Math.min(5, 7 - y);
-                        int kingDistX = Math.abs(kingX - x);
-                        int kingDistY = Math.abs(kingY - 7);
-                        int kingDist = Math.max(kingDistX, kingDistY);
-                        if (!pos.whiteMove)
-                            kingDist--;
-                        if (pawnDist < kingDist)
-                            danger += 500;
-                    }
+                long m = ph.passedPawnsW;
+                while (m != 0) {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    int x = Position.getX(sq);
+                    int y = Position.getY(sq);
+                    int pawnDist = Math.min(5, 7 - y);
+                    int kingDistX = Math.abs(kingX - x);
+                    int kingDistY = Math.abs(kingY - 7);
+                    int kingDist = Math.max(kingDistX, kingDistY);
+                    if (!pos.whiteMove)
+                        kingDist--;
+                    if (pawnDist < kingDist)
+                        danger += 500;
+                    m &= m-1;
                 }
             }
             if (wMtrlNoPawns == 0) {
                 int kingPos = pos.getKingSq(true);
                 int kingX = Position.getX(kingPos);
                 int kingY = Position.getY(kingPos);
-                for (int x = 0; x < 8; x++) {
-                    int y = ph.passedPawns[1][x];
-                    if (y > 0) {
-                        int pawnDist = Math.min(5, y);
-                        int kingDistX = Math.abs(kingX - x);
-                        int kingDistY = Math.abs(kingY - 0);
-                        int kingDist = Math.max(kingDistX, kingDistY);
-                        if (pos.whiteMove)
-                            kingDist--;
-                        if (pawnDist < kingDist)
-                            danger -= 500;
-                    }
+                long m = ph.passedPawnsB;
+                while (m != 0) {
+                    int sq = Long.numberOfTrailingZeros(m);
+                    int x = Position.getX(sq);
+                    int y = Position.getY(sq);
+                    int pawnDist = Math.min(5, y);
+                    int kingDistX = Math.abs(kingX - x);
+                    int kingDistY = Math.abs(kingY - 0);
+                    int kingDist = Math.max(kingDistX, kingDistY);
+                    if (pos.whiteMove)
+                        kingDist--;
+                    if (pawnDist < kingDist)
+                        danger -= 500;
+                    m &= m-1;
                 }
             }
             score += danger;
