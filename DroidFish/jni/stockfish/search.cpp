@@ -477,7 +477,7 @@ bool think(Position& pos, bool infinite, bool ponder, int time[], int increment[
       NodesBetweenPolls = 5000;
   else
       NodesBetweenPolls = 30000;
-  NodesBetweenPolls /= 8;
+  NodesBetweenPolls /= 16;
 
   // Write search information to log file
   if (UseLogFile)
