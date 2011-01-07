@@ -189,6 +189,15 @@ public class SearchTest {
         assertEquals(TextIO.stringToMove(pos, "Kb1"), new Move(bestM));
     }
     
+    @Test
+    public void testCheckEvasion() throws ChessParseError {
+        System.out.println("check evasion");
+        Position pos = TextIO.readFEN("6r1/R5PK/2p5/1k6/8/8/p7/8 b - - 0 62");
+        Search sc = new Search(pos, nullHist, 0, tt);
+        Move bestM = idSearch(sc, 3);
+        assertTrue(bestM.score < 0);
+    }
+    
     private Move idSearch(Search sc, int maxDepth) {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);

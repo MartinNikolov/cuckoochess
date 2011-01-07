@@ -7,10 +7,24 @@ public class BitBoard {
     static long[] knightAttacks;
     static long[] wPawnAttacks, bPawnAttacks;
 
+    // Squares preventing a pawn from being a passed pawn, if occupied by enemy pawn
+    static long[] wPawnBlockerMask, bPawnBlockerMask;
+
     static final long maskAToGFiles = 0x7F7F7F7F7F7F7F7FL;
     static final long maskBToHFiles = 0xFEFEFEFEFEFEFEFEL;
     static final long maskAToFFiles = 0x3F3F3F3F3F3F3F3FL;
     static final long maskCToHFiles = 0xFCFCFCFCFCFCFCFCL;
+
+    static final long[] maskFile = {
+        0x0101010101010101L,
+        0x0202020202020202L,
+        0x0404040404040404L,
+        0x0808080808080808L,
+        0x1010101010101010L,
+        0x2020202020202020L,
+        0x4040404040404040L,
+        0x8080808080808080L
+    };
 
     static final long maskRow1      = 0x00000000000000FFL;
     static final long maskRow2      = 0x000000000000FF00L;
@@ -53,12 +67,31 @@ public class BitBoard {
         // Compute pawn attacks
         wPawnAttacks = new long[64];
         bPawnAttacks = new long[64];
+        wPawnBlockerMask = new long[64];
+        bPawnBlockerMask = new long[64];
         for (int sq = 0; sq < 64; sq++) {
             long m = 1L << sq;
             long mask = ((m << 7) & maskAToGFiles) | ((m << 9) & maskBToHFiles);
             wPawnAttacks[sq] = mask;
             mask = ((m >>> 9) & maskAToGFiles) | ((m >>> 7) & maskBToHFiles);
             bPawnAttacks[sq] = mask;
+            
+            int x = Position.getX(sq);
+            int y = Position.getY(sq);
+            m = 0;
+            for (int y2 = y+1; y2 < 8; y2++) {
+                if (x > 0) m |= 1L << Position.getSquare(x-1, y2);
+                           m |= 1L << Position.getSquare(x  , y2);
+                if (x < 7) m |= 1L << Position.getSquare(x+1, y2);
+            }
+            wPawnBlockerMask[sq] = m;
+            m = 0;
+            for (int y2 = y-1; y2 >= 0; y2--) {
+                if (x > 0) m |= 1L << Position.getSquare(x-1, y2);
+                           m |= 1L << Position.getSquare(x  , y2);
+                if (x < 7) m |= 1L << Position.getSquare(x+1, y2);
+            }
+            bPawnBlockerMask[sq] = m;
         }
     }
 

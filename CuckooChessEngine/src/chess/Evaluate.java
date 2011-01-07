@@ -171,11 +171,9 @@ public class Evaluate {
 
     private static final class PawnHashData {
     	PawnHashData() {
-            nPawns = new byte[2][8];
             passedPawns = new byte[2][8];
     	}
     	long key;
-    	byte [][] nPawns;  // nPawns[0/1][file] contains the number of white/black pawns on a file.
     	int score;         // Positive score means good for white
     	int passedBonusW;
     	int passedBonusB;
@@ -185,7 +183,7 @@ public class Evaluate {
     PawnHashData ph;
     static PawnHashData[] pawnHash;
     static {
-        final int numEntries = 1<<12;
+        final int numEntries = 1<<16;
     	pawnHash = new PawnHashData[numEntries];
         for (int i = 0; i < numEntries; i++) {
             PawnHashData phd = new PawnHashData();
@@ -203,7 +201,6 @@ public class Evaluate {
     
     /** Constructor. */
     public Evaluate() {
-        firstPawn = new int[2][8];
         if (kpkTable == null) {
             kpkTable = new byte[2*32*64*48/8];
             InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
@@ -452,42 +449,8 @@ public class Evaluate {
     	return score;
     }
 
-    /**
-	 * firstPawn[0/1][file] contains the rank of the first (least advanced) pawn for a color/file.
-	 * If there is no pawn, the value is set to 7/0, ie the promotion row for pawns of that color.
-	 */
-	private int [][] firstPawn;
-
-    /** Compute nPawns[][] corresponding to pos. */
+    /** Compute pawn hash data for pos. */
 	private final void computePawnHashData(Position pos, PawnHashData ph) {
-    	byte[][] nPawns = ph.nPawns;
-    	byte[][] passedPawns = ph.passedPawns;
-        for (int x = 0; x < 8; x++) {
-            nPawns[0][x] = 0;
-            nPawns[1][x] = 0;
-            firstPawn[0][x] = 7;
-            firstPawn[1][x] = 0;
-        }
-
-        long m = pos.pieceTypeBB[Piece.WPAWN];
-        while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
-            int x = Position.getX(sq);
-            int y = Position.getY(sq);
-            nPawns[0][x]++;
-            firstPawn[0][x] = Math.min(firstPawn[0][x], y);
-            m &= m-1;
-        }
-        m = pos.pieceTypeBB[Piece.BPAWN];
-        while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
-            int x = Position.getX(sq);
-            int y = Position.getY(sq);
-            nPawns[1][x]++;
-            firstPawn[1][x] = Math.max(firstPawn[1][x], y);
-            m &= m-1;
-        }
-
     	int score = 0;
 
         // Evaluate double pawns and pawn islands
@@ -497,8 +460,9 @@ public class Evaluate {
         int bIslands = 0;
         boolean wasPawn = false;
         for (int x = 0; x < 8; x++) {
-            if (nPawns[0][x] > 0) {
-                wDouble += nPawns[0][x] - 1;
+            long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
+            if (m != 0) {
+                wDouble += Long.bitCount(m) - 1;
                 if (!wasPawn) {
                     wIslands++;
                     wasPawn = true;
@@ -509,8 +473,9 @@ public class Evaluate {
         }
         wasPawn = false;
         for (int x = 0; x < 8; x++) {
-            if (nPawns[1][x] > 0) {
-                bDouble += nPawns[1][x] - 1;
+            long m = pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[x];
+            if (m != 0) {
+                bDouble += Long.bitCount(m) - 1;
                 if (!wasPawn) {
                     bIslands++;
                     wasPawn = true;
@@ -525,40 +490,31 @@ public class Evaluate {
         // Evaluate passed pawn bonus
         int passedBonusW = 0;
         int passedBonusB = 0;
+        byte[][] passedPawns = ph.passedPawns;
         for (int x = 0; x < 8; x++) {
             passedPawns[0][x] = 0;
-        	if (nPawns[0][x] > 0) {
-        		int y = 6;
-        		while (pos.getPiece(Position.getSquare(x, y)) != Piece.WPAWN)
-        			y--;
-        		boolean passed = true;
-        		if ((x > 0) && (firstPawn[1][x - 1] >= y + 1)) passed = false;
-        		if (           (firstPawn[1][x + 0] >= y + 1)) passed = false;
-        		if ((x < 7) && (firstPawn[1][x + 1] >= y + 1)) passed = false;
+            long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
+        	if (m != 0) {
+        	    int sq = 63-Long.numberOfLeadingZeros(m);
+        		boolean passed = (BitBoard.wPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.BPAWN]) == 0;
         		if (passed) {
+                    int y = Position.getY(sq);
         			passedBonusW += 20 + y * 4;
-        			if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y - 1)) == Piece.WPAWN) ||
-        				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y - 1)) == Piece.WPAWN)) {
+        			if ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.bPawnAttacks[sq]) != 0)
         				passedBonusW += 15;  // Guarded passed pawn
-        			}
                     passedPawns[0][x] = (byte)y;
         		}
         	}
             passedPawns[1][x] = 0;
-        	if (nPawns[1][x] > 0) {
-        		int y = 1;
-        		while (pos.getPiece(Position.getSquare(x, y)) != Piece.BPAWN)
-        			y++;
-        		boolean passed = true;
-        		if ((x > 0) && (firstPawn[0][x - 1] <= y - 1)) passed = false;
-        		if (           (firstPawn[0][x + 0] <= y - 1)) passed = false;
-        		if ((x < 7) && (firstPawn[0][x + 1] <= y - 1)) passed = false;
+            m = pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[x];
+        	if (m != 0) {
+        	    int sq = Long.numberOfTrailingZeros(m);
+                boolean passed = (BitBoard.bPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.WPAWN]) == 0;
         		if (passed) {
+                    int y = Position.getY(sq);
         			passedBonusB += 20 + (7-y) * 4;
-        			if ((x > 0) && (pos.getPiece(Position.getSquare(x - 1, y + 1)) == Piece.BPAWN) ||
-        				(x < 7) && (pos.getPiece(Position.getSquare(x + 1, y + 1)) == Piece.BPAWN)) {
+                    if ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.wPawnAttacks[sq]) != 0)
         				passedBonusB += 15;  // Guarded passed pawn
-        			}
                     passedPawns[1][x] = (byte)y;
         		}
             }
@@ -573,12 +529,14 @@ public class Evaluate {
     /** Compute rook bonus. Rook on open/half-open file. */
 	private final int rookBonus(Position pos) {
         int score = 0;
+        final long wPawns = pos.pieceTypeBB[Piece.WPAWN];
+        final long bPawns = pos.pieceTypeBB[Piece.BPAWN];
         long m = pos.pieceTypeBB[Piece.WROOK];
         while (m != 0) {
         	int sq = Long.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
-            if (ph.nPawns[0][x] == 0) { // At least half-open file
-                score += ph.nPawns[1][x] == 0 ? 25 : 12;
+            if ((wPawns & BitBoard.maskFile[x]) == 0) { // At least half-open file
+                score += (bPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
             }
             mobilityAttacks = 0L;
             score += rookMobScore[rookMobility(pos, sq)];
@@ -592,8 +550,8 @@ public class Evaluate {
         while (m != 0) {
         	int sq = Long.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
-            if (ph.nPawns[1][x] == 0) {
-                score -= ph.nPawns[0][x] == 0 ? 25 : 12;
+            if ((bPawns & BitBoard.maskFile[x]) == 0) {
+                score -= (wPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
             }
             mobilityAttacks = 0L;
             score -= rookMobScore[rookMobility(pos, sq)];
@@ -639,29 +597,34 @@ public class Evaluate {
                 	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
                 	p = pos.getPiece(yb + x + 3 * yd);
                 	if (p == otherPawn) safety -= 1;
-                	if (ph.nPawns[1-i][x] == 0) halfOpenFiles++;
+                	long oPawns = pos.pieceTypeBB[white ? Piece.BPAWN : Piece.WPAWN];
+                	if ((oPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles++;
                 }
                 safety = Math.min(safety, 6);
                 if (white) {
                     if (((pos.pieceTypeBB[Piece.WKING] & 0x60L) != 0) && // King on f1 or g1
                         ((pos.pieceTypeBB[Piece.WROOK] & 0xC0L) != 0) && // Rook on g1 or h1
-                        ((ph.nPawns[0][6] > 0) && (ph.nPawns[0][7] > 0))) {
+                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[6]) != 0) &&
+                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[7]) != 0)) {
                         safety -= 6;
                     } else
                     if (((pos.pieceTypeBB[Piece.WKING] & 0x6L) != 0) && // King on b1 or c1
                         ((pos.pieceTypeBB[Piece.WROOK] & 0x3L) != 0) && // Rook on a1 or b1
-                        ((ph.nPawns[0][0] > 0) && (ph.nPawns[0][1] > 0))) {
+                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[0]) != 0) &&
+                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[1]) != 0)) {
                         safety -= 6;
                     }
                 } else {
                     if (((pos.pieceTypeBB[Piece.BKING] & 0x6000000000000000L) != 0) && // King on f8 or g8
                         ((pos.pieceTypeBB[Piece.BROOK] & 0xC000000000000000L) != 0) && // Rook on g8 or h8
-                        ((ph.nPawns[1][6] > 0) && (ph.nPawns[1][7] > 0))) {
+                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[6]) != 0) &&
+                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[7]) != 0)) {
                         safety -= 6;
                     } else
                     if (((pos.pieceTypeBB[Piece.BKING] & 0x600000000000000L) != 0) && // King on b8 or c8
                         ((pos.pieceTypeBB[Piece.BROOK] & 0x300000000000000L) != 0) && // Rook on a8 or b8
-                        ((ph.nPawns[1][0] > 0) && (ph.nPawns[1][1] > 0))) {
+                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[0]) != 0) &&
+                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[1]) != 0)) {
                         safety -= 6;
                     }
                 }
