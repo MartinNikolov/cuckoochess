@@ -438,7 +438,7 @@ public class Search {
 
         // Try null-move pruning
         sti.currentMove = emptyMove;
-        if (    (depth >= 3) && (beta == alpha + 1) && !inCheck && sti.allowNullMove &&
+        if (    (depth >= 3) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
@@ -563,7 +563,7 @@ public class Search {
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
             boolean doFutility = false;
             if (futilityPrune && mayReduce && haveLegalMoves) {
-                if (!givesCheck)
+                if (!givesCheck && !passedPawnPush(pos, m))
                 	doFutility = true;
             }
             int score;
@@ -572,8 +572,8 @@ public class Search {
             } else {
             	int extend = Math.max(posExtend, moveExtend);
             	int lmr = 0;
-            	if ((depth >= 3) && mayReduce && (beta == alpha + 1) && (extend == 0)) {
-            		if (!givesCheck) {
+            	if ((depth >= 3) && mayReduce && (extend == 0)) {
+                    if (!givesCheck && !passedPawnPush(pos, m)) {
             			lmrCount++;
             			if ((lmrCount > 3) && (depth > 3)) {
             			    lmr = 2;
@@ -652,6 +652,23 @@ public class Search {
         }
         moveGen.returnMoveList(moves);
         return bestScore;
+    }
+
+    private static final boolean passedPawnPush(Position pos, Move m) {
+        int p = pos.getPiece(m.from);
+        if (pos.whiteMove) {
+            if (p != Piece.WPAWN)
+                return false;
+            if ((BitBoard.wPawnBlockerMask[m.to] & pos.pieceTypeBB[Piece.BPAWN]) != 0)
+                return false;
+            return m.to >= 40;
+        } else {
+            if (p != Piece.BPAWN)
+                return false;
+            if ((BitBoard.bPawnBlockerMask[m.to] & pos.pieceTypeBB[Piece.WPAWN]) != 0)
+                return false;
+            return m.to <= 23;
+        }
     }
 
     /**
@@ -966,11 +983,11 @@ public class Search {
         return false;
     }
 
-    public static boolean canClaimDraw50(Position pos) {
+    public final static boolean canClaimDraw50(Position pos) {
         return (pos.halfMoveClock >= 100);
     }
     
-    public static boolean canClaimDrawRep(Position pos, long[] posHashList, int posHashListSize, int posHashFirstNew) {
+    public final static boolean canClaimDrawRep(Position pos, long[] posHashList, int posHashListSize, int posHashFirstNew) {
         int reps = 0;
         for (int i = posHashListSize - 4; i >= 0; i -= 2) {
             if (pos.zobristHash() == posHashList[i]) {
@@ -984,7 +1001,7 @@ public class Search {
         return (reps >= 2);
     }
 
-    private void initNodeStats() {
+    private final void initNodeStats() {
         nodes = qNodes = 0;
         nodesPlyVec = new int[20];
         nodesDepthVec = new int[20];

@@ -238,6 +238,8 @@ public class Evaluate {
         if (!pos.whiteMove)
             score = -score;
         return score;
+
+        // FIXME! Test penalty if side to move has >1 hanging piece
     }
 
     /** Compute white_material - black_material. */
@@ -441,7 +443,9 @@ public class Evaluate {
         final int hiMtrl = qV + rV;
         score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * phd.passedBonusW, hiMtrl, phd.passedBonusW);
         score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * phd.passedBonusB, hiMtrl, phd.passedBonusB);
-    	
+
+        // FIXME! Passed pawns are more dangerous if opponent king is far away, especially in endgame
+
         ph = phd;
     	return score;
     }
