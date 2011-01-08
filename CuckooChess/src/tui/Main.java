@@ -23,14 +23,14 @@ public class Main {
     public static void main(String[] args) throws IOException {
         if ((args.length == 1) && args[0].equals("gui")) {
             gui.AppletGUI.main(args);
-        } else if ((args.length == 1) && args[0].equals("uci")) {
-        	uci.UCIProtocol.main(args);
-        } else {
+        } else if ((args.length == 1) && args[0].equals("txt")) {
             Player whitePlayer = new HumanPlayer();
             ComputerPlayer blackPlayer = new ComputerPlayer();
             blackPlayer.setTTLogSize(21);
             TUIGame game = new TUIGame(whitePlayer, blackPlayer);
             game.play();
+        } else {
+        	uci.UCIProtocol.main(false);
         }
     }
 }

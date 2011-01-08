@@ -31,7 +31,7 @@ public class TUIGame extends Game {
     	} else if (moveStr.equals("uci")) {
     		whitePlayer = null;
     		blackPlayer = null;
-    		UCIProtocol.main(new String[0]);
+    		UCIProtocol.main(true);
     		System.exit(0);
     		return false;
     	} else if (moveStr.equals("help")) {

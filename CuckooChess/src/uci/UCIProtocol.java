@@ -34,12 +34,11 @@ public class UCIProtocol {
     boolean quit;
 
 
-    public static void main(String[] args) {
+    public static void main(boolean autoStart) {
         UCIProtocol uciProt = new UCIProtocol();
-        boolean autoStart = (args.length == 0);
         uciProt.mainLoop(System.in, System.out, autoStart);
     }
-    
+
     public UCIProtocol() {
         try {
             pos = TextIO.readFEN(TextIO.startPosFEN);
