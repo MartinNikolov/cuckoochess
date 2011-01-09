@@ -206,7 +206,16 @@ public class SearchTest {
         Move bestM = idSearch(sc, 3);
         assertEquals(0, bestM.score);
     }
-    
+
+    @Test
+    public void testKQKRNullMove() throws ChessParseError {
+        System.out.println("kqkrNullMove");
+        Position pos = TextIO.readFEN("7K/6R1/5k2/3q4/8/8/8/8 b - - 0 1");
+        Search sc = new Search(pos, nullHist, 0, tt);
+        Move bestM = idSearch(sc, 9);
+        assertEquals(Search.MATE0-18, bestM.score);
+    }
+
     private Move idSearch(Search sc, int maxDepth) {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);

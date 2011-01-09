@@ -443,7 +443,13 @@ public class Search {
             if (MoveGen.canTakeKing(pos)) {
                 return MATE0 - ply;
             }
-            if (pos.whiteMove ? (pos.wMtrl > pos.wMtrlPawns) : (pos.bMtrl > pos.bMtrlPawns)) {
+            boolean nullOk;
+            if (pos.whiteMove) {
+                nullOk = (pos.wMtrl > pos.wMtrlPawns) && (pos.wMtrlPawns > 0);
+            } else {
+                nullOk = (pos.bMtrl > pos.bMtrlPawns) && (pos.bMtrlPawns > 0);
+            }
+            if (nullOk) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
                 searchTreeInfo[ply+1].allowNullMove = false;
