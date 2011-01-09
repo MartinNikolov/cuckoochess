@@ -302,6 +302,13 @@ public class EvaluateTest {
         pos.whiteMove = false;
         score = evalWhite(pos);
         assertTrue(score <= 0); // Not unstoppable
+        
+        pos = TextIO.readFEN("4R3/8/8/3K4/8/4pk2/8/8 w - - 0 1");
+        score = evalWhite(pos);
+        pos.setPiece(TextIO.getSquare("d5"), Piece.EMPTY);
+        pos.setPiece(TextIO.getSquare("d4"), Piece.WKING);
+        int score2 = evalWhite(pos);
+        assertTrue(score2 > score); // King closer to passed pawn promotion square
     }
 
     /**

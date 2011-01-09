@@ -437,6 +437,7 @@ public class Evaluate {
     	if (phd.key != key)
     		computePawnHashData(pos, phd);
     	int score = phd.score;
+        ph = phd;
 
     	final int qV = pieceValue[Piece.WQUEEN];
         final int rV = pieceValue[Piece.WROOK];
@@ -444,9 +445,53 @@ public class Evaluate {
         score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * phd.passedBonusW, hiMtrl, phd.passedBonusW);
         score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * phd.passedBonusB, hiMtrl, phd.passedBonusB);
 
-        // FIXME! Passed pawns are more dangerous if opponent king is far away, especially in endgame
+        // Passed pawns are more dangerous if enemy king is far away
+        int mtrlNoPawns = pos.bMtrl - pos.bMtrlPawns;
+        final int highMtrl = qV + rV;
+        if (mtrlNoPawns < highMtrl) {
+            int kingPos = pos.getKingSq(false);
+            int kingX = Position.getX(kingPos);
+            int kingY = Position.getY(kingPos);
+            long m = ph.passedPawnsW;
+            while (m != 0) {
+                int sq = Long.numberOfTrailingZeros(m);
+                int x = Position.getX(sq);
+                int y = Position.getY(sq);
+                int pawnDist = Math.min(5, 7 - y);
+                int kingDistX = Math.abs(kingX - x);
+                int kingDistY = Math.abs(kingY - 7);
+                int kingDist = Math.max(kingDistX, kingDistY);
+                score += interpolate(mtrlNoPawns, 0, kingDist * 4, highMtrl, 0);
+                if (!pos.whiteMove)
+                    kingDist--;
+                if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
+                    score += 500; // King can't stop pawn
+                m &= m-1;
+            }
+        }
+        mtrlNoPawns = pos.wMtrl - pos.wMtrlPawns;
+        if (mtrlNoPawns < highMtrl) {
+            int kingPos = pos.getKingSq(true);
+            int kingX = Position.getX(kingPos);
+            int kingY = Position.getY(kingPos);
+            long m = ph.passedPawnsB;
+            while (m != 0) {
+                int sq = Long.numberOfTrailingZeros(m);
+                int x = Position.getX(sq);
+                int y = Position.getY(sq);
+                int pawnDist = Math.min(5, y);
+                int kingDistX = Math.abs(kingX - x);
+                int kingDistY = Math.abs(kingY - 0);
+                int kingDist = Math.max(kingDistX, kingDistY);
+                score -= interpolate(mtrlNoPawns, 0, kingDist * 4, highMtrl, 0);
+                if (pos.whiteMove)
+                    kingDist--;
+                if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
+                    score -= 500; // King can't stop pawn
+                m &= m-1;
+            }
+        }
 
-        ph = phd;
     	return score;
     }
 
@@ -734,52 +779,6 @@ public class Evaluate {
             // King + minor piece vs king + minor piece is a draw
             score /= 50;
             handled = true;
-        }
-        if (!handled) {
-            // In pawn end games, passed pawns not reachable by
-            // opponent king are very dangerous
-            int danger = 0;
-            if (bMtrlNoPawns == 0) {
-                int kingPos = pos.getKingSq(false);
-                int kingX = Position.getX(kingPos);
-                int kingY = Position.getY(kingPos);
-                long m = ph.passedPawnsW;
-                while (m != 0) {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    int x = Position.getX(sq);
-                    int y = Position.getY(sq);
-                    int pawnDist = Math.min(5, 7 - y);
-                    int kingDistX = Math.abs(kingX - x);
-                    int kingDistY = Math.abs(kingY - 7);
-                    int kingDist = Math.max(kingDistX, kingDistY);
-                    if (!pos.whiteMove)
-                        kingDist--;
-                    if (pawnDist < kingDist)
-                        danger += 500;
-                    m &= m-1;
-                }
-            }
-            if (wMtrlNoPawns == 0) {
-                int kingPos = pos.getKingSq(true);
-                int kingX = Position.getX(kingPos);
-                int kingY = Position.getY(kingPos);
-                long m = ph.passedPawnsB;
-                while (m != 0) {
-                    int sq = Long.numberOfTrailingZeros(m);
-                    int x = Position.getX(sq);
-                    int y = Position.getY(sq);
-                    int pawnDist = Math.min(5, y);
-                    int kingDistX = Math.abs(kingX - x);
-                    int kingDistY = Math.abs(kingY - 0);
-                    int kingDist = Math.max(kingDistX, kingDistY);
-                    if (pos.whiteMove)
-                        kingDist--;
-                    if (pawnDist < kingDist)
-                        danger -= 500;
-                    m &= m-1;
-                }
-            }
-            score += danger;
         }
         final int qV = pieceValue[Piece.WQUEEN];
         final int pV = pieceValue[Piece.WPAWN];
