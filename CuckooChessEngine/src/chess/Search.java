@@ -555,14 +555,24 @@ public class Search {
                 }
             }
             int moveExtend = 0;
+            final int pV = Evaluate.pieceValue[Piece.WPAWN];
             if ((m.to == recaptureSquare) && (posExtend == 0)) {
                 if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
                 int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                final int pV = Evaluate.pieceValue[Piece.WPAWN];
                 if (sVal > tVal - pV / 2)
                     moveExtend = 1;
             }
-            // FIXME! Test extending when going into pawn endgame
+            if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
+                // Extend if going into pawn endgame
+                int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                if (pos.whiteMove) {
+                    if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
+                        moveExtend = 1;
+                } else {
+                    if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
+                        moveExtend = 1;
+                }
+            }
             // FIXME! Test extending pawn pushes to 7:th rank
             boolean mayReduce = (m.score < 53) && (!isCapture || m.score < 0) && !isPromotion;
             
