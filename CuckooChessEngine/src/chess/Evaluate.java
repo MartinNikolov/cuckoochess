@@ -79,7 +79,7 @@ public class Evaluate {
     						    -20,  5, 10, 15, 15, 10,  5,-20,
     						    -17,  0, 10, 20, 20, 10,  0,-17,
     						    -17,  0,  3, 20, 20,  3,  0,-17,
-    						    -20,-10,  0,  5,  5,  0,-10,-20,
+    						    -20,-10,  0,  0,  0,  0,-10,-20,
     						    -40,-30,-10,  0,  0,-10,-30,-40,
     						    -50,-40,-30,-20,-20,-30,-40,-50 };
 
@@ -167,7 +167,7 @@ public class Evaluate {
 
     static final int[] rookMobScore = {-10,-7,-4,-1,2,5,7,9,11,12,13,14,14,14,14};
     static final int[] bishMobScore = {-15,-10,-6,-2,2,6,10,13,16,18,20,22,23,24};
-    static final int[] queenMobScore = {-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,19,20,20,20,20,20,20,20,20,20,20,20,20};
+    static final int[] queenMobScore = {-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10};
 
     private static final class PawnHashData {
     	long key;
@@ -325,7 +325,7 @@ public class Evaluate {
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
                 mobilityAttacks = 0L;
-                score += queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
+                score += queenMobScore[rookMobility(pos, sq, true) + bishopMobility(pos, sq, true)];
                 bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone) * 2;
                 m &= m-1;
             }
@@ -334,7 +334,7 @@ public class Evaluate {
             while (m != 0) {
                 int sq = Long.numberOfTrailingZeros(m);
                 mobilityAttacks = 0L;
-                score -= queenMobScore[rookMobility(pos, sq) + bishopMobility(pos, sq)];
+                score -= queenMobScore[rookMobility(pos, sq, false) + bishopMobility(pos, sq, false)];
                 wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone) * 2;
                 m &= m-1;
             }
@@ -586,7 +586,7 @@ public class Evaluate {
                 score += (bPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
             }
             mobilityAttacks = 0L;
-            score += rookMobScore[rookMobility(pos, sq)];
+            score += rookMobScore[rookMobility(pos, sq, true)];
             bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
             m &= m-1;
         }
@@ -601,7 +601,7 @@ public class Evaluate {
                 score -= (wPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
             }
             mobilityAttacks = 0L;
-            score -= rookMobScore[rookMobility(pos, sq)];
+            score -= rookMobScore[rookMobility(pos, sq, false)];
             wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
             m &= m-1;
         }
@@ -697,7 +697,7 @@ public class Evaluate {
         while (m != 0) {
             int sq = Long.numberOfTrailingZeros(m);
             mobilityAttacks = 0L;
-        	score += bishMobScore[bishopMobility(pos, sq)];
+        	score += bishMobScore[bishopMobility(pos, sq, true)];
             bKingAttacks += Long.bitCount(mobilityAttacks & bKingZone);
             m &= m-1;
         }
@@ -705,7 +705,7 @@ public class Evaluate {
         while (m != 0) {
         	int sq = Long.numberOfTrailingZeros(m);
             mobilityAttacks = 0L;
-        	score -= bishMobScore[bishopMobility(pos, sq)];
+        	score -= bishMobScore[bishopMobility(pos, sq, false)];
             wKingAttacks += Long.bitCount(mobilityAttacks & wKingZone);
             m &= m-1;
         }
@@ -743,22 +743,24 @@ public class Evaluate {
         return score;
     }
     
-    /** Count the number of pseudo-legal moves for a bishop of given color on square (x0,y0). */
-    private final static int bishopMobility(Position pos, int sq) {
+    /** Count the number of pseudo-legal moves for a bishop of given color on square sq. */
+    private final static int bishopMobility(Position pos, int sq, boolean wtm) {
         long occupied = pos.whiteBB | pos.blackBB;
         long atk = BitBoard.bishopAttacks(sq, occupied);
         mobilityAttacks |= atk;
-        return Long.bitCount(atk & ~occupied);
+        long ownPieces = wtm? pos.whiteBB : pos.blackBB;
+        return Long.bitCount(atk & ~ownPieces);
     }
 
     private static long mobilityAttacks;
 
     /** Count the number of pseudo-legal moves for a rook of given color on square sq. */
-    private final static int rookMobility(Position pos, int sq) {
+    private final static int rookMobility(Position pos, int sq, boolean wtm) {
         long occupied = pos.whiteBB | pos.blackBB;
         long atk = BitBoard.rookAttacks(sq, occupied);
         mobilityAttacks |= atk;
-        return Long.bitCount(atk & ~occupied); // FIXME! Test to only mask out own pieces
+        long ownPieces = wtm? pos.whiteBB : pos.blackBB;
+        return Long.bitCount(atk & ~ownPieces);
     }
 
     /** Implements special knowledge for some endgame situations. */
