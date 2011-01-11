@@ -538,6 +538,7 @@ public class Evaluate {
         int passedBonusB = 0;
         long passedPawnsW = 0;
         long passedPawnsB = 0;
+        final int[] ppBonus = {-1,24,26,30,36,44,56,-1};
         for (int x = 0; x < 8; x++) {
             long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
         	if (m != 0) {
@@ -545,7 +546,7 @@ public class Evaluate {
         		boolean passed = (BitBoard.wPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.BPAWN]) == 0;
         		if (passed) {
                     int y = Position.getY(sq);
-        			passedBonusW += 20 + y * 4;
+        			passedBonusW += ppBonus[y];
         			if ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.bPawnAttacks[sq]) != 0)
         				passedBonusW += 15;  // Guarded passed pawn
         			passedPawnsW |= 1L << sq;
@@ -557,7 +558,7 @@ public class Evaluate {
                 boolean passed = (BitBoard.bPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.WPAWN]) == 0;
         		if (passed) {
                     int y = Position.getY(sq);
-        			passedBonusB += 20 + (7-y) * 4;
+        			passedBonusB += ppBonus[7-y];
                     if ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.wPawnAttacks[sq]) != 0)
         				passedBonusB += 15;  // Guarded passed pawn
                     passedPawnsB |= 1L << sq;
