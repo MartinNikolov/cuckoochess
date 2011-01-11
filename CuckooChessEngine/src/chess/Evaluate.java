@@ -566,6 +566,12 @@ public class Evaluate {
             }
         }
 
+        // Connected passed pawn bonus. Seems logical but doesn't help in tests
+//        if (passedPawnsW != 0)
+//            passedBonusW += 15 * Long.bitCount(passedPawnsW & ((passedPawnsW & BitBoard.maskBToHFiles) >>> 1));
+//        if (passedPawnsB != 0)
+//            passedBonusB += 15 * Long.bitCount(passedPawnsB & ((passedPawnsB & BitBoard.maskBToHFiles) >>> 1));
+
         ph.key = pos.pawnZobristHash();
         ph.score = score;
         ph.passedBonusW = (short)passedBonusW;

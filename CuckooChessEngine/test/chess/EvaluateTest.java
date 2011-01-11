@@ -309,6 +309,14 @@ public class EvaluateTest {
         pos.setPiece(TextIO.getSquare("d4"), Piece.WKING);
         int score2 = evalWhite(pos);
         assertTrue(score2 > score); // King closer to passed pawn promotion square
+
+        // Connected passed pawn test. Disabled because it didn't help in tests
+//        pos = TextIO.readFEN("4k3/8/8/4P3/3P1K2/8/8/8 w - - 0 1");
+//        score = evalWhite(pos);
+//        pos.setPiece(TextIO.getSquare("d4"), Piece.EMPTY);
+//        pos.setPiece(TextIO.getSquare("d5"), Piece.WPAWN);
+//        score2 = evalWhite(pos);
+//        assertTrue(score2 > score); // Advancing passed pawn is good
     }
 
     /**
