@@ -651,8 +651,11 @@ public class Evaluate {
                 	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
                 	p = pos.getPiece(yb + x + 3 * yd);
                 	if (p == otherPawn) safety -= 1;
-                	long oPawns = pos.pieceTypeBB[white ? Piece.BPAWN : Piece.WPAWN];
-                	if ((oPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles++;
+                	int openFilePenalty = ((x >= 5) || (x <= 2)) ? 25 : 10;
+                	long oPawns = pos.pieceTypeBB[otherPawn];
+                	if ((oPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles += openFilePenalty;
+                	long myPawns = pos.pieceTypeBB[ownPawn];
+                	if ((myPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles += openFilePenalty;
                 }
                 safety = Math.min(safety, 8);
                 if (white) {
@@ -683,7 +686,7 @@ public class Evaluate {
                     }
                 }
             }
-            final int kSafety = (safety - 9) * 15 - halfOpenFiles * 25;
+            final int kSafety = (safety - 9) * 15 - halfOpenFiles;
             if (white) {
                 score += kSafety;
             } else {
