@@ -654,7 +654,7 @@ public class Evaluate {
                 	long oPawns = pos.pieceTypeBB[white ? Piece.BPAWN : Piece.WPAWN];
                 	if ((oPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles++;
                 }
-                safety = Math.min(safety, 6);
+                safety = Math.min(safety, 8);
                 if (white) {
                     if (((pos.pieceTypeBB[Piece.WKING] & 0x60L) != 0) && // King on f1 or g1
                         ((pos.pieceTypeBB[Piece.WROOK] & 0xC0L) != 0) && // Rook on g1 or h1
