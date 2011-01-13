@@ -17,7 +17,7 @@ import java.security.NoSuchAlgorithmException;
  * @author petero
  */
 public class Position {
-    private int[] squares;
+    int[] squares;
 
     // Bitboards
     long[] pieceTypeBB;
@@ -46,7 +46,7 @@ public class Position {
 
     private long hashKey;           // Cached Zobrist hash key
     private long pHashKey;
-    private int wKingSq, bKingSq;   // Cached king positions
+    int wKingSq, bKingSq;   // Cached king positions
     int wMtrl;      // Total value of all white pieces and pawns
     int bMtrl;      // Total value of all black pieces and pawns
     int wMtrlPawns; // Total value of all white pawns
