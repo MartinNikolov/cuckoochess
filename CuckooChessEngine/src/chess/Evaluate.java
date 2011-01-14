@@ -54,23 +54,23 @@ public class Evaluate {
     						     0,  8, 16, 24, 24, 16,  8,  0 };
 
     /** Piece/square table for pawns during middle game. */
-    static final int[] pt1b = {   0,  0,  0,  0,  0,  0,  0,  0,
-    						 	 16, 32, 48, 64, 64, 48, 32, 16,
-    							  6, 24, 40, 56, 56, 40, 24,  6,
-    						    -10,  8, 20, 40, 40, 20,  8,-10,
-    						    -12,  8, 10, 32, 32, 10,  8,-12,
-    						    -12,  8,  4, 10, 10,  4,  8,-12,
-    						    -12,  8,  8,-30,-30,  8,  8,-12,
+    static final int[] pt1b = {  0,  0,  0,  0,  0,  0,  0,  0,
+    						 	 8, 16, 24, 32, 32, 24, 16,  8,
+    							 3, 12, 20, 28, 28, 20, 12,  3,
+    						    -5,  4, 10, 20, 20, 10,  4, -5,
+    						    -6,  4,  5, 16, 16,  5,  4, -6,
+    						    -6,  4,  2,  5,  5,  2,  4, -6,
+    						    -6,  4,  4,-15,-15,  4,  4, -6,
     						 	 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for pawns during end game. */
     static final int[] pt2b = {   0,  0,  0,  0,  0,  0,  0,  0,
-    							 50, 80, 90, 90, 90, 90, 80, 50,
-    							 34, 64, 69, 69, 69, 69, 64, 34,
-    							 10, 48, 48, 48, 48, 48, 48, 10,
-    						    -18, 22, 22, 22, 22, 22, 22,-18,
-    						    -34,  6,  6,  6,  6,  6,  6,-34,
-    						    -40,  0,  0,  0,  0,  0,  0,-40,
+    							 25, 40, 45, 45, 45, 45, 40, 25,
+    							 17, 32, 35, 35, 35, 35, 32, 17,
+    							  5, 24, 24, 24, 24, 24, 24,  5,
+    						     -9, 11, 11, 11, 11, 11, 11, -9,
+    						    -17,  3,  3,  3,  3,  3,  3,-17,
+    						    -20,  0,  0,  0,  0,  0,  0,-20,
     						 	  0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for knights during middle game. */
@@ -289,13 +289,13 @@ public class Evaluate {
             int wp2 = pos.psScore2[Piece.WPAWN];
             if ((wp1 != 0) || (wp2 != 0)) {
                 final int tw = bMtrl - bMtrlPawns;
-                score += interpolate(tw, t2, wp2, t1, wp1) / 2;
+                score += interpolate(tw, t2, wp2, t1, wp1);
             }
             int bp1 = pos.psScore1[Piece.BPAWN];
             int bp2 = pos.psScore2[Piece.BPAWN];
             if ((bp1 != 0) || (bp2 != 0)) {
                 final int tb = wMtrl - wMtrlPawns;
-                score -= interpolate(tb, t2, bp2, t1, bp1) / 2;
+                score -= interpolate(tb, t2, bp2, t1, bp1);
             }
         }
 
