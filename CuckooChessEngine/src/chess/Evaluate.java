@@ -506,69 +506,57 @@ public class Evaluate {
     	int score = 0;
 
         // Evaluate double pawns and pawn islands
-        int wDouble = 0;
-        int bDouble = 0;
-        int wIslands = 0;
-        int bIslands = 0;
-        boolean wasPawn = false;
-        for (int x = 0; x < 8; x++) {
-            long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
-            if (m != 0) {
-                wDouble += Long.bitCount(m) - 1;
-                if (!wasPawn) {
-                    wIslands++;
-                    wasPawn = true;
-                }
-            } else {
-                wasPawn = false;
-            }
-        }
-        wasPawn = false;
-        for (int x = 0; x < 8; x++) {
-            long m = pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[x];
-            if (m != 0) {
-                bDouble += Long.bitCount(m) - 1;
-                if (!wasPawn) {
-                    bIslands++;
-                    wasPawn = true;
-                }
-            } else {
-                wasPawn = false;
-            }
-        }
+        long wPawns = pos.pieceTypeBB[Piece.WPAWN];
+        long wPawnFiles = BitBoard.southFill(wPawns) & 0xff;
+        int wDouble = Long.bitCount(wPawns) - Long.bitCount(wPawnFiles);
+        int wIslands = Long.bitCount(((~wPawnFiles) >>> 1) & wPawnFiles);
+
+        long bPawns = pos.pieceTypeBB[Piece.BPAWN];
+        long bPawnFiles = BitBoard.southFill(bPawns) & 0xff;
+        int bDouble = Long.bitCount(bPawns) - Long.bitCount(bPawnFiles);
+        int bIslands = Long.bitCount(((~bPawnFiles) >>> 1) & bPawnFiles);
+
         score -= (wDouble - bDouble) * 20;  // FIXME! Try larger values
         score -= (wIslands - bIslands) * 15;
 
-        // Evaluate passed pawn bonus
-        int passedBonusW = 0;
-        int passedBonusB = 0;
-        long passedPawnsW = 0;
-        long passedPawnsB = 0;
+        // Evaluate passed pawn bonus, white
+        long passedPawnsW = wPawns &
+            ~BitBoard.southFill(bPawns |
+                                ((bPawns & BitBoard.maskBToHFiles) >>> 9) |
+                                ((bPawns & BitBoard.maskAToGFiles) >>> 7) |
+                                (wPawns >>> 8));
         final int[] ppBonus = {-1,24,26,30,36,44,56,-1};
-        for (int x = 0; x < 8; x++) {
-            long m = pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[x];
-        	if (m != 0) {
-        	    int sq = 63-Long.numberOfLeadingZeros(m);
-        		boolean passed = (BitBoard.wPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.BPAWN]) == 0;
-        		if (passed) {
-                    int y = Position.getY(sq);
-        			passedBonusW += ppBonus[y];
-        			if ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.bPawnAttacks[sq]) != 0)
-        				passedBonusW += 15;  // Guarded passed pawn
-        			passedPawnsW |= 1L << sq;
-        		}
-        	}
-            m = pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[x];
-        	if (m != 0) {
-        	    int sq = Long.numberOfTrailingZeros(m);
-                boolean passed = (BitBoard.bPawnBlockerMask[sq] & pos.pieceTypeBB[Piece.WPAWN]) == 0;
-        		if (passed) {
-                    int y = Position.getY(sq);
-        			passedBonusB += ppBonus[7-y];
-                    if ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.wPawnAttacks[sq]) != 0)
-        				passedBonusB += 15;  // Guarded passed pawn
-                    passedPawnsB |= 1L << sq;
-        		}
+        int passedBonusW = 0;
+        if (passedPawnsW != 0) {
+            long guardedPassedW = passedPawnsW & (((wPawns & BitBoard.maskBToHFiles) << 7) |
+                                                  ((wPawns & BitBoard.maskAToGFiles) << 9));
+            passedBonusW += 15 * Long.bitCount(guardedPassedW);
+            long m = passedPawnsW;
+            while (m != 0) {
+                int sq = Long .numberOfTrailingZeros(m);
+                int y = Position.getY(sq);
+                passedBonusW += ppBonus[y];
+                m &= m-1;
+            }
+        }
+
+        // Evaluate passed pawn bonus, black
+        long passedPawnsB = bPawns &
+            ~BitBoard.northFill(wPawns |
+                                ((wPawns & BitBoard.maskBToHFiles) << 7) |
+                                ((wPawns & BitBoard.maskAToGFiles) << 9) |
+                                (bPawns << 8));
+        int passedBonusB = 0;
+        if (passedPawnsB != 0) {
+            long guardedPassedB = passedPawnsB & (((bPawns & BitBoard.maskBToHFiles) >>> 9) |
+                                                  ((bPawns & BitBoard.maskAToGFiles) >>> 7));
+            passedBonusB += 15 * Long.bitCount(guardedPassedB);
+            long m = passedPawnsB;
+            while (m != 0) {
+                int sq = Long .numberOfTrailingZeros(m);
+                int y = Position.getY(sq);
+                passedBonusB += ppBonus[7-y];
+                m &= m-1;
             }
         }
 

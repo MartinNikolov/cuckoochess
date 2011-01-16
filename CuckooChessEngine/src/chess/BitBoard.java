@@ -286,4 +286,18 @@ public class BitBoard {
             }
         }
     }
+
+    static final long southFill(long mask) {
+        mask |= (mask >>> 8);
+        mask |= (mask >>> 16);
+        mask |= (mask >>> 32);
+        return mask;
+    }
+    
+    static final long northFill(long mask) {
+        mask |= (mask << 8);
+        mask |= (mask << 16);
+        mask |= (mask << 32);
+        return mask;
+    }
 }
