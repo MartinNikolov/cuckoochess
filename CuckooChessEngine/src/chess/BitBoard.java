@@ -259,4 +259,31 @@ public class BitBoard {
     static final long rookAttacks(int sq, long occupied) {
         return rTables[sq][(int)(((occupied & rMasks[sq]) * rMagics[sq]) >>> (64 - rBits[sq]))];
     }
+    
+    static long[][] squaresBetween;
+    static {
+        squaresBetween = new long[64][];
+        for (int sq1 = 0; sq1 < 64; sq1++) {
+            squaresBetween[sq1] = new long[64];
+            for (int j = 0; j < 64; j++)
+                squaresBetween[sq1][j] = 0;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    if ((dx == 0) && (dy == 0))
+                        continue;
+                    long m = 0;
+                    int x = Position.getX(sq1);
+                    int y = Position.getY(sq1);
+                    while (true) {
+                        x += dx; y += dy;
+                        if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
+                            break;
+                        int sq2 = Position.getSquare(x, y);
+                        squaresBetween[sq1][sq2] = m;
+                        m |= 1L << sq2;
+                    }
+                }
+            }
+        }
+    }
 }

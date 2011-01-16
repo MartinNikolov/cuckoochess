@@ -168,7 +168,7 @@ public class EngineControl {
             boolean white = pos.whiteMove;
             int time = white ? sPar.wTime : sPar.bTime;
             int inc  = white ? sPar.wInc : sPar.bInc;
-            final int margin = 1000;
+            final int margin = 1000; // FIXME! Lower margin if time <= 1000
             int timeLimit = (time + inc * (moves - 1) - margin) / moves;
             minTimeLimit = (int)(timeLimit * 0.85);
             maxTimeLimit = (int)(minTimeLimit * 2.5);

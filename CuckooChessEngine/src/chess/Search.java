@@ -461,11 +461,12 @@ public class Search {
                 		return beta;
                     return score;
                 } else {
-                    if (searchTreeInfo[ply-1].lmr > 0) {
+                    if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {
                         Move m1 = searchTreeInfo[ply-1].currentMove;
                         Move m2 = searchTreeInfo[ply+1].bestMove; // threat move
                         if (m1.from != m1.to) {
-                            if ((m1.to == m2.from) || (m1.from == m2.to)) {
+                            if ((m1.to == m2.from) || (m1.from == m2.to) ||
+                                ((BitBoard.squaresBetween[m2.from][m2.to] & (1L << m1.from)) != 0)) {
                                 // if the threat move was made possible by a reduced
                                 // move on the previous ply, the reduction was unsafe.
                                 // Return alpha to trigger a non-reduced re-search.

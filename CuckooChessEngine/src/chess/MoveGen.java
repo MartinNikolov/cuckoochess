@@ -531,7 +531,7 @@ public class MoveGen {
      * If there is a piece type that can move from "from" to "to", return the
      * corresponding direction, 8*dy+dx.
      */
-	private static final int getDirection(int from, int to) {
+    static final int getDirection(int from, int to) {
 		int dx = Position.getX(to) - Position.getX(from);
 		int dy = Position.getY(to) - Position.getY(from);
 		if (dx == 0)					// Vertical rook direction
