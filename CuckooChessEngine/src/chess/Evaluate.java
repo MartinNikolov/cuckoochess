@@ -725,78 +725,101 @@ public class Evaluate {
 
     /** Compute king safety for both kings. */
     private final int kingSafety(Position pos) {
-        final int qV = pieceValue[Piece.WQUEEN];
         final int rV = pieceValue[Piece.WROOK];
         final int bV = pieceValue[Piece.WBISHOP];
-        final int nV = pieceValue[Piece.WKNIGHT];
-        final int maxM = qV + 2 * rV + 2 * bV + 2 * nV;
         final int minM = rV + bV;
         final int m = (pos.wMtrl - pos.wMtrlPawns + pos.bMtrl - pos.bMtrlPawns) / 2;
         if (m <= minM)
             return 0;
+        final int qV = pieceValue[Piece.WQUEEN];
+        final int nV = pieceValue[Piece.WKNIGHT];
+        final int maxM = qV + 2 * rV + 2 * bV + 2 * nV;
         int score = 0;
-        for (int i = 0; i < 2; i++) {
-            boolean white = (i == 0);
-            int kSq = pos.getKingSq(white);
-            int xk = Position.getX(kSq);
-            int yk = Position.getY(kSq);
+        long wPawns = pos.pieceTypeBB[Piece.WPAWN];
+        long bPawns = pos.pieceTypeBB[Piece.BPAWN];
+        {
             int safety = 0;
             int halfOpenFiles = 0;
-            if (white ? (yk < 2) : (yk >= 6)) {
-                int yb = white ? 0 : 56;    // king home rank
-                int yd = white ? 8 : -8;    // pawn direction
-                int ownPawn = white ? Piece.WPAWN : Piece.BPAWN;
-                int otherPawn = white ? Piece.BPAWN : Piece.WPAWN;
-                final int xa = Math.max(xk - 1, 0);
-                final int xb = Math.min(xk + 1, 7);
-                for (int x = xa; x <= xb; x++) {
-                	int p = pos.getPiece(yb + x + yd);
-                	if (p == ownPawn) safety += 3; else if (p == otherPawn) safety -= 2;
-                	p = pos.getPiece(yb + x + 2 * yd);
-                	if (p == ownPawn) safety += 2; else if (p == otherPawn) safety -= 2;
-                	p = pos.getPiece(yb + x + 3 * yd);
-                	if (p == otherPawn) safety -= 1;
-                	int openFilePenalty = ((x >= 5) || (x <= 2)) ? 25 : 10;
-                	long oPawns = pos.pieceTypeBB[otherPawn];
-                	if ((oPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles += openFilePenalty;
-                	long myPawns = pos.pieceTypeBB[ownPawn];
-                	if ((myPawns & BitBoard.maskFile[x]) == 0) halfOpenFiles += openFilePenalty;
+            if (Position.getY(pos.wKingSq) < 2) {
+                long shelter = 1L << Position.getX(pos.wKingSq);
+                shelter |= ((shelter & BitBoard.maskBToHFiles) >>> 1) |
+                           ((shelter & BitBoard.maskAToGFiles) << 1);
+                shelter <<= 8;
+                safety += 3 * Long.bitCount(wPawns & shelter);
+                safety -= 2 * Long.bitCount(bPawns & (shelter | (shelter << 8)));
+                shelter <<= 8;
+                safety += 2 * Long.bitCount(wPawns & shelter);
+                shelter <<= 8;
+                safety -= Long.bitCount(bPawns & shelter);
+                
+                long wOpen = BitBoard.southFill(shelter) & (~BitBoard.southFill(wPawns)) & 0xff;
+                if (wOpen != 0) {
+                    halfOpenFiles += 25 * Long.bitCount(wOpen & 0xe7);
+                    halfOpenFiles += 10 * Long.bitCount(wOpen & 0x18);
+                }
+                long bOpen = BitBoard.southFill(shelter) & (~BitBoard.southFill(bPawns)) & 0xff;
+                if (bOpen != 0) {
+                    halfOpenFiles += 25 * Long.bitCount(bOpen & 0xe7);
+                    halfOpenFiles += 10 * Long.bitCount(bOpen & 0x18);
                 }
                 safety = Math.min(safety, 8);
-                if (white) {
-                    if (((pos.pieceTypeBB[Piece.WKING] & 0x60L) != 0) && // King on f1 or g1
-                        ((pos.pieceTypeBB[Piece.WROOK] & 0xC0L) != 0) && // Rook on g1 or h1
-                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[6]) != 0) &&
-                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[7]) != 0)) {
-                        safety -= 6;
-                    } else
-                    if (((pos.pieceTypeBB[Piece.WKING] & 0x6L) != 0) && // King on b1 or c1
-                        ((pos.pieceTypeBB[Piece.WROOK] & 0x3L) != 0) && // Rook on a1 or b1
-                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[0]) != 0) &&
-                        ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[1]) != 0)) {
-                        safety -= 6;
-                    }
-                } else {
-                    if (((pos.pieceTypeBB[Piece.BKING] & 0x6000000000000000L) != 0) && // King on f8 or g8
-                        ((pos.pieceTypeBB[Piece.BROOK] & 0xC000000000000000L) != 0) && // Rook on g8 or h8
-                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[6]) != 0) &&
-                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[7]) != 0)) {
-                        safety -= 6;
-                    } else
-                    if (((pos.pieceTypeBB[Piece.BKING] & 0x600000000000000L) != 0) && // King on b8 or c8
-                        ((pos.pieceTypeBB[Piece.BROOK] & 0x300000000000000L) != 0) && // Rook on a8 or b8
-                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[0]) != 0) &&
-                        ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[1]) != 0)) {
-                        safety -= 6;
-                    }
+                if (((pos.pieceTypeBB[Piece.WKING] & 0x60L) != 0) && // King on f1 or g1
+                    ((pos.pieceTypeBB[Piece.WROOK] & 0xC0L) != 0) && // Rook on g1 or h1
+                    ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[6]) != 0) &&
+                    ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[7]) != 0)) {
+                    safety -= 6;
+                } else
+                if (((pos.pieceTypeBB[Piece.WKING] & 0x6L) != 0) && // King on b1 or c1
+                    ((pos.pieceTypeBB[Piece.WROOK] & 0x3L) != 0) && // Rook on a1 or b1
+                    ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[0]) != 0) &&
+                    ((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskFile[1]) != 0)) {
+                    safety -= 6;
                 }
             }
             final int kSafety = (safety - 9) * 15 - halfOpenFiles;
-            if (white) {
-                score += kSafety;
-            } else {
-                score -= kSafety;
+            score += kSafety;
+        }
+        {
+            int safety = 0;
+            int halfOpenFiles = 0;
+            if (Position.getY(pos.bKingSq) >= 6) {
+                long shelter = 1L << (56 + Position.getX(pos.bKingSq));
+                shelter |= ((shelter & BitBoard.maskBToHFiles) >>> 1) |
+                           ((shelter & BitBoard.maskAToGFiles) << 1);
+                shelter >>>= 8;
+                safety += 3 * Long.bitCount(bPawns & shelter);
+                safety -= 2 * Long.bitCount(wPawns & (shelter | (shelter >>> 8)));
+                shelter >>>= 8;
+                safety += 2 * Long.bitCount(bPawns & shelter);
+                shelter >>>= 8;
+                safety -= Long.bitCount(wPawns & shelter);
+
+                long wOpen = BitBoard.southFill(shelter) & (~BitBoard.southFill(wPawns)) & 0xff;
+                if (wOpen != 0) {
+                    halfOpenFiles += 25 * Long.bitCount(wOpen & 0xe7);
+                    halfOpenFiles += 10 * Long.bitCount(wOpen & 0x18);
+                }
+                long bOpen = BitBoard.southFill(shelter) & (~BitBoard.southFill(bPawns)) & 0xff;
+                if (bOpen != 0) {
+                    halfOpenFiles += 25 * Long.bitCount(bOpen & 0xe7);
+                    halfOpenFiles += 10 * Long.bitCount(bOpen & 0x18);
+                }
+                safety = Math.min(safety, 8);
+                if (((pos.pieceTypeBB[Piece.BKING] & 0x6000000000000000L) != 0) && // King on f8 or g8
+                    ((pos.pieceTypeBB[Piece.BROOK] & 0xC000000000000000L) != 0) && // Rook on g8 or h8
+                    ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[6]) != 0) &&
+                    ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[7]) != 0)) {
+                    safety -= 6;
+                } else
+                if (((pos.pieceTypeBB[Piece.BKING] & 0x600000000000000L) != 0) && // King on b8 or c8
+                    ((pos.pieceTypeBB[Piece.BROOK] & 0x300000000000000L) != 0) && // Rook on a8 or b8
+                    ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[0]) != 0) &&
+                    ((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskFile[1]) != 0)) {
+                    safety -= 6;
+                }
             }
+            final int kSafety = (safety - 9) * 15 - halfOpenFiles;
+            score -= kSafety;
         }
         score += (bKingAttacks - wKingAttacks) * 4;
         final int kSafety = interpolate(m, minM, 0, maxM, score);
