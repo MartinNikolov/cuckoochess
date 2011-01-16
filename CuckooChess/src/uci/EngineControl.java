@@ -168,7 +168,7 @@ public class EngineControl {
             boolean white = pos.whiteMove;
             int time = white ? sPar.wTime : sPar.bTime;
             int inc  = white ? sPar.wInc : sPar.bInc;
-            final int margin = 1000; // FIXME! Lower margin if time <= 1000
+            final int margin = Math.min(1000, time * 9 / 10);
             int timeLimit = (time + inc * (moves - 1) - margin) / moves;
             minTimeLimit = (int)(timeLimit * 0.85);
             maxTimeLimit = (int)(minTimeLimit * 2.5);
@@ -189,7 +189,8 @@ public class EngineControl {
         }
     }
 
-    final public void startThread(int minTimeLimit, int maxTimeLimit, final int maxDepth, final int maxNodes) {
+    final private void startThread(final int minTimeLimit, final int maxTimeLimit,
+                                   int maxDepth, final int maxNodes) {
         synchronized (threadMutex) {} // Must not start new search until old search is finished
         sc = new Search(pos, posHashList, posHashListSize, tt);
         sc.setListener(new SearchListener(os));
@@ -199,11 +200,10 @@ public class EngineControl {
             moves.retainAll(searchMoves);
         }
         final ArrayList<Move> srchMoves = moves;
-        if ((srchMoves.size() <= 1) && !infinite) {
-            minTimeLimit = maxTimeLimit = 0;
+        if ((srchMoves.size() <= 1) && !infinite && !ponder) {
+            if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
         }
-        final int srchMinTimeLimit = minTimeLimit;
-        final int srchMaxTimeLimit = maxTimeLimit;
+        final int srchmaxDepth = maxDepth;
         engineThread = new Thread(new Runnable() {
             public void run() {
                 Move m = null;
@@ -212,8 +212,8 @@ public class EngineControl {
                     m = book.getBookMove(pos);
                 }
                 if (m == null) {
-                    m = sc.iterativeDeepening(srchMoves, srchMinTimeLimit, srchMaxTimeLimit,
-                            maxDepth, maxNodes, false);
+                    m = sc.iterativeDeepening(srchMoves, minTimeLimit, maxTimeLimit,
+                            srchmaxDepth, maxNodes, false);
                 }
                 while (ponder || infinite) {
                     // We should not respond until told to do so. Just wait until

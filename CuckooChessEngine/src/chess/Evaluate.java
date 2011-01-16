@@ -961,7 +961,7 @@ public class Evaluate {
         return score;
 
         // FIXME! Add evaluation of KRKP
-        // FIXME! Add evaluation of KRPKP   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
+        // FIXME! Add evaluation of KRPKR   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
     }
 
     private static final int evalKQKP(int wKing, int wQueen, int bKing, int bPawn) {
