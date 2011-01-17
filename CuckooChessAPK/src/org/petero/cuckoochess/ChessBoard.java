@@ -45,16 +45,20 @@ public class ChessBoard extends View {
         redOutline = new Paint();
         redOutline.setARGB(255, 255, 0, 0);
         redOutline.setStyle(Paint.Style.STROKE);
+        redOutline.setAntiAlias(true);
         
         greenOutline = new Paint();
         greenOutline.setARGB(255, 0, 255, 0);
         greenOutline.setStyle(Paint.Style.STROKE);
+        greenOutline.setAntiAlias(true);
         
         whitePiecePaint = new Paint();
         whitePiecePaint.setARGB(255, 255, 255, 255);
+        whitePiecePaint.setAntiAlias(true);
         
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
+        blackPiecePaint.setAntiAlias(true);
 	}
 
 	public void setFont(Typeface tf) {
