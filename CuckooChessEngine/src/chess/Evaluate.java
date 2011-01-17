@@ -696,7 +696,7 @@ public class Evaluate {
             m &= m-1;
         }
         final int qV = pieceValue[Piece.WQUEEN];
-        score += (tmp + tmp * tmp / qV) / 64;
+        score += tmp + tmp * tmp / qV;
 
         // Sum values for all white pieces under attack
         m = pos.pieceTypeBB[Piece.BKNIGHT];
@@ -719,8 +719,8 @@ public class Evaluate {
             tmp += pieceValue[pos.squares[sq]];
             m &= m-1;
         }
-        score -= (tmp + tmp * tmp / qV) / 64;
-        return score;
+        score -= tmp + tmp * tmp / qV;
+        return score / 64;
     }
 
     /** Compute king safety for both kings. */
