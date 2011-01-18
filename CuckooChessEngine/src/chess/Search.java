@@ -174,21 +174,36 @@ public class Search {
                 nodes = qNodes = 0;
                 posHashList[posHashListSize++] = pos.zobristHash();
                 boolean givesCheck = MoveGen.givesCheck(pos, m);
-                pos.makeMove(m, ui);
-                searchTreeInfo[0].currentMove = m;
-                searchTreeInfo[0].lmr = 0;
                 int beta;
                 if (depth > 1) {
                     beta = (mi == 0) ? Math.min(bestScoreLastIter + aspirationDelta, Search.MATE0) : alpha + 1;
                 } else {
                     beta = Search.MATE0;
                 }
+
+                int lmr = 0;
+                boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY);
+                boolean isPromotion = (m.promoteTo != Piece.EMPTY);
+                if ((depth >= 3) && !isCapture && !isPromotion) {
+                    if (!givesCheck && !passedPawnPush(pos, m)) {
+                        if (mi >= 3)
+                            lmr = 1;
+                    }
+                }
 /*                int nodes0 = nodes;
                 int qNodes0 = qNodes;
                 System.out.printf("%2d %5s %5d %5d %6s %6s ",
                         mi, "-", alpha, beta, "-", "-");
                 System.out.printf("%-6s...\n", TextIO.moveToUCIString(m)); */
-                int score = -negaScout(-beta, -alpha, 1, depth - 1, -1, givesCheck);
+                pos.makeMove(m, ui);
+                SearchTreeInfo sti = searchTreeInfo[0];
+                sti.currentMove = m;
+                sti.lmr = lmr;
+                int score = -negaScout(-beta, -alpha, 1, depth - lmr - 1, -1, givesCheck);
+                if ((lmr > 0) && (score > alpha)) {
+                    sti.lmr = 0;
+                    score = -negaScout(-beta, -alpha, 1, depth - 1, -1, givesCheck);
+                }
                 int nodesThisMove = nodes + qNodes;
                 posHashListSize--;
                 pos.unMakeMove(m, ui);
