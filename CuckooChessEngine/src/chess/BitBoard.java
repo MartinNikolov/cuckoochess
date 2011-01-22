@@ -3,19 +3,19 @@ package chess;
 public class BitBoard {
 
     /** Squares attacked by a king on a given square. */
-    static long[] kingAttacks;
-    static long[] knightAttacks;
-    static long[] wPawnAttacks, bPawnAttacks;
+    public static long[] kingAttacks;
+    public static long[] knightAttacks;
+    public static long[] wPawnAttacks, bPawnAttacks;
 
     // Squares preventing a pawn from being a passed pawn, if occupied by enemy pawn
     static long[] wPawnBlockerMask, bPawnBlockerMask;
 
-    static final long maskAToGFiles = 0x7F7F7F7F7F7F7F7FL;
-    static final long maskBToHFiles = 0xFEFEFEFEFEFEFEFEL;
-    static final long maskAToFFiles = 0x3F3F3F3F3F3F3F3FL;
-    static final long maskCToHFiles = 0xFCFCFCFCFCFCFCFCL;
+    public static final long maskAToGFiles = 0x7F7F7F7F7F7F7F7FL;
+    public static final long maskBToHFiles = 0xFEFEFEFEFEFEFEFEL;
+    public static final long maskAToFFiles = 0x3F3F3F3F3F3F3F3FL;
+    public static final long maskCToHFiles = 0xFCFCFCFCFCFCFCFCL;
 
-    static final long[] maskFile = {
+    public static final long[] maskFile = {
         0x0101010101010101L,
         0x0202020202020202L,
         0x0404040404040404L,
@@ -26,20 +26,20 @@ public class BitBoard {
         0x8080808080808080L
     };
 
-    static final long maskRow1      = 0x00000000000000FFL;
-    static final long maskRow2      = 0x000000000000FF00L;
-    static final long maskRow3      = 0x0000000000FF0000L;
-    static final long maskRow4      = 0x00000000FF000000L;
-    static final long maskRow5      = 0x000000FF00000000L;
-    static final long maskRow6      = 0x0000FF0000000000L;
-    static final long maskRow7      = 0x00FF000000000000L;
-    static final long maskRow8      = 0xFF00000000000000L;
-    static final long maskRow1Row8  = 0xFF000000000000FFL;
+    public static final long maskRow1      = 0x00000000000000FFL;
+    public static final long maskRow2      = 0x000000000000FF00L;
+    public static final long maskRow3      = 0x0000000000FF0000L;
+    public static final long maskRow4      = 0x00000000FF000000L;
+    public static final long maskRow5      = 0x000000FF00000000L;
+    public static final long maskRow6      = 0x0000FF0000000000L;
+    public static final long maskRow7      = 0x00FF000000000000L;
+    public static final long maskRow8      = 0xFF00000000000000L;
+    public static final long maskRow1Row8  = 0xFF000000000000FFL;
 
-    static final long maskDarkSq    = 0xAA55AA55AA55AA55L;
-    static final long maskLightSq   = 0x55AA55AA55AA55AAL;
+    public static final long maskDarkSq    = 0xAA55AA55AA55AA55L;
+    public static final long maskLightSq   = 0x55AA55AA55AA55AAL;
 
-    static final long maskCorners   = 0x8100000000000081L;
+    public static final long maskCorners   = 0x8100000000000081L;
 
     static {
         // Compute king attacks
@@ -252,11 +252,11 @@ public class BitBoard {
         }
     }
 
-    static final long bishopAttacks(int sq, long occupied) {
+    public static final long bishopAttacks(int sq, long occupied) {
         return bTables[sq][(int)(((occupied & bMasks[sq]) * bMagics[sq]) >>> (64 - bBits[sq]))];
     }
 
-    static final long rookAttacks(int sq, long occupied) {
+    public static final long rookAttacks(int sq, long occupied) {
         return rTables[sq][(int)(((occupied & rMasks[sq]) * rMagics[sq]) >>> (64 - rBits[sq]))];
     }
     
@@ -287,14 +287,14 @@ public class BitBoard {
         }
     }
 
-    static final long southFill(long mask) {
+    public static final long southFill(long mask) {
         mask |= (mask >>> 8);
         mask |= (mask >>> 16);
         mask |= (mask >>> 32);
         return mask;
     }
     
-    static final long northFill(long mask) {
+    public static final long northFill(long mask) {
         mask |= (mask << 8);
         mask |= (mask << 16);
         mask |= (mask << 32);

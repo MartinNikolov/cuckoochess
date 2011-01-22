@@ -17,14 +17,14 @@ import java.security.NoSuchAlgorithmException;
  * @author petero
  */
 public class Position {
-    int[] squares;
+    public int[] squares;
 
     // Bitboards
-    long[] pieceTypeBB;
-    long whiteBB, blackBB;
+    public long[] pieceTypeBB;
+    public long whiteBB, blackBB;
     
     // Piece square table scores
-    short[]  psScore1, psScore2;
+    public short[]  psScore1, psScore2;
 
     public boolean whiteMove;
 
@@ -46,11 +46,11 @@ public class Position {
 
     private long hashKey;           // Cached Zobrist hash key
     private long pHashKey;
-    int wKingSq, bKingSq;   // Cached king positions
-    int wMtrl;      // Total value of all white pieces and pawns
-    int bMtrl;      // Total value of all black pieces and pawns
-    int wMtrlPawns; // Total value of all white pawns
-    int bMtrlPawns; // Total value of all black pawns
+    public int wKingSq, bKingSq;   // Cached king positions
+    public int wMtrl;      // Total value of all white pieces and pawns
+    public int bMtrl;      // Total value of all black pieces and pawns
+    public int wMtrlPawns; // Total value of all white pawns
+    public int bMtrlPawns; // Total value of all black pawns
 
     /** Initialize board to empty position. */
     public Position() {
