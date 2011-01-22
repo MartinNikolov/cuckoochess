@@ -95,12 +95,12 @@ public class Evaluate {
 
     /** Piece/square table for bishops during middle game. */
     static final int[] bt1b = {  0,  0,  0,  0,  0,  0,  0,  0,
-    							 0,  8,  4,  4,  4,  4,  8,  0,
-    							 0,  4,  8,  8,  8,  8,  4,  0,
-    							 0,  4,  8,  8,  8,  8,  4,  0,
-    							 0,  4,  8,  8,  8,  8,  4,  0,
-    							 0,  6,  8,  8,  8,  8,  6,  0,
-    							 0,  8,  4,  4,  4,  4,  8,  0,
+    							 0,  4,  2,  2,  2,  2,  4,  0,
+    							 0,  2,  4,  4,  4,  4,  2,  0,
+    							 0,  2,  4,  4,  4,  4,  2,  0,
+    							 0,  2,  4,  4,  4,  4,  2,  0,
+    							 0,  3,  4,  4,  4,  4,  3,  0,
+    							 0,  4,  2,  2,  2,  2,  4,  0,
     							 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for queens during middle game. */
@@ -243,6 +243,10 @@ public class Evaluate {
         return score;
 
         // FIXME! Test penalty if side to move has >1 hanging piece
+        
+        // FIXME! Test "tempo value"
+        
+        // FIXME! Penalty for bishop trapped on a2: 2kr3r/ppp1qpp1/2p1bn2/5P2/4P2p/2BB3Q/PPP3PP/2KR3R b - - 0 15
     }
 
     /** Compute white_material - black_material. */
