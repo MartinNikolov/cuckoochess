@@ -362,7 +362,16 @@ public class EvaluateTest {
         pos = TextIO.readFEN("8/6k1/8/8/4B3/2K3PP/8/8 w - - 0 1");
         assertTrue(evalWhite(pos) > winScore);
     }
+    
+    @Test
+    public void testTrappedBishop() throws ChessParseError {
+        Position pos = TextIO.readFEN("r2q1rk1/ppp2ppp/3p1n2/8/3P4/1P1Q1NP1/b1P2PBP/2KR3R w - - 0 1");
+        assertTrue(evalWhite(pos) > 0); // Black has trapped bishop
 
+        pos = TextIO.readFEN("r2q2k1/pp1b1p1p/2p2np1/3p4/3P4/1BNQ2P1/PPPB1P1b/2KR4 w - - 0 1");
+        assertTrue(evalWhite(pos) > 0); // Black has trapped bishop
+    }
+    
     /**
      * Test of endGameEval method, of class Evaluate.
      */

@@ -245,8 +245,6 @@ public class Evaluate {
         // FIXME! Test penalty if side to move has >1 hanging piece
         
         // FIXME! Test "tempo value"
-        
-        // FIXME! Penalty for bishop trapped on a2: 2kr3r/ppp1qpp1/2p1bn2/5P2/4P2p/2BB3Q/PPP3PP/2KR3R b - - 0 15
     }
 
     /** Compute white_material - black_material. */
@@ -623,7 +621,11 @@ public class Evaluate {
     private final int bishopEval(Position pos, int oldScore) {
         int score = 0;
         final long occupied = pos.whiteBB | pos.blackBB;
-        long m = pos.pieceTypeBB[Piece.WBISHOP];
+        long wBishops = pos.pieceTypeBB[Piece.WBISHOP];
+        long bBishops = pos.pieceTypeBB[Piece.BBISHOP];
+        if ((wBishops | bBishops) == 0)
+            return 0;
+        long m = wBishops;
         while (m != 0) {
             int sq = Long.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
@@ -632,7 +634,7 @@ public class Evaluate {
             bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
         }
-        m = pos.pieceTypeBB[Piece.BBISHOP];
+        m = bBishops;
         while (m != 0) {
             int sq = Long.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
@@ -641,6 +643,7 @@ public class Evaluate {
             wKingAttacks += Long.bitCount(atk & wKingZone);
             m &= m-1;
         }
+
         boolean whiteDark  = (pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskDarkSq ) != 0;
         boolean whiteLight = (pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskLightSq) != 0;
         boolean blackDark  = (pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskDarkSq ) != 0;
@@ -671,7 +674,28 @@ public class Evaluate {
             int mtrl = pos.wMtrl + pos.bMtrl - pos.wMtrlPawns - pos.bMtrlPawns;
             score -= interpolate(mtrl, loMtrl, penalty, hiMtrl, 0);
         }
-    
+
+        // Penalty for bishop trapped behind pawn at a2/h2/a7/h7
+        if (((wBishops | bBishops) & 0x0081000000008100L) != 0) {
+            final int pV = pieceValue[Piece.WPAWN];
+            if ((pos.squares[48] == Piece.WBISHOP) && // a7
+                (pos.squares[41] == Piece.BPAWN) &&
+                (pos.squares[50] == Piece.BPAWN))
+                score -= pV * 3 / 2;
+            if ((pos.squares[55] == Piece.WBISHOP) && // h7
+                (pos.squares[46] == Piece.BPAWN) &&
+                (pos.squares[53] == Piece.BPAWN))
+                score -= (pos.pieceTypeBB[Piece.WQUEEN] != 0) ? pV : pV * 3 / 2;
+            if ((pos.squares[8] == Piece.BBISHOP) &&  // a2
+                (pos.squares[17] == Piece.WPAWN) &&
+                (pos.squares[10] == Piece.WPAWN))
+                score += pV * 3 / 2;
+            if ((pos.squares[15] == Piece.BBISHOP) && // h2
+                (pos.squares[22] == Piece.WPAWN) &&
+                (pos.squares[13] == Piece.WPAWN))
+                score += (pos.pieceTypeBB[Piece.BQUEEN] != 0) ? pV : pV * 3 / 2;
+        }
+
         return score;
     }
 
