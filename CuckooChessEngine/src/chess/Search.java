@@ -410,6 +410,7 @@ public class Search {
         if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashFirstNew)) {
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
+            // FIXME! Sometimes draws in won positions. Probably because of hash cut-offs in PV nodes.
         }
 
         int evalScore = UNKNOWN_SCORE;

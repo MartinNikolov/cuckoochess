@@ -512,14 +512,17 @@ public class Evaluate {
         long wPawnFiles = BitBoard.southFill(wPawns) & 0xff;
         int wDouble = Long.bitCount(wPawns) - Long.bitCount(wPawnFiles);
         int wIslands = Long.bitCount(((~wPawnFiles) >>> 1) & wPawnFiles);
+        int wIsolated = Long.bitCount(~(wPawnFiles<<1) & wPawnFiles & ~(wPawnFiles>>>1));
 
         long bPawns = pos.pieceTypeBB[Piece.BPAWN];
         long bPawnFiles = BitBoard.southFill(bPawns) & 0xff;
         int bDouble = Long.bitCount(bPawns) - Long.bitCount(bPawnFiles);
         int bIslands = Long.bitCount(((~bPawnFiles) >>> 1) & bPawnFiles);
+        int bIsolated = Long.bitCount(~(bPawnFiles<<1) & bPawnFiles & ~(bPawnFiles>>>1));
 
-        score -= (wDouble - bDouble) * 20;  // FIXME! Try larger values
+        score -= (wDouble - bDouble) * 25;
         score -= (wIslands - bIslands) * 15;
+        score -= (wIsolated - bIsolated) * 15;
 
         // Evaluate passed pawn bonus, white
         long passedPawnsW = wPawns &
