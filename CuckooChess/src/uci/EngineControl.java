@@ -193,6 +193,7 @@ public class EngineControl {
                                    int maxDepth, final int maxNodes) {
         synchronized (threadMutex) {} // Must not start new search until old search is finished
         sc = new Search(pos, posHashList, posHashListSize, tt);
+        sc.timeLimit(minTimeLimit, maxTimeLimit);
         sc.setListener(new SearchListener(os));
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
@@ -212,8 +213,7 @@ public class EngineControl {
                     m = book.getBookMove(pos);
                 }
                 if (m == null) {
-                    m = sc.iterativeDeepening(srchMoves, minTimeLimit, maxTimeLimit,
-                            srchmaxDepth, maxNodes, false);
+                    m = sc.iterativeDeepening(srchMoves, srchmaxDepth, maxNodes, false);
                 }
                 while (ponder || infinite) {
                     // We should not respond until told to do so. Just wait until

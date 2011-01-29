@@ -220,7 +220,8 @@ public class SearchTest {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);
         sc.scoreMoveList(moves, 0);
-        Move bestM = sc.iterativeDeepening(moves, -1, -1, maxDepth, -1, false);
+        sc.timeLimit(-1, -1);
+        Move bestM = sc.iterativeDeepening(moves, maxDepth, -1, false);
         return bestM;
     }
     

@@ -89,7 +89,8 @@ public class ComputerPlayer implements Player {
         } else if (randomMode) {
         	bestM = findSemiRandomMove(sc, moves);
         } else {
-        	bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, maxDepth, maxNodes, verbose);
+            sc.timeLimit(minTimeMillis, maxTimeMillis);
+        	bestM = sc.iterativeDeepening(moves, maxDepth, maxNodes, verbose);
         }
         currentSearch = null;
 //        tt.printStats();
@@ -171,7 +172,8 @@ public class ComputerPlayer implements Player {
         sc.scoreMoveList(moves, 0);
 
         // Find best move using iterative deepening
-        Move bestM = sc.iterativeDeepening(moves, maxTimeMillis, maxTimeMillis, -1, -1, false);
+        sc.timeLimit(maxTimeMillis, maxTimeMillis);
+        Move bestM = sc.iterativeDeepening(moves, -1, -1, false);
 
         // Extract PV
         String PV = TextIO.moveToString(pos, bestM, false) + " ";
@@ -187,7 +189,8 @@ public class ComputerPlayer implements Player {
     }
 
     private Move findSemiRandomMove(Search sc, ArrayList<Move> moves) {
-    	Move bestM = sc.iterativeDeepening(moves, minTimeMillis, maxTimeMillis, 1, maxNodes, verbose);
+        sc.timeLimit(minTimeMillis, maxTimeMillis);
+    	Move bestM = sc.iterativeDeepening(moves, 1, maxNodes, verbose);
     	int bestScore = bestM.score;
 
         Random rndGen = new SecureRandom();

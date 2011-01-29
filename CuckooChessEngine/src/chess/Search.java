@@ -49,7 +49,7 @@ public class Search {
     long minTimeMillis;     // Minimum recommended thinking time
     long maxTimeMillis;     // Maximum allowed thinking time
     boolean searchNeedMoreTime; // True if negaScout should use up to maxTimeMillis time.
-    int maxNodes;           // Maximum number of nodes to search (approximately)
+    private int maxNodes;   // Maximum number of nodes to search (approximately)
     int nodesToGo;          // Number of nodes until next time check
     
     // Search statistics stuff
@@ -86,11 +86,6 @@ public class Search {
         for (int i = 0; i < vecLen; i++) {
             searchTreeInfo[i] = new SearchTreeInfo();
         }
-    }
-
-    final public void timeLimit(int minTimeLimit, int maxTimeLimit) {
-        minTimeMillis = minTimeLimit;
-        maxTimeMillis = maxTimeLimit;
     }
 
     class StopSearch extends Exception {
@@ -134,16 +129,18 @@ public class Search {
         }
     }
 
+    final public void timeLimit(int minTimeLimit, int maxTimeLimit) {
+        minTimeMillis = minTimeLimit;
+        maxTimeMillis = maxTimeLimit;
+    }
+
     final public Move iterativeDeepening(ArrayList<Move> scMovesIn,
-            int initialMinTimeMillis, int initialMaxTimeMillis,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
         totalNodes = 0;
         ArrayList<MoveInfo> scMoves = new ArrayList<MoveInfo>(scMovesIn.size());
         for (Move m : scMovesIn)
         	scMoves.add(new MoveInfo(m, 0));
-        minTimeMillis = initialMinTimeMillis;
-        maxTimeMillis = initialMaxTimeMillis;
         maxNodes = initialMaxNodes;
         nodesToGo = 0;
         Position origPos = new Position(pos);
@@ -410,7 +407,7 @@ public class Search {
         if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashFirstNew)) {
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
-            // FIXME! Sometimes draws in won positions. Probably because of hash cut-offs in PV nodes.
+            // FIXME! Sometimes draws in won positions. Xboard bug or cuckoochess bug?
         }
 
         int evalScore = UNKNOWN_SCORE;
