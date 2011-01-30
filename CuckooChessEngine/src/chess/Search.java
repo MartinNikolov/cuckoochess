@@ -659,9 +659,11 @@ public class Search {
             if (alpha >= beta) {
                 if (pos.getPiece(m.to) == Piece.EMPTY) {
                     kt.addKiller(ply, m);
-                    ht.addSuccess(pos, m);
+                    ht.addSuccess(pos, m, depth);
                     for (int mi2 = mi - 1; mi2 >= 0; mi2--) {
-                        ht.addFail(pos, moves.get(mi2));
+                        Move m2 = moves.get(mi2);
+                        if (pos.getPiece(m2.to) == Piece.EMPTY)
+                            ht.addFail(pos, m2, depth);
                     }
                 }
                 tt.insert(pos.historyHash(), m, TTEntry.T_GE, ply, depth, evalScore);

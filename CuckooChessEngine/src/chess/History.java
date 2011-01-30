@@ -27,17 +27,22 @@ public class History {
     }
 
     /** Record move as a success. */
-    public final void addSuccess(Position pos, Move m) {
+    public final void addSuccess(Position pos, Move m, int depth) {
         int p = pos.getPiece(m.from);
-        countSuccess[p][m.to]++;
-        renormalizeIfNeeded();
+        int cnt = depth;
+        int val = countSuccess[p][m.to] + cnt;
+        if (val > 1000) {
+            val /= 2;
+            countFail[p][m.to] /= 2;
+        }
+        countSuccess[p][m.to] = val;
     }
 
     /** Record move as a failure. */
-    public final void addFail(Position pos, Move m) {
+    public final void addFail(Position pos, Move m, int depth) {
         int p = pos.getPiece(m.from);
-        countFail[p][m.to]++;
-        renormalizeIfNeeded();
+        int cnt = depth;
+        countFail[p][m.to] += cnt;
     }
 
     /** Get a score between 0 and 49, depending of the success/fail ratio of the move. */
@@ -49,20 +54,6 @@ public class History {
             return succ * 49 / (succ + fail);
         } else {
             return 0;
-        }
-    }
-
-    /** Renormalize history data if needed, to avoid integer overflow. */
-    private final void renormalizeIfNeeded() {
-        numUpdates++;
-        if (numUpdates >= 1000000000) {
-            for (int p = 0; p < Piece.nPieceTypes; p++) {
-                for (int sq = 0; sq < 64; sq++) {
-                    countSuccess[p][sq] /= 2;
-                    countFail[p][sq] /= 2;
-                }
-            }
-            numUpdates /= 2;
         }
     }
 }
