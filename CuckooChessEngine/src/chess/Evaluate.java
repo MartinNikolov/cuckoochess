@@ -32,7 +32,7 @@ public class Evaluate {
         pieceValue[Piece.BPAWN  ] =   100;
         pieceValue[Piece.EMPTY  ] =     0;
     }
-    
+
     /** Piece/square table for king during middle game. */
     static final int[] kt1b = { -22,-35,-40,-40,-40,-40,-35,-22,
   							    -22,-35,-40,-40,-40,-40,-35,-22,
@@ -42,7 +42,7 @@ public class Evaluate {
     					          4, -2, -5,-15,-15, -5, -2,  4,
     				 			 16, 14,  7, -3, -3,  7, 14, 16,
     			 				 24, 24,  9,  0,  0,  9, 24, 24 };
-    
+
     /** Piece/square table for king during end game. */
     static final int[] kt2b = {  0,  8, 16, 24, 24, 16,  8,  0,
     						     8, 16, 24, 32, 32, 24, 16,  8,
@@ -514,6 +514,7 @@ public class Evaluate {
         int wIslands = Long.bitCount(((~wPawnFiles) >>> 1) & wPawnFiles);
         int wIsolated = Long.bitCount(~(wPawnFiles<<1) & wPawnFiles & ~(wPawnFiles>>>1));
 
+        
         long bPawns = pos.pieceTypeBB[Piece.BPAWN];
         long bPawnFiles = BitBoard.southFill(bPawns) & 0xff;
         int bDouble = Long.bitCount(bPawns) - Long.bitCount(bPawnFiles);
@@ -524,12 +525,27 @@ public class Evaluate {
         score -= (wIslands - bIslands) * 15;
         score -= (wIsolated - bIsolated) * 15;
 
+        // Evaluate backward pawns, defined as a pawn that guards a friendly pawn,
+        // can't be guarded by friendly pawns, can advance, but can't advance without 
+        // being captured by an enemy pawn.
+        long wPawnAttacks = (((wPawns & BitBoard.maskBToHFiles) << 7) |
+                             ((wPawns & BitBoard.maskAToGFiles) << 9));
+        long bPawnAttacks = (((bPawns & BitBoard.maskBToHFiles) >>> 9) |
+                             ((bPawns & BitBoard.maskAToGFiles) >>> 7));
+        long wBackward = wPawns & ~((wPawns | bPawns) >>> 8) & (bPawnAttacks >>> 8) &
+                         ~BitBoard.northFill(wPawnAttacks);
+        wBackward &= (((wPawns & BitBoard.maskBToHFiles) >>> 9) |
+                      ((wPawns & BitBoard.maskAToGFiles) >>> 7));
+        wBackward &= ~BitBoard.northFill(bPawnFiles);
+        long bBackward = bPawns & ~((wPawns | bPawns) << 8) & (wPawnAttacks << 8) &
+                         ~BitBoard.southFill(bPawnAttacks);
+        bBackward &= (((bPawns & BitBoard.maskBToHFiles) << 7) |
+                      ((bPawns & BitBoard.maskAToGFiles) << 9));
+        bBackward &= ~BitBoard.northFill(wPawnFiles);
+        score -= (Long.bitCount(wBackward) - Long.bitCount(bBackward)) * 15;
+
         // Evaluate passed pawn bonus, white
-        long passedPawnsW = wPawns &
-            ~BitBoard.southFill(bPawns |
-                                ((bPawns & BitBoard.maskBToHFiles) >>> 9) |
-                                ((bPawns & BitBoard.maskAToGFiles) >>> 7) |
-                                (wPawns >>> 8));
+        long passedPawnsW = wPawns & ~BitBoard.southFill(bPawns | bPawnAttacks | (wPawns >>> 8));
         final int[] ppBonus = {-1,24,26,30,36,44,56,-1};
         int passedBonusW = 0;
         if (passedPawnsW != 0) {
@@ -546,11 +562,7 @@ public class Evaluate {
         }
 
         // Evaluate passed pawn bonus, black
-        long passedPawnsB = bPawns &
-            ~BitBoard.northFill(wPawns |
-                                ((wPawns & BitBoard.maskBToHFiles) << 7) |
-                                ((wPawns & BitBoard.maskAToGFiles) << 9) |
-                                (bPawns << 8));
+        long passedPawnsB = bPawns & ~BitBoard.northFill(wPawns | wPawnAttacks | (bPawns << 8));
         int passedBonusB = 0;
         if (passedPawnsB != 0) {
             long guardedPassedB = passedPawnsB & (((bPawns & BitBoard.maskBToHFiles) >>> 9) |
@@ -1004,6 +1016,7 @@ public class Evaluate {
 
         // FIXME! Add evaluation of KRKP
         // FIXME! Add evaluation of KRPKR   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
+        // FIXME! KBKP should not be score >0 for bishop side
     }
 
     private static final int evalKQKP(int wKing, int wQueen, int bKing, int bPawn) {
