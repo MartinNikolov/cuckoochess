@@ -46,7 +46,7 @@ public class ComputerPlayer {
     	}
     	listener = null;
     	timeLimit = 0;
-    	book = new Book(false);
+    	book = new Book();
     }
 
 	private static int getNumCPUs() {

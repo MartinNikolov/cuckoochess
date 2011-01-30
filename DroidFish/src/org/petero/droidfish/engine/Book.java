@@ -45,20 +45,26 @@ public class Book {
     private static Random rndGen;
     private static int numBookMoves = -1;
     
-    static PolyglotBook externalBook;
+    static PolyglotBook externalBook = null;
 
-    public Book(boolean verbose) {
-        if (numBookMoves < 0) {
-            initBook(verbose);
+    public Book() {
+        if (externalBook == null)
             externalBook = new PolyglotBook(); 
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initInternalBook();
+            }
+        }).start();
     }
 
 	public final void setBookFileName(String bookFileName) {
 		externalBook.setBookFileName(bookFileName);
 	}
     
-    private final void initBook(boolean verbose) {
+    private synchronized final void initInternalBook() {
+        if (numBookMoves >= 0)
+            return;
         long t0 = System.currentTimeMillis();
         bookMap = new HashMap<Long, List<BookEntry>>();
         rndGen = new SecureRandom();
@@ -96,7 +102,7 @@ public class Book {
             System.out.println("Can't read opening book resource");
             throw new RuntimeException();
         }
-        if (verbose) {
+        {
             long t1 = System.currentTimeMillis();
             System.out.printf("Book moves:%d (parse time:%.3f)%n", numBookMoves,
                     (t1 - t0) / 1000.0);
@@ -213,7 +219,7 @@ public class Book {
         try {
             InputStream inStream = new Object().getClass().getResourceAsStream("/book.txt");
             InputStreamReader inFile = new InputStreamReader(inStream);
-            BufferedReader inBuf = new BufferedReader(inFile);
+            BufferedReader inBuf = new BufferedReader(inFile, 8192);
             LineNumberReader lnr = new LineNumberReader(inBuf);
             String line;
             while ((line = lnr.readLine()) != null) {
@@ -260,6 +266,7 @@ public class Book {
 		if (externalBook.enabled()) {
 			return externalBook.getBookEntries(pos);
 		} else {
+	        initInternalBook();
 			return bookMap.get(pos.zobristHash());
 		}
 	}
