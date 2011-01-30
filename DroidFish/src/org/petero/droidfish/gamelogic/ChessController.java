@@ -460,6 +460,7 @@ public class ChessController {
 			needUpdate = true;
 		}
 		if (needUpdate) {
+	        ss.searchResultWanted = false;
     		stopAnalysis();
 			stopComputerThinking();
     		updateComputeThreads(true);
@@ -469,6 +470,7 @@ public class ChessController {
 	}
 
 	public final void gotoStartOfVariation() {
+        ss.searchResultWanted = false;
 		stopAnalysis();
 		stopComputerThinking();
 		while (true) {
@@ -642,19 +644,21 @@ public class ChessController {
     				final SearchStatus localSS = ss;
     				gui.runOnUIThread(new Runnable() {
     					public void run() {
-    						if (!localSS.searchResultWanted)
-    							return;
-    						Position oldPos = new Position(g.currPos());
-    						g.processString(cmd);
-    						updateGameMode();
-    						gui.computerMoveMade();
-    						listener.clearSearchInfo();
-    						stopComputerThinking();
-    						stopAnalysis(); // To force analysis to restart for new position
-    						updateComputeThreads(true);
-    						setSelection();
-    						setAnimMove(oldPos, g.getLastMove(), true);
-    						updateGUI();
+                            synchronized (shutdownEngineLock) {
+    					        if (!localSS.searchResultWanted)
+    					            return;
+    					        Position oldPos = new Position(g.currPos());
+    					        g.processString(cmd);
+    					        updateGameMode();
+    					        gui.computerMoveMade();
+    					        listener.clearSearchInfo();
+    					        stopComputerThinking();
+    					        stopAnalysis(); // To force analysis to restart for new position
+    					        updateComputeThreads(true);
+    					        setSelection();
+    					        setAnimMove(oldPos, g.getLastMove(), true);
+    					        updateGUI();
+    					    }
     					}
     				});
     			}
@@ -730,12 +734,15 @@ public class ChessController {
         }
     }
 
+    private Object shutdownEngineLock = new Object();
     public final void shutdownEngine() {
-    	gameMode = new GameMode(GameMode.TWO_PLAYERS);
-    	ss.searchResultWanted = false;
-    	stopComputerThinking();
-    	stopAnalysis();
-    	computerPlayer.shutdownEngine();
+        synchronized (shutdownEngineLock) {
+            gameMode = new GameMode(GameMode.TWO_PLAYERS);
+            ss.searchResultWanted = false;
+            stopComputerThinking();
+            stopAnalysis();
+            computerPlayer.shutdownEngine();
+        }
     }
 
 	/** Help human to claim a draw by trying to find and execute a valid draw claim. */
