@@ -756,8 +756,6 @@ public class Search {
             }
             Move m = moves.get(mi);
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
-                qNodes++;
-                totalNodes++;
                 moveGen.returnMoveList(moves);
                 return MATE0-ply;       // King capture
             }
@@ -826,7 +824,6 @@ public class Search {
     }
 
     
-    private int[] dirIdx = new int[8];       // Current position in each direction.
     private int[] captures = new int[64];   // Value of captured pieces
     private UndoInfo seeUi = new UndoInfo();
 
@@ -850,54 +847,84 @@ public class Search {
         pos.makeMove(m, seeUi);
         boolean white = pos.whiteMove;
         int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
-
-        for (int d = 0; d < 8; d++) {
-        	dirIdx[d] = SEEnextAttacker(square, d, 0);
-        }
-        int wNatks = Long.bitCount(BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.WKNIGHT]);
-        int bNatks = Long.bitCount(BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.BKNIGHT]);
-
-        final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
-
+        long occupied = pos.whiteBB | pos.blackBB;
         while (true) {
-        	int bestDir = -1;
         	int bestValue = Integer.MAX_VALUE;
-        	for (int d = 0; d < 8; d++) {
-        		int idx = dirIdx[d];
-        		if (idx > 0) {
-        	        int p = pos.getPiece(square + dirD[d] * idx);
-        	        if (Piece.isWhite(p) == white) {
-        	            int val = Evaluate.pieceValue[p];
-            			if (val < bestValue) {
-            				bestDir = d;
-            				bestValue = val;
-            			}
-        	        }
-        		}
-        	}
-        	if ((white ? wNatks : bNatks) > 0) {
-        		if (nV < bestValue) {
-        			bestValue = nV;
-        			bestDir = 8;
-        		}
-        	}
-        	if (bestDir == -1) {
-        		break;
-        	}
+        	long atk;
+            if (white) {
+                atk = BitBoard.bPawnAttacks[square] & pos.pieceTypeBB[Piece.WPAWN] & occupied;
+                if (atk != 0) {
+                    bestValue = Evaluate.pieceValue[Piece.WPAWN];
+                } else {
+                    atk = BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.WKNIGHT] & occupied;
+                    if (atk != 0) {
+                        bestValue = Evaluate.pieceValue[Piece.WKNIGHT];
+                    } else {
+                        long bAtk = BitBoard.bishopAttacks(square, occupied) & occupied;
+                        atk = bAtk & pos.pieceTypeBB[Piece.WBISHOP];
+                        if (atk != 0) {
+                            bestValue = Evaluate.pieceValue[Piece.WBISHOP];
+                        } else {
+                            long rAtk = BitBoard.rookAttacks(square, occupied) & occupied;
+                            atk = rAtk & pos.pieceTypeBB[Piece.WROOK];
+                            if (atk != 0) {
+                                bestValue = Evaluate.pieceValue[Piece.WROOK];
+                            } else {
+                                atk = (bAtk | rAtk) & pos.pieceTypeBB[Piece.WQUEEN];
+                                if (atk != 0) {
+                                    bestValue = Evaluate.pieceValue[Piece.WQUEEN];
+                                } else {
+                                    atk = BitBoard.kingAttacks[square] & pos.pieceTypeBB[Piece.WKING] & occupied;
+                                    if (atk != 0) {
+                                        bestValue = Evaluate.pieceValue[Piece.WKING];
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                atk = BitBoard.wPawnAttacks[square] & pos.pieceTypeBB[Piece.BPAWN] & occupied;
+                if (atk != 0) {
+                    bestValue = Evaluate.pieceValue[Piece.BPAWN];
+                } else {
+                    atk = BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.BKNIGHT] & occupied;
+                    if (atk != 0) {
+                        bestValue = Evaluate.pieceValue[Piece.BKNIGHT];
+                    } else {
+                        long bAtk = BitBoard.bishopAttacks(square, occupied) & occupied;
+                        atk = bAtk & pos.pieceTypeBB[Piece.BBISHOP];
+                        if (atk != 0) {
+                            bestValue = Evaluate.pieceValue[Piece.BBISHOP];
+                        } else {
+                            long rAtk = BitBoard.rookAttacks(square, occupied) & occupied;
+                            atk = rAtk & pos.pieceTypeBB[Piece.BROOK];
+                            if (atk != 0) {
+                                bestValue = Evaluate.pieceValue[Piece.BROOK];
+                            } else {
+                                atk = (bAtk | rAtk) & pos.pieceTypeBB[Piece.BQUEEN];
+                                if (atk != 0) {
+                                    bestValue = Evaluate.pieceValue[Piece.BQUEEN];
+                                } else {
+                                    atk = BitBoard.kingAttacks[square] & pos.pieceTypeBB[Piece.BKING] & occupied;
+                                    if (atk != 0) {
+                                        bestValue = Evaluate.pieceValue[Piece.BKING];
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         	captures[nCapt++] = valOnSquare;
-        	if (valOnSquare == kV) {
+        	if (valOnSquare == kV)
         		break;
-        	}
         	valOnSquare = bestValue;
-        	if (bestDir == 8) {
-        		if (white) {
-        			wNatks--;
-        		} else {
-        			bNatks--;
-        		}
-        	} else {
-        		dirIdx[bestDir] = SEEnextAttacker(square, bestDir, dirIdx[bestDir]);
-        	}
+        	occupied &= ~(atk & -atk);
         	white = !white;
         }
         pos.unMakeMove(m, seeUi);
@@ -909,45 +936,6 @@ public class Search {
         return captures[0] - score;
     }
 
-    static final int[] dirDx = { 1, 1, 0, -1, -1, -1,  0,  1 };
-    static final int[] dirDy = { 0, 1, 1,  1,  0, -1, -1, -1 };
-    static final int[] dirD  = { 1, 9, 8,  7, -1, -9, -8, -7 };
-
-    final private int SEEnextAttacker(int square, int direction, int index) {
-        index++;
-        int x = Position.getX(square) + dirDx[direction] * index;
-        int y = Position.getY(square) + dirDy[direction] * index;
-        square += dirD[direction] * index;
-        for (;;) {
-            if ((x < 0) || (x >= 8) || (y < 0) || (y >= 8)) {
-                return -1;      // Outside board
-            }
-            int p = pos.getPiece(square);
-            switch (p) {
-            case Piece.WKING: case Piece.BKING:
-            	if (index == 1) return 1; else return -1;
-            case Piece.WPAWN:
-            	if ((index == 1) && (dirDy[direction] == -1) && (dirDx[direction] != 0)) return 1; else return -1;
-            case Piece.BPAWN:
-            	if ((index == 1) && (dirDy[direction] == 1) && (dirDx[direction] != 0)) return 1; else return -1;
-            case Piece.WQUEEN: case Piece.BQUEEN:
-            	return index;
-            case Piece.WROOK: case Piece.BROOK:
-            	if ((direction & 1) == 0) return index; else return -1;
-            case Piece.WBISHOP: case Piece.BBISHOP:
-            	if ((direction & 1) != 0) return index; else return -1;
-            case Piece.EMPTY:
-            	break;
-            default:
-            	return -1;
-            }
-            x += dirDx[direction];
-            y += dirDy[direction];
-            square += dirD[direction];
-            index++;
-        }
-    }
-    
     /**
      * Compute scores for each move in a move list, using SEE, killer and history information.
      * @param moves  List of moves to score.
