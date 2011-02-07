@@ -172,11 +172,11 @@ public class EvaluateTest {
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
         assertEquals(0, Evaluate.material(pos));
         
-        final int p = Evaluate.pieceValue[Piece.WPAWN];
-        final int q = Evaluate.pieceValue[Piece.WQUEEN];
-        assertTrue(p != 0);
-        assertTrue(q != 0);
-        assertTrue(q > p);
+        final int pV = Evaluate.pV;
+        final int qV = Evaluate.qV;
+        assertTrue(pV != 0);
+        assertTrue(qV != 0);
+        assertTrue(qV > pV);
         
         UndoInfo ui = new UndoInfo();
         pos.makeMove(TextIO.stringToMove(pos, "e4"), ui);
@@ -184,15 +184,15 @@ public class EvaluateTest {
         pos.makeMove(TextIO.stringToMove(pos, "d5"), ui);
         assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "exd5"), ui);
-        assertEquals(p, Evaluate.material(pos));
+        assertEquals(pV, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd5"), ui);
         assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Nc3"), ui);
         assertEquals(0, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd2"), ui);
-        assertEquals(-p, Evaluate.material(pos));
+        assertEquals(-pV, Evaluate.material(pos));
         pos.makeMove(TextIO.stringToMove(pos, "Qxd2"), ui);
-        assertEquals(-p+q, Evaluate.material(pos));
+        assertEquals(-pV+qV, Evaluate.material(pos));
     }
 
     /**
@@ -246,12 +246,12 @@ public class EvaluateTest {
 
         pos.setPiece(Position.getSquare(3, 1), Piece.WROOK);
         score = evalWhite(pos);
-        final int rV = Evaluate.pieceValue[Piece.WROOK];
+        final int rV = Evaluate.rV;
         assertTrue(Math.abs(score) > rV + 100);   // Enough material to force mate
         
         pos.setPiece(Position.getSquare(3, 6), Piece.BBISHOP);
         score = evalWhite(pos);
-        final int bV = Evaluate.pieceValue[Piece.WBISHOP];
+        final int bV = Evaluate.bV;
         assertTrue(score >= 0);
         assertTrue(score < rV - bV);   // Insufficient excess material to mate
         
@@ -267,7 +267,7 @@ public class EvaluateTest {
         // KrpKn is win for white
         pos = TextIO.readFEN("8/3bk3/8/8/8/3P4/3RK3/8 w - - 0 1");
         score = evalWhite(pos);
-        final int pV = Evaluate.pieceValue[Piece.WPAWN];
+        final int pV = Evaluate.pV;
         assertTrue(score > rV + pV - bV - 100);
         
         // KNNK is a draw
@@ -277,7 +277,7 @@ public class EvaluateTest {
         
         pos = TextIO.readFEN("8/8/3k4/8/8/3NK3/2B5/8 b - - 0 1");
         score = evalWhite(pos);
-        final int nV = Evaluate.pieceValue[Piece.WKNIGHT];
+        final int nV = Evaluate.nV;
         assertTrue(score > bV + nV + 150);  // KBNK is won, should have a bonus
         score = moveScore(pos, "Kc6");
         assertTrue(score > 0);      // Black king going into wrong corner, good for white
@@ -325,8 +325,8 @@ public class EvaluateTest {
     @Test
     public void testBishAndRookPawns() throws ChessParseError {
         System.out.println("bishAndRookPawns");
-        final int pV = Evaluate.pieceValue[Piece.WPAWN];
-        final int bV = Evaluate.pieceValue[Piece.WBISHOP];
+        final int pV = Evaluate.pV;
+        final int bV = Evaluate.bV;
         final int winScore = pV + bV;
         final int drawish = (pV + bV) / 20;
         Position pos = TextIO.readFEN("k7/8/8/8/2B5/2K5/P7/8 w - - 0 1");
@@ -378,8 +378,8 @@ public class EvaluateTest {
     @Test
     public void testKQKP() throws ChessParseError {
         System.out.println("KQKP");
-        final int pV = Evaluate.pieceValue[Piece.WPAWN];
-        final int qV = Evaluate.pieceValue[Piece.WQUEEN];
+        final int pV = Evaluate.pV;
+        final int qV = Evaluate.qV;
         final int winScore = qV - pV - 200;
         final int drawish = (pV + qV) / 20;
 

@@ -497,11 +497,11 @@ public class Search {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
                 if (depth == 1) {
-                    margin = Evaluate.pieceValue[Piece.WKNIGHT] / 2;
+                    margin = Evaluate.nV / 2;
                 } else if (depth == 2) {
-                    margin = Evaluate.pieceValue[Piece.WKNIGHT];
+                    margin = Evaluate.nV;
                 } else {
-                    margin = Evaluate.pieceValue[Piece.WROOK];
+                    margin = Evaluate.rV;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
                 	evalScore = eval.evalPos(pos);
@@ -524,6 +524,7 @@ public class Search {
         }
 
         // Start searching move alternatives
+        // FIXME! Try hash move before generating move list.
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         boolean seeDone = false;
         boolean hashMoveSelected = true;
@@ -561,7 +562,7 @@ public class Search {
                 isCapture = true;
                 int fVal = Evaluate.pieceValue[pos.getPiece(m.from)];
                 int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                final int pV = Evaluate.pieceValue[Piece.WPAWN];
+                final int pV = Evaluate.pV;
                 if (Math.abs(tVal - fVal) < pV / 2) {    // "Equal" capture
                     sVal = SEE(m);
                     if (Math.abs(sVal) < pV / 2)
@@ -569,7 +570,7 @@ public class Search {
                 }
             }
             int moveExtend = 0;
-            final int pV = Evaluate.pieceValue[Piece.WPAWN];
+            final int pV = Evaluate.pV;
             if ((m.to == recaptureSquare) && (posExtend == 0)) {
                 if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
                 int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
@@ -832,11 +833,11 @@ public class Search {
      * @return SEE score for m. Positive value is good for the side that makes the first move.
      */
     final public int SEE(Move m) {
-        final int kV = Evaluate.pieceValue[Piece.WKING];
+        final int kV = Evaluate.kV;
         
         final int square = m.to;
         if (square == pos.getEpSquare()) {
-            captures[0] = Evaluate.pieceValue[Piece.WPAWN];
+            captures[0] = Evaluate.pV;
         } else {
             captures[0] = Evaluate.pieceValue[pos.getPiece(square)];
             if (captures[0] == kV)
@@ -854,29 +855,29 @@ public class Search {
             if (white) {
                 atk = BitBoard.bPawnAttacks[square] & pos.pieceTypeBB[Piece.WPAWN] & occupied;
                 if (atk != 0) {
-                    bestValue = Evaluate.pieceValue[Piece.WPAWN];
+                    bestValue = Evaluate.pV;
                 } else {
                     atk = BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.WKNIGHT] & occupied;
                     if (atk != 0) {
-                        bestValue = Evaluate.pieceValue[Piece.WKNIGHT];
+                        bestValue = Evaluate.nV;
                     } else {
                         long bAtk = BitBoard.bishopAttacks(square, occupied) & occupied;
                         atk = bAtk & pos.pieceTypeBB[Piece.WBISHOP];
                         if (atk != 0) {
-                            bestValue = Evaluate.pieceValue[Piece.WBISHOP];
+                            bestValue = Evaluate.bV;
                         } else {
                             long rAtk = BitBoard.rookAttacks(square, occupied) & occupied;
                             atk = rAtk & pos.pieceTypeBB[Piece.WROOK];
                             if (atk != 0) {
-                                bestValue = Evaluate.pieceValue[Piece.WROOK];
+                                bestValue = Evaluate.rV;
                             } else {
                                 atk = (bAtk | rAtk) & pos.pieceTypeBB[Piece.WQUEEN];
                                 if (atk != 0) {
-                                    bestValue = Evaluate.pieceValue[Piece.WQUEEN];
+                                    bestValue = Evaluate.qV;
                                 } else {
                                     atk = BitBoard.kingAttacks[square] & pos.pieceTypeBB[Piece.WKING] & occupied;
                                     if (atk != 0) {
-                                        bestValue = Evaluate.pieceValue[Piece.WKING];
+                                        bestValue = kV;
                                     } else {
                                         break;
                                     }
@@ -888,29 +889,29 @@ public class Search {
             } else {
                 atk = BitBoard.wPawnAttacks[square] & pos.pieceTypeBB[Piece.BPAWN] & occupied;
                 if (atk != 0) {
-                    bestValue = Evaluate.pieceValue[Piece.BPAWN];
+                    bestValue = Evaluate.pV;
                 } else {
                     atk = BitBoard.knightAttacks[square] & pos.pieceTypeBB[Piece.BKNIGHT] & occupied;
                     if (atk != 0) {
-                        bestValue = Evaluate.pieceValue[Piece.BKNIGHT];
+                        bestValue = Evaluate.nV;
                     } else {
                         long bAtk = BitBoard.bishopAttacks(square, occupied) & occupied;
                         atk = bAtk & pos.pieceTypeBB[Piece.BBISHOP];
                         if (atk != 0) {
-                            bestValue = Evaluate.pieceValue[Piece.BBISHOP];
+                            bestValue = Evaluate.bV;
                         } else {
                             long rAtk = BitBoard.rookAttacks(square, occupied) & occupied;
                             atk = rAtk & pos.pieceTypeBB[Piece.BROOK];
                             if (atk != 0) {
-                                bestValue = Evaluate.pieceValue[Piece.BROOK];
+                                bestValue = Evaluate.rV;
                             } else {
                                 atk = (bAtk | rAtk) & pos.pieceTypeBB[Piece.BQUEEN];
                                 if (atk != 0) {
-                                    bestValue = Evaluate.pieceValue[Piece.BQUEEN];
+                                    bestValue = Evaluate.qV;
                                 } else {
                                     atk = BitBoard.kingAttacks[square] & pos.pieceTypeBB[Piece.BKING] & occupied;
                                     if (atk != 0) {
-                                        bestValue = Evaluate.pieceValue[Piece.BKING];
+                                        bestValue = kV;
                                     } else {
                                         break;
                                     }

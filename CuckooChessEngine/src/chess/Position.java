@@ -73,7 +73,7 @@ public class Position {
         fullMoveCounter = 1;
         hashKey = computeZobristHash();
         wKingSq = bKingSq = -1;
-        wMtrl = bMtrl = -Evaluate.pieceValue[Piece.WKING];
+        wMtrl = bMtrl = -Evaluate.kV;
         wMtrlPawns = bMtrlPawns = 0;
     }
 

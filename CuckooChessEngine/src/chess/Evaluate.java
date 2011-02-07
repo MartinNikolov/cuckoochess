@@ -14,23 +14,30 @@ import java.io.InputStream;
  * @author petero
  */
 public class Evaluate {
+    static final int pV =  100;
+    static final int nV =  400;
+    static final int bV =  400;
+    static final int rV =  600;
+    static final int qV = 1200;
+    static final int kV = 9900; // Used by SEE algorithm, but not included in board material sums
+
     static final int[] pieceValue;
     static {
         // Initialize material table
         pieceValue = new int[Piece.nPieceTypes];
-        pieceValue[Piece.WKING  ] =  9900; // Used by SEE algorithm, but not included in board material sums
-        pieceValue[Piece.WQUEEN ] =  1200;
-        pieceValue[Piece.WROOK  ] =   600;
-        pieceValue[Piece.WBISHOP] =   400;
-        pieceValue[Piece.WKNIGHT] =   400;
-        pieceValue[Piece.WPAWN  ] =   100;
-        pieceValue[Piece.BKING  ] =  9900;
-        pieceValue[Piece.BQUEEN ] =  1200;
-        pieceValue[Piece.BROOK  ] =   600;
-        pieceValue[Piece.BBISHOP] =   400;
-        pieceValue[Piece.BKNIGHT] =   400;
-        pieceValue[Piece.BPAWN  ] =   100;
-        pieceValue[Piece.EMPTY  ] =     0;
+        pieceValue[Piece.WKING  ] = kV;
+        pieceValue[Piece.WQUEEN ] = qV;
+        pieceValue[Piece.WROOK  ] = rV;
+        pieceValue[Piece.WBISHOP] = bV;
+        pieceValue[Piece.WKNIGHT] = nV;
+        pieceValue[Piece.WPAWN  ] = pV;
+        pieceValue[Piece.BKING  ] = kV;
+        pieceValue[Piece.BQUEEN ] = qV;
+        pieceValue[Piece.BROOK  ] = rV;
+        pieceValue[Piece.BBISHOP] = bV;
+        pieceValue[Piece.BKNIGHT] = nV;
+        pieceValue[Piece.BPAWN  ] = pV;
+        pieceValue[Piece.EMPTY  ] =  0;
     }
 
     /** Piece/square table for king during middle game. */
@@ -255,11 +262,6 @@ public class Evaluate {
     /** Compute score based on piece square tables. Positive values are good for white. */
     private final int pieceSquareEval(Position pos) {
         int score = 0;
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int rV = pieceValue[Piece.WROOK];
-        final int bV = pieceValue[Piece.WBISHOP];
-        final int nV = pieceValue[Piece.WKNIGHT];
-        final int pV = pieceValue[Piece.WPAWN];
         final int wMtrl = pos.wMtrl;
         final int bMtrl = pos.bMtrl;
         final int wMtrlPawns = pos.wMtrlPawns;
@@ -369,12 +371,6 @@ public class Evaluate {
 
     /** Implement the "when ahead trade pieces, when behind trade pawns" rule. */
     private final int tradeBonus(Position pos) {
-        final int pV = pieceValue[Piece.WPAWN];
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int rV = pieceValue[Piece.WROOK];
-        final int bV = pieceValue[Piece.WBISHOP];
-        final int nV = pieceValue[Piece.WKNIGHT];
-
         final int wM = pos.wMtrl;
         final int bM = pos.bMtrl;
         final int wPawn = pos.wMtrlPawns;
@@ -391,9 +387,6 @@ public class Evaluate {
     /** Score castling ability. */
     private final int castleBonus(Position pos) {
     	if (pos.getCastleMask() == 0) return 0;
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int rV = pieceValue[Piece.WROOK];
-        final int bV = pieceValue[Piece.WBISHOP];
 
         final int k1 = kt1b[7*8+6] - kt1b[7*8+4];
         final int k2 = kt2b[7*8+6] - kt2b[7*8+4];
@@ -447,8 +440,6 @@ public class Evaluate {
     	int score = phd.score;
         ph = phd;
 
-    	final int qV = pieceValue[Piece.WQUEEN];
-        final int rV = pieceValue[Piece.WROOK];
         final int hiMtrl = qV + rV;
         score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * phd.passedBonusW, hiMtrl, phd.passedBonusW);
         score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * phd.passedBonusB, hiMtrl, phd.passedBonusB);
@@ -681,9 +672,6 @@ public class Evaluate {
         if ((numWhite == 1) && (numBlack == 1) && (whiteDark != blackDark) &&
             (pos.wMtrl - pos.wMtrlPawns == pos.bMtrl - pos.bMtrlPawns)) {
             final int penalty = (oldScore + score) / 2;
-            final int qV = pieceValue[Piece.WQUEEN];
-            final int rV = pieceValue[Piece.WROOK];
-            final int bV = pieceValue[Piece.WBISHOP];
             final int loMtrl = 2 * bV;
             final int hiMtrl = 2 * (qV + rV + bV);
             int mtrl = pos.wMtrl + pos.bMtrl - pos.wMtrlPawns - pos.bMtrlPawns;
@@ -692,7 +680,6 @@ public class Evaluate {
 
         // Penalty for bishop trapped behind pawn at a2/h2/a7/h7
         if (((wBishops | bBishops) & 0x0081000000008100L) != 0) {
-            final int pV = pieceValue[Piece.WPAWN];
             if ((pos.squares[48] == Piece.WBISHOP) && // a7
                 (pos.squares[41] == Piece.BPAWN) &&
                 (pos.squares[50] == Piece.BPAWN))
@@ -738,7 +725,6 @@ public class Evaluate {
             tmp += pieceValue[pos.squares[sq]];
             m &= m-1;
         }
-        final int qV = pieceValue[Piece.WQUEEN];
         score += tmp + tmp * tmp / qV;
 
         // Sum values for all white pieces under attack
@@ -768,14 +754,10 @@ public class Evaluate {
 
     /** Compute king safety for both kings. */
     private final int kingSafety(Position pos) {
-        final int rV = pieceValue[Piece.WROOK];
-        final int bV = pieceValue[Piece.WBISHOP];
         final int minM = rV + bV;
         final int m = (pos.wMtrl - pos.wMtrlPawns + pos.bMtrl - pos.bMtrlPawns) / 2;
         if (m <= minM)
             return 0;
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int nV = pieceValue[Piece.WKNIGHT];
         final int maxM = qV + 2 * rV + 2 * bV + 2 * nV;
         int score = 0;
         long wPawns = pos.pieceTypeBB[Piece.WPAWN];
@@ -874,11 +856,8 @@ public class Evaluate {
     /** Implements special knowledge for some endgame situations. */
     private final int endGameEval(Position pos, int oldScore) {
         int score = oldScore;
-        final int rV = pieceValue[Piece.WROOK];
     	if (pos.wMtrl + pos.bMtrl > 6 * rV)
     		return score;
-        final int bV = pieceValue[Piece.WBISHOP];
-        final int nV = pieceValue[Piece.WKNIGHT];
         final int wMtrlPawns = pos.wMtrlPawns;
         final int bMtrlPawns = pos.bMtrlPawns;
         final int wMtrlNoPawns = pos.wMtrl - wMtrlPawns;
@@ -890,8 +869,6 @@ public class Evaluate {
             score /= 50;
             handled = true;
         }
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int pV = pieceValue[Piece.WPAWN];
         if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) &&
             (Long.bitCount(pos.pieceTypeBB[Piece.WQUEEN]) == 1)) {
             int wk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
@@ -1045,8 +1022,6 @@ public class Evaluate {
             }
         }
 
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int pV = pieceValue[Piece.WPAWN];
         final int dist = Math.max(Math.abs(Position.getX(wKing)-Position.getX(bPawn)),
                                   Math.abs(Position.getY(wKing)-Position.getY(bPawn)));
         int score = qV - pV - 20 * dist;
@@ -1071,8 +1046,6 @@ public class Evaluate {
         boolean draw = (((int)kpkTable[bytePos]) & (1 << bitPos)) == 0;
         if (draw)
             return 0;
-        final int qV = pieceValue[Piece.WQUEEN];
-        final int pV = pieceValue[Piece.WPAWN];
         return qV - pV / 4 * (7-Position.getY(wPawn));
     }
 
