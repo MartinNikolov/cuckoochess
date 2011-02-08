@@ -533,7 +533,7 @@ public class Search {
             seeDone = true;
             hashMoveSelected = false;
         }
-        
+
         UndoInfo ui = sti.undoInfo;
         boolean haveLegalMoves = false;
         int illegalScore = -(MATE0-(ply+1));

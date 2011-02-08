@@ -28,7 +28,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.WQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -37,7 +37,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.WROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -46,7 +46,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.WBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -81,7 +81,7 @@ public class MoveGen {
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.WKNIGHT];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 knights &= knights-1;
@@ -105,7 +105,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -114,7 +114,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.BROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -123,7 +123,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.BBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -158,7 +158,7 @@ public class MoveGen {
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.BKNIGHT];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 knights &= knights-1;
@@ -202,7 +202,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.WQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk | kBishAtk);
                 m &= ~pos.whiteBB;
@@ -213,7 +213,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.WROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk);
                 m &= ~pos.whiteBB;
@@ -224,7 +224,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.WBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kBishAtk);
                 m &= ~pos.whiteBB;
@@ -263,7 +263,7 @@ public class MoveGen {
             long knights = pos.pieceTypeBB[Piece.WKNIGHT];
             long kKnightAtk = BitBoard.knightAttacks[bKingSq];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB;
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kKnightAtk);
                 m &= ~pos.whiteBB;
@@ -308,7 +308,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk | kBishAtk;
                 m &= ~pos.blackBB;
@@ -319,7 +319,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.BROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk;
                 m &= ~pos.blackBB;
@@ -330,7 +330,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.BBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kBishAtk;
                 m &= ~pos.blackBB;
@@ -369,7 +369,7 @@ public class MoveGen {
             long knights = pos.pieceTypeBB[Piece.BKNIGHT];
             long kKnightAtk = BitBoard.knightAttacks[wKingSq];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.blackBB;
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kKnightAtk;
                 m &= ~pos.blackBB;
@@ -411,7 +411,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.WQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -420,7 +420,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.WROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -429,7 +429,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.WBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -438,7 +438,7 @@ public class MoveGen {
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.WKNIGHT];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & pos.blackBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 knights &= knights-1;
@@ -465,7 +465,7 @@ public class MoveGen {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -474,7 +474,7 @@ public class MoveGen {
             // Rook moves
             squares = pos.pieceTypeBB[Piece.BROOK];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -483,7 +483,7 @@ public class MoveGen {
             // Bishop moves
             squares = pos.pieceTypeBB[Piece.BBISHOP];
             while (squares != 0) {
-                int sq = Long.numberOfTrailingZeros(squares);
+                int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 squares &= squares-1;
@@ -492,7 +492,7 @@ public class MoveGen {
             // Knight moves
             long knights = pos.pieceTypeBB[Piece.BKNIGHT];
             while (knights != 0) {
-                int sq = Long.numberOfTrailingZeros(knights);
+                int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & pos.whiteBB;
                 if (addMovesByMask(moveList, pos, sq, m)) return moveList;
                 knights &= knights-1;
@@ -766,7 +766,7 @@ public class MoveGen {
             return false;
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
-            int sq = Long.numberOfTrailingZeros(mask & oKingMask);
+            int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
             returnMoveList(moveList);
             moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
             moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
@@ -775,7 +775,7 @@ public class MoveGen {
         long promMask = mask & BitBoard.maskRow1Row8;
         mask &= ~promMask;
         while (promMask != 0) {
-            int sq = Long.numberOfTrailingZeros(promMask);
+            int sq = BitBoard.numberOfTrailingZeros(promMask);
             int sq0 = sq + delta;
             if (sq >= 56) { // White promotion
                 moveList.add(getMoveObj(sq0, sq, Piece.WQUEEN));
@@ -795,7 +795,7 @@ public class MoveGen {
             promMask &= (promMask - 1);
         }
         while (mask != 0) {
-            int sq = Long.numberOfTrailingZeros(mask);
+            int sq = BitBoard.numberOfTrailingZeros(mask);
             moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
             mask &= (mask - 1);
         }
@@ -805,7 +805,7 @@ public class MoveGen {
     private final void addPawnDoubleMovesByMask(ArrayList<Move> moveList, Position pos,
                                                 long mask, int delta) {
         while (mask != 0) {
-            int sq = Long.numberOfTrailingZeros(mask);
+            int sq = BitBoard.numberOfTrailingZeros(mask);
             moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
             mask &= (mask - 1);
         }
@@ -814,14 +814,14 @@ public class MoveGen {
     private final boolean addMovesByMask(ArrayList<Move> moveList, Position pos, int sq0, long mask) {
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
-            int sq = Long.numberOfTrailingZeros(mask & oKingMask);
+            int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
             returnMoveList(moveList);
             moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
             moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
             return true;
         }
         while (mask != 0) {
-            int sq = Long.numberOfTrailingZeros(mask);
+            int sq = BitBoard.numberOfTrailingZeros(mask);
             moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
             mask &= (mask - 1);
         }

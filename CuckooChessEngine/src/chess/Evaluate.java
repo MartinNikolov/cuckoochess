@@ -331,7 +331,7 @@ public class Evaluate {
             score += pos.psScore1[Piece.WQUEEN];
             long m = pos.pieceTypeBB[Piece.WQUEEN];
             while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
+                int sq = BitBoard.numberOfTrailingZeros(m);
                 long atk = BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied);
                 wAttacksBB |= atk;
                 score += queenMobScore[Long.bitCount(atk & ~pos.whiteBB)];
@@ -341,7 +341,7 @@ public class Evaluate {
             score -= pos.psScore1[Piece.BQUEEN];
             m = pos.pieceTypeBB[Piece.BQUEEN];
             while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
+                int sq = BitBoard.numberOfTrailingZeros(m);
                 long atk = BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied);
                 bAttacksBB |= atk;
                 score -= queenMobScore[Long.bitCount(atk & ~pos.blackBB)];
@@ -453,7 +453,7 @@ public class Evaluate {
             int kingY = Position.getY(kingPos);
             long m = ph.passedPawnsW;
             while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
+                int sq = BitBoard.numberOfTrailingZeros(m);
                 int x = Position.getX(sq);
                 int y = Position.getY(sq);
                 int pawnDist = Math.min(5, 7 - y);
@@ -475,7 +475,7 @@ public class Evaluate {
             int kingY = Position.getY(kingPos);
             long m = ph.passedPawnsB;
             while (m != 0) {
-                int sq = Long.numberOfTrailingZeros(m);
+                int sq = BitBoard.numberOfTrailingZeros(m);
                 int x = Position.getX(sq);
                 int y = Position.getY(sq);
                 int pawnDist = Math.min(5, y);
@@ -590,7 +590,7 @@ public class Evaluate {
         final long occupied = pos.whiteBB | pos.blackBB;
         long m = pos.pieceTypeBB[Piece.WROOK];
         while (m != 0) {
-        	int sq = Long.numberOfTrailingZeros(m);
+        	int sq = BitBoard.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if ((wPawns & BitBoard.maskFile[x]) == 0) { // At least half-open file
                 score += (bPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
@@ -606,7 +606,7 @@ public class Evaluate {
             score += 20; // Two rooks on 7:th row
         m = pos.pieceTypeBB[Piece.BROOK];
         while (m != 0) {
-        	int sq = Long.numberOfTrailingZeros(m);
+        	int sq = BitBoard.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if ((bPawns & BitBoard.maskFile[x]) == 0) {
                 score -= (wPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
@@ -633,7 +633,7 @@ public class Evaluate {
             return 0;
         long m = wBishops;
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
             wAttacksBB |= atk;
             score += bishMobScore[Long.bitCount(atk & ~pos.whiteBB)];
@@ -642,7 +642,7 @@ public class Evaluate {
         }
         m = bBishops;
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
             bAttacksBB |= atk;
             score -= bishMobScore[Long.bitCount(atk & ~pos.blackBB)];
@@ -707,7 +707,7 @@ public class Evaluate {
         // Sum values for all black pieces under attack
         long m = pos.pieceTypeBB[Piece.WKNIGHT];
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             wAttacksBB |= BitBoard.knightAttacks[sq];
             m &= m-1;
         }
@@ -721,7 +721,7 @@ public class Evaluate {
         m = wAttacksBB & pos.blackBB & ~pos.pieceTypeBB[Piece.BKING];
         int tmp = 0;
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             tmp += pieceValue[pos.squares[sq]];
             m &= m-1;
         }
@@ -730,7 +730,7 @@ public class Evaluate {
         // Sum values for all white pieces under attack
         m = pos.pieceTypeBB[Piece.BKNIGHT];
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             bAttacksBB |= BitBoard.knightAttacks[sq];
             m &= m-1;
         }
@@ -744,7 +744,7 @@ public class Evaluate {
         m = bAttacksBB & pos.whiteBB & ~pos.pieceTypeBB[Piece.WKING];
         tmp = 0;
         while (m != 0) {
-            int sq = Long.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             tmp += pieceValue[pos.squares[sq]];
             m &= m-1;
         }
@@ -871,19 +871,19 @@ public class Evaluate {
         }
         if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) &&
             (Long.bitCount(pos.pieceTypeBB[Piece.WQUEEN]) == 1)) {
-            int wk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
-            int wq = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WQUEEN]);
-            int bk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
-            int bp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
+            int wk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
+            int wq = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WQUEEN]);
+            int bk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
+            int bp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
             score = evalKQKP(wk, wq, bk, bp);
             handled = true;
         }
         if (!handled && (pos.bMtrl == qV) && (pos.wMtrl == pV) && 
             (Long.bitCount(pos.pieceTypeBB[Piece.BQUEEN]) == 1)) {
-            int bk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
-            int bq = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BQUEEN]);
-            int wk = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
-            int wp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
+            int bk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
+            int bq = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BQUEEN]);
+            int wk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
+            int wp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
             score = -evalKQKP(63-bk, 63-bq, 63-wk, 63-wp);
             handled = true;
         }
@@ -931,7 +931,7 @@ public class Evaluate {
                     }
                     handled = true;
                 } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (wMtrlPawns == pV)) { // KPK
-                    int wp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
+                    int wp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
                     score = kpkEval(pos.getKingSq(true), pos.getKingSq(false),
                                     wp, pos.whiteMove);
                     handled = true;
@@ -982,7 +982,7 @@ public class Evaluate {
                     }
                     handled = true;
                 } else if ((wMtrlNoPawns + bMtrlNoPawns == 0) && (bMtrlPawns == pV)) { // KPK
-                    int bp = Long.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
+                    int bp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
                     score = -kpkEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
                                      63-bp, !pos.whiteMove);
                     handled = true;

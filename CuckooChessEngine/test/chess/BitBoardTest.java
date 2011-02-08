@@ -76,4 +76,12 @@ public class BitBoardTest {
         assertEquals(0x0040201008040200L, BitBoard.squaresBetween[0][63]);
         assertEquals(0x000000001C000000L, BitBoard.squaresBetween[TextIO.getSquare("b4")][TextIO.getSquare("f4")]);
     }
+
+    @Test
+    public void testTrailingZeros() {
+        for (int i = 0; i < 64; i++) {
+            long mask = 1L << i;
+            assertEquals(i, BitBoard.numberOfTrailingZeros(mask));
+        }
+    }
 }
