@@ -379,11 +379,35 @@ public class MoveGenTest {
         getMoveList(pos, false);
     }
 
+    @Test
+    public void testCheckEvasions() throws ChessParseError {
+        System.out.println("checkEvasions");
+        Position pos = TextIO.readFEN("n7/8/8/7k/5pP1/5K2/8/8 b - g3 0 1");
+        getMoveList(pos, false);
+
+        pos = TextIO.readFEN("rn1qkbnr/pppB1ppp/3p4/4p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1");
+        getMoveList(pos, false);
+
+        // King captures must be included in check evasions
+        pos = TextIO.readFEN("r1bq2r1/pp3pbk/2p1p1P1/8/3P4/2PB1N2/PP3PPR/2KR4 b - - 0 1");
+        UndoInfo ui = new UndoInfo();
+        pos.makeMove(TextIO.uciStringToMove("g7h6"), ui);
+        getMoveList(pos, false);
+        List<String> evList = getCheckEvasions(pos, false);
+        assertTrue(evList.contains("g6h7"));
+
+        pos = TextIO.readFEN("1R6/1brk2p1/2P1p2p/p3Pp2/P7/6P1/1P4P1/2R3K1 b - - 0 1");
+        getMoveList(pos, false);
+        evList = getCheckEvasions(pos, false);
+        assertTrue(evList.contains("b7c6"));
+    }
+
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
         Position swap = EvaluateTest.swapColors(pos);
         List<String> swapList = getMoveList0(swap, onlyLegal);
         List<String> ret = getMoveList0(pos, onlyLegal);
         assertEquals(swapList.size(), ret.size());
+        // FIXME! Test that swapList contains swapped moves compared to ret
         return ret;
     }
 
@@ -405,8 +429,18 @@ public class MoveGenTest {
         List<String> capList2 = getCaptureList(pos, true, onlyLegal);
         assertTrue(strMoves.containsAll(capList2));
 
+        List<String> evList = getCheckEvasions(pos, onlyLegal);
+        if (evList != null)
+            assertTrue(strMoves.containsAll(evList));
+        UndoInfo ui = new UndoInfo();
         for (String sm : strMoves) {
             Move m = TextIO.uciStringToMove(sm);
+            if (m != null) {
+                pos.makeMove(m, ui);
+                boolean invalid = MoveGen.canTakeKing(pos);
+                pos.unMakeMove(m, ui);
+                if (invalid) m = null;
+            }
             if (m == null) // Move was illegal (but pseudo-legal)
                 continue;
             boolean qProm = false; // Promotion types considered in qsearch
@@ -443,6 +477,9 @@ public class MoveGenTest {
                     assertTrue(capList2.contains(sm));
                 }
             }
+            if (evList != null) {
+                assertTrue(evList.contains(sm));
+            }
         }
 
         return strMoves;
@@ -464,4 +501,18 @@ public class MoveGenTest {
         }
         return strMoves;
     }
+
+    private List<String> getCheckEvasions(Position pos, boolean onlyLegal) {
+        if (!MoveGen.inCheck(pos))
+            return null;
+        ArrayList<Move> moves = new MoveGen().checkEvasions(pos);
+        if (onlyLegal)
+            moves = MoveGen.removeIllegal(pos, moves);
+        ArrayList<String> strMoves = new ArrayList<String>();
+        for (Move m : moves) {
+            String mStr = TextIO.moveToUCIString(m);
+            strMoves.add(mStr);
+        }
+        return strMoves;
+     }
 }

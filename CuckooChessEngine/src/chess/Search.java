@@ -525,7 +525,11 @@ public class Search {
 
         // Start searching move alternatives
         // FIXME! Try hash move before generating move list.
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        ArrayList<Move> moves;
+        if (inCheck)
+            moves = moveGen.checkEvasions(pos);
+        else 
+            moves = moveGen.pseudoLegalMoves(pos);
         boolean seeDone = false;
         boolean hashMoveSelected = true;
         if (!selectHashMove(moves, hashMove)) {
@@ -577,7 +581,7 @@ public class Search {
                 if (sVal > tVal - pV / 2)
                     moveExtend = 1;
             }
-            if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
+            if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) { // FIXME! Unnecessary when posExtend > 0
                 // Extend if going into pawn endgame
                 int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
                 if (pos.whiteMove) {
@@ -738,7 +742,7 @@ public class Search {
         final boolean tryChecks = (depth > -3);
         ArrayList<Move> moves;
         if (inCheck) {
-            moves = moveGen.pseudoLegalMoves(pos);
+            moves = moveGen.checkEvasions(pos);
             scoreMoveList(moves, ply);
         } else if (tryChecks) {
             moves = moveGen.pseudoLegalCapturesAndChecks(pos);

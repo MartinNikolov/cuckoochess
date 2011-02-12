@@ -196,6 +196,12 @@ public class SearchTest {
         Search sc = new Search(pos, nullHist, 0, tt);
         Move bestM = idSearch(sc, 3);
         assertTrue(bestM.score < 0);
+
+        pos = TextIO.readFEN("r1bq2rk/pp3pbp/2p1p1pQ/7P/3P4/2PB1N2/PP3PPR/2KR4 w - -"); // WAC 004
+        sc = new Search(pos, nullHist, 0, tt);
+        bestM = idSearch(sc, 1);
+        assertEquals(Search.MATE0 - 4, bestM.score);
+        assertEquals(TextIO.stringToMove(pos, "Qxh7+"), new Move(bestM));
     }
 
     @Test

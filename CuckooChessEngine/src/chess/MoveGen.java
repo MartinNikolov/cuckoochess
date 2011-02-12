@@ -23,7 +23,7 @@ public class MoveGen {
      */
     public final ArrayList<Move> pseudoLegalMoves(Position pos) {
         ArrayList<Move> moveList = getMoveListObj();
-        long occupied = pos.whiteBB | pos.blackBB;
+        final long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.WQUEEN];
@@ -89,9 +89,9 @@ public class MoveGen {
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
-            long m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
+            long m = (pawns << 8) & ~occupied;
             if (addPawnMovesByMask(moveList, pos, m, -8, true)) return moveList;
-            m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
+            m = ((m & BitBoard.maskRow3) << 8) & ~occupied;
             addPawnDoubleMovesByMask(moveList, pos, m, -16);
 
             int epSquare = pos.getEpSquare();
@@ -166,9 +166,9 @@ public class MoveGen {
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
-            long m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            long m = (pawns >>> 8) & ~occupied;
             if (addPawnMovesByMask(moveList, pos, m, 8, true)) return moveList;
-            m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
+            m = ((m & BitBoard.maskRow6) >>> 8) & ~occupied;
             addPawnDoubleMovesByMask(moveList, pos, m, 16);
 
             int epSquare = pos.getEpSquare();
@@ -179,6 +179,177 @@ public class MoveGen {
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
             if (addPawnMovesByMask(moveList, pos, m, 7, true)) return moveList;
         }
+
+        return moveList;
+    }
+
+    /**
+     * Generate and return a list of pseudo-legal check evasion moves.
+     * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
+     */
+    public final ArrayList<Move> checkEvasions(Position pos) {
+        ArrayList<Move> moveList = getMoveListObj();
+        final long occupied = pos.whiteBB | pos.blackBB;
+        if (pos.whiteMove) {
+            long kingThreats = pos.pieceTypeBB[Piece.BKNIGHT] & BitBoard.knightAttacks[pos.wKingSq];
+            long rookPieces = pos.pieceTypeBB[Piece.BROOK] | pos.pieceTypeBB[Piece.BQUEEN];
+            if (rookPieces != 0)
+                kingThreats |= rookPieces & BitBoard.rookAttacks(pos.wKingSq, occupied);
+            long bishPieces = pos.pieceTypeBB[Piece.BBISHOP] | pos.pieceTypeBB[Piece.BQUEEN];
+            if (bishPieces != 0)
+                kingThreats |= bishPieces & BitBoard.bishopAttacks(pos.wKingSq, occupied);
+            kingThreats |= pos.pieceTypeBB[Piece.BPAWN] & BitBoard.wPawnAttacks[pos.wKingSq];
+            long validTargets = 0;
+            if ((kingThreats != 0) && ((kingThreats & (kingThreats-1)) == 0)) { // Exactly one attacking piece
+                int threatSq = BitBoard.numberOfTrailingZeros(kingThreats);
+                validTargets = kingThreats | BitBoard.squaresBetween[pos.wKingSq][threatSq];
+            }
+            validTargets |= pos.pieceTypeBB[Piece.BKING];
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.WQUEEN];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) &
+                            ~pos.whiteBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.WROOK];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & ~pos.whiteBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.WBISHOP];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.whiteBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // King moves
+            {
+                int sq = pos.getKingSq(true);
+                long m = BitBoard.kingAttacks[sq] & ~pos.whiteBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+            }
+
+            // Knight moves
+            long knights = pos.pieceTypeBB[Piece.WKNIGHT];
+            while (knights != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(knights);
+                long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                knights &= knights-1;
+            }
+
+            // Pawn moves
+            long pawns = pos.pieceTypeBB[Piece.WPAWN];
+            long m = (pawns << 8) & ~occupied;
+            if (addPawnMovesByMask(moveList, pos, m & validTargets, -8, true)) return moveList;
+            m = ((m & BitBoard.maskRow3) << 8) & ~occupied;
+            addPawnDoubleMovesByMask(moveList, pos, m & validTargets, -16);
+
+            int epSquare = pos.getEpSquare();
+            long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
+            m = (pawns << 7) & BitBoard.maskAToGFiles & ((pos.blackBB & validTargets) | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, -7, true)) return moveList;
+
+            m = (pawns << 9) & BitBoard.maskBToHFiles & ((pos.blackBB & validTargets) | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, -9, true)) return moveList;
+        } else {
+            long kingThreats = pos.pieceTypeBB[Piece.WKNIGHT] & BitBoard.knightAttacks[pos.bKingSq];
+            long rookPieces = pos.pieceTypeBB[Piece.WROOK] | pos.pieceTypeBB[Piece.WQUEEN];
+            if (rookPieces != 0)
+                kingThreats |= rookPieces & BitBoard.rookAttacks(pos.bKingSq, occupied);
+            long bishPieces = pos.pieceTypeBB[Piece.WBISHOP] | pos.pieceTypeBB[Piece.WQUEEN];
+            if (bishPieces != 0)
+                kingThreats |= bishPieces & BitBoard.bishopAttacks(pos.bKingSq, occupied);
+            kingThreats |= pos.pieceTypeBB[Piece.WPAWN] & BitBoard.bPawnAttacks[pos.bKingSq];
+            long validTargets = 0;
+            if ((kingThreats != 0) && ((kingThreats & (kingThreats-1)) == 0)) { // Exactly one attacking piece
+                int threatSq = BitBoard.numberOfTrailingZeros(kingThreats);
+                validTargets = kingThreats | BitBoard.squaresBetween[pos.bKingSq][threatSq];
+            }
+            validTargets |= pos.pieceTypeBB[Piece.WKING];
+            // Queen moves
+            long squares = pos.pieceTypeBB[Piece.BQUEEN];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) &
+                            ~pos.blackBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Rook moves
+            squares = pos.pieceTypeBB[Piece.BROOK];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = BitBoard.rookAttacks(sq, occupied) & ~pos.blackBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+
+            // Bishop moves
+            squares = pos.pieceTypeBB[Piece.BBISHOP];
+            while (squares != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(squares);
+                long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.blackBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                squares &= squares-1;
+            }
+            
+            // King moves
+            {
+                int sq = pos.getKingSq(false);
+                long m = BitBoard.kingAttacks[sq] & ~pos.blackBB;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+            }
+
+            // Knight moves
+            long knights = pos.pieceTypeBB[Piece.BKNIGHT];
+            while (knights != 0) {
+                int sq = BitBoard.numberOfTrailingZeros(knights);
+                long m = BitBoard.knightAttacks[sq] & ~pos.blackBB & validTargets;
+                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                knights &= knights-1;
+            }
+
+            // Pawn moves
+            long pawns = pos.pieceTypeBB[Piece.BPAWN];
+            long m = (pawns >>> 8) & ~occupied;
+            if (addPawnMovesByMask(moveList, pos, m & validTargets, 8, true)) return moveList;
+            m = ((m & BitBoard.maskRow6) >>> 8) & ~occupied;
+            addPawnDoubleMovesByMask(moveList, pos, m & validTargets, 16);
+
+            int epSquare = pos.getEpSquare();
+            long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
+            m = (pawns >>> 9) & BitBoard.maskAToGFiles & ((pos.whiteBB & validTargets) | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, 9, true)) return moveList;
+
+            m = (pawns >>> 7) & BitBoard.maskBToHFiles & ((pos.whiteBB & validTargets) | epMask);
+            if (addPawnMovesByMask(moveList, pos, m, 7, true)) return moveList;
+        }
+
+        /* Extra debug checks
+        {
+            ArrayList<Move> allMoves = pseudoLegalMoves(pos);
+            allMoves = MoveGen.removeIllegal(pos, allMoves);
+            HashSet<String> evMoves = new HashSet<String>();
+            for (Move m : moveList)
+                evMoves.add(TextIO.moveToUCIString(m));
+            for (Move m : allMoves)
+                if (!evMoves.contains(TextIO.moveToUCIString(m)))
+                    throw new RuntimeException();
+        }
+        */
 
         return moveList;
     }
@@ -556,7 +727,7 @@ public class MoveGen {
     			return p;
     	}
     }
-    
+
     /** Like nextPiece(), but handles board edges. */
     private static final int nextPieceSafe(Position pos, int sq, int delta) {
     	int dx = 0, dy = 0;
