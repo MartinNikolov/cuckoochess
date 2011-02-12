@@ -411,7 +411,7 @@ public class EvaluateTest {
         return ret;
     }
     
-    private final static Position swapColors(Position pos) {
+    final static Position swapColors(Position pos) {
         Position sym = new Position();
         sym.whiteMove = !pos.whiteMove;
         for (int x = 0; x < 8; x++) {

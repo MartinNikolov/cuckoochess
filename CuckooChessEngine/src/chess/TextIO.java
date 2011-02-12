@@ -381,6 +381,55 @@ public class TextIO {
         return ret;
     }
 
+    /**
+     * Convert a string to a Move object.
+     * @return A move object, or null if move has invalid syntax
+     */
+    public static final Move uciStringToMove(String move) {
+        Move m = null;
+        if ((move.length() < 4) || (move.length() > 5))
+            return m;
+        int fromSq = TextIO.getSquare(move.substring(0, 2));
+        int toSq   = TextIO.getSquare(move.substring(2, 4));
+        if ((fromSq < 0) || (toSq < 0)) {
+            return m;
+        }
+        char prom = ' ';
+        boolean white = true;
+        if (move.length() == 5) {
+            prom = move.charAt(4);
+            if (Position.getY(toSq) == 7) {
+                white = true;
+            } else if (Position.getY(toSq) == 0) {
+                white = false;
+            } else {
+                return m;
+            }
+        }
+        int promoteTo;
+        switch (prom) {
+            case ' ':
+                promoteTo = Piece.EMPTY;
+                break;
+            case 'q':
+                promoteTo = white ? Piece.WQUEEN : Piece.BQUEEN;
+                break;
+            case 'r':
+                promoteTo = white ? Piece.WROOK : Piece.BROOK;
+                break;
+            case 'b':
+                promoteTo = white ? Piece.WBISHOP : Piece.BBISHOP;
+                break;
+            case 'n':
+                promoteTo = white ? Piece.WKNIGHT : Piece.BKNIGHT;
+                break;
+            default:
+                return m;
+        }
+        m = new Move(fromSq, toSq, promoteTo);
+        return m;
+    }
+
     private static boolean isCapture(Position pos, Move move) {
         if (pos.getPiece(move.to) == Piece.EMPTY) {
             int p = pos.getPiece(move.from);

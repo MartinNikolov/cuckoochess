@@ -39,42 +39,42 @@ public class MoveGenTest {
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
         List<String> strMoves = getMoveList(pos, false);
-        assertTrue(strMoves.contains("Ra1-d1"));
-        assertTrue(!strMoves.contains("Ra1-e1"));
-        assertTrue(!strMoves.contains("Ra1-f1"));
-        assertTrue(strMoves.contains("Ra1-a7+"));
-        assertTrue(strMoves.contains("Ke1-f2"));
-        assertTrue(!strMoves.contains("Ke1-g3"));
-        assertTrue(strMoves.contains("Bc3-f6"));
-        assertTrue(!strMoves.contains("Nb3xd2"));
+        assertTrue(strMoves.contains("a1d1"));
+        assertTrue(!strMoves.contains("a1e1"));
+        assertTrue(!strMoves.contains("a1f1"));
+        assertTrue(strMoves.contains("a1a7"));
+        assertTrue(strMoves.contains("e1f2"));
+        assertTrue(!strMoves.contains("e1g3"));
+        assertTrue(strMoves.contains("c3f6"));
+        assertTrue(!strMoves.contains("b3d2"));
 
         // Test castling
-        assertTrue(strMoves.contains("O-O"));
-        assertTrue(strMoves.contains("O-O-O"));
+        assertTrue(strMoves.contains("e1g1"));
+        assertTrue(strMoves.contains("e1c1"));
         assertEquals(49, strMoves.size());
-        
+
         pos.setPiece(Position.getSquare(4,3), Piece.BROOK);
         strMoves = getMoveList(pos, false);
-        assertTrue(!strMoves.contains("O-O"));      // In check, not castling possible
-        assertTrue(!strMoves.contains("O-O-O"));
-        
+        assertTrue(!strMoves.contains("e1g1"));      // In check, no castling possible
+        assertTrue(!strMoves.contains("e1c1"));
+
         pos.setPiece(Position.getSquare(4, 3), Piece.EMPTY);
         pos.setPiece(Position.getSquare(5, 3), Piece.BROOK);
         strMoves = getMoveList(pos, false);
-        assertTrue(!strMoves.contains("O-O"));      // f1 attacked, short castle not possible
-        assertTrue(strMoves.contains("O-O-O"));
+        assertTrue(!strMoves.contains("e1g1"));      // f1 attacked, short castle not possible
+        assertTrue(strMoves.contains("e1c1"));
 
         pos.setPiece(Position.getSquare(5, 3), Piece.EMPTY);
         pos.setPiece(Position.getSquare(6, 3), Piece.BBISHOP);
         strMoves = getMoveList(pos, false);
-        assertTrue(strMoves.contains("O-O"));      // d1 attacked, long castle not possible
-        assertTrue(!strMoves.contains("O-O-O"));
+        assertTrue(strMoves.contains("e1g1"));      // d1 attacked, long castle not possible
+        assertTrue(!strMoves.contains("e1c1"));
 
         pos.setPiece(Position.getSquare(6, 3), Piece.EMPTY);
         pos.setCastleMask(1 << Position.A1_CASTLE);
         strMoves = getMoveList(pos, false);
-        assertTrue(!strMoves.contains("O-O"));      // short castle right has been lost
-        assertTrue(strMoves.contains("O-O-O"));
+        assertTrue(!strMoves.contains("e1g1"));      // short castle right has been lost
+        assertTrue(strMoves.contains("e1c1"));
     }
 
     /**
@@ -87,14 +87,14 @@ public class MoveGenTest {
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
         List<String> strMoves = getMoveList(pos, false);
-        assertTrue(strMoves.contains("c5xb6"));     // En passant capture
-        assertTrue(strMoves.contains("a7-a8Q"));    // promotion
-        assertTrue(strMoves.contains("a7-a8N"));    // under promotion
-        assertTrue(strMoves.contains("a7xb8R#"));   // capture promotion
-        assertTrue(strMoves.contains("b2-b3"));     // pawn single move
-        assertTrue(strMoves.contains("b2xa3"));     // pawn capture to the left
-        assertTrue(strMoves.contains("e2-e4"));     // pawn double move
-        assertTrue(strMoves.contains("e2xf3"));     // pawn capture to the right
+        assertTrue(strMoves.contains("c5b6"));     // En passant capture
+        assertTrue(strMoves.contains("a7a8q"));    // promotion
+        assertTrue(strMoves.contains("a7a8n"));    // under promotion
+        assertTrue(strMoves.contains("a7b8r"));   // capture promotion
+        assertTrue(strMoves.contains("b2b3"));     // pawn single move
+        assertTrue(strMoves.contains("b2a3"));     // pawn capture to the left
+        assertTrue(strMoves.contains("e2e4"));     // pawn double move
+        assertTrue(strMoves.contains("e2f3"));     // pawn capture to the right
         assertEquals(22, strMoves.size());
 
         pos.setEpSquare(-1);
@@ -104,19 +104,19 @@ public class MoveGenTest {
         // Check black pawn moves
         pos.setWhiteMove(false);
         strMoves = getMoveList(pos, false);
-        assertTrue(strMoves.contains("f3xe2"));
-        assertTrue(strMoves.contains("d4-d3"));
-        assertTrue(strMoves.contains("e7-e6"));
-        assertTrue(strMoves.contains("e7-e5"));
+        assertTrue(strMoves.contains("f3e2"));
+        assertTrue(strMoves.contains("d4d3"));
+        assertTrue(strMoves.contains("e7e6"));
+        assertTrue(strMoves.contains("e7e5"));
         assertEquals(28, strMoves.size());
 
         // Check black pawn promotion
         pos.setPiece(Position.getSquare(0,1), Piece.BPAWN);
         strMoves = getMoveList(pos, false);
-        assertTrue(strMoves.contains("a2-a1Q+"));
-        assertTrue(strMoves.contains("a2-a1R+"));
-        assertTrue(strMoves.contains("a2-a1N"));
-        assertTrue(strMoves.contains("a2-a1B"));
+        assertTrue(strMoves.contains("a2a1q"));
+        assertTrue(strMoves.contains("a2a1r"));
+        assertTrue(strMoves.contains("a2a1n"));
+        assertTrue(strMoves.contains("a2a1b"));
     }
 
     /**
@@ -320,11 +320,11 @@ public class MoveGenTest {
         System.out.println("removeIllegal");
         Position pos = TextIO.readFEN("8/3k4/8/2n1rpP1/1P6/1NB5/2QP4/R3K2R w KQ f6 0 1");
         List<String> strMoves = getMoveList(pos, true);
-        assertTrue(strMoves.contains("Qc2-e4"));
-        assertTrue(strMoves.contains("Bc3xe5"));
-        assertTrue(strMoves.contains("Ke1-d1"));
-        assertTrue(strMoves.contains("Ke1-f1"));
-        assertTrue(strMoves.contains("Ke1-f2"));
+        assertTrue(strMoves.contains("c2e4"));
+        assertTrue(strMoves.contains("c3e5"));
+        assertTrue(strMoves.contains("e1d1"));
+        assertTrue(strMoves.contains("e1f1"));
+        assertTrue(strMoves.contains("e1f2"));
         assertEquals(5, strMoves.size());
     }
     
@@ -338,19 +338,19 @@ public class MoveGenTest {
         pos.setWhiteMove(true);
         List<String> strMoves = getMoveList(pos, false);
         assertEquals(1, strMoves.size());
-        assertEquals("Re1xe7", strMoves.get(0));
+        assertEquals("e1e7", strMoves.get(0));
 
         pos.setPiece(Position.getSquare(0, 2), Piece.WBISHOP);
         pos.setPiece(Position.getSquare(4, 1), Piece.WPAWN);
         strMoves = getMoveList(pos, false);
         assertEquals(1, strMoves.size());
-        assertEquals("Ba3xe7", strMoves.get(0));
-        
+        assertEquals("a3e7", strMoves.get(0));
+
         pos.setPiece(Position.getSquare(1, 3), Piece.WPAWN);
         pos.setPiece(Position.getSquare(5, 5), Piece.WPAWN);
         strMoves = getMoveList(pos, false);
         assertEquals(1, strMoves.size());
-        assertEquals("f6xe7", strMoves.get(0));
+        assertEquals("f6e7", strMoves.get(0));
     }
 
     /** Test that captureList and captureAndcheckList are generated correctly. */
@@ -378,8 +378,16 @@ public class MoveGenTest {
         pos = TextIO.readFEN("3k4/r2p2K1/8/8/8/8/8/8 b - - 0 1");
         getMoveList(pos, false);
     }
-    
+
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
+        Position swap = EvaluateTest.swapColors(pos);
+        List<String> swapList = getMoveList0(swap, onlyLegal);
+        List<String> ret = getMoveList0(pos, onlyLegal);
+        assertEquals(swapList.size(), ret.size());
+        return ret;
+    }
+
+    private List<String> getMoveList0(Position pos, boolean onlyLegal) {
         MoveGen moveGen = new MoveGen();
         ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
         if (onlyLegal) {
@@ -387,7 +395,7 @@ public class MoveGenTest {
         }
         ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
-            String mStr = TextIO.moveToString(pos, m, true);
+            String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
 
@@ -396,8 +404,9 @@ public class MoveGenTest {
 
         List<String> capList2 = getCaptureList(pos, true, onlyLegal);
         assertTrue(strMoves.containsAll(capList2));
+
         for (String sm : strMoves) {
-            Move m = TextIO.stringToMove(pos, sm);
+            Move m = TextIO.uciStringToMove(sm);
             if (m == null) // Move was illegal (but pseudo-legal)
                 continue;
             boolean qProm = false; // Promotion types considered in qsearch
@@ -410,7 +419,7 @@ public class MoveGenTest {
             default:
                 break;
             }
-            if (MoveGen.givesCheck(pos, m)) {
+            if (!MoveGen.canTakeKing(pos) && MoveGen.givesCheck(pos, m)) {
                 if (qProm)
                     assertTrue(capList2.contains(sm));
             } else {
@@ -438,7 +447,7 @@ public class MoveGenTest {
 
         return strMoves;
     }
-    
+
     private List<String> getCaptureList(Position pos, boolean includeChecks, boolean onlyLegal) {
         ArrayList<Move> moves;
         if (includeChecks) {
@@ -450,9 +459,9 @@ public class MoveGenTest {
             moves = MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
-            String mStr = TextIO.moveToString(pos, m, true);
+            String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
         return strMoves;
-     }
+    }
 }

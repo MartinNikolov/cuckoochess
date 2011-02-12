@@ -353,4 +353,33 @@ public class TextIOTest {
         assertEquals(3, aBrd.length() - aBrd.replaceAll("\\*Q", " ").length()); // 3 black queens
         assertEquals(3, aBrd.length() - aBrd.replaceAll(" P", " ").length()); // 3 white pawns
     }
+    
+    /**
+     * Test of uciStringToMove method, of class TextIO.
+     */
+    @Test
+    public void testUciStringToMove() throws ChessParseError {
+        System.out.println("stringToMove");
+        Position pos = TextIO.readFEN(TextIO.startPosFEN);
+        Move m = TextIO.uciStringToMove("e2e4");
+        assertEquals(TextIO.stringToMove(pos, "e4"), m);
+        m = TextIO.uciStringToMove("e2e5");
+        assertEquals(new Move(12, 12+8*3, Piece.EMPTY), m);
+
+        m = TextIO.uciStringToMove("e2e5q");
+        assertEquals(null, m);
+
+        m = TextIO.uciStringToMove("e7e8q");
+        assertEquals(Piece.WQUEEN, m.promoteTo);
+        m = TextIO.uciStringToMove("e7e8r");
+        assertEquals(Piece.WROOK, m.promoteTo);
+        m = TextIO.uciStringToMove("e7e8b");
+        assertEquals(Piece.WBISHOP, m.promoteTo);
+        m = TextIO.uciStringToMove("e2e1n");
+        assertEquals(Piece.BKNIGHT, m.promoteTo);
+        m = TextIO.uciStringToMove("e7e8x");
+        assertEquals(null, m);  // Invalid promotion piece
+        m = TextIO.uciStringToMove("i1i3");
+        assertEquals(null, m);  // Outside board
+    }
 }
