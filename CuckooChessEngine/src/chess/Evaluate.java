@@ -384,9 +384,9 @@ public class Evaluate {
         return pBonus;
     }
 
-    static int[] castleDistance;
+    static int[] castleFactor;
     static {
-        castleDistance = new int[256];
+        castleFactor = new int[256];
         for (int i = 0; i < 256; i++) {
             int h1Dist = 100;
             boolean h1Castle = (i & (1<<7)) != 0;
@@ -396,7 +396,7 @@ public class Evaluate {
             boolean a1Castle = (i & 1) != 0;
             if (a1Castle)
                 a1Dist = 2 + Long.bitCount(i & 0x000000000000000EL); // b1,c1,d1
-            castleDistance[i] = Math.min(a1Dist, h1Dist);
+            castleFactor[i] = 1024 / Math.min(a1Dist, h1Dist);
         }
     }
 
@@ -419,12 +419,12 @@ public class Evaluate {
         int tmp = (int) (occupied & 0x6E);
         if (pos.a1Castle()) tmp |= 1;
         if (pos.h1Castle()) tmp |= (1 << 7);
-        final int wBonus = castleValue / castleDistance[tmp];
+        final int wBonus = (castleValue * castleFactor[tmp]) >> 10;
 
         tmp = (int) ((occupied >>> 56) & 0x6E);
         if (pos.a8Castle()) tmp |= 1;
         if (pos.h8Castle()) tmp |= (1 << 7);
-        final int bBonus = castleValue / castleDistance[tmp];
+        final int bBonus = (castleValue * castleFactor[tmp]) >> 10;
 
         return wBonus - bBonus;
     }
