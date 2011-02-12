@@ -389,7 +389,7 @@ public class Position {
                 setPiece(move.to + 8, Piece.EMPTY);
             }
         }
-            
+
         // Perform move
         setPiece(move.from, Piece.EMPTY);
         // Handle promotion
@@ -398,11 +398,13 @@ public class Position {
         } else {
         	setPiece(move.to, p);
         }
-        setWhiteMove(!wtm);
+        hashKey ^= whiteHashKey;
+        whiteMove = !wtm;
     }
-    
+
     public final void unMakeMove(Move move, UndoInfo ui) {
-        setWhiteMove(!whiteMove);
+        hashKey ^= whiteHashKey;
+        whiteMove = !whiteMove;
         int p = squares[move.to];
         setPiece(move.from, p);
         setPiece(move.to, ui.capturedPiece);

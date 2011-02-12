@@ -384,6 +384,22 @@ public class Evaluate {
         return pBonus;
     }
 
+    static int[] castleDistance;
+    static {
+        castleDistance = new int[256];
+        for (int i = 0; i < 256; i++) {
+            int h1Dist = 100;
+            boolean h1Castle = (i & (1<<7)) != 0;
+            if (h1Castle)
+                h1Dist = 2 + Long.bitCount(i & 0x0000000000000060L); // f1,g1
+            int a1Dist = 100;
+            boolean a1Castle = (i & 1) != 0;
+            if (a1Castle)
+                a1Dist = 2 + Long.bitCount(i & 0x000000000000000EL); // b1,c1,d1
+            castleDistance[i] = Math.min(a1Dist, h1Dist);
+        }
+    }
+
     /** Score castling ability. */
     private final int castleBonus(Position pos) {
     	if (pos.getCastleMask() == 0) return 0;
@@ -396,38 +412,19 @@ public class Evaluate {
         final int ks = interpolate(t, t2, k2, t1, k1);
 
         final int castleValue = ks + rt1b[7*8+5] - rt1b[7*8+7];
-        if (castleValue <= 0) {
+        if (castleValue <= 0)
             return 0;
-        }
-        int h1Dist = 100;
-        if (pos.h1Castle()) {
-            h1Dist = 2;
-            if (pos.getPiece(5) != Piece.EMPTY) h1Dist++;
-            if (pos.getPiece(6) != Piece.EMPTY) h1Dist++;
-        }
-        int a1Dist = 100;
-        if (pos.a1Castle()) {
-            a1Dist = 2;
-            if (pos.getPiece(3) != Piece.EMPTY) a1Dist++;
-            if (pos.getPiece(2) != Piece.EMPTY) a1Dist++;
-            if (pos.getPiece(1) != Piece.EMPTY) a1Dist++;
-        }
-        final int wBonus = castleValue / Math.min(a1Dist, h1Dist);
 
-        int h8Dist = 100;
-        if (pos.h8Castle()) {
-            h8Dist = 2;
-            if (pos.getPiece(61) != Piece.EMPTY) h8Dist++;
-            if (pos.getPiece(62) != Piece.EMPTY) h8Dist++;
-        }
-        int a8Dist = 100;
-        if (pos.a8Castle()) {
-            a8Dist = 2;
-            if (pos.getPiece(59) != Piece.EMPTY) a8Dist++;
-            if (pos.getPiece(58) != Piece.EMPTY) a8Dist++;
-            if (pos.getPiece(57) != Piece.EMPTY) a8Dist++;
-        }
-        final int bBonus = castleValue / Math.min(a8Dist, h8Dist);
+        long occupied = pos.whiteBB | pos.blackBB;
+        int tmp = (int) (occupied & 0x6E);
+        if (pos.a1Castle()) tmp |= 1;
+        if (pos.h1Castle()) tmp |= (1 << 7);
+        final int wBonus = castleValue / castleDistance[tmp];
+
+        tmp = (int) ((occupied >>> 56) & 0x6E);
+        if (pos.a8Castle()) tmp |= 1;
+        if (pos.h8Castle()) tmp |= (1 << 7);
+        final int bBonus = castleValue / castleDistance[tmp];
 
         return wBonus - bBonus;
     }
