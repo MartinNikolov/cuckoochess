@@ -465,9 +465,12 @@ public class Search {
             if (nullOk) {
                 final int R = (depth > 6) ? 3 : 2;
                 pos.setWhiteMove(!pos.whiteMove);
+                int epSquare = pos.getEpSquare();
+                pos.setEpSquare(-1);
                 searchTreeInfo[ply+1].allowNullMove = false;
                 int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, false);
                 searchTreeInfo[ply+1].allowNullMove = true;
+                pos.setEpSquare(epSquare);
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                 	if (score > MATE0 / 2)
