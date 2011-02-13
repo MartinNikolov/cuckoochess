@@ -37,6 +37,7 @@ public class EngineControl {
     long[] posHashList;
     int posHashListSize;
     boolean ponder;     // True if currently doing pondering
+    boolean onePossibleMove;
     boolean infinite;
 
     int minTimeLimit;
@@ -121,6 +122,10 @@ public class EngineControl {
             mySearch = sc;
         }
         if (mySearch != null) {
+            if (onePossibleMove) {
+                if (minTimeLimit > 1) minTimeLimit = 1;
+                if (maxTimeLimit > 1) maxTimeLimit = 1;
+            }
             mySearch.timeLimit(minTimeLimit, maxTimeLimit);
         }
         infinite = (maxTimeLimit < 0) && (maxDepth < 0) && (maxNodes < 0);
@@ -171,7 +176,7 @@ public class EngineControl {
             final int margin = Math.min(1000, time * 9 / 10);
             int timeLimit = (time + inc * (moves - 1) - margin) / moves;
             minTimeLimit = (int)(timeLimit * 0.85);
-            maxTimeLimit = (int)(minTimeLimit * 4.0);
+            maxTimeLimit = (int)(minTimeLimit * (Math.max(2.5, Math.min(4.0, moves / 2))));
 
             // Leave at least 1s on the clock, but can't use negative time
             minTimeLimit = clamp(minTimeLimit, 1, time - margin);
@@ -201,8 +206,12 @@ public class EngineControl {
             moves.retainAll(searchMoves);
         }
         final ArrayList<Move> srchMoves = moves;
-        if ((srchMoves.size() <= 1) && !infinite && !ponder) {
-            if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
+        onePossibleMove = false;
+        if ((srchMoves.size() <= 1) && !infinite) {
+            onePossibleMove = true;
+            if (!ponder) {
+                if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
+            }
         }
         final int srchmaxDepth = maxDepth;
         engineThread = new Thread(new Runnable() {
