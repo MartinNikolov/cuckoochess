@@ -260,6 +260,34 @@ public class Position {
         psScore2[piece]        += Evaluate.psTab2[piece][square];
     }
 
+    /**
+     * Set a square to a piece value.
+     * Special version that only updates enough of the state for the SEE function to be happy.
+     */
+    public final void setSEEPiece(int square, int piece) {
+        int removedPiece = squares[square];
+
+        // Update board
+        squares[square] = piece;
+
+        // Update bitboards
+        long sqMask = 1L << square;
+        pieceTypeBB[removedPiece] &= ~sqMask;
+        pieceTypeBB[piece] |= sqMask;
+        if (removedPiece != Piece.EMPTY) {
+            if (Piece.isWhite(removedPiece))
+                whiteBB &= ~sqMask;
+            else
+                blackBB &= ~sqMask;
+        }
+        if (piece != Piece.EMPTY) {
+            if (Piece.isWhite(piece))
+                whiteBB |= sqMask;
+            else
+                blackBB |= sqMask;
+        }
+    }
+
     /** Return true if white long castling right has not been lost. */
     public final boolean a1Castle() {
         return (castleMask & (1 << A1_CASTLE)) != 0;
@@ -442,7 +470,84 @@ public class Position {
         	}
         }
     }
-    
+
+    /**
+     * Apply a move to the current position.
+     * Special version that only updates enough of the state for the SEE function to be happy.
+     */
+    public final void makeSEEMove(Move move, UndoInfo ui) {
+        ui.capturedPiece = squares[move.to];
+        boolean wtm = whiteMove;
+        
+        int p = squares[move.from];
+        long fromMask = 1L << move.from;
+
+        // Handle castling
+        if (((pieceTypeBB[Piece.WKING] | pieceTypeBB[Piece.BKING]) & fromMask) != 0) {
+            int k0 = move.from;
+            if (move.to == k0 + 2) { // O-O
+                setSEEPiece(k0 + 1, squares[k0 + 3]);
+                setSEEPiece(k0 + 3, Piece.EMPTY);
+            } else if (move.to == k0 - 2) { // O-O-O
+                setSEEPiece(k0 - 1, squares[k0 - 4]);
+                setSEEPiece(k0 - 4, Piece.EMPTY);
+            }
+        }
+
+        // Handle en passant
+        if (move.to == epSquare) {
+            if (p == Piece.WPAWN) {
+                setSEEPiece(move.to - 8, Piece.EMPTY);
+            } else if (p == Piece.BPAWN) {
+                setSEEPiece(move.to + 8, Piece.EMPTY);
+            }
+        }
+
+        // Perform move
+        setSEEPiece(move.from, Piece.EMPTY);
+        // Handle promotion
+        if (move.promoteTo != Piece.EMPTY) {
+            setSEEPiece(move.to, move.promoteTo);
+        } else {
+            setSEEPiece(move.to, p);
+        }
+        whiteMove = !wtm;
+    }
+
+    public final void unMakeSEEMove(Move move, UndoInfo ui) {
+        whiteMove = !whiteMove;
+        int p = squares[move.to];
+        setSEEPiece(move.from, p);
+        setSEEPiece(move.to, ui.capturedPiece);
+        boolean wtm = whiteMove;
+        if (move.promoteTo != Piece.EMPTY) {
+            p = wtm ? Piece.WPAWN : Piece.BPAWN;
+            setSEEPiece(move.from, p);
+        }
+        
+        // Handle castling
+        int king = wtm ? Piece.WKING : Piece.BKING;
+        if (p == king) {
+            int k0 = move.from;
+            if (move.to == k0 + 2) { // O-O
+                setSEEPiece(k0 + 3, squares[k0 + 1]);
+                setSEEPiece(k0 + 1, Piece.EMPTY);
+            } else if (move.to == k0 - 2) { // O-O-O
+                setSEEPiece(k0 - 4, squares[k0 - 1]);
+                setSEEPiece(k0 - 1, Piece.EMPTY);
+            }
+        }
+
+        // Handle en passant
+        if (move.to == epSquare) {
+            if (p == Piece.WPAWN) {
+                setSEEPiece(move.to - 8, Piece.BPAWN);
+            } else if (p == Piece.BPAWN) {
+                setSEEPiece(move.to + 8, Piece.WPAWN);
+            }
+        }
+    }
+
     private final void removeCastleRights(int square) {
         if (square == Position.getSquare(0, 0)) {
             setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));

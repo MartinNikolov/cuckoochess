@@ -574,22 +574,24 @@ public class Search {
                 }
             }
             int moveExtend = 0;
-            final int pV = Evaluate.pV;
-            if ((m.to == recaptureSquare) && (posExtend == 0)) {
-                if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
-                int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                if (sVal > tVal - pV / 2)
-                    moveExtend = 1;
-            }
-            if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) { // FIXME! Unnecessary when posExtend > 0
-                // Extend if going into pawn endgame
-                int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                if (pos.whiteMove) {
-                    if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
+            if (posExtend == 0) {
+                final int pV = Evaluate.pV;
+                if ((m.to == recaptureSquare)) {
+                    if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
+                    int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                    if (sVal > tVal - pV / 2)
                         moveExtend = 1;
-                } else {
-                    if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
-                        moveExtend = 1;
+                }
+                if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
+                    // Extend if going into pawn endgame
+                    int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                    if (pos.whiteMove) {
+                        if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
+                            moveExtend = 1;
+                    } else {
+                        if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
+                            moveExtend = 1;
+                    }
                 }
             }
             // FIXME! Test extending pawn pushes to 7:th rank
@@ -849,7 +851,7 @@ public class Search {
         }
         int nCapt = 1;                  // Number of entries in captures[]
 
-        pos.makeMove(m, seeUi);
+        pos.makeSEEMove(m, seeUi);
         boolean white = pos.whiteMove;
         int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
         long occupied = pos.whiteBB | pos.blackBB;
@@ -932,7 +934,7 @@ public class Search {
         	occupied &= ~(atk & -atk);
         	white = !white;
         }
-        pos.unMakeMove(m, seeUi);
+        pos.unMakeSEEMove(m, seeUi);
         
         int score = 0;
         for (int i = nCapt - 1; i > 0; i--) {

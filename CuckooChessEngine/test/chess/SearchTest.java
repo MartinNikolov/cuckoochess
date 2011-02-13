@@ -372,8 +372,18 @@ public class SearchTest {
         pos = TextIO.readFEN("Q7/q6k/R7/r7/P7/8/4K3/8 b - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
         assertEquals(pV - rV, sc.SEE(TextIO.stringToMove(pos, "Rxa4")));
+
+        pos = TextIO.readFEN("8/3k4/5R2/8/4pP2/8/8/3K4 b - f3 0 1");
+        sc = new Search(pos, nullHist, 0, tt);
+        int score1 = EvaluateTest.evalWhite(sc.pos);
+        long h1 = sc.pos.zobristHash();
+        assertEquals(0, sc.SEE(TextIO.stringToMove(pos, "exf3")));
+        int score2 = EvaluateTest.evalWhite(sc.pos);
+        long h2 = sc.pos.zobristHash();
+        assertEquals(score1, score2);
+        assertEquals(h1, h2);
     }
-    
+
     /**
      * Test of scoreMoveList method, of class Search.
      */

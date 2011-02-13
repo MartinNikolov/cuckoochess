@@ -595,10 +595,12 @@ public class Evaluate {
             long atk = BitBoard.rookAttacks(sq, occupied);
             wAttacksBB |= atk;
             score += rookMobScore[Long.bitCount(atk & ~pos.whiteBB)];
-            bKingAttacks += Long.bitCount(atk & bKingZone);
+            if ((atk & bKingZone) != 0)
+                bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
         }
-        if ((Long.bitCount(pos.pieceTypeBB[Piece.WROOK] & 0x00ff000000000000L) > 1) &&
+        long r7 = pos.pieceTypeBB[Piece.WROOK] & 0x00ff000000000000L;
+        if (((r7 & (r7 - 1)) != 0) &&
             ((pos.pieceTypeBB[Piece.BKING] & 0xff00000000000000L) != 0))
             score += 20; // Two rooks on 7:th row
         m = pos.pieceTypeBB[Piece.BROOK];
@@ -611,10 +613,12 @@ public class Evaluate {
             long atk = BitBoard.rookAttacks(sq, occupied);
             bAttacksBB |= atk;
             score -= rookMobScore[Long.bitCount(atk & ~pos.blackBB)];
-            wKingAttacks += Long.bitCount(atk & wKingZone);
+            if ((atk & wKingZone) != 0)
+                wKingAttacks += Long.bitCount(atk & wKingZone);
             m &= m-1;
         }
-        if ((Long.bitCount(pos.pieceTypeBB[Piece.BROOK] & 0xff00L) > 1) &&
+        r7 = pos.pieceTypeBB[Piece.BROOK] & 0xff00L;
+        if (((r7 & (r7 - 1)) != 0) &&
             ((pos.pieceTypeBB[Piece.WKING] & 0xffL) != 0))
           score -= 20; // Two rooks on 2:nd row
         return score;
@@ -634,7 +638,8 @@ public class Evaluate {
             long atk = BitBoard.bishopAttacks(sq, occupied);
             wAttacksBB |= atk;
             score += bishMobScore[Long.bitCount(atk & ~pos.whiteBB)];
-            bKingAttacks += Long.bitCount(atk & bKingZone);
+            if ((atk & bKingZone) != 0)
+                bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
         }
         m = bBishops;
@@ -643,7 +648,8 @@ public class Evaluate {
             long atk = BitBoard.bishopAttacks(sq, occupied);
             bAttacksBB |= atk;
             score -= bishMobScore[Long.bitCount(atk & ~pos.blackBB)];
-            wKingAttacks += Long.bitCount(atk & wKingZone);
+            if ((atk & wKingZone) != 0)
+                wKingAttacks += Long.bitCount(atk & wKingZone);
             m &= m-1;
         }
 
@@ -656,11 +662,11 @@ public class Evaluate {
     
         // Bishop pair bonus
         if (numWhite == 2) {
-            final int numPawns = Long.bitCount(pos.pieceTypeBB[Piece.WPAWN]);
+            final int numPawns = pos.wMtrlPawns / pV;
             score += 20 + (8 - numPawns) * 3;
         }
         if (numBlack == 2) {
-            final int numPawns = Long.bitCount(pos.pieceTypeBB[Piece.BPAWN]);
+            final int numPawns = pos.bMtrlPawns / pV;
             score -= 20 + (8 - numPawns) * 3;
         }
     

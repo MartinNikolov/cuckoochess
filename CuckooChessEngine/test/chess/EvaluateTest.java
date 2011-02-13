@@ -399,7 +399,7 @@ public class EvaluateTest {
     }
 
     /** Return static evaluation score for white, regardless of whose turn it is to move. */
-    private final int evalWhite(Position pos) {
+    final static int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();
         int ret = eval.evalPos(pos);
         Position symPos = swapColors(pos);
@@ -410,7 +410,7 @@ public class EvaluateTest {
         }
         return ret;
     }
-    
+
     final static Position swapColors(Position pos) {
         Position sym = new Position();
         sym.whiteMove = !pos.whiteMove;
