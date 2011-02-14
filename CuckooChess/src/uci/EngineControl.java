@@ -18,6 +18,7 @@ import chess.TranspositionTable.TTEntry;
 import chess.UndoInfo;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -200,14 +201,14 @@ public class EngineControl {
         sc = new Search(pos, posHashList, posHashListSize, tt);
         sc.timeLimit(minTimeLimit, maxTimeLimit);
         sc.setListener(new SearchListener(os));
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        Move[] moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if ((searchMoves != null) && (searchMoves.size() > 0)) {
-            moves.retainAll(searchMoves);
+            Arrays.asList(moves).retainAll(searchMoves);
         }
-        final ArrayList<Move> srchMoves = moves;
+        final Move[] srchMoves = moves;
         onePossibleMove = false;
-        if ((srchMoves.size() <= 1) && !infinite) {
+        if (((srchMoves[0] == null) || (srchMoves[1] == null)) && !infinite) {
             onePossibleMove = true;
             if (!ponder) {
                 if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
@@ -296,9 +297,9 @@ public class EngineControl {
         if (ent.type != TTEntry.T_EMPTY) {
             ret = new Move(0, 0, 0);
             ent.getMove(ret);
-            ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+            Move[] moves = moveGen.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
-            if (!moves.contains(ret)) {
+            if (!Arrays.asList(moves).contains(ret)) {
                 ret = null;
             }
         }
