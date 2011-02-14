@@ -413,12 +413,14 @@ public class MoveGenTest {
 
     private List<String> getMoveList0(Position pos, boolean onlyLegal) {
         MoveGen moveGen = new MoveGen();
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        Move[] moves = moveGen.pseudoLegalMoves(pos);
         if (onlyLegal) {
             moves = MoveGen.removeIllegal(pos, moves);
         }
         ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
+            if (m == null)
+                break;
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
@@ -486,7 +488,7 @@ public class MoveGenTest {
     }
 
     private List<String> getCaptureList(Position pos, boolean includeChecks, boolean onlyLegal) {
-        ArrayList<Move> moves;
+        Move[] moves;
         if (includeChecks) {
             moves = new MoveGen().pseudoLegalCapturesAndChecks(pos);
         } else {
@@ -496,6 +498,8 @@ public class MoveGenTest {
             moves = MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
+            if (m == null)
+                break;
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
@@ -505,11 +509,13 @@ public class MoveGenTest {
     private List<String> getCheckEvasions(Position pos, boolean onlyLegal) {
         if (!MoveGen.inCheck(pos))
             return null;
-        ArrayList<Move> moves = new MoveGen().checkEvasions(pos);
+        Move[] moves = new MoveGen().checkEvasions(pos);
         if (onlyLegal)
             moves = MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
         for (Move m : moves) {
+            if (m == null)
+                break;
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }

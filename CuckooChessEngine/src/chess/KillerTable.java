@@ -5,8 +5,6 @@
 
 package chess;
 
-import java.util.ArrayList;
-
 /**
  * Implement a table of killer moves for the killer heuristic.
  * @author petero
@@ -22,19 +20,20 @@ public class KillerTable {
         }
         Move[] ent;
     }
-    ArrayList<KTEntry> ktList;
+    KTEntry[] ktList;
 
     /** Create an empty killer table. */
     public KillerTable() {
-        ktList = new ArrayList<KTEntry>(0);
+        ktList = new KTEntry[200];
+        for (int i = 0; i < ktList.length; i++)
+            ktList[i] = new KTEntry();
     }
-    
+
     /** Add a killer move to the table. Moves are replaced on an LRU basis. */
     final public void addKiller(int ply, Move m) {
-        while (ktList.size() <= ply) {
-            ktList.add(new KTEntry());
-        }
-        KTEntry ent = ktList.get(ply);
+        if (ply >= ktList.length)
+            return;
+        KTEntry ent = ktList[ply];
         if (!m.equals(ent.ent[0])) {
             Move tmp = ent.ent[1];
             ent.ent[1] = ent.ent[0];
@@ -55,16 +54,16 @@ public class KillerTable {
      * The score is 0 otherwise.
      */
     final public int getKillerScore(int ply, Move m) {
-        if (ply < ktList.size()) {
-            KTEntry ent = ktList.get(ply);
+        if (ply < ktList.length) {
+            KTEntry ent = ktList[ply];
             if (m.equals(ent.ent[0])) {
                 return 4;
             } else if (m.equals(ent.ent[1])) {
                 return 3;
             }
         }
-        if ((ply - 2 >= 0) && (ply - 2 < ktList.size())) {
-            KTEntry ent = ktList.get(ply - 2);
+        if ((ply - 2 >= 0) && (ply - 2 < ktList.length)) {
+            KTEntry ent = ktList[ply - 2];
             if (m.equals(ent.ent[0])) {
                 return 2;
             } else if (m.equals(ent.ent[1])) {

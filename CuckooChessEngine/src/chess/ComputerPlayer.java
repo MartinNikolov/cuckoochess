@@ -6,7 +6,6 @@
 package chess;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -15,7 +14,7 @@ import java.util.Random;
  * @author petero
  */
 public class ComputerPlayer implements Player {
-    public static String engineName = "CuckooChess 1.09a7";
+    public static String engineName = "CuckooChess 1.09a8";
 
     int minTimeMillis;
     int maxTimeMillis;
@@ -61,12 +60,12 @@ public class ComputerPlayer implements Player {
         Search sc = new Search(pos, posHashList, posHashListSize, tt);
 
         // Determine all legal moves
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        Move[] moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         sc.scoreMoveList(moves, 0);
 
         // Test for "game over"
-        if (moves.size() <= 0) {
+        if (moves[0] == null) {
             // Switch sides so that the human can decide what to do next.
             return "swap";
         }
@@ -83,8 +82,8 @@ public class ComputerPlayer implements Player {
         currentSearch = sc;
         sc.setListener(listener);
         Move bestM;
-        if ((moves.size() == 1) && (canClaimDraw(pos, posHashList, posHashListSize, moves.get(0)) == "")) {
-        	bestM = moves.get(0);
+        if ((moves[1] == null) && (canClaimDraw(pos, posHashList, posHashListSize, moves[0]) == "")) {
+        	bestM = moves[0];
         	bestM.score = 0;
         } else if (randomMode) {
         	bestM = findSemiRandomMove(sc, moves);
@@ -167,7 +166,7 @@ public class ComputerPlayer implements Player {
         Search sc = new Search(pos, posHashList, 0, tt);
         
         // Determine all legal moves
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        Move[] moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         sc.scoreMoveList(moves, 0);
 
@@ -188,7 +187,7 @@ public class ComputerPlayer implements Player {
         return new TwoReturnValues<Move, String>(bestM, PV);
     }
 
-    private Move findSemiRandomMove(Search sc, ArrayList<Move> moves) {
+    private Move findSemiRandomMove(Search sc, Move[] moves) {
         sc.timeLimit(minTimeMillis, maxTimeMillis);
     	Move bestM = sc.iterativeDeepening(moves, 1, maxNodes, verbose);
     	int bestScore = bestM.score;
@@ -197,14 +196,14 @@ public class ComputerPlayer implements Player {
         rndGen.setSeed(System.currentTimeMillis());
 
         int sum = 0;
-        for (int mi = 0; mi < moves.size(); mi++) {
-        	sum += moveProbWeight(moves.get(mi).score, bestScore);
+        for (int mi = 0; moves[mi] != null; mi++) {
+        	sum += moveProbWeight(moves[mi].score, bestScore);
         }
         int rnd = rndGen.nextInt(sum);
-        for (int mi = 0; mi < moves.size(); mi++) {
-        	int weight = moveProbWeight(moves.get(mi).score, bestScore);
+        for (int mi = 0; moves[mi] != null; mi++) {
+        	int weight = moveProbWeight(moves[mi].score, bestScore);
         	if (rnd < weight) {
-        		return moves.get(mi);
+        		return moves[mi];
         	}
         	rnd -= weight;
         }

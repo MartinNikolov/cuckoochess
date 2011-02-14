@@ -426,10 +426,12 @@ public class ChessController {
      */
     final private boolean doMove(Move move) {
         Position pos = game.pos;
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+        Move[] moves = new MoveGen().pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         int promoteTo = move.promoteTo;
         for (Move m : moves) {
+            if (m == null)
+                break;
             if ((m.from == move.from) && (m.to == move.to)) {
                 if ((m.promoteTo != Piece.EMPTY) && (promoteTo == Piece.EMPTY)) {
                 	promoteMove = m;

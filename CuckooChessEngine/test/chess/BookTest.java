@@ -5,7 +5,8 @@
 
 package chess;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,8 +61,8 @@ public class BookTest {
     /** Check that move is a legal move in position pos. */
     private void checkValid(Position pos, Move move) {
         assertTrue(move != null);
-        ArrayList<Move> moveList = new MoveGen().pseudoLegalMoves(pos);
+        Move[] moveList = new MoveGen().pseudoLegalMoves(pos);
         moveList = MoveGen.removeIllegal(pos, moveList);
-        assertTrue(moveList.contains(move));
+        assertTrue(Arrays.asList(moveList).contains(move));
     }
 }

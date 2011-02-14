@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,12 +117,12 @@ public class Book {
             return null;
         }
         
-        ArrayList<Move> legalMoves = new MoveGen().pseudoLegalMoves(pos);
+        Move[] legalMoves = new MoveGen().pseudoLegalMoves(pos);
         legalMoves = MoveGen.removeIllegal(pos, legalMoves);
         int sum = 0;
         for (int i = 0; i < bookMoves.size(); i++) {
             BookEntry be = bookMoves.get(i);
-            if (!legalMoves.contains(be.move)) {
+            if (!Arrays.asList(legalMoves).contains(be.move)) {
                 // If an illegal move was found, it means there was a hash collision.
                 return null;
             }

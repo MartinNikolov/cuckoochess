@@ -6,7 +6,7 @@
 package chess;
 
 import chess.Search.StopSearch;
-import java.util.ArrayList;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -223,7 +223,7 @@ public class SearchTest {
     }
 
     private Move idSearch(Search sc, int maxDepth) {
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(sc.pos);
+        Move[] moves = new MoveGen().pseudoLegalMoves(sc.pos);
         moves = MoveGen.removeIllegal(sc.pos, moves);
         sc.scoreMoveList(moves, 0);
         sc.timeLimit(-1, -1);
@@ -393,25 +393,25 @@ public class SearchTest {
         Position pos = TextIO.readFEN("r2qk2r/ppp2ppp/1bnp1nb1/1N2p3/3PP3/1PP2N2/1P3PPP/R1BQRBK1 w kq - 0 1");
         Search sc = new Search(pos, nullHist, 0, tt);
         MoveGen moveGen = new MoveGen();
-        ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+        Move[] moves = moveGen.pseudoLegalMoves(pos);
         sc.scoreMoveList(moves, 0);
-        for (int i = 1; i < moves.size(); i++) {
+        for (int i = 1; moves[i] != null; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves.get(i - 1).score;
-            int sc2 = moves.get(i).score;
+            int sc1 = moves[i - 1].score;
+            int sc2 = moves[i].score;
             assertTrue(sc2 <= sc1);
         }
 
         moves = moveGen.pseudoLegalMoves(pos);
-        moves.get(0).score = 17;
-        moves.get(1).score = 666;
-        moves.get(2).score = 4711;
-        sc.scoreMoveList(moves.subList(2, moves.size()), 0);
-        assertEquals(17, moves.get(0).score);
-        for (int i = 2; i < moves.size(); i++) {
+        moves[0].score = 17;
+        moves[1].score = 666;
+        moves[2].score = 4711;
+        sc.scoreMoveList(moves, 0, 2);
+        assertEquals(17, moves[0].score);
+        for (int i = 2; moves[i] != null; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves.get(i - 1).score;
-            int sc2 = moves.get(i).score;
+            int sc1 = moves[i - 1].score;
+            int sc2 = moves[i].score;
             assertTrue(sc2 <= sc1);
         }
 
@@ -420,6 +420,6 @@ public class SearchTest {
         moves = moveGen.pseudoLegalMoves(pos);
         boolean res = Search.selectHashMove(moves, m);
         assertEquals(true, res);
-        assertEquals(m, moves.get(0));
+        assertEquals(m, moves[0]);
     }
 }

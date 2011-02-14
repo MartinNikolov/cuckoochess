@@ -5,9 +5,6 @@
 
 package chess;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author petero
@@ -143,10 +140,12 @@ public class TextIO {
     public static final void fixupEPSquare(Position pos) {
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
-            ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
+            Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             boolean epValid = false;
             for (Move m : moves) {
+                if (m == null)
+                    break;
                 if (m.to == epSquare) {
                     if (pos.getPiece(m.from) == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) {
                         epValid = true;
@@ -263,11 +262,11 @@ public class TextIO {
      *                 Otherwise, use short notation, eg Nf3
      */
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-        ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
+        Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
-    private static final String moveToString(Position pos, Move move, boolean longForm, List<Move> moves) {
+    private static final String moveToString(Position pos, Move move, boolean longForm, Move[] moves) {
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -306,9 +305,10 @@ public class TextIO {
                     int numSameTarget = 0;
                     int numSameFile = 0;
                     int numSameRow = 0;
-                    int mSize = moves.size();
-                    for (int mi = 0; mi < mSize; mi++) {
-                    	Move m = moves.get(mi);
+                    for (int mi = 0; moves[mi] != null; mi++) {
+                    	Move m = moves[mi];
+                    	if (m == null)
+                    	    break;
                         if ((pos.getPiece(m.from) == p) && (m.to == move.to)) {
                             numSameTarget++;
                             if (Position.getX(m.from) == x1)
@@ -341,9 +341,9 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         if (MoveGen.givesCheck(pos, move)) {
             pos.makeMove(move, ui);
-            ArrayList<Move> nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
+            Move[] nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
             nextMoves = MoveGen.removeIllegal(pos, nextMoves);
-            if (nextMoves.size() == 0) {
+            if (nextMoves[0] == null) {
                 ret.append('#');
             } else {
                 ret.append('+');
@@ -453,18 +453,18 @@ public class TextIO {
         Move move = null;
         if (strMove.length() == 0)
             return move;
-        ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
+        Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         {
             char lastChar = strMove.charAt(strMove.length() - 1);
             if ((lastChar == '#') || (lastChar == '+')) {
-                ArrayList<Move> subMoves = new ArrayList<Move>();
-                int mSize = moves.size();
-                for (int mi = 0; mi < mSize; mi++) {
-                	Move m = moves.get(mi);
+                Move[] subMoves = new Move[moves.length];
+                int len = 0;
+                for (int mi = 0; moves[mi] != null; mi++) {
+                	Move m = moves[mi];
                     String str1 = TextIO.moveToString(pos, m, true, moves);
                     if (str1.charAt(str1.length() - 1) == lastChar) {
-                        subMoves.add(m);
+                        subMoves[len++] = m;
                     }
                 }
                 moves = subMoves;
@@ -474,9 +474,8 @@ public class TextIO {
 
         for (int i = 0; i < 2; i++) {
             // Search for full match
-        	int mSize = moves.size();
-        	for (int mi = 0; mi < mSize; mi++) {
-        		Move m = moves.get(mi);
+        	for (int mi = 0; moves[mi] != null; mi++) {
+        		Move m = moves[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true, moves));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false, moves));
                 if (i == 0) {
@@ -494,9 +493,8 @@ public class TextIO {
         
         for (int i = 0; i < 2; i++) {
             // Search for unique substring match
-        	int mSize = moves.size();
-        	for (int mi = 0; mi < mSize; mi++) {
-        		Move m = moves.get(mi);
+        	for (int mi = 0; moves[mi] != null; mi++) {
+        		Move m = moves[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false));
                 boolean match;

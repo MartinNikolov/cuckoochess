@@ -7,7 +7,6 @@ package chess;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,7 +24,7 @@ public class HumanPlayer implements Player {
     @Override
     public String getCommand(Position pos, boolean drawOffer, List<Position> history) {
         try {
-            ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
+            Move[] moves = new MoveGen().pseudoLegalMoves(pos);
             moves = MoveGen.removeIllegal(pos, moves);
             String color = pos.whiteMove ? "white" : "black";
             System.out.print(String.format("Enter move (%s):", color));

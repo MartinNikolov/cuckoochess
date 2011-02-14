@@ -5,8 +5,6 @@
 
 package chess;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author petero
@@ -21,8 +19,9 @@ public class MoveGen {
      * Generate and return a list of pseudo-legal moves.
      * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
      */
-    public final ArrayList<Move> pseudoLegalMoves(Position pos) {
-        ArrayList<Move> moveList = getMoveListObj();
+    public final Move[] pseudoLegalMoves(Position pos) {
+        Move[] moveList = getMoveListObj();
+        int nMoves = 0;
         final long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             // Queen moves
@@ -30,7 +29,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -39,7 +38,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -48,7 +47,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -56,7 +55,7 @@ public class MoveGen {
             {
                 int sq = pos.getKingSq(true);
                 long m = BitBoard.kingAttacks[sq] & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 final int k0 = 4;
                 if (sq == k0) {
                     final long OO_SQ = 0x60L;
@@ -66,14 +65,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A1_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -83,31 +82,31 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
             long m = (pawns << 8) & ~occupied;
-            if (addPawnMovesByMask(moveList, pos, m, -8, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -8, true)) < 0) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~occupied;
-            addPawnDoubleMovesByMask(moveList, pos, m, -16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m, -16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -7, true)) < 0) return moveList;
 
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -9, true)) < 0) return moveList;
         } else {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -116,7 +115,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -125,7 +124,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
             
@@ -133,7 +132,7 @@ public class MoveGen {
             {
                 int sq = pos.getKingSq(false);
                 long m = BitBoard.kingAttacks[sq] & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 final int k0 = 60;
                 if (sq == k0) {
                     final long OO_SQ = 0x6000000000000000L;
@@ -143,14 +142,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A8_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -160,24 +159,24 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
             long m = (pawns >>> 8) & ~occupied;
-            if (addPawnMovesByMask(moveList, pos, m, 8, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 8, true)) < 0) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~occupied;
-            addPawnDoubleMovesByMask(moveList, pos, m, 16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m, 16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 9, true)) < 0) return moveList;
 
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, true)) < 0) return moveList;
         }
 
         return moveList;
@@ -187,8 +186,9 @@ public class MoveGen {
      * Generate and return a list of pseudo-legal check evasion moves.
      * Pseudo-legal means that the moves doesn't necessarily defend from check threats.
      */
-    public final ArrayList<Move> checkEvasions(Position pos) {
-        ArrayList<Move> moveList = getMoveListObj();
+    public final Move[] checkEvasions(Position pos) {
+        Move[] moveList = getMoveListObj();
+        int nMoves = 0;
         final long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             long kingThreats = pos.pieceTypeBB[Piece.BKNIGHT] & BitBoard.knightAttacks[pos.wKingSq];
@@ -211,7 +211,7 @@ public class MoveGen {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) &
                             ~pos.whiteBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -220,7 +220,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.whiteBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -229,7 +229,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.whiteBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -237,7 +237,7 @@ public class MoveGen {
             {
                 int sq = pos.getKingSq(true);
                 long m = BitBoard.kingAttacks[sq] & ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
             }
 
             // Knight moves
@@ -245,24 +245,24 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
             long m = (pawns << 8) & ~occupied;
-            if (addPawnMovesByMask(moveList, pos, m & validTargets, -8, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m & validTargets, -8, true)) < 0) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~occupied;
-            addPawnDoubleMovesByMask(moveList, pos, m & validTargets, -16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m & validTargets, -16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns << 7) & BitBoard.maskAToGFiles & ((pos.blackBB & validTargets) | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -7, true)) < 0) return moveList;
 
             m = (pawns << 9) & BitBoard.maskBToHFiles & ((pos.blackBB & validTargets) | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -9, true)) < 0) return moveList;
         } else {
             long kingThreats = pos.pieceTypeBB[Piece.WKNIGHT] & BitBoard.knightAttacks[pos.bKingSq];
             long rookPieces = pos.pieceTypeBB[Piece.WROOK] | pos.pieceTypeBB[Piece.WQUEEN];
@@ -284,7 +284,7 @@ public class MoveGen {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) &
                             ~pos.blackBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -293,7 +293,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & ~pos.blackBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -302,7 +302,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & ~pos.blackBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
             
@@ -310,7 +310,7 @@ public class MoveGen {
             {
                 int sq = pos.getKingSq(false);
                 long m = BitBoard.kingAttacks[sq] & ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
             }
 
             // Knight moves
@@ -318,24 +318,24 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & ~pos.blackBB & validTargets;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
             long m = (pawns >>> 8) & ~occupied;
-            if (addPawnMovesByMask(moveList, pos, m & validTargets, 8, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m & validTargets, 8, true)) < 0) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~occupied;
-            addPawnDoubleMovesByMask(moveList, pos, m & validTargets, 16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m & validTargets, 16);
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns >>> 9) & BitBoard.maskAToGFiles & ((pos.whiteBB & validTargets) | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 9, true)) < 0) return moveList;
 
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & ((pos.whiteBB & validTargets) | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7, true)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, true)) < 0) return moveList;
         }
 
         /* Extra debug checks
@@ -355,8 +355,9 @@ public class MoveGen {
     }
 
     /** Generate captures, checks, and possibly some other moves that are too hard to filter out. */
-    public final ArrayList<Move> pseudoLegalCapturesAndChecks(Position pos) {
-        ArrayList<Move> moveList = getMoveListObj();
+    public final Move[] pseudoLegalCapturesAndChecks(Position pos) {
+        Move[] moveList = getMoveListObj();
+        int nMoves = 0;
         long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             int bKingSq = pos.getKingSq(false);
@@ -377,7 +378,7 @@ public class MoveGen {
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk | kBishAtk);
                 m &= ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -388,7 +389,7 @@ public class MoveGen {
                 long m = BitBoard.rookAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kRookAtk);
                 m &= ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -399,7 +400,7 @@ public class MoveGen {
                 long m = BitBoard.bishopAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kBishAtk);
                 m &= ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -408,7 +409,7 @@ public class MoveGen {
                 int sq = pos.getKingSq(true);
                 long m = BitBoard.kingAttacks[sq];
                 m &= ((discovered & (1L<<sq)) == 0) ? pos.blackBB : ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 final int k0 = 4;
                 if (sq == k0) {
                     final long OO_SQ = 0x60L;
@@ -418,14 +419,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A1_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -438,7 +439,7 @@ public class MoveGen {
                 long m = BitBoard.knightAttacks[sq] & ~pos.whiteBB;
                 if ((discovered & (1L<<sq)) == 0) m &= (pos.blackBB | kKnightAtk);
                 m &= ~pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
@@ -448,22 +449,22 @@ public class MoveGen {
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             long m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -7, false)) < 0) return moveList;
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -9, false)) < 0) return moveList;
 
             // Discovered checks and promotions
             long pawnAll = discovered | BitBoard.maskRow7;
             m = ((pawns & pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, -8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -8, false)) < 0) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            addPawnDoubleMovesByMask(moveList, pos, m, -16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m, -16);
 
             // Normal checks
             m = ((pawns & ~pawnAll) << 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m & BitBoard.bPawnAttacks[bKingSq], -8, false)) < 0) return moveList;
             m = ((m & BitBoard.maskRow3) << 8) & ~(pos.whiteBB | pos.blackBB);
-            addPawnDoubleMovesByMask(moveList, pos, m & BitBoard.bPawnAttacks[bKingSq], -16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m & BitBoard.bPawnAttacks[bKingSq], -16);
         } else {
             int wKingSq = pos.getKingSq(true);
             long discovered = 0; // Squares that could generate discovered checks
@@ -483,7 +484,7 @@ public class MoveGen {
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied));
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk | kBishAtk;
                 m &= ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -494,7 +495,7 @@ public class MoveGen {
                 long m = BitBoard.rookAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kRookAtk;
                 m &= ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -505,7 +506,7 @@ public class MoveGen {
                 long m = BitBoard.bishopAttacks(sq, occupied);
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kBishAtk;
                 m &= ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
             
@@ -514,7 +515,7 @@ public class MoveGen {
                 int sq = pos.getKingSq(false);
                 long m = BitBoard.kingAttacks[sq];
                 m &= ((discovered & (1L<<sq)) == 0) ? pos.whiteBB : ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 final int k0 = 60;
                 if (sq == k0) {
                     final long OO_SQ = 0x6000000000000000L;
@@ -524,14 +525,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList.add(getMoveObj(k0, k0 + 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A8_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList.add(getMoveObj(k0, k0 - 2, Piece.EMPTY));
+                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -544,7 +545,7 @@ public class MoveGen {
                 long m = BitBoard.knightAttacks[sq] & ~pos.blackBB;
                 if ((discovered & (1L<<sq)) == 0) m &= pos.whiteBB | kKnightAtk;
                 m &= ~pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
@@ -554,29 +555,30 @@ public class MoveGen {
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             long m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 9, false)) < 0) return moveList;
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, false)) < 0) return moveList;
 
             // Discovered checks and promotions
             long pawnAll = discovered | BitBoard.maskRow2;
             m = ((pawns & pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m, 8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 8, false)) < 0) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            addPawnDoubleMovesByMask(moveList, pos, m, 16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m, 16);
 
             // Normal checks
             m = ((pawns & ~pawnAll) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            if (addPawnMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m & BitBoard.wPawnAttacks[wKingSq], 8, false)) < 0) return moveList;
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
-            addPawnDoubleMovesByMask(moveList, pos, m & BitBoard.wPawnAttacks[wKingSq], 16);
+            nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m & BitBoard.wPawnAttacks[wKingSq], 16);
         }
 
         return moveList;
     }
 
-    public final ArrayList<Move> pseudoLegalCaptures(Position pos) {
-        ArrayList<Move> moveList = getMoveListObj();
+    public final Move[] pseudoLegalCaptures(Position pos) {
+        Move[] moveList = getMoveListObj();
+        int nMoves = 0;
         long occupied = pos.whiteBB | pos.blackBB;
         if (pos.whiteMove) {
             // Queen moves
@@ -584,7 +586,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -593,7 +595,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -602,7 +604,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -611,34 +613,34 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & pos.blackBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // King moves
             int sq = pos.getKingSq(true);
             long m = BitBoard.kingAttacks[sq] & pos.blackBB;
-            if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+            if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.WPAWN];
             m = (pawns << 8) & ~(pos.whiteBB | pos.blackBB);
             m &= BitBoard.maskRow8;
-            if (addPawnMovesByMask(moveList, pos, m, -8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -8, false)) < 0) return moveList;
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns << 7) & BitBoard.maskAToGFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -7, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -7, false)) < 0) return moveList;
             m = (pawns << 9) & BitBoard.maskBToHFiles & (pos.blackBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, -9, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, -9, false)) < 0) return moveList;
         } else {
             // Queen moves
             long squares = pos.pieceTypeBB[Piece.BQUEEN];
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = (BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied)) & pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -647,7 +649,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.rookAttacks(sq, occupied) & pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
 
@@ -656,7 +658,7 @@ public class MoveGen {
             while (squares != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(squares);
                 long m = BitBoard.bishopAttacks(sq, occupied) & pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 squares &= squares-1;
             }
             
@@ -665,27 +667,27 @@ public class MoveGen {
             while (knights != 0) {
                 int sq = BitBoard.numberOfTrailingZeros(knights);
                 long m = BitBoard.knightAttacks[sq] & pos.whiteBB;
-                if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+                if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
                 knights &= knights-1;
             }
 
             // King moves
             int sq = pos.getKingSq(false);
             long m = BitBoard.kingAttacks[sq] & pos.whiteBB;
-            if (addMovesByMask(moveList, pos, sq, m)) return moveList;
+            if ((nMoves = addMovesByMask(moveList, nMoves, pos, sq, m)) < 0) return moveList;
 
             // Pawn moves
             long pawns = pos.pieceTypeBB[Piece.BPAWN];
             m = (pawns >>> 8) & ~(pos.whiteBB | pos.blackBB);
             m &= BitBoard.maskRow1;
-            if (addPawnMovesByMask(moveList, pos, m, 8, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 8, false)) < 0) return moveList;
 
             int epSquare = pos.getEpSquare();
             long epMask = (epSquare >= 0) ? (1L << epSquare) : 0L;
             m = (pawns >>> 9) & BitBoard.maskAToGFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 9, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 9, false)) < 0) return moveList;
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
-            if (addPawnMovesByMask(moveList, pos, m, 7, false)) return moveList;
+            if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, false)) < 0) return moveList;
         }
         return moveList;
     }
@@ -915,33 +917,33 @@ public class MoveGen {
      * "moveList" is assumed to be a list of pseudo-legal moves.
      * This function removes the moves that don't defend from check threats.
      */
-    public static final ArrayList<Move> removeIllegal(Position pos, ArrayList<Move> moveList) {
-        ArrayList<Move> ret = new ArrayList<Move>();
+    public static final Move[] removeIllegal(Position pos, Move[] moveList) {
+        Move[] ret = new Move[MAX_MOVES];
+        int length = 0;
         UndoInfo ui = new UndoInfo();
-        int mlSize = moveList.size();
-        for (int mi = 0; mi < mlSize; mi++) {
-        	Move m = moveList.get(mi);
+        for (int mi = 0; moveList[mi] != null; mi++) {
+        	Move m = moveList[mi];
             pos.makeMove(m, ui);
             pos.setWhiteMove(!pos.whiteMove);
             if (!inCheck(pos))
-                ret.add(m);
+                ret[length++] = m;
             pos.setWhiteMove(!pos.whiteMove);
             pos.unMakeMove(m, ui);
         }
         return ret;
     }
 
-    private final boolean addPawnMovesByMask(ArrayList<Move> moveList, Position pos, long mask,
+    private final int addPawnMovesByMask(Move[] moveList, int length, Position pos, long mask,
                                              int delta, boolean allPromotions) {
         if (mask == 0)
-            return false;
+            return length;
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
             returnMoveList(moveList);
             moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-            moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
-            return true;
+            moveList[0] = getMoveObj(sq + delta, sq, Piece.EMPTY);
+            return -1;
         }
         long promMask = mask & BitBoard.maskRow1Row8;
         mask &= ~promMask;
@@ -949,54 +951,55 @@ public class MoveGen {
             int sq = BitBoard.numberOfTrailingZeros(promMask);
             int sq0 = sq + delta;
             if (sq >= 56) { // White promotion
-                moveList.add(getMoveObj(sq0, sq, Piece.WQUEEN));
-                moveList.add(getMoveObj(sq0, sq, Piece.WKNIGHT));
+                moveList[length++] = getMoveObj(sq0, sq, Piece.WQUEEN);
+                moveList[length++] = getMoveObj(sq0, sq, Piece.WKNIGHT);
                 if (allPromotions) {
-                    moveList.add(getMoveObj(sq0, sq, Piece.WROOK));
-                    moveList.add(getMoveObj(sq0, sq, Piece.WBISHOP));
+                    moveList[length++] = getMoveObj(sq0, sq, Piece.WROOK);
+                    moveList[length++] = getMoveObj(sq0, sq, Piece.WBISHOP);
                 }
             } else { // Black promotion
-                moveList.add(getMoveObj(sq0, sq, Piece.BQUEEN));
-                moveList.add(getMoveObj(sq0, sq, Piece.BKNIGHT));
+                moveList[length++] = getMoveObj(sq0, sq, Piece.BQUEEN);
+                moveList[length++] = getMoveObj(sq0, sq, Piece.BKNIGHT);
                 if (allPromotions) {
-                    moveList.add(getMoveObj(sq0, sq, Piece.BROOK));
-                    moveList.add(getMoveObj(sq0, sq, Piece.BBISHOP));
+                    moveList[length++] = getMoveObj(sq0, sq, Piece.BROOK);
+                    moveList[length++] = getMoveObj(sq0, sq, Piece.BBISHOP);
                 }
             }
             promMask &= (promMask - 1);
         }
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
+            moveList[length++] = getMoveObj(sq + delta, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
-        return false;
+        return length;
     }
 
-    private final void addPawnDoubleMovesByMask(ArrayList<Move> moveList, Position pos,
+    private final int addPawnDoubleMovesByMask(Move[] moveList, int length, Position pos,
                                                 long mask, int delta) {
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList.add(getMoveObj(sq + delta, sq, Piece.EMPTY));
+            moveList[length++] = getMoveObj(sq + delta, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
+        return length;
     }
     
-    private final boolean addMovesByMask(ArrayList<Move> moveList, Position pos, int sq0, long mask) {
+    private final int addMovesByMask(Move[] moveList, int length, Position pos, int sq0, long mask) {
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
             returnMoveList(moveList);
             moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-            moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
-            return true;
+            moveList[0] = getMoveObj(sq0, sq, Piece.EMPTY);
+            return -1;
         }
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
+            moveList[length++] = getMoveObj(sq0, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
-        return false;
+        return length;
     }
 
     // Code to handle the Move cache.
@@ -1018,28 +1021,27 @@ public class MoveGen {
         return new Move(from, to, promoteTo);
     }
 
-    @SuppressWarnings("unchecked")
-    private final ArrayList<Move> getMoveListObj() {
+    private static final int MAX_MOVES = 256;
+
+    private final Move[] getMoveListObj() {
         if (moveListsInCache > 0) {
-            return (ArrayList<Move>)moveListCache[--moveListsInCache];
+            return (Move[])moveListCache[--moveListsInCache];
         }
-        return new ArrayList<Move>(60);
+        return new Move[MAX_MOVES];
     }
 
     /** Return all move objects in moveList to the move cache. */
-    public final void returnMoveList(ArrayList<Move> moveList) {
-        if (movesInCache + moveList.size() <= moveCache.length) {
-        	int mlSize = moveList.size();
-        	for (int mi = 0; mi < mlSize; mi++) {
-                moveCache[movesInCache++] = moveList.get(mi);
-            }
+    public final void returnMoveList(Move[] moveList) {
+        for (int mi = 0; moveList[mi] != null; mi++) {
+            if (movesInCache < moveCache.length)
+                moveCache[movesInCache++] = moveList[mi];
+            moveList[mi] = null;
         }
-        moveList.clear();
         if (moveListsInCache < moveListCache.length) {
             moveListCache[moveListsInCache++] = moveList;
         }
     }
-    
+
     public final void returnMove(Move m) {
         if (movesInCache < moveCache.length) {
             moveCache[movesInCache++] = m;

@@ -8,9 +8,8 @@ package chess;
 import chess.TranspositionTable.TTEntry;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  *
@@ -119,11 +118,23 @@ public class Search {
     	MoveInfo(Move m, int n) { move = m;  nodes = n; }
         static public class SortByScore implements Comparator<MoveInfo> {
             public int compare(MoveInfo mi1, MoveInfo mi2) {
+                if ((mi1 == null) && (mi2 == null))
+                    return 0;
+                if (mi1 == null)
+                    return 1;
+                if (mi2 == null)
+                    return -1;
                 return mi2.move.score - mi1.move.score;
             }
         }
         static public class SortByNodes implements Comparator<MoveInfo> {
             public int compare(MoveInfo mi1, MoveInfo mi2) {
+                if ((mi1 == null) && (mi2 == null))
+                    return 0;
+                if (mi1 == null)
+                    return 1;
+                if (mi2 == null)
+                    return -1;
                 return mi2.nodes - mi1.nodes;
             }
         }
@@ -134,19 +145,22 @@ public class Search {
         maxTimeMillis = maxTimeLimit;
     }
 
-    final public Move iterativeDeepening(ArrayList<Move> scMovesIn,
+    final public Move iterativeDeepening(Move[] scMovesIn,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
         totalNodes = 0;
-        ArrayList<MoveInfo> scMoves = new ArrayList<MoveInfo>(scMovesIn.size());
-        for (Move m : scMovesIn)
-        	scMoves.add(new MoveInfo(m, 0));
+        MoveInfo[] scMoves = new MoveInfo[scMovesIn.length];
+        int len = 0;
+        for (int mi = 0; scMovesIn[mi] != null; mi++) {
+            Move m = scMovesIn[mi];
+        	scMoves[len++] = new MoveInfo(m, 0);
+        }
         maxNodes = initialMaxNodes;
         nodesToGo = 0;
         Position origPos = new Position(pos);
         final int aspirationDelta = 25;
         int bestScoreLastIter = 0;
-        Move bestMove = scMoves.get(0).move;
+        Move bestMove = scMoves[0].move;
         this.verbose = verbose;
         if ((maxDepth < 0) || (maxDepth > 100)) {
         	maxDepth = 100;
@@ -162,9 +176,9 @@ public class Search {
             int bestScore = -Search.MATE0;
             UndoInfo ui = new UndoInfo();
             boolean needMoreTime = false;
-            for (int mi = 0; mi < scMoves.size(); mi++) {
+            for (int mi = 0; scMoves[mi] != null; mi++) {
                 searchNeedMoreTime = (mi > 0);
-                Move m = scMoves.get(mi).move;
+                Move m = scMoves[mi].move;
                 if ((listener != null) && (System.currentTimeMillis() - tStart >= 1000)) {
                     listener.notifyCurrMove(m, mi + 1);
                 }
@@ -268,18 +282,18 @@ public class Search {
                         notifyPV(depth, score, false, false, m);
                     }
                 }
-                scMoves.get(mi).move.score = score;
-                scMoves.get(mi).nodes = nodesThisMove;
+                scMoves[mi].move.score = score;
+                scMoves[mi].nodes = nodesThisMove;
                 bestScore = Math.max(bestScore, score);
                 if (depth > 1) {
                     if ((score > alpha) || (mi == 0)) {
                         alpha = score;
-                        MoveInfo tmp = scMoves.get(mi);
+                        MoveInfo tmp = scMoves[mi];
                         for (int i = mi - 1; i >= 0;  i--) {
-                            scMoves.set(i + 1, scMoves.get(i));
+                            scMoves[i + 1] = scMoves[i];
                         }
-                        scMoves.set(0, tmp);
-                        bestMove = scMoves.get(0).move;
+                        scMoves[0] = tmp;
+                        bestMove = scMoves[0].move;
                     }
                 }
                 if (depth > 1) {
@@ -292,9 +306,9 @@ public class Search {
                 }
             }
             if (depth == 1) {
-                 Collections.sort(scMoves, new MoveInfo.SortByScore());
-                 bestMove = scMoves.get(0).move;
-                 notifyPV(depth, bestMove.score, false, false, bestMove);
+                Arrays.sort(scMoves, new MoveInfo.SortByScore());
+                bestMove = scMoves[0].move;
+                notifyPV(depth, bestMove.score, false, false, bestMove);
             }
             long tNow = System.currentTimeMillis();
             if (verbose) {
@@ -321,9 +335,8 @@ public class Search {
 
             if (depth > 1) {
             	// Moves that were hard to search should be searched early in the next iteration
-            	if (scMoves.size() > 1)
-            		Collections.sort(scMoves.subList(1, scMoves.size()),
-            						 new MoveInfo.SortByNodes());
+            	if ((scMoves[0] != null) && (scMoves[1] != null))
+            	    Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
             }
         }
         } catch (StopSearch ss) {
@@ -396,9 +409,9 @@ public class Search {
             if (MoveGen.canTakeKing(pos))
                 return MATE0 - ply;
             if (inCheck) {
-                ArrayList<Move> moves = moveGen.pseudoLegalMoves(pos);
+                Move[] moves = moveGen.pseudoLegalMoves(pos);
                 moves = MoveGen.removeIllegal(pos, moves);
-                if (moves.size() == 0) {            // Can't claim draw if already check mated.
+                if (moves[0] == null) {            // Can't claim draw if already check mated.
                     return -(MATE0-(ply+1));
                 }
             }
@@ -528,7 +541,7 @@ public class Search {
 
         // Start searching move alternatives
         // FIXME! Try hash move before generating move list.
-        ArrayList<Move> moves;
+        Move[] moves;
         if (inCheck)
             moves = moveGen.checkEvasions(pos);
         else 
@@ -548,15 +561,15 @@ public class Search {
         int bestScore = illegalScore;
         int bestMove = -1;
         int lmrCount = 0;
-        for (int mi = 0; mi < moves.size(); mi++) {
+        for (int mi = 0; moves[mi] != null; mi++) {
             if ((mi == 1) && !seeDone) {
-                scoreMoveList(moves.subList(1, moves.size()), ply);
+                scoreMoveList(moves, ply, 1);
                 seeDone = true;
             }
             if ((mi > 0) || !hashMoveSelected) {
                 selectBest(moves, mi);
             }
-            Move m = moves.get(mi);
+            Move m = moves[mi];
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 return MATE0-ply;       // King capture
@@ -671,7 +684,7 @@ public class Search {
                     kt.addKiller(ply, m);
                     ht.addSuccess(pos, m, depth);
                     for (int mi2 = mi - 1; mi2 >= 0; mi2--) {
-                        Move m2 = moves.get(mi2);
+                        Move m2 = moves[mi2];
                         if (pos.getPiece(m2.to) == Piece.EMPTY)
                             ht.addFail(pos, m2, depth);
                     }
@@ -687,7 +700,7 @@ public class Search {
             return 0;       // Stale-mate
         }
         if (bestMove >= 0) {
-            tt.insert(pos.historyHash(), moves.get(bestMove), TTEntry.T_EXACT, ply, depth, evalScore);
+            tt.insert(pos.historyHash(), moves[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
         } else {
             emptyMove.score = bestScore;
             tt.insert(pos.historyHash(), emptyMove, TTEntry.T_LE, ply, depth, evalScore);
@@ -745,7 +758,7 @@ public class Search {
             alpha = score;
         int bestScore = score;
         final boolean tryChecks = (depth > -3);
-        ArrayList<Move> moves;
+        Move[] moves;
         if (inCheck) {
             moves = moveGen.checkEvasions(pos);
             scoreMoveList(moves, ply);
@@ -757,14 +770,13 @@ public class Search {
         	scoreCaptureList(moves, ply);
         }
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
-        final int nMoves = moves.size();
-        for (int mi = 0; mi < nMoves; mi++) {
+        for (int mi = 0; moves[mi] != null; mi++) {
             if (mi < 8) {
                 // If the first 8 moves didn't fail high, this is probably an ALL-node,
                 // so spending more effort on move ordering is probably wasted time.
                 selectBest(moves, mi);
             }
-            Move m = moves.get(mi);
+            Move m = moves[mi];
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 return MATE0-ply;       // King capture
@@ -950,10 +962,12 @@ public class Search {
      * Compute scores for each move in a move list, using SEE, killer and history information.
      * @param moves  List of moves to score.
      */
-    final void scoreMoveList(List<Move> moves, int ply) {
-    	final int mSize = moves.size();
-        for (int i = 0; i < mSize; i++) {
-            Move m = moves.get(i);
+    final void scoreMoveList(Move[] moves, int ply) {
+        scoreMoveList(moves, ply, 0);
+    }
+    final void scoreMoveList(Move[] moves, int ply, int startIdx) {
+        for (int i = startIdx; moves[i] != null; i++) {
+            Move m = moves[i];
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
             int score = isCapture ? SEE(m) : 0;
             int ks = kt.getKillerScore(ply, m);
@@ -966,9 +980,9 @@ public class Search {
             m.score = score;
         }
     }
-    final void scoreCaptureList(List<Move> moves, int ply) {
-        for (int i = 0; i < moves.size(); i++) {
-            Move m = moves.get(i);
+    final void scoreCaptureList(Move[] moves, int ply) {
+        for (int i = 0; moves[i] != null; i++) {
+            Move m = moves[i];
             m.score = SEE(m);
         }
     }
@@ -976,36 +990,33 @@ public class Search {
     /**
      * Find move with highest score and move it to the front of the list.
      */
-    final static void selectBest(List<Move> moves, int startIdx) {
-    	int mSize = moves.size();
-        if (mSize - startIdx < 2)
-            return;
+    final static void selectBest(Move[] moves, int startIdx) {
         int bestIdx = startIdx;
-        int bestScore = moves.get(bestIdx).score;
-        for (int i = startIdx + 1; i < mSize; i++) {
-        	int sc = moves.get(i).score;
+        int bestScore = moves[bestIdx].score;
+        for (int i = startIdx + 1; moves[i] != null; i++) {
+        	int sc = moves[i].score;
             if (sc > bestScore) {
                 bestIdx = i;
                 bestScore = sc;
             }
         }
         if (bestIdx != startIdx) {
-            Move m = moves.get(startIdx);
-            moves.set(startIdx, moves.get(bestIdx));
-            moves.set(bestIdx, m);
+            Move m = moves[startIdx];
+            moves[startIdx] = moves[bestIdx];
+            moves[bestIdx] = m;
         }
     }
 
     /** If hashMove exists in the move list, move the hash move to the front of the list. */
-    final static boolean selectHashMove(ArrayList<Move> moves, Move hashMove) {
+    final static boolean selectHashMove(Move[] moves, Move hashMove) {
         if (hashMove == null) {
             return false;
         }
-        for (int i = 0; i < moves.size(); i++) {
-            Move m = moves.get(i);
+        for (int i = 0; moves[i] != null; i++) {
+            Move m = moves[i];
             if (m.equals(hashMove)) {
-                moves.set(i, moves.get(0));
-                moves.set(0, m);
+                moves[i] = moves[0];
+                moves[0] = m;
                 m.score = 10000;
                 return true;
             }
