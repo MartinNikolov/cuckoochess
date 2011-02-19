@@ -13,12 +13,10 @@ public class KillerTable {
     /** There is one KTEntry for each ply in the search tree. */
     static final class KTEntry {
         public KTEntry() {
-            ent = new Move[2];
-            int sq = Position.getSquare(0, 0);
-            ent[0] = new Move(sq, sq, Piece.EMPTY);
-            ent[1] = new Move(sq, sq, Piece.EMPTY);
+            move0 = move1 = 0;
         }
-        Move[] ent;
+        int move0;
+        int move1;
     }
     KTEntry[] ktList;
 
@@ -33,15 +31,11 @@ public class KillerTable {
     final public void addKiller(int ply, Move m) {
         if (ply >= ktList.length)
             return;
+        int move = (short)(m.from + (m.to << 6) + (m.promoteTo << 12));
         KTEntry ent = ktList[ply];
-        if (!m.equals(ent.ent[0])) {
-            Move tmp = ent.ent[1];
-            ent.ent[1] = ent.ent[0];
-            ent.ent[0] = tmp;
-            tmp.from = m.from;
-            tmp.to = m.to;
-            tmp.promoteTo = m.promoteTo;
-            tmp.score = m.score;
+        if (move != ent.move0) {
+            ent.move1 = ent.move0;
+            ent.move0 = move;
         }
     }
 
@@ -54,19 +48,20 @@ public class KillerTable {
      * The score is 0 otherwise.
      */
     final public int getKillerScore(int ply, Move m) {
+        int move = (short)(m.from + (m.to << 6) + (m.promoteTo << 12));
         if (ply < ktList.length) {
             KTEntry ent = ktList[ply];
-            if (m.equals(ent.ent[0])) {
+            if (move == ent.move0) {
                 return 4;
-            } else if (m.equals(ent.ent[1])) {
+            } else if (move == ent.move1) {
                 return 3;
             }
         }
         if ((ply - 2 >= 0) && (ply - 2 < ktList.length)) {
             KTEntry ent = ktList[ply - 2];
-            if (m.equals(ent.ent[0])) {
+            if (move == ent.move0) {
                 return 2;
-            } else if (m.equals(ent.ent[1])) {
+            } else if (move == ent.move1) {
                 return 1;
             }
         }
