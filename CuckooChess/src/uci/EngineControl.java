@@ -214,6 +214,7 @@ public class EngineControl {
                 if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
             }
         }
+        tt.nextGeneration();
         final int srchmaxDepth = maxDepth;
         engineThread = new Thread(new Runnable() {
             public void run() {

@@ -562,6 +562,7 @@ public class Search {
         int bestMove = -1;
         int lmrCount = 0;
         for (int mi = 0; moves[mi] != null; mi++) {
+            // FIXME! Try singular extension of hash move if all other moves are sufficiently worse
             if ((mi == 1) && !seeDone) {
                 scoreMoveList(moves, ply, 1);
                 seeDone = true;
