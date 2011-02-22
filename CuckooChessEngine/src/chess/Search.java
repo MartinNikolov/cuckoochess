@@ -487,7 +487,9 @@ public class Search {
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
                 	if (score > MATE0 / 2)
-                		return beta;
+                		score = beta;
+                	emptyMove.score = score;
+                	tt.insert(pos.historyHash(), emptyMove, TTEntry.T_GE, ply, depth, evalScore);
                     return score;
                 } else {
                     if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {

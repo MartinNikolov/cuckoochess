@@ -457,6 +457,7 @@ public class Evaluate {
                 int kingDistX = Math.abs(kingX - x);
                 int kingDistY = Math.abs(kingY - 7);
                 int kingDist = Math.max(kingDistX, kingDistY);
+                // FIXME! Try larger/nonlinear score. See loss in round 21.
                 score += interpolate(mtrlNoPawns, 0, kingDist * 4, highMtrl, 0);
                 if (!pos.whiteMove)
                     kingDist--;
