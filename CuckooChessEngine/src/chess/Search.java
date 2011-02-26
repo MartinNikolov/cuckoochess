@@ -463,6 +463,7 @@ public class Search {
         }
 
         // Try null-move pruning
+        // FIXME! Try null-move verification in late endgames. See loss in round 21.
         sti.currentMove = emptyMove;
         if (    (depth >= 3) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
@@ -564,7 +565,6 @@ public class Search {
         int bestMove = -1;
         int lmrCount = 0;
         for (int mi = 0; moves[mi] != null; mi++) {
-            // FIXME! Try singular extension of hash move if all other moves are sufficiently worse
             if ((mi == 1) && !seeDone) {
                 scoreMoveList(moves, ply, 1);
                 seeDone = true;

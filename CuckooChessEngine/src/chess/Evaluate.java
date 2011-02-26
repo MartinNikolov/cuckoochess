@@ -334,7 +334,7 @@ public class Evaluate {
                 int sq = BitBoard.numberOfTrailingZeros(m);
                 long atk = BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied);
                 wAttacksBB |= atk;
-                score += queenMobScore[Long.bitCount(atk & ~pos.whiteBB)];
+                score += queenMobScore[Long.bitCount(atk & ~pos.whiteBB)]; // FIXME! Try table-based bitCount
                 bKingAttacks += Long.bitCount(atk & bKingZone) * 2;
                 m &= m-1;
             }
@@ -457,8 +457,9 @@ public class Evaluate {
                 int kingDistX = Math.abs(kingX - x);
                 int kingDistY = Math.abs(kingY - 7);
                 int kingDist = Math.max(kingDistX, kingDistY);
-                // FIXME! Try larger/nonlinear score. See loss in round 21.
-                score += interpolate(mtrlNoPawns, 0, kingDist * 4, highMtrl, 0);
+                int kScore = kingDist * 4;
+                if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
+                score += interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
                 if (!pos.whiteMove)
                     kingDist--;
                 if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
@@ -480,7 +481,9 @@ public class Evaluate {
                 int kingDistX = Math.abs(kingX - x);
                 int kingDistY = Math.abs(kingY - 0);
                 int kingDist = Math.max(kingDistX, kingDistY);
-                score -= interpolate(mtrlNoPawns, 0, kingDist * 4, highMtrl, 0);
+                int kScore = kingDist * 4;
+                if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
+                score -= interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
                 if (pos.whiteMove)
                     kingDist--;
                 if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
