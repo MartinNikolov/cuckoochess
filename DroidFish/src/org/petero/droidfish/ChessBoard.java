@@ -443,6 +443,7 @@ public class ChessBoard extends View {
 
 	protected final void drawPiece(Canvas canvas, int xCrd, int yCrd, int p) {
 		String psb, psw;
+		boolean rotate = false;
         switch (p) {
         	default:
             case Piece.EMPTY:   psb = null; psw = null; break;
@@ -452,12 +453,12 @@ public class ChessBoard extends View {
             case Piece.WBISHOP: psb = "K"; psw = "n"; break;
             case Piece.WKNIGHT: psb = "L"; psw = "o"; break;
             case Piece.WPAWN:   psb = "M"; psw = "p"; break;
-            case Piece.BKING:   psb = "N"; psw = "q"; break;
-            case Piece.BQUEEN:  psb = "O"; psw = "r"; break;
-            case Piece.BROOK:   psb = "P"; psw = "s"; break;
-            case Piece.BBISHOP: psb = "Q"; psw = "t"; break;
-            case Piece.BKNIGHT: psb = "R"; psw = "u"; break;
-            case Piece.BPAWN:   psb = "S"; psw = "v"; break;
+            case Piece.BKING:   psb = "N"; psw = "q"; rotate = true; break;
+            case Piece.BQUEEN:  psb = "O"; psw = "r"; rotate = true; break;
+            case Piece.BROOK:   psb = "P"; psw = "s"; rotate = true; break;
+            case Piece.BBISHOP: psb = "Q"; psw = "t"; rotate = true; break;
+            case Piece.BKNIGHT: psb = "R"; psw = "u"; rotate = true; break;
+            case Piece.BPAWN:   psb = "S"; psw = "v"; rotate = true; break;
         }
         if (psb != null) {
         	if (pieceXDelta < 0) {
@@ -466,10 +467,18 @@ public class ChessBoard extends View {
         		pieceXDelta = (sqSize - (bounds.left + bounds.right)) / 2;
         		pieceYDelta = (sqSize - (bounds.top + bounds.bottom)) / 2;
         	}
+            rotate ^= flipped;
+            rotate = false; // Disabled for now
+            if (rotate) {
+                canvas.save();
+                canvas.rotate(180, xCrd + sqSize * 0.5f, yCrd + sqSize * 0.5f);
+            }
     		xCrd += pieceXDelta;
     		yCrd += pieceYDelta;
             canvas.drawText(psw, xCrd, yCrd, whitePiecePaint);
             canvas.drawText(psb, xCrd, yCrd, blackPiecePaint);
+            if (rotate)
+                canvas.restore();
         }
     }
 

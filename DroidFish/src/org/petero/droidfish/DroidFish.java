@@ -91,6 +91,7 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
+    // FIXME!!! Support "anydensity" (small screens, QVGA)
 
     private ChessBoard cb;
     private ChessController ctrl = null;
