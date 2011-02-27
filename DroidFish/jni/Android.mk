@@ -5,14 +5,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := jni
 LOCAL_SRC_FILES := jni.cpp
 
-LOCAL_CFLAGS    := -I$(LOCAL_PATH)/stlport/stlport \
+LOCAL_CFLAGS    := \
 	 -mandroid \
 	-DTARGET_OS=android -D__ANDROID__ \
 	-isystem $(SYSROOT)/usr/include
 
-LOCAL_STATIC_LIBRARIES := stockfish stlport
+LOCAL_STATIC_LIBRARIES := stockfish
 
 include $(BUILD_SHARED_LIBRARY)
 
-include jni/stlport/src/Android.mk
 include jni/stockfish/Android.mk

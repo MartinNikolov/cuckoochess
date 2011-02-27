@@ -51,6 +51,7 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 #include <cstdlib>
+#include <ctype.h>
 
 ////
 //// Configuration
