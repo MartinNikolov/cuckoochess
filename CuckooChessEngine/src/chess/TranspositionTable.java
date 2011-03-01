@@ -108,6 +108,7 @@ public class TranspositionTable {
                 ent = table[idx0];
                 hashSlot = 0;
             }
+            /*
             int altEntIdx = (ent.hashSlot == 0) ? h1(ent.key) : h0(ent.key);
             if (ent.betterThan(table[altEntIdx], generation)) {
                 TTEntry altEnt = table[altEntIdx];
@@ -120,6 +121,7 @@ public class TranspositionTable {
                 altEnt.hashSlot = (byte)(1 - ent.hashSlot);
                 altEnt.evalScore = ent.evalScore;
             }
+            */
         }
         boolean doStore = true;
         if ((ent.key == key) && (ent.depth > depth) && (ent.type == type)) {
