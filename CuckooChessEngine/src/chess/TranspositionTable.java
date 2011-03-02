@@ -24,7 +24,7 @@ public class TranspositionTable {
         byte hashSlot;          // Which hash function was used for hashing, 0 or 1.
         short evalScore;        // Score from static evaluation 
         // FIXME!!! Test storing both upper and lower bound in each hash entry.
-        
+
         static public final int T_EXACT = 0;   // Exact score
         static public final int T_GE = 1;      // True score >= this.score
         static public final int T_LE = 2;      // True score <= this.score
@@ -35,13 +35,20 @@ public class TranspositionTable {
             if ((generation == currGen) != (other.generation == currGen)) {
                 return generation == currGen;   // Old entries are less valuable
             }
-            if (depth != other.depth) {
-                return depth > other.depth;     // Larger depth is more valuable
-            }
             if ((type == T_EXACT) != (other.type == T_EXACT)) {
                 return type == T_EXACT;         // Exact score more valuable than lower/upper bound
             }
+            if (depth != other.depth) {
+                return depth > other.depth;     // Larger depth is more valuable
+            }
             return false;   // Otherwise, pretty much equally valuable
+        }
+
+        /** Return true if entry is good enough to spend extra time trying to avoid overwriting it. */
+        public final boolean valuable(int currGen) {
+            if (generation != currGen)
+                return false;
+            return (type == T_EXACT) || (depth > 3);
         }
 
         public final void getMove(Move m) {
@@ -108,20 +115,20 @@ public class TranspositionTable {
                 ent = table[idx0];
                 hashSlot = 0;
             }
-            /*
-            int altEntIdx = (ent.hashSlot == 0) ? h1(ent.key) : h0(ent.key);
-            if (ent.betterThan(table[altEntIdx], generation)) {
-                TTEntry altEnt = table[altEntIdx];
-                altEnt.key = ent.key;
-                altEnt.move = ent.move;
-                altEnt.score = ent.score;
-                altEnt.depth = ent.depth;
-                altEnt.generation = ent.generation;
-                altEnt.type = ent.type;
-                altEnt.hashSlot = (byte)(1 - ent.hashSlot);
-                altEnt.evalScore = ent.evalScore;
+            if (ent.valuable(generation)) {
+                int altEntIdx = (ent.hashSlot == 0) ? h1(ent.key) : h0(ent.key);
+                if (ent.betterThan(table[altEntIdx], generation)) {
+                    TTEntry altEnt = table[altEntIdx];
+                    altEnt.key = ent.key;
+                    altEnt.move = ent.move;
+                    altEnt.score = ent.score;
+                    altEnt.depth = ent.depth;
+                    altEnt.generation = ent.generation;
+                    altEnt.type = ent.type;
+                    altEnt.hashSlot = (byte)(1 - ent.hashSlot);
+                    altEnt.evalScore = ent.evalScore;
+                }
             }
-            */
         }
         boolean doStore = true;
         if ((ent.key == key) && (ent.depth > depth) && (ent.type == type)) {
