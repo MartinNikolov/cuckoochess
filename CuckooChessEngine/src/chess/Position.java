@@ -138,6 +138,10 @@ public class Position {
     public final long pawnZobristHash() {
     	return pHashKey;
     }
+    public final long kingZobristHash() {
+        return psHashKeys[Piece.WKING][wKingSq] ^ 
+               psHashKeys[Piece.BKING][bKingSq];
+    }
 
     public final long historyHash() {
         long ret = hashKey;
