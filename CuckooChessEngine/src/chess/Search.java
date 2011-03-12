@@ -26,6 +26,7 @@ public class Search {
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
     int depth;
+    TreeLogger log = null;
 
     private static final class SearchTreeInfo {
         UndoInfo undoInfo;
@@ -34,6 +35,7 @@ public class Search {
         Move bestMove;         // Copy of the best found move at this ply
         Move currentMove;      // Move currently being searched
         int lmr;               // LMR reduction amount
+        long nodeIdx;
         SearchTreeInfo() {
             undoInfo = new UndoInfo();
             hashMove = new Move(0, 0, 0);
@@ -148,6 +150,7 @@ public class Search {
     final public Move iterativeDeepening(Move[] scMovesIn,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
+//        log = TreeLogger.getWriter("/home/petero/treelog.dmp", pos);
         totalNodes = 0;
         MoveInfo[] scMoves = new MoveInfo[scMovesIn.length];
         int len = 0;
@@ -210,6 +213,7 @@ public class Search {
                 SearchTreeInfo sti = searchTreeInfo[0];
                 sti.currentMove = m;
                 sti.lmr = lmr;
+                sti.nodeIdx = -1;
                 int score = -negaScout(-beta, -alpha, 1, depth - lmr - 1, -1, givesCheck);
                 if ((lmr > 0) && (score > alpha)) {
                     sti.lmr = 0;
@@ -344,6 +348,10 @@ public class Search {
         }
         notifyStats();
 
+        if (log != null) {
+            log.close();
+            log = null;
+        }
         return bestMove;
     }
 
@@ -383,6 +391,11 @@ public class Search {
      */
     final public int negaScout(int alpha, int beta, int ply, int depth, int recaptureSquare,
     						   final boolean inCheck) throws StopSearch {
+        if (log != null) {
+            SearchTreeInfo sti = searchTreeInfo[ply-1];
+            long idx = log.logNodeStart(sti.nodeIdx, sti.currentMove, alpha, beta, ply, depth);
+            searchTreeInfo[ply].nodeIdx = idx;
+        }
         if (--nodesToGo <= 0) {
             nodesToGo = 5000;
             long tNow = System.currentTimeMillis();
@@ -406,18 +419,25 @@ public class Search {
 
         // Draw tests
         if (canClaimDraw50(pos)) {
-            if (MoveGen.canTakeKing(pos))
-                return MATE0 - ply;
+            if (MoveGen.canTakeKing(pos)) {
+                int score = MATE0 - ply;
+                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE);
+                return score;
+            }
             if (inCheck) {
                 Move[] moves = moveGen.pseudoLegalMoves(pos);
                 moves = MoveGen.removeIllegal(pos, moves);
                 if (moves[0] == null) {            // Can't claim draw if already check mated.
-                    return -(MATE0-(ply+1));
+                    int score = -(MATE0-(ply+1));
+                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE);
+                    return score;
                 }
             }
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE);
             return 0;
         }
         if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashFirstNew)) {
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE);
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
             // FIXME! Sometimes draws in won positions. Xboard bug or cuckoochess bug?
@@ -436,6 +456,7 @@ public class Search {
                 if (    (ent.type == TTEntry.T_EXACT) ||
                         (ent.type == TTEntry.T_GE) && (score >= beta) ||
                         (ent.type == TTEntry.T_LE) && (score <= alpha)) {
+                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, ent.type, evalScore);
                     return score;
                 }
             }
@@ -459,6 +480,7 @@ public class Search {
             }
             emptyMove.score = score;
             tt.insert(pos.historyHash(), emptyMove, type, ply, depth, q0Eval);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, type, evalScore);
             return score;
         }
 
@@ -468,7 +490,9 @@ public class Search {
         if (    (depth >= 3) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
-                return MATE0 - ply;
+                int score = MATE0 - ply;
+                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, evalScore);
+                return score;
             }
             boolean nullOk;
             if (pos.whiteMove) {
@@ -491,6 +515,7 @@ public class Search {
                 		score = beta;
                 	emptyMove.score = score;
                 	tt.insert(pos.historyHash(), emptyMove, TTEntry.T_GE, ply, depth, evalScore);
+                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_GE, evalScore);
                     return score;
                 } else {
                     if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {
@@ -502,6 +527,7 @@ public class Search {
                                 // if the threat move was made possible by a reduced
                                 // move on the previous ply, the reduction was unsafe.
                                 // Return alpha to trigger a non-reduced re-search.
+                                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, alpha, TTEntry.T_LE, evalScore);
                                 return alpha;
                             }
                         }
@@ -575,7 +601,9 @@ public class Search {
             Move m = moves[mi];
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
-                return MATE0-ply;       // King capture
+                int score = MATE0-ply;
+                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, evalScore);
+                return score;       // King capture
             }
             int newCaptureSquare = -1;
             boolean isCapture = false;
@@ -694,19 +722,23 @@ public class Search {
                 }
                 tt.insert(pos.historyHash(), m, TTEntry.T_GE, ply, depth, evalScore);
                 moveGen.returnMoveList(moves);
+                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, alpha, TTEntry.T_GE, evalScore);
                 return alpha;
             }
             b = alpha + 1;
         }
         if (!haveLegalMoves && !inCheck) {
             moveGen.returnMoveList(moves);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, evalScore);
             return 0;       // Stale-mate
         }
         if (bestMove >= 0) {
             tt.insert(pos.historyHash(), moves[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, bestScore, TTEntry.T_EXACT, evalScore);
         } else {
             emptyMove.score = bestScore;
             tt.insert(pos.historyHash(), emptyMove, TTEntry.T_LE, ply, depth, evalScore);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, bestScore, TTEntry.T_LE, evalScore);
         }
         moveGen.returnMoveList(moves);
         return bestScore;

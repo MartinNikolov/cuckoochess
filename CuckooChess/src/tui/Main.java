@@ -10,6 +10,7 @@ import java.io.IOException;
 import chess.ComputerPlayer;
 import chess.HumanPlayer;
 import chess.Player;
+import chess.TreeLogger;
 
 /**
  *
@@ -29,6 +30,8 @@ public class Main {
             blackPlayer.setTTLogSize(21);
             TUIGame game = new TUIGame(whitePlayer, blackPlayer);
             game.play();
+        } else if ((args.length == 2) && args[0].equals("tree")) {
+            TreeLogger.main(new String[]{args[1]});
         } else {
         	uci.UCIProtocol.main(false);
         }
