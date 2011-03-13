@@ -416,12 +416,13 @@ public class Search {
         }
         nodes++;
         totalNodes++;
+        final long hKey = pos.historyHash();
 
         // Draw tests
         if (canClaimDraw50(pos)) {
             if (MoveGen.canTakeKing(pos)) {
                 int score = MATE0 - ply;
-                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE);
+                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
                 return score;
             }
             if (inCheck) {
@@ -429,15 +430,15 @@ public class Search {
                 moves = MoveGen.removeIllegal(pos, moves);
                 if (moves[0] == null) {            // Can't claim draw if already check mated.
                     int score = -(MATE0-(ply+1));
-                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE);
+                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
                     return score;
                 }
             }
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
             return 0;
         }
         if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashFirstNew)) {
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
             // FIXME! Sometimes draws in won positions. Xboard bug or cuckoochess bug?
@@ -445,7 +446,7 @@ public class Search {
 
         int evalScore = UNKNOWN_SCORE;
         // Check transposition table
-        TTEntry ent = tt.probe(pos.historyHash());
+        TTEntry ent = tt.probe(hKey);
         Move hashMove = null;
         SearchTreeInfo sti = searchTreeInfo[ply];
         if (ent.type != TTEntry.T_EMPTY) {
@@ -456,7 +457,7 @@ public class Search {
                 if (    (ent.type == TTEntry.T_EXACT) ||
                         (ent.type == TTEntry.T_GE) && (score >= beta) ||
                         (ent.type == TTEntry.T_LE) && (score <= alpha)) {
-                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, ent.type, evalScore);
+                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, ent.type, evalScore, hKey);
                     return score;
                 }
             }
@@ -479,8 +480,8 @@ public class Search {
                 type = TTEntry.T_GE;
             }
             emptyMove.score = score;
-            tt.insert(pos.historyHash(), emptyMove, type, ply, depth, q0Eval);
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, type, evalScore);
+            tt.insert(hKey, emptyMove, type, ply, depth, q0Eval);
+            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, type, evalScore, hKey);
             return score;
         }
 
@@ -491,7 +492,7 @@ public class Search {
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
                 int score = MATE0 - ply;
-                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, evalScore);
+                if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_EXACT, evalScore, hKey);
                 return score;
             }
             boolean nullOk;
@@ -514,8 +515,8 @@ public class Search {
                 	if (score > MATE0 / 2)
                 		score = beta;
                 	emptyMove.score = score;
-                	tt.insert(pos.historyHash(), emptyMove, TTEntry.T_GE, ply, depth, evalScore);
-                    if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_GE, evalScore);
+                	tt.insert(hKey, emptyMove, TTEntry.T_GE, ply, depth, evalScore);
+                	if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_GE, evalScore, hKey);
                     return score;
                 } else {
                     if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {
@@ -527,7 +528,7 @@ public class Search {
                                 // if the threat move was made possible by a reduced
                                 // move on the previous ply, the reduction was unsafe.
                                 // Return alpha to trigger a non-reduced re-search.
-                                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, alpha, TTEntry.T_LE, evalScore);
+                                if (log != null) log.logNodeEnd(sti.nodeIdx, alpha, TTEntry.T_LE, evalScore, hKey);
                                 return alpha;
                             }
                         }
@@ -560,8 +561,10 @@ public class Search {
 
         if ((depth > 4) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
             // No hash move at PV node. Try internal iterative deepening.
+            long savedNodeIdx = sti.nodeIdx;
             negaScout(alpha, beta, ply, (depth > 8) ? (depth - 5) : (depth - 4), -1, inCheck);
-            ent = tt.probe(pos.historyHash());
+            sti.nodeIdx = savedNodeIdx;
+            ent = tt.probe(hKey);
             if (ent.type != TTEntry.T_EMPTY) {
             	hashMove = sti.hashMove;
                 ent.getMove(hashMove);
@@ -602,7 +605,7 @@ public class Search {
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 int score = MATE0-ply;
-                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, evalScore);
+                if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_EXACT, evalScore, hKey);
                 return score;       // King capture
             }
             int newCaptureSquare = -1;
@@ -720,25 +723,25 @@ public class Search {
                             ht.addFail(pos, m2, depth);
                     }
                 }
-                tt.insert(pos.historyHash(), m, TTEntry.T_GE, ply, depth, evalScore);
+                tt.insert(hKey, m, TTEntry.T_GE, ply, depth, evalScore);
                 moveGen.returnMoveList(moves);
-                if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, alpha, TTEntry.T_GE, evalScore);
+                if (log != null) log.logNodeEnd(sti.nodeIdx, alpha, TTEntry.T_GE, evalScore, hKey);
                 return alpha;
             }
             b = alpha + 1;
         }
         if (!haveLegalMoves && !inCheck) {
             moveGen.returnMoveList(moves);
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, evalScore);
+            if (log != null) log.logNodeEnd(sti.nodeIdx, 0, TTEntry.T_EXACT, evalScore, hKey);
             return 0;       // Stale-mate
         }
         if (bestMove >= 0) {
-            tt.insert(pos.historyHash(), moves[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, bestScore, TTEntry.T_EXACT, evalScore);
+            tt.insert(hKey, moves[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
+            if (log != null) log.logNodeEnd(sti.nodeIdx, bestScore, TTEntry.T_EXACT, evalScore, hKey);
         } else {
             emptyMove.score = bestScore;
-            tt.insert(pos.historyHash(), emptyMove, TTEntry.T_LE, ply, depth, evalScore);
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, bestScore, TTEntry.T_LE, evalScore);
+            tt.insert(hKey, emptyMove, TTEntry.T_LE, ply, depth, evalScore);
+            if (log != null) log.logNodeEnd(sti.nodeIdx, bestScore, TTEntry.T_LE, evalScore, hKey);
         }
         moveGen.returnMoveList(moves);
         return bestScore;
