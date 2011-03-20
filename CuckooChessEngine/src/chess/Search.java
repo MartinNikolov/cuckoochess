@@ -543,11 +543,11 @@ public class Search {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
                 if (depth == 1) {
-                    margin = Evaluate.nV / 2;
+                    margin = 150;
                 } else if (depth == 2) {
-                    margin = Evaluate.nV;
+                    margin = 300;
                 } else {
-                    margin = Evaluate.rV;
+                    margin = 450;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
                 	evalScore = eval.evalPos(pos);
