@@ -536,7 +536,7 @@ public class Evaluate {
 
         // Evaluate passed pawn bonus, white
         long passedPawnsW = wPawns & ~BitBoard.southFill(bPawns | bPawnAttacks | (wPawns >>> 8));
-        final int[] ppBonus = {-1,24,26,30,36,44,56,-1};
+        final int[] ppBonus = {-1,24,26,30,36,47,64,-1};
         int passedBonusW = 0;
         if (passedPawnsW != 0) {
             long guardedPassedW = passedPawnsW & (((wPawns & BitBoard.maskBToHFiles) << 7) |
