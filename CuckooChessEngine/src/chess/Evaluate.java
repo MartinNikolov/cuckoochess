@@ -108,7 +108,7 @@ public class Evaluate {
     							 0,  2,  4,  4,  4,  4,  2,  0,
     							 0,  3,  4,  4,  4,  4,  3,  0,
     							 0,  4,  2,  2,  2,  2,  4,  0,
-    							 0,  0,  0,  0,  0,  0,  0,  0 };
+    							 0,  0, -2,  0,  0, -2,  0,  0 };
 
     /** Piece/square table for queens during middle game. */
     static final int[] qt1b = { -10, -5,  0,  0,  0,  0, -5,-10,
