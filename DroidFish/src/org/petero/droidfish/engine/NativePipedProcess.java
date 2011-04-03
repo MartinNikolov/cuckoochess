@@ -1,6 +1,6 @@
 package org.petero.droidfish.engine;
 
-public class NativePipedProcess {
+public class NativePipedProcess implements UCIEngine {
 	static {
 		System.loadLibrary("jni");
 	}
@@ -12,6 +12,7 @@ public class NativePipedProcess {
 	}
 
 	/** Start process. */
+    @Override
 	public final void initialize() {
 		if (!processAlive) {
 			startProcess();
@@ -20,9 +21,10 @@ public class NativePipedProcess {
 	}
 
 	/** Shut down process. */
+    @Override
 	public final void shutDown() {
 		if (processAlive) {
-			writeLineToProcess("quit");
+			writeLineToEngine("quit");
 			processAlive = false;
 		}
 	}
@@ -34,7 +36,8 @@ public class NativePipedProcess {
 	 *         or empty string if no data available,
 	 *         or null if I/O error.
 	 */
-	public final String readLineFromProcess(int timeoutMillis) {
+    @Override
+	public final String readLineFromEngine(int timeoutMillis) {
 		String ret = readFromProcess(timeoutMillis);
 		if (ret == null)
 			return null;
@@ -45,7 +48,8 @@ public class NativePipedProcess {
 	}
 
 	/** Write a line to the process. \n will be added automatically. */
-	public final synchronized void writeLineToProcess(String data) {
+    @Override
+	public final synchronized void writeLineToEngine(String data) {
 //		System.out.printf("GUI -> Engine: %s\n", data);
 		writeToProcess(data + "\n");
 	}

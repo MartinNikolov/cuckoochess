@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.petero.droidfish.engine.cuckoochess.CuckooChessEngine;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
 import org.petero.droidfish.gamelogic.Pair;
@@ -24,28 +26,33 @@ import org.petero.droidfish.gamelogic.UndoInfo;
 public class ComputerPlayer {
     public static String engineName = "";
 
-    static NativePipedProcess npp = null;
-	SearchListener listener;
-	int timeLimit;
-	Book book;
+    private static UCIEngine uciEngine = null;
+    private SearchListener listener;
+    private Book book;
 	private boolean newGame = false;
 
     public ComputerPlayer() {
-    	if (npp == null) {
-    		npp = new NativePipedProcess();
-    		npp.initialize();
-    		npp.writeLineToProcess("uci");
+        boolean useCuckoo = false;
+    	if (uciEngine == null) {
+    	    if (useCuckoo) {
+                uciEngine = new CuckooChessEngine();
+    	    } else {
+    	        uciEngine = new NativePipedProcess();
+    	    }
+    		uciEngine.initialize();
+    		uciEngine.writeLineToEngine("uci");
     		readUCIOptions();
     		int nThreads = getNumCPUs();
     		if (nThreads > 8) nThreads = 8;
-    		npp.writeLineToProcess("setoption name Hash value 16");
-    		npp.writeLineToProcess("setoption name Ponder value false");
-    		npp.writeLineToProcess(String.format("setoption name Threads value %d", nThreads));
-    		npp.writeLineToProcess("ucinewgame");
+    		if (!useCuckoo) {
+    		    uciEngine.writeLineToEngine("setoption name Hash value 16");
+    		}
+    		uciEngine.writeLineToEngine("setoption name Ponder value false");
+    		uciEngine.writeLineToEngine(String.format("setoption name Threads value %d", nThreads));
+    		uciEngine.writeLineToEngine("ucinewgame");
     		syncReady();
     	}
     	listener = null;
-    	timeLimit = 0;
     	book = new Book();
     }
 
@@ -78,7 +85,7 @@ public class ComputerPlayer {
     private void readUCIOptions() {
     	int timeout = 1000;
     	while (true) {
-    		String s = npp.readLineFromProcess(timeout);
+    		String s = uciEngine.readLineFromEngine(timeout);
     		String[] tokens = tokenize(s);
     		if (tokens[0].equals("uciok"))
     			break;
@@ -102,9 +109,9 @@ public class ComputerPlayer {
     }
 
     private final void syncReady() {
-    	npp.writeLineToProcess("isready");
+    	uciEngine.writeLineToEngine("isready");
     	while (true) {
-    		String s = npp.readLineFromProcess(1000);
+    		String s = uciEngine.readLineFromEngine(1000);
     		if (s.equals("readyok"))
     			break;
     	}
@@ -118,16 +125,16 @@ public class ComputerPlayer {
 	public final void maybeNewGame() {
 		if (newGame) {
 			newGame = false;
-			npp.writeLineToProcess("ucinewgame");
+			uciEngine.writeLineToEngine("ucinewgame");
 			syncReady();
 		}
 	}
 	
 	/** Stop the engine process. */
     public final void shutdownEngine() {
-    	if (npp != null) {
-    		npp.shutDown();
-    		npp = null;
+    	if (uciEngine != null) {
+    		uciEngine.shutDown();
+    		uciEngine = null;
     	}
 	}
 
@@ -190,7 +197,7 @@ public class ComputerPlayer {
     		}
     	}
     	maybeNewGame();
-    	npp.writeLineToProcess(posStr.toString());
+    	uciEngine.writeLineToEngine(posStr.toString());
     	if (wTime < 1) wTime = 1;
     	if (bTime < 1) bTime = 1;
     	String goStr = String.format("go wtime %d btime %d", wTime, bTime);
@@ -199,7 +206,7 @@ public class ComputerPlayer {
     	if (movesToGo > 0) {
     		goStr += String.format(" movestogo %d", movesToGo);
     	}
-    	npp.writeLineToProcess(goStr);
+    	uciEngine.writeLineToEngine(goStr);
 
     	String bestMove = monitorEngine(currPos);
 
@@ -225,10 +232,10 @@ public class ComputerPlayer {
 			int timeout = 2000;
     		while (true) {
     			if (shouldStop && !stopSent) {
-    		    	npp.writeLineToProcess("stop");
+    		    	uciEngine.writeLineToEngine("stop");
     		    	stopSent = true;
     			}
-    			String s = npp.readLineFromProcess(timeout);
+    			String s = uciEngine.readLineFromEngine(timeout);
     			if (s.length() == 0)
     				break;
     			String[] tokens = tokenize(s);
@@ -280,9 +287,9 @@ public class ComputerPlayer {
     		}
     	}
     	maybeNewGame();
-    	npp.writeLineToProcess(posStr.toString());
+    	uciEngine.writeLineToEngine(posStr.toString());
     	String goStr = String.format("go infinite");
-    	npp.writeLineToProcess(goStr);
+    	uciEngine.writeLineToEngine(goStr);
 
     	monitorEngine(currPos);
     }
@@ -438,6 +445,6 @@ public class ComputerPlayer {
 
     public final void stopSearch() {
     	shouldStop = true;
-    	npp.writeLineToProcess("stop");
+    	uciEngine.writeLineToEngine("stop");
     }
 }

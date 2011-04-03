@@ -28,6 +28,8 @@ import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.Pair;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
+import chess.Piece;
+
 /**
  * Implements an opening book.
  * @author petero
@@ -39,6 +41,10 @@ public class Book {
         BookEntry(Move move) {
             this.move = move;
             count = 1;
+        }
+        @Override
+        public String toString() {
+            return TextIO.moveToUCIString(move) + " (" + count + ")";
         }
     }
     private static Map<Long, List<BookEntry>> bookMap;
@@ -91,8 +97,12 @@ public class Book {
 	        	if (move == 0) {
 	        		pos = new Position(startPos);
 	        	} else {
-	        		Move m = new Move(move & 63, (move >> 6) & 63, (move >> 12) & 15);
-	        		addToBook(pos, m);
+	        	    boolean bad = ((move >> 15) & 1) != 0;
+	        	    int prom = (move >> 12) & 7;
+	        		Move m = new Move(move & 63, (move >> 6) & 63,
+                                      promToPiece(prom, pos.whiteMove));
+	        	    if (!bad)
+	        	        addToBook(pos, m);
 	        		pos.makeMove(m, ui);
 	        	}
 	        }
@@ -248,11 +258,17 @@ public class Book {
         String[] strMoves = line.split(" ");
         for (String strMove : strMoves) {
 //            System.out.printf("Adding move:%s\n", strMove);
+            int bad = 0;
+            if (strMove.endsWith("?")) {
+                strMove = strMove.substring(0, strMove.length() - 1);
+                bad = 1;
+            }
             Move m = TextIO.stringToMove(pos, strMove);
             if (m == null) {
                 return false;
             }
-            int val = m.from + (m.to << 6) + (m.promoteTo << 12);
+            int prom = pieceToProm(m.promoteTo);
+            int val = m.from + (m.to << 6) + (prom << 12) + (bad << 15);
             binBook.add((byte)(val >> 8));
             binBook.add((byte)(val & 255));
             pos.makeMove(m, ui);
@@ -270,4 +286,29 @@ public class Book {
 			return bookMap.get(pos.zobristHash());
 		}
 	}
+
+    private static int pieceToProm(int p) {
+        switch (p) {
+        case Piece.WQUEEN: case Piece.BQUEEN:
+            return 1;
+        case Piece.WROOK: case Piece.BROOK:
+            return 2;
+        case Piece.WBISHOP: case Piece.BBISHOP:
+            return 3;
+        case Piece.WKNIGHT: case Piece.BKNIGHT:
+            return 4;
+        default:
+            return 0;
+        }
+    }
+
+    private static int promToPiece(int prom, boolean whiteMove) {
+        switch (prom) {
+        case 1: return whiteMove ? Piece.WQUEEN : Piece.BQUEEN;
+        case 2: return whiteMove ? Piece.WROOK  : Piece.BROOK;
+        case 3: return whiteMove ? Piece.WBISHOP : Piece.BBISHOP;
+        case 4: return whiteMove ? Piece.WKNIGHT : Piece.BKNIGHT;
+        default: return Piece.EMPTY;
+        }
+    }
 }

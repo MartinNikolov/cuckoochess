@@ -92,6 +92,9 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
 
+    // FIXME!! Remove all tab characters (and trailing whitespace)
+    // FIXME!! There should only be one Book.java file
+
     private ChessBoard cb;
     private ChessController ctrl = null;
     private boolean mShowThinking;
