@@ -42,43 +42,43 @@ public class Evaluate {
 
     /** Piece/square table for king during middle game. */
     static final int[] kt1b = { -22,-35,-40,-40,-40,-40,-35,-22,
-  							    -22,-35,-40,-40,-40,-40,-35,-22,
-    						    -25,-35,-40,-45,-45,-40,-35,-25,
-    						    -15,-30,-35,-40,-40,-35,-30,-15,
-    						    -10,-15,-20,-25,-25,-20,-15,-10,
-    					          4, -2, -5,-15,-15, -5, -2,  4,
-    				 			 16, 14,  7, -3, -3,  7, 14, 16,
-    			 				 24, 24,  9,  0,  0,  9, 24, 24 };
+                                -22,-35,-40,-40,-40,-40,-35,-22,
+                                -25,-35,-40,-45,-45,-40,-35,-25,
+                                -15,-30,-35,-40,-40,-35,-30,-15,
+                                -10,-15,-20,-25,-25,-20,-15,-10,
+                                  4, -2, -5,-15,-15, -5, -2,  4,
+                                 16, 14,  7, -3, -3,  7, 14, 16,
+                                 24, 24,  9,  0,  0,  9, 24, 24 };
 
     /** Piece/square table for king during end game. */
     static final int[] kt2b = {  0,  8, 16, 24, 24, 16,  8,  0,
-    						     8, 16, 24, 32, 32, 24, 16,  8,
-    						    16, 24, 32, 40, 40, 32, 24, 16,
-    						    24, 32, 40, 48, 48, 40, 32, 24,
-    						    24, 32, 40, 48, 48, 40, 32, 24,
-    						    16, 24, 32, 40, 40, 32, 24, 16,
-    						     8, 16, 24, 32, 32, 24, 16,  8,
-    						     0,  8, 16, 24, 24, 16,  8,  0 };
+                                 8, 16, 24, 32, 32, 24, 16,  8,
+                                16, 24, 32, 40, 40, 32, 24, 16,
+                                24, 32, 40, 48, 48, 40, 32, 24,
+                                24, 32, 40, 48, 48, 40, 32, 24,
+                                16, 24, 32, 40, 40, 32, 24, 16,
+                                 8, 16, 24, 32, 32, 24, 16,  8,
+                                 0,  8, 16, 24, 24, 16,  8,  0 };
 
     /** Piece/square table for pawns during middle game. */
     static final int[] pt1b = {  0,  0,  0,  0,  0,  0,  0,  0,
-    						 	 8, 16, 24, 32, 32, 24, 16,  8,
-    							 3, 12, 20, 28, 28, 20, 12,  3,
-    						    -5,  4, 10, 20, 20, 10,  4, -5,
-    						    -6,  4,  5, 16, 16,  5,  4, -6,
-    						    -6,  4,  2,  5,  5,  2,  4, -6,
-    						    -6,  4,  4,-15,-15,  4,  4, -6,
-    						 	 0,  0,  0,  0,  0,  0,  0,  0 };
+                                 8, 16, 24, 32, 32, 24, 16,  8,
+                                 3, 12, 20, 28, 28, 20, 12,  3,
+                                -5,  4, 10, 20, 20, 10,  4, -5,
+                                -6,  4,  5, 16, 16,  5,  4, -6,
+                                -6,  4,  2,  5,  5,  2,  4, -6,
+                                -6,  4,  4,-15,-15,  4,  4, -6,
+                                 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for pawns during end game. */
     static final int[] pt2b = {   0,  0,  0,  0,  0,  0,  0,  0,
-    							 25, 40, 45, 45, 45, 45, 40, 25,
-    							 17, 32, 35, 35, 35, 35, 32, 17,
-    							  5, 24, 24, 24, 24, 24, 24,  5,
-    						     -9, 11, 11, 11, 11, 11, 11, -9,
-    						    -17,  3,  3,  3,  3,  3,  3,-17,
-    						    -20,  0,  0,  0,  0,  0,  0,-20,
-    						 	  0,  0,  0,  0,  0,  0,  0,  0 };
+                                 25, 40, 45, 45, 45, 45, 40, 25,
+                                 17, 32, 35, 35, 35, 35, 32, 17,
+                                  5, 24, 24, 24, 24, 24, 24,  5,
+                                 -9, 11, 11, 11, 11, 11, 11, -9,
+                                -17,  3,  3,  3,  3,  3,  3,-17,
+                                -20,  0,  0,  0,  0,  0,  0,-20,
+                                  0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for knights during middle game. */
     static final int[] nt1b = { -53,-42,-32,-21,-21,-32,-42,-53,
@@ -102,33 +102,33 @@ public class Evaluate {
 
     /** Piece/square table for bishops during middle game. */
     static final int[] bt1b = {  0,  0,  0,  0,  0,  0,  0,  0,
-    							 0,  4,  2,  2,  2,  2,  4,  0,
-    							 0,  2,  4,  4,  4,  4,  2,  0,
-    							 0,  2,  4,  4,  4,  4,  2,  0,
-    							 0,  2,  4,  4,  4,  4,  2,  0,
-    							 0,  3,  4,  4,  4,  4,  3,  0,
-    							 0,  4,  2,  2,  2,  2,  4,  0,
-    							 0,  0, -2,  0,  0, -2,  0,  0 };
+                                 0,  4,  2,  2,  2,  2,  4,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  3,  4,  4,  4,  4,  3,  0,
+                                 0,  4,  2,  2,  2,  2,  4,  0,
+                                 0,  0, -2,  0,  0, -2,  0,  0 };
 
     /** Piece/square table for queens during middle game. */
     static final int[] qt1b = { -10, -5,  0,  0,  0,  0, -5,-10,
-				 				 -5,  0,  5,  5,  5,  5,  0, -5,
-				 				  0,  5,  5,  6,  6,  5,  5,  0,
-				 				  0,  5,  6,  6,  6,  6,  5,  0,
-				 				  0,  5,  6,  6,  6,  6,  5,  0,
-				 				  0,  5,  5,  6,  6,  5,  5,  0,
-				 				 -5,  0,  5,  5,  5,  5,  0, -5,
-				 			    -10, -5,  0,  0,  0,  0, -5,-10 };
+                                 -5,  0,  5,  5,  5,  5,  0, -5,
+                                  0,  5,  5,  6,  6,  5,  5,  0,
+                                  0,  5,  6,  6,  6,  6,  5,  0,
+                                  0,  5,  6,  6,  6,  6,  5,  0,
+                                  0,  5,  5,  6,  6,  5,  5,  0,
+                                 -5,  0,  5,  5,  5,  5,  0, -5,
+                                -10, -5,  0,  0,  0,  0, -5,-10 };
 
     /** Piece/square table for rooks during middle game. */
     static final int[] rt1b = {  0,  3,  5,  5,  5,  5,  3,  0,
-				 			    15, 20, 20, 20, 20, 20, 20, 15,
-				 			     0,  0,  0,  0,  0,  0,  0,  0,
-				 			     0,  0,  0,  0,  0,  0,  0,  0,
-				 			    -2,  0,  0,  0,  0,  0,  0, -2,
-				 			    -2,  0,  0,  2,  2,  0,  0, -2,
-				 			    -3,  2,  5,  5,  5,  5,  2, -3,
-				 			     0,  3,  5,  5,  5,  5,  3,  0 };
+                                15, 20, 20, 20, 20, 20, 20, 15,
+                                 0,  0,  0,  0,  0,  0,  0,  0,
+                                 0,  0,  0,  0,  0,  0,  0,  0,
+                                -2,  0,  0,  0,  0,  0,  0, -2,
+                                -2,  0,  0,  2,  2,  0,  0, -2,
+                                -3,  2,  5,  5,  5,  5,  2, -3,
+                                 0,  3,  5,  5,  5,  5,  3,  0 };
 
     static final int[] kt1w, qt1w, rt1w, bt1w, nt1w, pt1w, kt2w, nt2w, pt2w;
     static {
@@ -164,30 +164,30 @@ public class Evaluate {
                                            kt2b, qt1b, rt1b, bt1b, nt2b, pt2b };
 
     static final int[][] distToH1A8 = { { 0, 1, 2, 3, 4, 5, 6, 7 },
-										{ 1, 2, 3, 4, 5, 6, 7, 6 },
-										{ 2, 3, 4, 5, 6, 7, 6, 5 },
-										{ 3, 4, 5, 6, 7, 6, 5, 4 },
-										{ 4, 5, 6, 7, 6, 5, 4, 3 },
-										{ 5, 6, 7, 6, 5, 4, 3, 2 },
-										{ 6, 7, 6, 5, 4, 3, 2, 1 },
-										{ 7, 6, 5, 4, 3, 2, 1, 0 } };
+                                        { 1, 2, 3, 4, 5, 6, 7, 6 },
+                                        { 2, 3, 4, 5, 6, 7, 6, 5 },
+                                        { 3, 4, 5, 6, 7, 6, 5, 4 },
+                                        { 4, 5, 6, 7, 6, 5, 4, 3 },
+                                        { 5, 6, 7, 6, 5, 4, 3, 2 },
+                                        { 6, 7, 6, 5, 4, 3, 2, 1 },
+                                        { 7, 6, 5, 4, 3, 2, 1, 0 } };
 
     static final int[] rookMobScore = {-10,-7,-4,-1,2,5,7,9,11,12,13,14,14,14,14};
     static final int[] bishMobScore = {-15,-10,-6,-2,2,6,10,13,16,18,20,22,23,24};
     static final int[] queenMobScore = {-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10};
 
     private static final class PawnHashData {
-    	long key;
-    	int score;         // Positive score means good for white
-    	short passedBonusW;
-    	short passedBonusB;
-    	long passedPawnsW;     // The most advanced passed pawns for each file
-    	long passedPawnsB;
+        long key;
+        int score;         // Positive score means good for white
+        short passedBonusW;
+        short passedBonusB;
+        long passedPawnsW;     // The most advanced passed pawns for each file
+        long passedPawnsB;
     }
     static PawnHashData[] pawnHash;
     static {
         final int numEntries = 1<<16;
-    	pawnHash = new PawnHashData[numEntries];
+        pawnHash = new PawnHashData[numEntries];
         for (int i = 0; i < numEntries; i++) {
             PawnHashData phd = new PawnHashData();
             phd.key = -1; // Non-zero to avoid collision for positions with no pawns
@@ -226,7 +226,7 @@ public class Evaluate {
      *         Positive values are good for the side to make the next move.
      */
     final public int evalPos(Position pos) {
-    	int score = pos.wMtrl - pos.bMtrl;
+        int score = pos.wMtrl - pos.bMtrl;
 
         wKingAttacks = bKingAttacks = 0;
         wKingZone = BitBoard.kingAttacks[pos.getKingSq(true)]; wKingZone |= wKingZone << 8;
@@ -401,7 +401,7 @@ public class Evaluate {
 
     /** Score castling ability. */
     private final int castleBonus(Position pos) {
-    	if (pos.getCastleMask() == 0) return 0;
+        if (pos.getCastleMask() == 0) return 0;
 
         final int k1 = kt1b[7*8+6] - kt1b[7*8+4];
         final int k2 = kt2b[7*8+6] - kt2b[7*8+4];
@@ -429,11 +429,11 @@ public class Evaluate {
     }
 
     private final int pawnBonus(Position pos) {
-    	long key = pos.pawnZobristHash();
-    	PawnHashData phd = pawnHash[(int)key & (pawnHash.length - 1)];
-    	if (phd.key != key)
-    		computePawnHashData(pos, phd);
-    	int score = phd.score;
+        long key = pos.pawnZobristHash();
+        PawnHashData phd = pawnHash[(int)key & (pawnHash.length - 1)];
+        if (phd.key != key)
+            computePawnHashData(pos, phd);
+        int score = phd.score;
 
         final int hiMtrl = qV + rV;
         score += interpolate(pos.bMtrl - pos.bMtrlPawns, 0, 2 * phd.passedBonusW, hiMtrl, phd.passedBonusW);
@@ -490,12 +490,12 @@ public class Evaluate {
             }
         }
 
-    	return score;
+        return score;
     }
 
     /** Compute pawn hash data for pos. */
-	private final void computePawnHashData(Position pos, PawnHashData ph) {
-    	int score = 0;
+    private final void computePawnHashData(Position pos, PawnHashData ph) {
+        int score = 0;
 
         // Evaluate double pawns and pawn islands
         long wPawns = pos.pieceTypeBB[Piece.WPAWN];
@@ -582,14 +582,14 @@ public class Evaluate {
     }
 
     /** Compute rook bonus. Rook on open/half-open file. */
-	private final int rookBonus(Position pos) {
+    private final int rookBonus(Position pos) {
         int score = 0;
         final long wPawns = pos.pieceTypeBB[Piece.WPAWN];
         final long bPawns = pos.pieceTypeBB[Piece.BPAWN];
         final long occupied = pos.whiteBB | pos.blackBB;
         long m = pos.pieceTypeBB[Piece.WROOK];
         while (m != 0) {
-        	int sq = BitBoard.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if ((wPawns & BitBoard.maskFile[x]) == 0) { // At least half-open file
                 score += (bPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
@@ -607,7 +607,7 @@ public class Evaluate {
             score += 20; // Two rooks on 7:th row
         m = pos.pieceTypeBB[Piece.BROOK];
         while (m != 0) {
-        	int sq = BitBoard.numberOfTrailingZeros(m);
+            int sq = BitBoard.numberOfTrailingZeros(m);
             final int x = Position.getX(sq);
             if ((bPawns & BitBoard.maskFile[x]) == 0) {
                 score -= (wPawns & BitBoard.maskFile[x]) == 0 ? 25 : 12;
@@ -892,8 +892,8 @@ public class Evaluate {
     /** Implements special knowledge for some endgame situations. */
     private final int endGameEval(Position pos, int oldScore) {
         int score = oldScore;
-    	if (pos.wMtrl + pos.bMtrl > 6 * rV)
-    		return score;
+        if (pos.wMtrl + pos.bMtrl > 6 * rV)
+            return score;
         final int wMtrlPawns = pos.wMtrlPawns;
         final int bMtrlPawns = pos.bMtrlPawns;
         final int wMtrlNoPawns = pos.wMtrl - wMtrlPawns;
@@ -1090,9 +1090,9 @@ public class Evaluate {
      * If x < x1, return y1, if x > x2 return y2. Otherwise, use linear interpolation.
      */
     private static final int interpolate(int x, int x1, int y1, int x2, int y2) {
-    	if (x > x2) {
-    		return y2;
-    	} else if (x < x1) {
+        if (x > x2) {
+            return y2;
+        } else if (x < x1) {
             return y1;
         } else {
             return (x - x1) * (y2 - y1) / (x2 - x1) + y1;

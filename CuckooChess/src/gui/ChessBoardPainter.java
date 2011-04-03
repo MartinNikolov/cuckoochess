@@ -27,8 +27,8 @@ import javax.swing.JLabel;
  * @author petero
  */
 public class ChessBoardPainter extends JLabel {
-	private static final long serialVersionUID = -1319250011487017825L;
-	private Position pos;
+    private static final long serialVersionUID = -1319250011487017825L;
+    private Position pos;
     private int selectedSquare;
     private int x0, y0, sqSize;
     private boolean flipped;

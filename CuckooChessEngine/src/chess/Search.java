@@ -22,7 +22,7 @@ public class Search {
     KillerTable kt;
     History ht;
     long[] posHashList;         // List of hashes for previous positions up to the last "zeroing" move.
-    int posHashListSize;		// Number of used entries in posHashList
+    int posHashListSize;        // Number of used entries in posHashList
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
     int depth;
@@ -90,8 +90,8 @@ public class Search {
     }
 
     class StopSearch extends Exception {
-		private static final long serialVersionUID = -5546906604987117015L;
-		public StopSearch() {
+        private static final long serialVersionUID = -5546906604987117015L;
+        public StopSearch() {
         }
         public StopSearch(String msg) {
             super(msg);
@@ -115,9 +115,9 @@ public class Search {
     }
 
     private final static class MoveInfo {
-    	Move move;
-    	int nodes;
-    	MoveInfo(Move m, int n) { move = m;  nodes = n; }
+        Move move;
+        int nodes;
+        MoveInfo(Move m, int n) { move = m;  nodes = n; }
         static public class SortByScore implements Comparator<MoveInfo> {
             public int compare(MoveInfo mi1, MoveInfo mi2) {
                 if ((mi1 == null) && (mi2 == null))
@@ -156,7 +156,7 @@ public class Search {
         int len = 0;
         for (int mi = 0; scMovesIn[mi] != null; mi++) {
             Move m = scMovesIn[mi];
-        	scMoves[len++] = new MoveInfo(m, 0);
+            scMoves[len++] = new MoveInfo(m, 0);
         }
         maxNodes = initialMaxNodes;
         nodesToGo = 0;
@@ -166,7 +166,7 @@ public class Search {
         Move bestMove = scMoves[0].move;
         this.verbose = verbose;
         if ((maxDepth < 0) || (maxDepth > 100)) {
-        	maxDepth = 100;
+            maxDepth = 100;
         }
         for (int i = 0; i < searchTreeInfo.length; i++) {
             searchTreeInfo[i].allowNullMove = true;
@@ -338,9 +338,9 @@ public class Search {
             bestScoreLastIter = bestScore;
 
             if (depth > 1) {
-            	// Moves that were hard to search should be searched early in the next iteration
-            	if ((scMoves[0] != null) && (scMoves[1] != null))
-            	    Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
+                // Moves that were hard to search should be searched early in the next iteration
+                if ((scMoves[0] != null) && (scMoves[1] != null))
+                    Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
             }
         }
         } catch (StopSearch ss) {
@@ -390,7 +390,7 @@ public class Search {
      * @return Score for the side to make a move, in position given by "pos".
      */
     final public int negaScout(int alpha, int beta, int ply, int depth, int recaptureSquare,
-    						   final boolean inCheck) throws StopSearch {
+                               final boolean inCheck) throws StopSearch {
         if (log != null) {
             SearchTreeInfo sti = searchTreeInfo[ply-1];
             long idx = log.logNodeStart(sti.nodeIdx, sti.currentMove, alpha, beta, ply, depth);
@@ -411,8 +411,8 @@ public class Search {
         
         // Collect statistics
         if (verbose) {
-        	if (ply < 20) nodesPlyVec[ply]++;
-        	if (depth < 20) nodesDepthVec[depth]++;
+            if (ply < 20) nodesPlyVec[ply]++;
+            if (depth < 20) nodesDepthVec[depth]++;
         }
         nodes++;
         totalNodes++;
@@ -512,11 +512,11 @@ public class Search {
                 pos.setEpSquare(epSquare);
                 pos.setWhiteMove(!pos.whiteMove);
                 if (score >= beta) {
-                	if (score > MATE0 / 2)
-                		score = beta;
-                	emptyMove.score = score;
-                	tt.insert(hKey, emptyMove, TTEntry.T_GE, ply, depth, evalScore);
-                	if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_GE, evalScore, hKey);
+                    if (score > MATE0 / 2)
+                        score = beta;
+                    emptyMove.score = score;
+                    tt.insert(hKey, emptyMove, TTEntry.T_GE, ply, depth, evalScore);
+                    if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_GE, evalScore, hKey);
                     return score;
                 } else {
                     if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {
@@ -550,7 +550,7 @@ public class Search {
                     margin = 450;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
-                	evalScore = eval.evalPos(pos);
+                    evalScore = eval.evalPos(pos);
                 }
                 futilityScore = evalScore + margin;
                 if (futilityScore <= alpha) {
@@ -566,7 +566,7 @@ public class Search {
             sti.nodeIdx = savedNodeIdx;
             ent = tt.probe(hKey);
             if (ent.type != TTEntry.T_EMPTY) {
-            	hashMove = sti.hashMove;
+                hashMove = sti.hashMove;
                 ent.getMove(hashMove);
             }
         }
@@ -651,54 +651,54 @@ public class Search {
             boolean doFutility = false;
             if (futilityPrune && mayReduce && haveLegalMoves) {
                 if (!givesCheck && !passedPawnPush(pos, m))
-                	doFutility = true;
+                    doFutility = true;
             }
             int score;
             if (doFutility) {
-            	score = futilityScore;
+                score = futilityScore;
             } else {
-            	int extend = Math.max(posExtend, moveExtend);
-            	int lmr = 0;
-            	if ((depth >= 3) && mayReduce && (extend == 0)) {
+                int extend = Math.max(posExtend, moveExtend);
+                int lmr = 0;
+                if ((depth >= 3) && mayReduce && (extend == 0)) {
                     if (!givesCheck && !passedPawnPush(pos, m)) {
-            			lmrCount++;
-            			if ((lmrCount > 3) && (depth > 3)) {
-            			    lmr = 2;
-            			} else {
-            				lmr = 1;
-            			}
-            		}
-            	}
-            	posHashList[posHashListSize++] = pos.zobristHash();
-            	pos.makeMove(m, ui);
-            	sti.currentMove = m;
+                        lmrCount++;
+                        if ((lmrCount > 3) && (depth > 3)) {
+                            lmr = 2;
+                        } else {
+                            lmr = 1;
+                        }
+                    }
+                }
+                posHashList[posHashListSize++] = pos.zobristHash();
+                pos.makeMove(m, ui);
+                sti.currentMove = m;
                 int newDepth = depth - 1 + extend - lmr;
-/*            	int nodes0 = nodes;
-            	int qNodes0 = qNodes;
-            	if ((ply < 3) && (newDepth > 1)) {
-            	    System.out.printf("%2d %5s %5d %5d %6s %6s ",
-            	            mi, "-", alpha, beta, "-", "-");
+/*              int nodes0 = nodes;
+                int qNodes0 = qNodes;
+                if ((ply < 3) && (newDepth > 1)) {
+                    System.out.printf("%2d %5s %5d %5d %6s %6s ",
+                            mi, "-", alpha, beta, "-", "-");
                     for (int i = 0; i < ply; i++)
                         System.out.printf("      ");
-            	    System.out.printf("%-6s...\n", TextIO.moveToUCIString(m));
-            	} */
+                    System.out.printf("%-6s...\n", TextIO.moveToUCIString(m));
+                } */
                 sti.lmr = lmr;
-            	score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
-            	if (((lmr > 0) && (score > alpha)) ||
-            	    ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore))) {
-            	    sti.lmr = 0;
-            		newDepth += lmr;
-            		score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
-            	}
-/*            	if (ply <= 3) {
+                score = -negaScout(-b, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
+                if (((lmr > 0) && (score > alpha)) ||
+                    ((score > alpha) && (score < beta) && (b != beta) && (score != illegalScore))) {
+                    sti.lmr = 0;
+                    newDepth += lmr;
+                    score = -negaScout(-beta, -alpha, ply + 1, newDepth, newCaptureSquare, givesCheck);
+                }
+/*              if (ply <= 3) {
                     System.out.printf("%2d %5d %5d %5d %6d %6d ",
                             mi, score, alpha, beta, nodes-nodes0, qNodes-qNodes0);
                     for (int i = 0; i < ply; i++)
                         System.out.printf("      ");
                     System.out.printf("%-6s\n", TextIO.moveToUCIString(m));
-            	}*/
-            	posHashListSize--;
-            	pos.unMakeMove(m, ui);
+                }*/
+                posHashListSize--;
+                pos.unMakeMove(m, ui);
             }
             m.score = score;
 
@@ -772,15 +772,15 @@ public class Search {
         totalNodes++;
         int score;
         if (inCheck) {
-        	score = -(MATE0 - (ply+1));
+            score = -(MATE0 - (ply+1));
         } else {
-        	if ((depth == 0) && (q0Eval != UNKNOWN_SCORE)) {
-        		score = q0Eval;
-        	} else {
-        		score = eval.evalPos(pos);
-        		if (depth == 0)
-        			q0Eval = score;
-        	}
+            if ((depth == 0) && (q0Eval != UNKNOWN_SCORE)) {
+                score = q0Eval;
+            } else {
+                score = eval.evalPos(pos);
+                if (depth == 0)
+                    q0Eval = score;
+            }
         }
         if (score >= beta) {
             if ((depth == 0) && (score < MATE0 - ply)) {
@@ -804,8 +804,8 @@ public class Search {
             moves = moveGen.pseudoLegalCapturesAndChecks(pos);
             scoreMoveList(moves, ply);
         } else {
-        	moves = moveGen.pseudoLegalCaptures(pos);
-        	scoreCaptureList(moves, ply);
+            moves = moveGen.pseudoLegalCaptures(pos);
+            scoreCaptureList(moves, ply);
         }
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
         for (int mi = 0; moves[mi] != null; mi++) {
@@ -900,7 +900,7 @@ public class Search {
         } else {
             captures[0] = Evaluate.pieceValue[pos.getPiece(square)];
             if (captures[0] == kV)
-            	return kV;
+                return kV;
         }
         int nCapt = 1;                  // Number of entries in captures[]
 
@@ -909,8 +909,8 @@ public class Search {
         int valOnSquare = Evaluate.pieceValue[pos.getPiece(square)];
         long occupied = pos.whiteBB | pos.blackBB;
         while (true) {
-        	int bestValue = Integer.MAX_VALUE;
-        	long atk;
+            int bestValue = Integer.MAX_VALUE;
+            long atk;
             if (white) {
                 atk = BitBoard.bPawnAttacks[square] & pos.pieceTypeBB[Piece.WPAWN] & occupied;
                 if (atk != 0) {
@@ -980,12 +980,12 @@ public class Search {
                     }
                 }
             }
-        	captures[nCapt++] = valOnSquare;
-        	if (valOnSquare == kV)
-        		break;
-        	valOnSquare = bestValue;
-        	occupied &= ~(atk & -atk);
-        	white = !white;
+            captures[nCapt++] = valOnSquare;
+            if (valOnSquare == kV)
+                break;
+            valOnSquare = bestValue;
+            occupied &= ~(atk & -atk);
+            white = !white;
         }
         pos.unMakeSEEMove(m, seeUi);
         
@@ -1010,10 +1010,10 @@ public class Search {
             int score = isCapture ? SEE(m) : 0;
             int ks = kt.getKillerScore(ply, m);
             if (ks > 0) {
-            	score += ks + 50;
+                score += ks + 50;
             } else {
-            	int hs = ht.getHistScore(pos, m);
-            	score += hs;
+                int hs = ht.getHistScore(pos, m);
+                score += hs;
             }
             m.score = score;
         }
@@ -1032,7 +1032,7 @@ public class Search {
         int bestIdx = startIdx;
         int bestScore = moves[bestIdx].score;
         for (int i = startIdx + 1; moves[i] != null; i++) {
-        	int sc = moves[i].score;
+            int sc = moves[i].score;
             if (sc > bestScore) {
                 bestIdx = i;
                 bestScore = sc;

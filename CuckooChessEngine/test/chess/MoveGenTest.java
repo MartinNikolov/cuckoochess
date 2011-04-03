@@ -188,8 +188,8 @@ public class MoveGenTest {
         pos = TextIO.readFEN("4k3/8/5K2/8/6N1/8/8/8 w - - 0 1");
         assertTrue(!MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Ke6")));
         assertTrue(!MoveGen.givesCheck(pos, new Move(TextIO.getSquare("f6"),
-        											 TextIO.getSquare("e7"),
-        											 Piece.EMPTY)));
+                                                     TextIO.getSquare("e7"),
+                                                     Piece.EMPTY)));
 
         pos = TextIO.readFEN("8/2k5/8/4N3/8/2K3B1/8/8 w - - 0 1");
         assertTrue(MoveGen.givesCheck(pos, TextIO.stringToMove(pos, "Nf7")));

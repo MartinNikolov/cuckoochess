@@ -37,16 +37,16 @@ public class TextIO {
                 case '/': row--; col = 0; break;
                 case 'P': safeSetPiece(pos, col, row, Piece.WPAWN);   col++; break;
                 case 'N': safeSetPiece(pos, col, row, Piece.WKNIGHT); col++; break;
-		case 'B': safeSetPiece(pos, col, row, Piece.WBISHOP); col++; break;
-		case 'R': safeSetPiece(pos, col, row, Piece.WROOK);   col++; break;
-		case 'Q': safeSetPiece(pos, col, row, Piece.WQUEEN);  col++; break;
-		case 'K': safeSetPiece(pos, col, row, Piece.WKING);   col++; break;
-		case 'p': safeSetPiece(pos, col, row, Piece.BPAWN);   col++; break;
-		case 'n': safeSetPiece(pos, col, row, Piece.BKNIGHT); col++; break;
-		case 'b': safeSetPiece(pos, col, row, Piece.BBISHOP); col++; break;
-		case 'r': safeSetPiece(pos, col, row, Piece.BROOK);   col++; break;
-		case 'q': safeSetPiece(pos, col, row, Piece.BQUEEN);  col++; break;
-		case 'k': safeSetPiece(pos, col, row, Piece.BKING);   col++; break;
+        case 'B': safeSetPiece(pos, col, row, Piece.WBISHOP); col++; break;
+        case 'R': safeSetPiece(pos, col, row, Piece.WROOK);   col++; break;
+        case 'Q': safeSetPiece(pos, col, row, Piece.WQUEEN);  col++; break;
+        case 'K': safeSetPiece(pos, col, row, Piece.WKING);   col++; break;
+        case 'p': safeSetPiece(pos, col, row, Piece.BPAWN);   col++; break;
+        case 'n': safeSetPiece(pos, col, row, Piece.BKNIGHT); col++; break;
+        case 'b': safeSetPiece(pos, col, row, Piece.BBISHOP); col++; break;
+        case 'r': safeSetPiece(pos, col, row, Piece.BROOK);   col++; break;
+        case 'q': safeSetPiece(pos, col, row, Piece.BQUEEN);  col++; break;
+        case 'k': safeSetPiece(pos, col, row, Piece.BKING);   col++; break;
                 default: throw new ChessParseError("Invalid piece");
             }
         }
@@ -306,9 +306,9 @@ public class TextIO {
                     int numSameFile = 0;
                     int numSameRow = 0;
                     for (int mi = 0; moves[mi] != null; mi++) {
-                    	Move m = moves[mi];
-                    	if (m == null)
-                    	    break;
+                        Move m = moves[mi];
+                        if (m == null)
+                            break;
                         if ((pos.getPiece(m.from) == p) && (m.to == move.to)) {
                             numSameTarget++;
                             if (Position.getX(m.from) == x1)
@@ -461,7 +461,7 @@ public class TextIO {
                 Move[] subMoves = new Move[moves.length];
                 int len = 0;
                 for (int mi = 0; moves[mi] != null; mi++) {
-                	Move m = moves[mi];
+                    Move m = moves[mi];
                     String str1 = TextIO.moveToString(pos, m, true, moves);
                     if (str1.charAt(str1.length() - 1) == lastChar) {
                         subMoves[len++] = m;
@@ -474,8 +474,8 @@ public class TextIO {
 
         for (int i = 0; i < 2; i++) {
             // Search for full match
-        	for (int mi = 0; moves[mi] != null; mi++) {
-        		Move m = moves[mi];
+            for (int mi = 0; moves[mi] != null; mi++) {
+                Move m = moves[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true, moves));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false, moves));
                 if (i == 0) {
@@ -493,8 +493,8 @@ public class TextIO {
         
         for (int i = 0; i < 2; i++) {
             // Search for unique substring match
-        	for (int mi = 0; moves[mi] != null; mi++) {
-        		Move m = moves[mi];
+            for (int mi = 0; moves[mi] != null; mi++) {
+                Move m = moves[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false));
                 boolean match;

@@ -92,8 +92,8 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
 
-    // FIXME!! Remove all tab characters (and trailing whitespace)
     // FIXME!! There should only be one Book.java file
+    // FIXME!! Release scripts should collect source code for cuckoochess too.
 
     private ChessBoard cb;
     private ChessController ctrl = null;
@@ -1614,8 +1614,8 @@ public class DroidFish extends Activity implements GUIInterface {
         boolean pendingNewLine = false;
 
         public void processToken(Node node, int type, String token) {
-			if (	(prevType == PgnToken.RIGHT_BRACKET) &&
-					(type != PgnToken.LEFT_BRACKET))  {
+            if (    (prevType == PgnToken.RIGHT_BRACKET) &&
+                    (type != PgnToken.LEFT_BRACKET))  {
                 if (options.view.headers) {
                     col0 = false;
                     newLine();
@@ -1637,8 +1637,8 @@ public class DroidFish extends Activity implements GUIInterface {
                 sb.append('"');
                 break;
             case PgnToken.INTEGER:
-				if (	(prevType != PgnToken.LEFT_PAREN) &&
-						(prevType != PgnToken.RIGHT_BRACKET) && !col0)
+                if (    (prevType != PgnToken.LEFT_PAREN) &&
+                        (prevType != PgnToken.RIGHT_BRACKET) && !col0)
                     sb.append(' ');
                 sb.append(token);
                 col0 = false;

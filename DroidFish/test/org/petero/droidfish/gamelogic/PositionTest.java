@@ -411,63 +411,63 @@ public class PositionTest {
 
     @Test
     public void testNullMove() throws ChessParseError {
-    	Move nullMove = new Move(0, 0, 0);
-    	UndoInfo ui = new UndoInfo();
+        Move nullMove = new Move(0, 0, 0);
+        UndoInfo ui = new UndoInfo();
 
-    	Position pos = TextIO.readFEN(TextIO.startPosFEN);
-    	Position origPos = new Position(pos);
-    	pos.makeMove(nullMove, ui);
-    	assertEquals(false, pos.whiteMove);
-    	assertEquals(true, pos.a1Castle());
-    	assertEquals(Piece.WROOK, pos.getPiece(0));
-    	pos.unMakeMove(nullMove, ui);
-    	assertTrue(pos.equals(origPos));
+        Position pos = TextIO.readFEN(TextIO.startPosFEN);
+        Position origPos = new Position(pos);
+        pos.makeMove(nullMove, ui);
+        assertEquals(false, pos.whiteMove);
+        assertEquals(true, pos.a1Castle());
+        assertEquals(Piece.WROOK, pos.getPiece(0));
+        pos.unMakeMove(nullMove, ui);
+        assertTrue(pos.equals(origPos));
 
-    	pos = TextIO.readFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kkq - 5 1");
-    	origPos = new Position(pos);
-    	pos.makeMove(nullMove, ui);
-    	assertEquals(false, pos.whiteMove);
-    	assertEquals(false, pos.a1Castle());
-    	assertEquals(Piece.WROOK, pos.getPiece(0));
-    	assertEquals(0, pos.halfMoveClock);
-    	pos.unMakeMove(nullMove, ui);
-    	assertTrue(pos.equals(origPos));
+        pos = TextIO.readFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kkq - 5 1");
+        origPos = new Position(pos);
+        pos.makeMove(nullMove, ui);
+        assertEquals(false, pos.whiteMove);
+        assertEquals(false, pos.a1Castle());
+        assertEquals(Piece.WROOK, pos.getPiece(0));
+        assertEquals(0, pos.halfMoveClock);
+        pos.unMakeMove(nullMove, ui);
+        assertTrue(pos.equals(origPos));
 
-    	pos = TextIO.readFEN("7k/8/8/8/8/8/4P3/K7 w - - 5 1");
-    	origPos = new Position(pos);
-    	pos.makeMove(nullMove, ui);
-    	assertEquals(false, pos.whiteMove);
-    	assertEquals(false, pos.a1Castle());
-    	assertEquals(0, pos.halfMoveClock);
-    	assertEquals(0, pos.getKingSq(true));
-    	assertEquals(63, pos.getKingSq(false));
+        pos = TextIO.readFEN("7k/8/8/8/8/8/4P3/K7 w - - 5 1");
+        origPos = new Position(pos);
+        pos.makeMove(nullMove, ui);
+        assertEquals(false, pos.whiteMove);
+        assertEquals(false, pos.a1Castle());
+        assertEquals(0, pos.halfMoveClock);
+        assertEquals(0, pos.getKingSq(true));
+        assertEquals(63, pos.getKingSq(false));
 
-    	UndoInfo ui2 = new UndoInfo();
-    	pos.makeMove(nullMove, ui2);
-    	assertEquals(true, pos.whiteMove);
-    	assertEquals(false, pos.a1Castle());
-    	assertEquals(0, pos.halfMoveClock);
-    	assertEquals(0, pos.getKingSq(true));
-    	assertEquals(63, pos.getKingSq(false));
+        UndoInfo ui2 = new UndoInfo();
+        pos.makeMove(nullMove, ui2);
+        assertEquals(true, pos.whiteMove);
+        assertEquals(false, pos.a1Castle());
+        assertEquals(0, pos.halfMoveClock);
+        assertEquals(0, pos.getKingSq(true));
+        assertEquals(63, pos.getKingSq(false));
 
-    	pos.unMakeMove(nullMove, ui2);
-    	assertEquals(false, pos.whiteMove);
-    	assertEquals(false, pos.a1Castle());
-    	assertEquals(0, pos.halfMoveClock);
-    	assertEquals(0, pos.getKingSq(true));
-    	assertEquals(63, pos.getKingSq(false));
+        pos.unMakeMove(nullMove, ui2);
+        assertEquals(false, pos.whiteMove);
+        assertEquals(false, pos.a1Castle());
+        assertEquals(0, pos.halfMoveClock);
+        assertEquals(0, pos.getKingSq(true));
+        assertEquals(63, pos.getKingSq(false));
 
-    	pos.unMakeMove(nullMove, ui);
-    	assertTrue(pos.equals(origPos));
-    	
-    	pos = TextIO.readFEN("5k2/8/4R1K1/8/8/8/8/8 b - - 5 1");
-    	origPos = new Position(pos);
-    	pos.makeMove(nullMove, ui);
-    	assertEquals(true, pos.whiteMove);
-    	assertEquals(false, pos.a1Castle());
-    	assertEquals(0, pos.halfMoveClock);
+        pos.unMakeMove(nullMove, ui);
+        assertTrue(pos.equals(origPos));
+        
+        pos = TextIO.readFEN("5k2/8/4R1K1/8/8/8/8/8 b - - 5 1");
+        origPos = new Position(pos);
+        pos.makeMove(nullMove, ui);
+        assertEquals(true, pos.whiteMove);
+        assertEquals(false, pos.a1Castle());
+        assertEquals(0, pos.halfMoveClock);
 
-    	pos.unMakeMove(nullMove, ui);
-    	assertTrue(pos.equals(origPos));
+        pos.unMakeMove(nullMove, ui);
+        assertTrue(pos.equals(origPos));
     }
 }

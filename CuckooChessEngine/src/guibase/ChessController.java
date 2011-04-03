@@ -134,7 +134,7 @@ public class ChessController {
     }
 
     public void setThreadStackSize(int size) {
-    	threadStack = size;
+        threadStack = size;
     }
     
     public final void newGame(boolean humanIsWhite, int ttLogSize, boolean verbose) {
@@ -158,186 +158,186 @@ public class ChessController {
     }
     
     public final void setPosHistory(List<String> posHistStr) {
-		try {
-			String fen = posHistStr.get(0);
-			Position pos = TextIO.readFEN(fen);
-			game.processString("new");
-			game.pos = pos;
-			String[] strArr = posHistStr.get(1).split(" ");
-			final int arrLen = strArr.length;
-			for (int i = 0; i < arrLen; i++) {
-				game.processString(strArr[i]);
-			}
-			int numUndo = Integer.parseInt(posHistStr.get(2));
-			for (int i = 0; i < numUndo; i++) {
-				game.processString("undo");
-			}
-		} catch (ChessParseError e) {
-			// Just ignore invalid positions
-		}
+        try {
+            String fen = posHistStr.get(0);
+            Position pos = TextIO.readFEN(fen);
+            game.processString("new");
+            game.pos = pos;
+            String[] strArr = posHistStr.get(1).split(" ");
+            final int arrLen = strArr.length;
+            for (int i = 0; i < arrLen; i++) {
+                game.processString(strArr[i]);
+            }
+            int numUndo = Integer.parseInt(posHistStr.get(2));
+            for (int i = 0; i < numUndo; i++) {
+                game.processString("undo");
+            }
+        } catch (ChessParseError e) {
+            // Just ignore invalid positions
+        }
     }
     
     public final List<String> getPosHistory() {
-    	return game.getPosHistory();
+        return game.getPosHistory();
     }
     
     public String getFEN() {
-    	return TextIO.toFEN(game.pos);
+        return TextIO.toFEN(game.pos);
     }
     
     /** Convert current game to PGN format. */
     public String getPGN() {
-    	StringBuilder pgn = new StringBuilder();
-    	List<String> posHist = getPosHistory();
-    	String fen = posHist.get(0);
+        StringBuilder pgn = new StringBuilder();
+        List<String> posHist = getPosHistory();
+        String fen = posHist.get(0);
         String moves = game.getMoveListString(true);
         if (game.getGameState() == GameState.ALIVE)
-        	moves += " *";
-    	int year, month, day;
-    	{
-    		Calendar now = GregorianCalendar.getInstance();
-    		year = now.get(Calendar.YEAR);
-    		month = now.get(Calendar.MONTH) + 1;
-    		day = now.get(Calendar.DAY_OF_MONTH);
-    	}
-    	pgn.append(String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day));
-    	String white = "Player";
-    	String black = ComputerPlayer.engineName;
-    	if (!humanIsWhite) {
-    		String tmp = white; white = black; black = tmp;
-    	}
-    	pgn.append(String.format("[White \"%s\"]%n", white));
-    	pgn.append(String.format("[Black \"%s\"]%n", black));
-    	pgn.append(String.format("[Result \"%s\"]%n", game.getPGNResultString()));
-    	if (!fen.equals(TextIO.startPosFEN)) {
-    		pgn.append(String.format("[FEN \"%s\"]%n", fen));
-    		pgn.append("[SetUp \"1\"]\n");
-    	}
-    	pgn.append("\n");
-		String[] strArr = moves.split(" ");
-    	int currLineLength = 0;
-		final int arrLen = strArr.length;
-		for (int i = 0; i < arrLen; i++) {
-			String move = strArr[i].trim();
-			int moveLen = move.length();
-			if (moveLen > 0) {
-				if (currLineLength + 1 + moveLen >= 80) {
-					pgn.append("\n");
-					pgn.append(move);
-					currLineLength = moveLen;
-				} else {
-					if (currLineLength > 0) {
-						pgn.append(" ");
-						currLineLength++;
-					}
-					pgn.append(move);
-					currLineLength += moveLen;
-				}
-			}
-		}
-    	pgn.append("\n\n");
-    	return pgn.toString();
+            moves += " *";
+        int year, month, day;
+        {
+            Calendar now = GregorianCalendar.getInstance();
+            year = now.get(Calendar.YEAR);
+            month = now.get(Calendar.MONTH) + 1;
+            day = now.get(Calendar.DAY_OF_MONTH);
+        }
+        pgn.append(String.format("[Date \"%04d.%02d.%02d\"]%n", year, month, day));
+        String white = "Player";
+        String black = ComputerPlayer.engineName;
+        if (!humanIsWhite) {
+            String tmp = white; white = black; black = tmp;
+        }
+        pgn.append(String.format("[White \"%s\"]%n", white));
+        pgn.append(String.format("[Black \"%s\"]%n", black));
+        pgn.append(String.format("[Result \"%s\"]%n", game.getPGNResultString()));
+        if (!fen.equals(TextIO.startPosFEN)) {
+            pgn.append(String.format("[FEN \"%s\"]%n", fen));
+            pgn.append("[SetUp \"1\"]\n");
+        }
+        pgn.append("\n");
+        String[] strArr = moves.split(" ");
+        int currLineLength = 0;
+        final int arrLen = strArr.length;
+        for (int i = 0; i < arrLen; i++) {
+            String move = strArr[i].trim();
+            int moveLen = move.length();
+            if (moveLen > 0) {
+                if (currLineLength + 1 + moveLen >= 80) {
+                    pgn.append("\n");
+                    pgn.append(move);
+                    currLineLength = moveLen;
+                } else {
+                    if (currLineLength > 0) {
+                        pgn.append(" ");
+                        currLineLength++;
+                    }
+                    pgn.append(move);
+                    currLineLength += moveLen;
+                }
+            }
+        }
+        pgn.append("\n\n");
+        return pgn.toString();
     }
 
     public void setPGN(String pgn) throws ChessParseError {
-    	// First pass, remove comments
-    	{
-    		StringBuilder out = new StringBuilder();
-    		Scanner sc = new Scanner(pgn);
-    		sc.useDelimiter("");
-    		while (sc.hasNext()) {
-    			String c = sc.next();
-    			if (c.equals("{")) {
-    				sc.skip("[^}]*}");
-    			} else if (c.equals(";")) {
-    				sc.skip("[^\n]*\n");
-    			} else {
-    				out.append(c);
-    			}
-    		}
-    		pgn = out.toString();
-    	}
+        // First pass, remove comments
+        {
+            StringBuilder out = new StringBuilder();
+            Scanner sc = new Scanner(pgn);
+            sc.useDelimiter("");
+            while (sc.hasNext()) {
+                String c = sc.next();
+                if (c.equals("{")) {
+                    sc.skip("[^}]*}");
+                } else if (c.equals(";")) {
+                    sc.skip("[^\n]*\n");
+                } else {
+                    out.append(c);
+                }
+            }
+            pgn = out.toString();
+        }
 
-    	// Parse tag section
-    	Position pos = TextIO.readFEN(TextIO.startPosFEN);
-    	Scanner sc = new Scanner(pgn);
-    	sc.useDelimiter("\\s+");
-    	while (sc.hasNext("\\[.*")) {
-    		String tagName = sc.next();
-    		if (tagName.length() > 1) {
-    			tagName = tagName.substring(1);
-    		} else {
-    			tagName = sc.next();
-    		}
-    		String tagValue = sc.findWithinHorizon(".*\\]", 0);
-    		tagValue = tagValue.trim();
-    		if (tagValue.charAt(0) == '"')
-    			tagValue = tagValue.substring(1);
-    		if (tagValue.charAt(tagValue.length()-1) == ']')
-    			tagValue = tagValue.substring(0, tagValue.length() - 1);
-    		if (tagValue.charAt(tagValue.length()-1) == '"')
-    			tagValue = tagValue.substring(0, tagValue.length() - 1);
-    		if (tagName.equals("FEN")) {
-    			pos = TextIO.readFEN(tagValue);
-    		}
-    	}
-    	game.processString("new");
-    	game.pos = pos;
+        // Parse tag section
+        Position pos = TextIO.readFEN(TextIO.startPosFEN);
+        Scanner sc = new Scanner(pgn);
+        sc.useDelimiter("\\s+");
+        while (sc.hasNext("\\[.*")) {
+            String tagName = sc.next();
+            if (tagName.length() > 1) {
+                tagName = tagName.substring(1);
+            } else {
+                tagName = sc.next();
+            }
+            String tagValue = sc.findWithinHorizon(".*\\]", 0);
+            tagValue = tagValue.trim();
+            if (tagValue.charAt(0) == '"')
+                tagValue = tagValue.substring(1);
+            if (tagValue.charAt(tagValue.length()-1) == ']')
+                tagValue = tagValue.substring(0, tagValue.length() - 1);
+            if (tagValue.charAt(tagValue.length()-1) == '"')
+                tagValue = tagValue.substring(0, tagValue.length() - 1);
+            if (tagName.equals("FEN")) {
+                pos = TextIO.readFEN(tagValue);
+            }
+        }
+        game.processString("new");
+        game.pos = pos;
 
-    	// Handle (ignore) recursive annotation variations
-    	{
-    		StringBuilder out = new StringBuilder();
-    		sc.useDelimiter("");
-    		int level = 0;
-    		while (sc.hasNext()) {
-    			String c = sc.next();
-    			if (c.equals("(")) {
-    				level++;
-    			} else if (c.equals(")")) {
-    				level--;
-    			} else if (level == 0) {
-    				out.append(c);
-    			}
-    		}
-    		pgn = out.toString();
-    	}
+        // Handle (ignore) recursive annotation variations
+        {
+            StringBuilder out = new StringBuilder();
+            sc.useDelimiter("");
+            int level = 0;
+            while (sc.hasNext()) {
+                String c = sc.next();
+                if (c.equals("(")) {
+                    level++;
+                } else if (c.equals(")")) {
+                    level--;
+                } else if (level == 0) {
+                    out.append(c);
+                }
+            }
+            pgn = out.toString();
+        }
 
-    	// Parse move text section
-    	sc = new Scanner(pgn);
-    	sc.useDelimiter("\\s+");
-    	while (sc.hasNext()) {
-    		String strMove = sc.next();
-    		strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
-    		if (strMove.length() == 0) continue;
-    		Move m = TextIO.stringToMove(game.pos, strMove);
-    		if (m == null)
-    			break;
-    		game.processString(strMove);
-    	}
+        // Parse move text section
+        sc = new Scanner(pgn);
+        sc.useDelimiter("\\s+");
+        while (sc.hasNext()) {
+            String strMove = sc.next();
+            strMove = strMove.replaceFirst("\\$?[0-9]*\\.*([^?!]*)[?!]*", "$1");
+            if (strMove.length() == 0) continue;
+            Move m = TextIO.stringToMove(game.pos, strMove);
+            if (m == null)
+                break;
+            game.processString(strMove);
+        }
     }
 
     public void setFENOrPGN(String fenPgn) throws ChessParseError {
-    	try {
-    		Position pos = TextIO.readFEN(fenPgn);
-    		game.processString("new");
-    		game.pos = pos;
-    	} catch (ChessParseError e) {
-    		// Try read as PGN instead
-    		setPGN(fenPgn);
-    	}
-		gui.setSelection(-1);
-		updateGUI();
-		startComputerThinking();
+        try {
+            Position pos = TextIO.readFEN(fenPgn);
+            game.processString("new");
+            game.pos = pos;
+        } catch (ChessParseError e) {
+            // Try read as PGN instead
+            setPGN(fenPgn);
+        }
+        gui.setSelection(-1);
+        updateGUI();
+        startComputerThinking();
     }
 
     /** Set color for human player. Doesn't work when computer is thinking. */
     public final void setHumanWhite(final boolean humanIsWhite) {
         if (computerThread != null)
-        	return;
+            return;
         if (this.humanIsWhite != humanIsWhite) {
-        	this.humanIsWhite = humanIsWhite;
-        	game.processString("swap");
-        	startComputerThinking();
+            this.humanIsWhite = humanIsWhite;
+            game.processString("swap");
+            startComputerThinking();
         }
     }
     
@@ -345,7 +345,7 @@ public class ChessController {
         return game.pos.whiteMove == humanIsWhite;
     }
     public final boolean computerThinking() {
-    	return computerThread != null;
+        return computerThread != null;
     }
 
     public final void takeBackMove() {
@@ -364,11 +364,11 @@ public class ChessController {
             if (game.getLastMove() != null) {
                 game.processString("undo");
                 if (!humansTurn()) {
-                	if (game.getLastMove() != null) {
-                		game.processString("undo");
-                	} else {
-                		game.processString("redo");
-                	}
+                    if (game.getLastMove() != null) {
+                        game.processString("undo");
+                    } else {
+                        game.processString("redo");
+                    }
                 }
                 updateGUI();
                 setSelection();
@@ -398,8 +398,8 @@ public class ChessController {
 
     Move promoteMove;
     public final void reportPromotePiece(int choice) {
-    	final boolean white = game.pos.whiteMove;
-    	int promoteTo;
+        final boolean white = game.pos.whiteMove;
+        int promoteTo;
         switch (choice) {
             case 1:
                 promoteTo = white ? Piece.WROOK : Piece.BROOK;
@@ -434,9 +434,9 @@ public class ChessController {
                 break;
             if ((m.from == move.from) && (m.to == move.to)) {
                 if ((m.promoteTo != Piece.EMPTY) && (promoteTo == Piece.EMPTY)) {
-                	promoteMove = m;
-                	gui.requestPromotePiece();
-                	return false;
+                    promoteMove = m;
+                    gui.requestPromotePiece();
+                    return false;
                 }
                 if (m.promoteTo == promoteTo) {
                     String strMove = TextIO.moveToString(pos, m, false);
@@ -445,7 +445,7 @@ public class ChessController {
                 }
             }
         }
-    	gui.reportInvalidMove(move);
+        gui.reportInvalidMove(move);
         return false;
     }
 
@@ -472,8 +472,8 @@ public class ChessController {
     }
     
     public final void setThinkingPV() {
-    	String str = new String();
-    	if (gui.showThinking()) {
+        String str = new String();
+        if (gui.showThinking()) {
             str = thinkingPV;
         }
         gui.setThinkingString(str);
@@ -489,28 +489,28 @@ public class ChessController {
     private void startComputerThinking() {
         if (game.pos.whiteMove != humanIsWhite) {
             if (computerThread == null) {
-            	Runnable run = new Runnable() {
-            		public void run() {
-            			computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
-            			final String cmd = computerPlayer.getCommand(new Position(game.pos),
-            					game.haveDrawOffer(), game.getHistory());
-            			gui.runOnUIThread(new Runnable() {
-            				public void run() {
-            					game.processString(cmd);
-            					thinkingPV = "";
-            					updateGUI();
-            					setSelection();
-            					stopComputerThinking();
-            				}
-            			});
-            		}
-            	};
-            	if (threadStack > 0) {
-                	ThreadGroup tg = new ThreadGroup("searcher");
-            		computerThread = new Thread(tg, run, "searcher", threadStack);
-            	} else {
-            		computerThread = new Thread(run);
-            	}
+                Runnable run = new Runnable() {
+                    public void run() {
+                        computerPlayer.timeLimit(gui.timeLimit(), gui.timeLimit(), gui.randomMode());
+                        final String cmd = computerPlayer.getCommand(new Position(game.pos),
+                                game.haveDrawOffer(), game.getHistory());
+                        gui.runOnUIThread(new Runnable() {
+                            public void run() {
+                                game.processString(cmd);
+                                thinkingPV = "";
+                                updateGUI();
+                                setSelection();
+                                stopComputerThinking();
+                            }
+                        });
+                    }
+                };
+                if (threadStack > 0) {
+                    ThreadGroup tg = new ThreadGroup("searcher");
+                    computerThread = new Thread(tg, run, "searcher", threadStack);
+                } else {
+                    computerThread = new Thread(run);
+                }
                 thinkingPV = "";
                 updateGUI();
                 computerThread.start();

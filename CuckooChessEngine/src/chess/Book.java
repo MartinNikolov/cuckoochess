@@ -48,36 +48,36 @@ public class Book {
         rndGen = new SecureRandom();
         rndGen.setSeed(System.currentTimeMillis());
         numBookMoves = 0;
-    	try {
+        try {
             InputStream inStream = getClass().getResourceAsStream("/book.bin");
             List<Byte> buf = new ArrayList<Byte>(8192);
             byte[] tmpBuf = new byte[1024];
             while (true) {
-            	int len = inStream.read(tmpBuf);
-            	if (len <= 0) break;
-            	for (int i = 0; i < len; i++)
-            		buf.add(tmpBuf[i]);
+                int len = inStream.read(tmpBuf);
+                if (len <= 0) break;
+                for (int i = 0; i < len; i++)
+                    buf.add(tmpBuf[i]);
             }
             Position startPos = TextIO.readFEN(TextIO.startPosFEN);
-	        Position pos = new Position(startPos);
-	        UndoInfo ui = new UndoInfo();
-	        int len = buf.size();
-	        for (int i = 0; i < len; i += 2) {
-	        	int b0 = buf.get(i); if (b0 < 0) b0 += 256;
-	        	int b1 = buf.get(i+1); if (b1 < 0) b1 += 256;
-	        	int move = (b0 << 8) + b1;
-	        	if (move == 0) {
-	        		pos = new Position(startPos);
-	        	} else {
-	        	    boolean bad = ((move >> 15) & 1) != 0;
-	        	    int prom = (move >> 12) & 7;
+            Position pos = new Position(startPos);
+            UndoInfo ui = new UndoInfo();
+            int len = buf.size();
+            for (int i = 0; i < len; i += 2) {
+                int b0 = buf.get(i); if (b0 < 0) b0 += 256;
+                int b1 = buf.get(i+1); if (b1 < 0) b1 += 256;
+                int move = (b0 << 8) + b1;
+                if (move == 0) {
+                    pos = new Position(startPos);
+                } else {
+                    boolean bad = ((move >> 15) & 1) != 0;
+                    int prom = (move >> 12) & 7;
                     Move m = new Move(move & 63, (move >> 6) & 63,
                                       promToPiece(prom, pos.whiteMove));
-	        	    if (!bad)
-	        	        addToBook(pos, m);
-	        		pos.makeMove(m, ui);
-	        	}
-	        }
+                    if (!bad)
+                        addToBook(pos, m);
+                    pos.makeMove(m, ui);
+                }
+            }
         } catch (ChessParseError ex) {
             throw new RuntimeException();
         } catch (IOException ex) {
@@ -134,7 +134,7 @@ public class Book {
         int rnd = rndGen.nextInt(sum);
         sum = 0;
         for (int i = 0; i < bookMoves.size(); i++) {
-        	sum += getWeight(bookMoves.get(i).count);
+            sum += getWeight(bookMoves.get(i).count);
             if (rnd < sum) {
                 return bookMoves.get(i).move;
             }
@@ -166,18 +166,18 @@ public class Book {
 
     /** Creates the book.bin file. */
     public static void main(String[] args) throws IOException {
-    	List<Byte> binBook = createBinBook();
-    	FileOutputStream out = new FileOutputStream("../src/book.bin");
-    	int bookLen = binBook.size();
-    	byte[] binBookA = new byte[bookLen];
-    	for (int i = 0; i < bookLen; i++)
-    		binBookA[i] = binBook.get(i);
-    	out.write(binBookA);
-    	out.close();
+        List<Byte> binBook = createBinBook();
+        FileOutputStream out = new FileOutputStream("../src/book.bin");
+        int bookLen = binBook.size();
+        byte[] binBookA = new byte[bookLen];
+        for (int i = 0; i < bookLen; i++)
+            binBookA[i] = binBook.get(i);
+        out.write(binBookA);
+        out.close();
     }
     
     public static List<Byte> createBinBook() {
-    	List<Byte> binBook = new ArrayList<Byte>(0);
+        List<Byte> binBook = new ArrayList<Byte>(0);
         try {
             InputStream inStream = new Object().getClass().getResourceAsStream("/book.txt");
             InputStreamReader inFile = new InputStreamReader(inStream);
@@ -200,7 +200,7 @@ public class Book {
             System.out.println("Can't read opening book resource");
             throw new RuntimeException();
         }
-    	return binBook;
+        return binBook;
     }
 
     /** Add a sequence of moves, starting from the initial position, to the binary opening book. */

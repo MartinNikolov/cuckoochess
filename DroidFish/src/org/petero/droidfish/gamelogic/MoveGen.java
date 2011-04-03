@@ -13,10 +13,10 @@ import java.util.ArrayList;
  * @author petero
  */
 public class MoveGen {
-	static MoveGen instance;
-	static {
-		instance = new MoveGen();
-	}
+    static MoveGen instance;
+    static {
+        instance = new MoveGen();
+    }
 
     /**
      * Generate and return a list of pseudo-legal moves.
@@ -27,7 +27,7 @@ public class MoveGen {
         final boolean wtm = pos.whiteMove;
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-            	int sq = Position.getSquare(x, y);
+                int sq = Position.getSquare(x, y);
                 int p = pos.getPiece(sq);
                 if ((p == Piece.EMPTY) || (Piece.isWhite(p) != wtm)) {
                     continue;
@@ -45,7 +45,7 @@ public class MoveGen {
                     if (addDirection(moveList, pos, sq, Math.min(7-x,   y), -7)) return moveList;
                 }
                 if ((p == Piece.WKNIGHT) || (p == Piece.BKNIGHT)) {
-                	if (x < 6 && y < 7 && addDirection(moveList, pos, sq, 1,  10)) return moveList;
+                    if (x < 6 && y < 7 && addDirection(moveList, pos, sq, 1,  10)) return moveList;
                     if (x < 7 && y < 6 && addDirection(moveList, pos, sq, 1,  17)) return moveList;
                     if (x > 0 && y < 6 && addDirection(moveList, pos, sq, 1,  15)) return moveList;
                     if (x > 1 && y < 7 && addDirection(moveList, pos, sq, 1,   6)) return moveList;
@@ -55,7 +55,7 @@ public class MoveGen {
                     if (x < 6 && y > 0 && addDirection(moveList, pos, sq, 1,  -6)) return moveList;
                 }
                 if ((p == Piece.WKING) || (p == Piece.BKING)) {
-                	if (x < 7          && addDirection(moveList, pos, sq, 1,  1)) return moveList;
+                    if (x < 7          && addDirection(moveList, pos, sq, 1,  1)) return moveList;
                     if (x < 7 && y < 7 && addDirection(moveList, pos, sq, 1,  9)) return moveList;
                     if (         y < 7 && addDirection(moveList, pos, sq, 1,  8)) return moveList;
                     if (x > 0 && y < 7 && addDirection(moveList, pos, sq, 1,  7)) return moveList;
@@ -63,7 +63,7 @@ public class MoveGen {
                     if (x > 0 && y > 0 && addDirection(moveList, pos, sq, 1, -9)) return moveList;
                     if (         y > 0 && addDirection(moveList, pos, sq, 1, -8)) return moveList;
                     if (x < 7 && y > 0 && addDirection(moveList, pos, sq, 1, -7)) return moveList;
-		    
+            
                     int k0 = wtm ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
                         int aCastle = wtm ? Position.A1_CASTLE : Position.A8_CASTLE;
@@ -98,7 +98,7 @@ public class MoveGen {
                         }
                     }
                     if (x > 0) { // Capture to the left
-                    	int toSq = sq + yDir - 1;
+                        int toSq = sq + yDir - 1;
                         int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
                             if (Piece.isWhite(cap) != wtm) {
@@ -116,7 +116,7 @@ public class MoveGen {
                         }
                     }
                     if (x < 7) { // Capture to the right
-                    	int toSq = sq + yDir + 1;
+                        int toSq = sq + yDir + 1;
                         int cap = pos.getPiece(toSq);
                         if (cap != Piece.EMPTY) {
                             if (Piece.isWhite(cap) != wtm) {
@@ -173,8 +173,8 @@ public class MoveGen {
             if (x < 6         ) { p = checkDirection(pos, sq, 1,  -6); if (p == oKnight) return true; }
 
             if (!isWhiteMove) {
-            	if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -7); if (p == Piece.WPAWN) return true; }
-            	if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -9); if (p == Piece.WPAWN) return true; }
+                if (x < 7 && y > 1) { p = checkDirection(pos, sq, 1, -7); if (p == Piece.WPAWN) return true; }
+                if (x > 0 && y > 1) { p = checkDirection(pos, sq, 1, -9); if (p == Piece.WPAWN) return true; }
             }
         }
         if (y < 7) {
@@ -186,8 +186,8 @@ public class MoveGen {
             if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1,  15); if (p == oKnight) return true; }
             if (x > 1         ) { p = checkDirection(pos, sq, 1,   6); if (p == oKnight) return true; }
             if (isWhiteMove) {
-            	if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1, 9); if (p == Piece.BPAWN) return true; }
-            	if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1, 7); if (p == Piece.BPAWN) return true; }
+                if (x < 7 && y < 6) { p = checkDirection(pos, sq, 1, 9); if (p == Piece.BPAWN) return true; }
+                if (x > 0 && y < 6) { p = checkDirection(pos, sq, 1, 7); if (p == Piece.BPAWN) return true; }
             }
         }
         p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
@@ -214,7 +214,7 @@ public class MoveGen {
         UndoInfo ui = new UndoInfo();
         int mlSize = moveList.size();
         for (int mi = 0; mi < mlSize; mi++) {
-        	Move m = moveList.get(mi);
+            Move m = moveList.get(mi);
             pos.makeMove(m, ui);
             pos.setWhiteMove(!pos.whiteMove);
             if (!inCheck(pos))
@@ -231,11 +231,11 @@ public class MoveGen {
      * @ return True if the enemy king could be captured, false otherwise.
      */
     private final boolean addDirection(ArrayList<Move> moveList, Position pos, int sq0, int maxSteps, int delta) {
-    	int sq = sq0;
-    	boolean wtm = pos.whiteMove;
-    	final int oKing = (wtm ? Piece.BKING : Piece.WKING);
+        int sq = sq0;
+        boolean wtm = pos.whiteMove;
+        final int oKing = (wtm ? Piece.BKING : Piece.WKING);
         while (maxSteps > 0) {
-        	sq += delta;
+            sq += delta;
             int p = pos.getPiece(sq);
             if (p == Piece.EMPTY) {
                 moveList.add(getMoveObj(sq0, sq, Piece.EMPTY));
@@ -284,14 +284,14 @@ public class MoveGen {
      *         in that direction.
      */
     private static final int checkDirection(Position pos, int sq, int maxSteps, int delta) {
-    	while (maxSteps > 0) {
-    		sq += delta;
-    		int p = pos.getPiece(sq);
-    		if (p != Piece.EMPTY)
-    			return p;
-    		maxSteps--;
-    	}
-    	return Piece.EMPTY;
+        while (maxSteps > 0) {
+            sq += delta;
+            int p = pos.getPiece(sq);
+            if (p != Piece.EMPTY)
+                return p;
+            maxSteps--;
+        }
+        return Piece.EMPTY;
     }
 
     // Code to handle the Move cache.
@@ -323,8 +323,8 @@ public class MoveGen {
     /** Return all move objects in moveList to the move cache. */
     public final void returnMoveList(ArrayList<Move> moveList) {
         if (movesInCache + moveList.size() <= moveCache.length) {
-        	int mlSize = moveList.size();
-        	for (int mi = 0; mi < mlSize; mi++) {
+            int mlSize = moveList.size();
+            for (int mi = 0; mi < mlSize; mi++) {
                 moveCache[movesInCache++] = moveList.get(mi);
             }
         }

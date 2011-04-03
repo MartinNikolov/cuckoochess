@@ -24,7 +24,7 @@ public class TextIO {
             throw new ChessParseError("Too few spaces");
         }
         for (int i = 0; i < words.length; i++) {
-        	words[i] = words[i].trim();
+            words[i] = words[i].trim();
         }
         
         // Piece placement
@@ -44,16 +44,16 @@ public class TextIO {
                 case '/': row--; col = 0; break;
                 case 'P': safeSetPiece(pos, col, row, Piece.WPAWN);   col++; break;
                 case 'N': safeSetPiece(pos, col, row, Piece.WKNIGHT); col++; break;
-		case 'B': safeSetPiece(pos, col, row, Piece.WBISHOP); col++; break;
-		case 'R': safeSetPiece(pos, col, row, Piece.WROOK);   col++; break;
-		case 'Q': safeSetPiece(pos, col, row, Piece.WQUEEN);  col++; break;
-		case 'K': safeSetPiece(pos, col, row, Piece.WKING);   col++; break;
-		case 'p': safeSetPiece(pos, col, row, Piece.BPAWN);   col++; break;
-		case 'n': safeSetPiece(pos, col, row, Piece.BKNIGHT); col++; break;
-		case 'b': safeSetPiece(pos, col, row, Piece.BBISHOP); col++; break;
-		case 'r': safeSetPiece(pos, col, row, Piece.BROOK);   col++; break;
-		case 'q': safeSetPiece(pos, col, row, Piece.BQUEEN);  col++; break;
-		case 'k': safeSetPiece(pos, col, row, Piece.BKING);   col++; break;
+        case 'B': safeSetPiece(pos, col, row, Piece.WBISHOP); col++; break;
+        case 'R': safeSetPiece(pos, col, row, Piece.WROOK);   col++; break;
+        case 'Q': safeSetPiece(pos, col, row, Piece.WQUEEN);  col++; break;
+        case 'K': safeSetPiece(pos, col, row, Piece.WKING);   col++; break;
+        case 'p': safeSetPiece(pos, col, row, Piece.BPAWN);   col++; break;
+        case 'n': safeSetPiece(pos, col, row, Piece.BKNIGHT); col++; break;
+        case 'b': safeSetPiece(pos, col, row, Piece.BBISHOP); col++; break;
+        case 'r': safeSetPiece(pos, col, row, Piece.BROOK);   col++; break;
+        case 'q': safeSetPiece(pos, col, row, Piece.BQUEEN);  col++; break;
+        case 'k': safeSetPiece(pos, col, row, Piece.BKING);   col++; break;
                 default: throw new ChessParseError("Invalid piece", pos);
             }
         }
@@ -145,18 +145,18 @@ public class TextIO {
     }
 
     public static final void removeBogusCastleFlags(Position pos) {
-    	int castleMask = pos.getCastleMask();
-    	int validCastle = 0;
-    	if (pos.getPiece(4) == Piece.WKING) {
-    		if (pos.getPiece(0) == Piece.WROOK) validCastle |= (1 << Position.A1_CASTLE);
-    		if (pos.getPiece(7) == Piece.WROOK) validCastle |= (1 << Position.H1_CASTLE);
-    	}
-    	if (pos.getPiece(60) == Piece.BKING) {
-    		if (pos.getPiece(56) == Piece.BROOK) validCastle |= (1 << Position.A8_CASTLE);
-    		if (pos.getPiece(63) == Piece.BROOK) validCastle |= (1 << Position.H8_CASTLE);
-    	}
-    	castleMask &= validCastle;
-    	pos.setCastleMask(castleMask);
+        int castleMask = pos.getCastleMask();
+        int validCastle = 0;
+        if (pos.getPiece(4) == Piece.WKING) {
+            if (pos.getPiece(0) == Piece.WROOK) validCastle |= (1 << Position.A1_CASTLE);
+            if (pos.getPiece(7) == Piece.WROOK) validCastle |= (1 << Position.H1_CASTLE);
+        }
+        if (pos.getPiece(60) == Piece.BKING) {
+            if (pos.getPiece(56) == Piece.BROOK) validCastle |= (1 << Position.A8_CASTLE);
+            if (pos.getPiece(63) == Piece.BROOK) validCastle |= (1 << Position.H8_CASTLE);
+        }
+        castleMask &= validCastle;
+        pos.setCastleMask(castleMask);
     }
 
     /** Remove pseudo-legal EP square if it is not legal, ie would leave king in check. */
@@ -288,9 +288,9 @@ public class TextIO {
         return moveToString(pos, move, longForm, moves);
     }
     private static final String moveToString(Position pos, Move move, boolean longForm, 
-    										 List<Move> moves) {
-    	if (move.equals(new Move(0, 0, 0)))
-    		return "--";
+                                             List<Move> moves) {
+        if (move.equals(new Move(0, 0, 0)))
+            return "--";
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -331,7 +331,7 @@ public class TextIO {
                     int numSameRow = 0;
                     int mSize = moves.size();
                     for (int mi = 0; mi < mSize; mi++) {
-                    	Move m = moves.get(mi);
+                        Move m = moves.get(mi);
                         if ((pos.getPiece(m.from) == p) && (m.to == move.to)) {
                             numSameTarget++;
                             if (Position.getX(m.from) == x1)
@@ -390,12 +390,12 @@ public class TextIO {
         }
     }
 
-	private final static class MoveInfo {
-		int piece;					// -1 for unspecified
-		int fromX, fromY, toX, toY; // -1 for unspecified
-		int promPiece;				// -1 for unspecified
-		MoveInfo() { piece = fromX = fromY = toX = toY = promPiece = -1; }
-	}
+    private final static class MoveInfo {
+        int piece;                  // -1 for unspecified
+        int fromX, fromY, toX, toY; // -1 for unspecified
+        int promPiece;              // -1 for unspecified
+        MoveInfo() { piece = fromX = fromY = toX = toY = promPiece = -1; }
+    }
     
     /**
      * Convert a chess move string to a Move object.
@@ -403,124 +403,124 @@ public class TextIO {
      * information as long as it matches exactly one valid move.
      */
     public static final Move stringToMove(Position pos, String strMove) {
-    	if (strMove.equals("--"))
-    		return new Move(0, 0, 0);
+        if (strMove.equals("--"))
+            return new Move(0, 0, 0);
 
-    	strMove = strMove.replaceAll("=", "");
-    	strMove = strMove.replaceAll("\\+", "");
-    	strMove = strMove.replaceAll("#", "");
+        strMove = strMove.replaceAll("=", "");
+        strMove = strMove.replaceAll("\\+", "");
+        strMove = strMove.replaceAll("#", "");
         boolean wtm = pos.whiteMove;
 
-    	MoveInfo info = new MoveInfo();
-    	boolean capture = false;
-    	if (strMove.equals("O-O") || strMove.equals("0-0") || strMove.equals("o-o")) {
-    		info.piece = wtm ? Piece.WKING : Piece.BKING;
-    		info.fromX = 4;
-    		info.toX = 6;
-    		info.fromY = info.toY = wtm ? 0 : 7;
-    		info.promPiece= Piece.EMPTY;
-    	} else if (strMove.equals("O-O-O") || strMove.equals("0-0-0") || strMove.equals("o-o-o")) {
-    		info.piece = wtm ? Piece.WKING : Piece.BKING;
-    		info.fromX = 4;
-    		info.toX = 2;
-    		info.fromY = info.toY = wtm ? 0 : 7;
-    		info.promPiece= Piece.EMPTY;
-    	} else {
-    		boolean atToSq = false;
-    		for (int i = 0; i < strMove.length(); i++) {
-    			char c = strMove.charAt(i);
-    			if (i == 0) {
-    				int piece = charToPiece(wtm, c);
-    				if (piece >= 0) {
-    					info.piece = piece;
-    					continue;
-    				}
-    			}
-    			int tmpX = c - 'a';
-    			if ((tmpX >= 0) && (tmpX < 8)) {
-    				if (atToSq || (info.fromX >= 0))
-    					info.toX = tmpX;
-    				else
-    					info.fromX = tmpX;
-    			}
-    			int tmpY = c - '1';
-    			if ((tmpY >= 0) && (tmpY < 8)) {
-    				if (atToSq || (info.fromY >= 0))
-    					info.toY = tmpY;
-    				else
-    					info.fromY = tmpY;
-    			}
-    			if ((c == 'x') || (c == '-')) {
-    				atToSq = true;
-    				if (c == 'x')
-    					capture = true;
-    			}
-    			if (i == strMove.length() - 1) {
-    				int promPiece = charToPiece(wtm, c);
-    				if (promPiece >= 0) {
-    					info.promPiece = promPiece;
-    				}
-    			}
-    		}
-    		if ((info.fromX >= 0) && (info.toX < 0)) {
-    			info.toX = info.fromX;
-    			info.fromX = -1;
-    		}
-    		if ((info.fromY >= 0) && (info.toY < 0)) {
-    			info.toY = info.fromY;
-    			info.fromY = -1;
-    		}
-    		if (info.piece < 0) {
-    			boolean haveAll = (info.fromX >= 0) && (info.fromY >= 0) &&
-    							  (info.toX >= 0) && (info.toY >= 0);
-    			if (!haveAll)
-    				info.piece = wtm ? Piece.WPAWN : Piece.BPAWN;
-    		}
-    		if (info.promPiece < 0)
-    			info.promPiece = Piece.EMPTY;
-    	}
+        MoveInfo info = new MoveInfo();
+        boolean capture = false;
+        if (strMove.equals("O-O") || strMove.equals("0-0") || strMove.equals("o-o")) {
+            info.piece = wtm ? Piece.WKING : Piece.BKING;
+            info.fromX = 4;
+            info.toX = 6;
+            info.fromY = info.toY = wtm ? 0 : 7;
+            info.promPiece= Piece.EMPTY;
+        } else if (strMove.equals("O-O-O") || strMove.equals("0-0-0") || strMove.equals("o-o-o")) {
+            info.piece = wtm ? Piece.WKING : Piece.BKING;
+            info.fromX = 4;
+            info.toX = 2;
+            info.fromY = info.toY = wtm ? 0 : 7;
+            info.promPiece= Piece.EMPTY;
+        } else {
+            boolean atToSq = false;
+            for (int i = 0; i < strMove.length(); i++) {
+                char c = strMove.charAt(i);
+                if (i == 0) {
+                    int piece = charToPiece(wtm, c);
+                    if (piece >= 0) {
+                        info.piece = piece;
+                        continue;
+                    }
+                }
+                int tmpX = c - 'a';
+                if ((tmpX >= 0) && (tmpX < 8)) {
+                    if (atToSq || (info.fromX >= 0))
+                        info.toX = tmpX;
+                    else
+                        info.fromX = tmpX;
+                }
+                int tmpY = c - '1';
+                if ((tmpY >= 0) && (tmpY < 8)) {
+                    if (atToSq || (info.fromY >= 0))
+                        info.toY = tmpY;
+                    else
+                        info.fromY = tmpY;
+                }
+                if ((c == 'x') || (c == '-')) {
+                    atToSq = true;
+                    if (c == 'x')
+                        capture = true;
+                }
+                if (i == strMove.length() - 1) {
+                    int promPiece = charToPiece(wtm, c);
+                    if (promPiece >= 0) {
+                        info.promPiece = promPiece;
+                    }
+                }
+            }
+            if ((info.fromX >= 0) && (info.toX < 0)) {
+                info.toX = info.fromX;
+                info.fromX = -1;
+            }
+            if ((info.fromY >= 0) && (info.toY < 0)) {
+                info.toY = info.fromY;
+                info.fromY = -1;
+            }
+            if (info.piece < 0) {
+                boolean haveAll = (info.fromX >= 0) && (info.fromY >= 0) &&
+                                  (info.toX >= 0) && (info.toY >= 0);
+                if (!haveAll)
+                    info.piece = wtm ? Piece.WPAWN : Piece.BPAWN;
+            }
+            if (info.promPiece < 0)
+                info.promPiece = Piece.EMPTY;
+        }
 
         ArrayList<Move> moves = MoveGen.instance.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
 
         ArrayList<Move> matches = new ArrayList<Move>(2);
         for (int i = 0; i < moves.size(); i++) {
-        	Move m = moves.get(i);
-        	int p = pos.getPiece(m.from);
-        	boolean match = true;
-        	if ((info.piece >= 0) && (info.piece != p))
-        		match = false;
-        	if ((info.fromX >= 0) && (info.fromX != Position.getX(m.from)))
-        		match = false;
-        	if ((info.fromY >= 0) && (info.fromY != Position.getY(m.from)))
-        		match = false;
-        	if ((info.toX >= 0) && (info.toX != Position.getX(m.to)))
-        		match = false;
-        	if ((info.toY >= 0) && (info.toY != Position.getY(m.to)))
-        		match = false;
-        	if ((info.promPiece >= 0) && (info.promPiece != m.promoteTo))
-        		match = false;
-        	if (match) {
-        		matches.add(m);
-        	}
+            Move m = moves.get(i);
+            int p = pos.getPiece(m.from);
+            boolean match = true;
+            if ((info.piece >= 0) && (info.piece != p))
+                match = false;
+            if ((info.fromX >= 0) && (info.fromX != Position.getX(m.from)))
+                match = false;
+            if ((info.fromY >= 0) && (info.fromY != Position.getY(m.from)))
+                match = false;
+            if ((info.toX >= 0) && (info.toX != Position.getX(m.to)))
+                match = false;
+            if ((info.toY >= 0) && (info.toY != Position.getY(m.to)))
+                match = false;
+            if ((info.promPiece >= 0) && (info.promPiece != m.promoteTo))
+                match = false;
+            if (match) {
+                matches.add(m);
+            }
         }
         int nMatches = matches.size();
         if (nMatches == 0)
-        	return null;
+            return null;
         else if (nMatches == 1)
-        	return matches.get(0);
+            return matches.get(0);
         if (!capture)
-        	return null;
+            return null;
         Move move = null;
         for (int i = 0; i < matches.size(); i++) {
-        	Move m = matches.get(i);
-        	int capt = pos.getPiece(m.to);
-        	if (capt != Piece.EMPTY) {
-        		if (move == null)
-        			move = m;
-        		else
-        			return null;
-        	}
+            Move m = matches.get(i);
+            int capt = pos.getPiece(m.to);
+            if (capt != Piece.EMPTY) {
+                if (move == null)
+                    move = m;
+                else
+                    return null;
+            }
         }
         return move;
     }
@@ -668,28 +668,28 @@ public class TextIO {
     }
     
     private final static int charToPiece(boolean white, char c) {
-    	switch (c) {
-    	case 'Q': case 'q': return white ? Piece.WQUEEN  : Piece.BQUEEN;
-    	case 'R': case 'r': return white ? Piece.WROOK   : Piece.BROOK;
-    	case 'B':           return white ? Piece.WBISHOP : Piece.BBISHOP;
-    	case 'N': case 'n': return white ? Piece.WKNIGHT : Piece.BKNIGHT;
-    	case 'K': case 'k': return white ? Piece.WKING   : Piece.BKING;
-    	case 'P': case 'p': return white ? Piece.WPAWN   : Piece.BPAWN;
-    	}
-    	return -1;
+        switch (c) {
+        case 'Q': case 'q': return white ? Piece.WQUEEN  : Piece.BQUEEN;
+        case 'R': case 'r': return white ? Piece.WROOK   : Piece.BROOK;
+        case 'B':           return white ? Piece.WBISHOP : Piece.BBISHOP;
+        case 'N': case 'n': return white ? Piece.WKNIGHT : Piece.BKNIGHT;
+        case 'K': case 'k': return white ? Piece.WKING   : Piece.BKING;
+        case 'P': case 'p': return white ? Piece.WPAWN   : Piece.BPAWN;
+        }
+        return -1;
     }
 
     /** Add an = sign to a promotion move, as required by the PGN standard. */
-	public final static String pgnPromotion(String str) {
-		int idx = str.length() - 1;
-		while (idx > 0) {
-			char c = str.charAt(idx);
-			if ((c != '#') && (c != '+'))
-				break;
-			idx--;
-		}
-		if ((idx > 0) && (charToPiece(true, str.charAt(idx)) != -1))
-			idx--;
-		return str.substring(0, idx + 1) + '=' + str.substring(idx + 1, str.length());
-	}
+    public final static String pgnPromotion(String str) {
+        int idx = str.length() - 1;
+        while (idx > 0) {
+            char c = str.charAt(idx);
+            if ((c != '#') && (c != '+'))
+                break;
+            idx--;
+        }
+        if ((idx > 0) && (charToPiece(true, str.charAt(idx)) != -1))
+            idx--;
+        return str.substring(0, idx + 1) + '=' + str.substring(idx + 1, str.length());
+    }
 }

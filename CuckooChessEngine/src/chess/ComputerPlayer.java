@@ -39,9 +39,9 @@ public class ComputerPlayer implements Player {
         randomMode = false;
     }
 
-	public void setTTLogSize(int logSize) {
-		tt = new TranspositionTable(logSize);
-	}
+    public void setTTLogSize(int logSize) {
+        tt = new TranspositionTable(logSize);
+    }
     
     Search.Listener listener;
     public void setListener(Search.Listener listener) {
@@ -83,13 +83,13 @@ public class ComputerPlayer implements Player {
         sc.setListener(listener);
         Move bestM;
         if ((moves[1] == null) && (canClaimDraw(pos, posHashList, posHashListSize, moves[0]) == "")) {
-        	bestM = moves[0];
-        	bestM.score = 0;
+            bestM = moves[0];
+            bestM.score = 0;
         } else if (randomMode) {
-        	bestM = findSemiRandomMove(sc, moves);
+            bestM = findSemiRandomMove(sc, moves);
         } else {
             sc.timeLimit(minTimeMillis, maxTimeMillis);
-        	bestM = sc.iterativeDeepening(moves, maxDepth, maxNodes, verbose);
+            bestM = sc.iterativeDeepening(moves, maxDepth, maxNodes, verbose);
         }
         currentSearch = null;
 //        tt.printStats();
@@ -97,9 +97,9 @@ public class ComputerPlayer implements Player {
 
         // Claim draw if appropriate
         if (bestM.score <= 0) {
-        	String drawClaim = canClaimDraw(pos, posHashList, posHashListSize, bestM);
-        	if (drawClaim != "")
-        		strMove = drawClaim;
+            String drawClaim = canClaimDraw(pos, posHashList, posHashListSize, bestM);
+            if (drawClaim != "")
+                strMove = drawClaim;
         }
         return strMove;
     }
@@ -109,7 +109,7 @@ public class ComputerPlayer implements Player {
      * @return The draw string that claims the draw, or empty string if draw claim not valid.
      */
     private String canClaimDraw(Position pos, long[] posHashList, int posHashListSize, Move move) {
-    	String drawStr = "";
+        String drawStr = "";
         if (Search.canClaimDraw50(pos)) {
             drawStr = "draw 50";
         } else if (Search.canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
@@ -141,13 +141,13 @@ public class ComputerPlayer implements Player {
 
     @Override
     public void timeLimit(int minTimeLimit, int maxTimeLimit, boolean randomMode) {
-    	if (randomMode) {
-    		minTimeLimit = 0;
-    		maxTimeLimit = 0;
-    	}
+        if (randomMode) {
+            minTimeLimit = 0;
+            maxTimeLimit = 0;
+        }
         minTimeMillis = minTimeLimit;
         maxTimeMillis = maxTimeLimit;
-		this.randomMode = randomMode;
+        this.randomMode = randomMode;
         if (currentSearch != null) {
             currentSearch.timeLimit(minTimeLimit, maxTimeLimit);
         }
@@ -189,32 +189,32 @@ public class ComputerPlayer implements Player {
 
     private Move findSemiRandomMove(Search sc, Move[] moves) {
         sc.timeLimit(minTimeMillis, maxTimeMillis);
-    	Move bestM = sc.iterativeDeepening(moves, 1, maxNodes, verbose);
-    	int bestScore = bestM.score;
+        Move bestM = sc.iterativeDeepening(moves, 1, maxNodes, verbose);
+        int bestScore = bestM.score;
 
         Random rndGen = new SecureRandom();
         rndGen.setSeed(System.currentTimeMillis());
 
         int sum = 0;
         for (int mi = 0; moves[mi] != null; mi++) {
-        	sum += moveProbWeight(moves[mi].score, bestScore);
+            sum += moveProbWeight(moves[mi].score, bestScore);
         }
         int rnd = rndGen.nextInt(sum);
         for (int mi = 0; moves[mi] != null; mi++) {
-        	int weight = moveProbWeight(moves[mi].score, bestScore);
-        	if (rnd < weight) {
-        		return moves[mi];
-        	}
-        	rnd -= weight;
+            int weight = moveProbWeight(moves[mi].score, bestScore);
+            if (rnd < weight) {
+                return moves[mi];
+            }
+            rnd -= weight;
         }
         assert(false);
         return null;
     }
 
     private final static int moveProbWeight(int moveScore, int bestScore) {
-    	double d = (bestScore - moveScore) / 100.0;
-    	double w = 100*Math.exp(-d*d/2);
-    	return (int)Math.ceil(w);
+        double d = (bestScore - moveScore) / 100.0;
+        double w = 100*Math.exp(-d*d/2);
+        return (int)Math.ceil(w);
     }
 
     // FIXME!!! Test Botvinnik-Markoff extension

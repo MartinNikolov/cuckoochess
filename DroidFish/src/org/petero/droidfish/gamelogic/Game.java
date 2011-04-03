@@ -27,7 +27,7 @@ public class Game {
     PgnToken.PgnTokenReceiver gameTextListener;
 
     public Game(ComputerPlayer computerPlayer, PgnToken.PgnTokenReceiver gameTextListener,
-    			int timeControl, int movesPerSession, int timeIncrement) {
+                int timeControl, int movesPerSession, int timeIncrement) {
         this.computerPlayer = computerPlayer;
         this.gameTextListener = gameTextListener;
         tree = new GameTree(gameTextListener);
@@ -37,66 +37,66 @@ public class Game {
         newGame();
     }
 
-	final void fromByteArray(byte[] data) {
-		tree.fromByteArray(data);
-		updateTimeControl(true);
-	}
-
-	public final void setComputerPlayer(ComputerPlayer computerPlayer) {
-    	this.computerPlayer = computerPlayer;
-	}
-
-	public final void setGamePaused(boolean gamePaused) {
-		if (gamePaused != this.gamePaused) {
-			this.gamePaused = gamePaused;
-	        updateTimeControl(false);
-		}
-	}
-
-	public final void setAddFirst(boolean addFirst) {
-		this.addFirst = addFirst;
-	}
-
-	final void setPos(Position pos) {
-		tree.setStartPos(new Position(pos));
-        updateTimeControl(false);
-	}
-
-	final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
-		boolean ret = tree.readPGN(pgn, options);
-		if (ret)
-			updateTimeControl(false);
-		return ret;
-	}
-	
-	final Position currPos() {
-		return tree.currentPos;
-	}
-	
-	final Position prevPos() {
-		Move m = tree.currentNode.move;
-		if (m != null) {
-			tree.goBack();
-			Position ret = new Position(currPos());
-			tree.goForward(-1);
-			return ret;
-	    } else {
-	    	return currPos();
-	    }
-	}
-
-    public final Move getNextMove() {
-    	if (canRedoMove()) {
-    		tree.goForward(-1);
-    		Move ret = tree.currentNode.move;
-    		tree.goBack();
-    		return ret;
-    	} else {
-    		return null;
-    	}
+    final void fromByteArray(byte[] data) {
+        tree.fromByteArray(data);
+        updateTimeControl(true);
     }
 
-	/**
+    public final void setComputerPlayer(ComputerPlayer computerPlayer) {
+        this.computerPlayer = computerPlayer;
+    }
+
+    public final void setGamePaused(boolean gamePaused) {
+        if (gamePaused != this.gamePaused) {
+            this.gamePaused = gamePaused;
+            updateTimeControl(false);
+        }
+    }
+
+    public final void setAddFirst(boolean addFirst) {
+        this.addFirst = addFirst;
+    }
+
+    final void setPos(Position pos) {
+        tree.setStartPos(new Position(pos));
+        updateTimeControl(false);
+    }
+
+    final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
+        boolean ret = tree.readPGN(pgn, options);
+        if (ret)
+            updateTimeControl(false);
+        return ret;
+    }
+    
+    final Position currPos() {
+        return tree.currentPos;
+    }
+    
+    final Position prevPos() {
+        Move m = tree.currentNode.move;
+        if (m != null) {
+            tree.goBack();
+            Position ret = new Position(currPos());
+            tree.goForward(-1);
+            return ret;
+        } else {
+            return currPos();
+        }
+    }
+
+    public final Move getNextMove() {
+        if (canRedoMove()) {
+            tree.goForward(-1);
+            Move ret = tree.currentNode.move;
+            tree.goBack();
+            return ret;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Update the game state according to move/command string from a player.
      * @param str The move or command to process.
      * @return True if str was understood, false otherwise.
@@ -104,14 +104,14 @@ public class Game {
     public final boolean processString(String str) {
         if (getGameState() != GameState.ALIVE)
             return false;
-		if (str.startsWith("draw ")) {
-			String drawCmd = str.substring(str.indexOf(" ") + 1);
-			handleDrawCmd(drawCmd);
-	    	return true;
-		} else if (str.equals("resign")) {
-			addToGameTree(new Move(0, 0, 0), "resign");
-			return true;
-		}
+        if (str.startsWith("draw ")) {
+            String drawCmd = str.substring(str.indexOf(" ") + 1);
+            handleDrawCmd(drawCmd);
+            return true;
+        } else if (str.equals("resign")) {
+            addToGameTree(new Move(0, 0, 0), "resign");
+            return true;
+        }
 
         Move m = TextIO.UCIstringToMove(str);
         if (m != null) {
@@ -119,13 +119,13 @@ public class Game {
             moves = MoveGen.removeIllegal(currPos(), moves);
             boolean legal = false;
             for (int i = 0; i < moves.size(); i++) {
-            	if (m.equals(moves.get(i))) {
-            		legal = true;
-            		break;
-            	}
+                if (m.equals(moves.get(i))) {
+                    legal = true;
+                    break;
+                }
             }
             if (!legal)
-            	m = null;
+                m = null;
         }
         if (m == null) {
             m = TextIO.stringToMove(currPos(), str);
@@ -139,27 +139,27 @@ public class Game {
     }
     
     private final void addToGameTree(Move m, String playerAction) {
-    	if (m.equals(new Move(0, 0, 0))) { // Don't create more than one null move at a node
-    		List<Move> varMoves = tree.variations();
-    		for (int i = varMoves.size() - 1; i >= 0; i--) {
-            	if (varMoves.get(i).equals(m)) {
-            		tree.deleteVariation(i);
-            	}
-    		}
-    	}
+        if (m.equals(new Move(0, 0, 0))) { // Don't create more than one null move at a node
+            List<Move> varMoves = tree.variations();
+            for (int i = varMoves.size() - 1; i >= 0; i--) {
+                if (varMoves.get(i).equals(m)) {
+                    tree.deleteVariation(i);
+                }
+            }
+        }
 
         List<Move> varMoves = tree.variations();
         boolean movePresent = false;
         int varNo;
         for (varNo = 0; varNo < varMoves.size(); varNo++) {
-        	if (varMoves.get(varNo).equals(m)) {
-        		movePresent = true;
-        		break;
-        	}
+            if (varMoves.get(varNo).equals(m)) {
+                movePresent = true;
+                break;
+            }
         }
         if (!movePresent) {
-        	String moveStr = TextIO.moveToUCIString(m);
-        	varNo = tree.addMove(moveStr, playerAction, 0, "", "");
+            String moveStr = TextIO.moveToUCIString(m);
+            varNo = tree.addMove(moveStr, playerAction, 0, "", "");
         }
         int newPos = addFirst ? 0 : varNo;
         tree.reorderVariation(varNo, newPos);
@@ -167,25 +167,25 @@ public class Game {
         int remaining = timeController.moveMade(System.currentTimeMillis(), !gamePaused);
         tree.setRemainingTime(remaining);
         updateTimeControl(true);
-    	pendingDrawOffer = false;
+        pendingDrawOffer = false;
     }
 
-	private final void updateTimeControl(boolean discardElapsed) {
-		int move = currPos().fullMoveCounter;
-		boolean wtm = currPos().whiteMove;
-		if (discardElapsed || (move != timeController.currentMove) || (wtm != timeController.whiteToMove)) {
-			int initialTime = timeController.getInitialTime();
-			int whiteBaseTime = tree.getRemainingTime(true, initialTime);
-			int blackBaseTime = tree.getRemainingTime(false, initialTime);
-			timeController.setCurrentMove(move, wtm, whiteBaseTime, blackBaseTime);
-		}
-		long now = System.currentTimeMillis();
-		if (gamePaused || (getGameState() != GameState.ALIVE)) {
-			timeController.stopTimer(now);
-		} else {
-			timeController.startTimer(now);
-		}
-	}
+    private final void updateTimeControl(boolean discardElapsed) {
+        int move = currPos().fullMoveCounter;
+        boolean wtm = currPos().whiteMove;
+        if (discardElapsed || (move != timeController.currentMove) || (wtm != timeController.whiteToMove)) {
+            int initialTime = timeController.getInitialTime();
+            int whiteBaseTime = tree.getRemainingTime(true, initialTime);
+            int blackBaseTime = tree.getRemainingTime(false, initialTime);
+            timeController.setCurrentMove(move, wtm, whiteBaseTime, blackBaseTime);
+        }
+        long now = System.currentTimeMillis();
+        if (gamePaused || (getGameState() != GameState.ALIVE)) {
+            timeController.stopTimer(now);
+        } else {
+            timeController.startTimer(now);
+        }
+    }
 
     public final String getGameStateString() {
         switch (getGameState()) {
@@ -200,21 +200,21 @@ public class Game {
                 return "Game over, draw by stalemate!";
             case DRAW_REP:
             {
-            	String ret = "Game over, draw by repetition!";
-            	String drawInfo = tree.getGameStateInfo();
-            	if (drawInfo.length() > 0) {
-            		ret = ret + " [" + drawInfo+ "]";
-            	}
-            	return ret;
+                String ret = "Game over, draw by repetition!";
+                String drawInfo = tree.getGameStateInfo();
+                if (drawInfo.length() > 0) {
+                    ret = ret + " [" + drawInfo+ "]";
+                }
+                return ret;
             }
             case DRAW_50:
             {
                 String ret = "Game over, draw by 50 move rule!";
-            	String drawInfo = tree.getGameStateInfo();
-            	if (drawInfo.length() > 0) {
-            		ret = ret + " [" + drawInfo + "]";  
-            	}
-            	return ret;
+                String drawInfo = tree.getGameStateInfo();
+                if (drawInfo.length() > 0) {
+                    ret = ret + " [" + drawInfo + "]";  
+                }
+                return ret;
             }
             case DRAW_NO_MATE:
                 return "Game over, draw by impossibility of mate!";
@@ -233,71 +233,71 @@ public class Game {
      * Get the last played move, or null if no moves played yet.
      */
     public final Move getLastMove() {
-    	return tree.currentNode.move;
+        return tree.currentNode.move;
     }
     
     /** Return true if there is a move to redo. */
     public final boolean canRedoMove() {
-    	int nVar = tree.variations().size();
-    	return nVar > 0;
+        int nVar = tree.variations().size();
+        return nVar > 0;
     }
     
     public final int numVariations() {
-    	if (tree.currentNode == tree.rootNode)
-    		return 1;
-    	tree.goBack();
-    	int nChildren = tree.variations().size();
-    	tree.goForward(-1);
-    	return nChildren;
+        if (tree.currentNode == tree.rootNode)
+            return 1;
+        tree.goBack();
+        int nChildren = tree.variations().size();
+        tree.goForward(-1);
+        return nChildren;
     }
 
     public final int currVariation() {
-    	if (tree.currentNode == tree.rootNode)
-    		return 0;
-    	tree.goBack();
-    	int defChild = tree.currentNode.defaultChild;
-    	tree.goForward(-1);
-    	return defChild;
+        if (tree.currentNode == tree.rootNode)
+            return 0;
+        tree.goBack();
+        int defChild = tree.currentNode.defaultChild;
+        tree.goForward(-1);
+        return defChild;
     }
 
     public final void changeVariation(int delta) {
-    	if (tree.currentNode == tree.rootNode)
-    		return;
-    	tree.goBack();
-    	int defChild = tree.currentNode.defaultChild;
-    	int nChildren = tree.variations().size();
-    	int newChild = defChild + delta;
-    	newChild = Math.max(newChild, 0);
-    	newChild = Math.min(newChild, nChildren - 1);
-    	tree.goForward(newChild);
+        if (tree.currentNode == tree.rootNode)
+            return;
+        tree.goBack();
+        int defChild = tree.currentNode.defaultChild;
+        int nChildren = tree.variations().size();
+        int newChild = defChild + delta;
+        newChild = Math.max(newChild, 0);
+        newChild = Math.min(newChild, nChildren - 1);
+        tree.goForward(newChild);
         pendingDrawOffer = false;
         updateTimeControl(true);
     }
 
     public final void moveVariation(int delta) {
-    	if (tree.currentNode == tree.rootNode)
-    		return;
-    	tree.goBack();
-    	int varNo = tree.currentNode.defaultChild;
-    	int nChildren = tree.variations().size();
-    	int newPos = varNo + delta;
-    	newPos = Math.max(newPos, 0);
-    	newPos = Math.min(newPos, nChildren - 1);
+        if (tree.currentNode == tree.rootNode)
+            return;
+        tree.goBack();
+        int varNo = tree.currentNode.defaultChild;
+        int nChildren = tree.variations().size();
+        int newPos = varNo + delta;
+        newPos = Math.max(newPos, 0);
+        newPos = Math.min(newPos, nChildren - 1);
         tree.reorderVariation(varNo, newPos);
-    	tree.goForward(newPos);
+        tree.goForward(newPos);
         pendingDrawOffer = false;
         updateTimeControl(true);
     }
 
     public final void removeSubTree() {
-    	if (getLastMove() != null) {
-    		tree.goBack();
-    		int defChild = tree.currentNode.defaultChild;
-    		tree.deleteVariation(defChild);
-    	} else {
-    		while (canRedoMove())
-    			tree.deleteVariation(0);
-    	}
+        if (getLastMove() != null) {
+            tree.goBack();
+            int defChild = tree.currentNode.defaultChild;
+            tree.deleteVariation(defChild);
+        } else {
+            while (canRedoMove())
+                tree.deleteVariation(0);
+        }
         pendingDrawOffer = false;
         updateTimeControl(true);
     }
@@ -320,7 +320,7 @@ public class Game {
      * Get the current state (draw, mate, ongoing, etc) of the game.
      */
     public final GameState getGameState() {
-    	return tree.getGameState();
+        return tree.getGameState();
     }
 
     /**
@@ -328,30 +328,30 @@ public class Game {
      * @return True if the current player has the option to accept a draw offer.
      */
     public final boolean haveDrawOffer() {
-    	return tree.currentNode.playerAction.equals("draw offer");
+        return tree.currentNode.playerAction.equals("draw offer");
     }
 
     public final void undoMove() {
-    	Move m = tree.currentNode.move;
-    	if (m != null) {
-    		tree.goBack();
-    		pendingDrawOffer = false;
-    		updateTimeControl(true);
-    	}
+        Move m = tree.currentNode.move;
+        if (m != null) {
+            tree.goBack();
+            pendingDrawOffer = false;
+            updateTimeControl(true);
+        }
     }
 
     public final void redoMove() {
-    	if (canRedoMove()) {
-    		tree.goForward(-1);
+        if (canRedoMove()) {
+            tree.goForward(-1);
             pendingDrawOffer = false;
             updateTimeControl(true);
         }
     }
 
     public final void newGame() {
-    	tree = new GameTree(gameTextListener);
+        tree = new GameTree(gameTextListener);
         if (computerPlayer != null)
-        	computerPlayer.clearTT();
+            computerPlayer.clearTT();
         timeController.reset();
         pendingDrawOffer = false;
         updateTimeControl(true);
@@ -363,7 +363,7 @@ public class Game {
      * to go from that position to the current position.
      */
     public final Pair<Position, ArrayList<Move>> getUCIHistory() {
-    	Pair<List<Node>, Integer> ml = tree.getMoveList();
+        Pair<List<Node>, Integer> ml = tree.getMoveList();
         List<Node> moveList = ml.first;
         Position pos = new Position(tree.startPos);
         ArrayList<Move> mList = new ArrayList<Move>();
@@ -371,29 +371,29 @@ public class Game {
         UndoInfo ui = new UndoInfo();
         int nMoves = ml.second;
         for (int i = 0; i < nMoves; i++) {
-        	Node n = moveList.get(i);
-        	mList.add(n.move);
-        	currPos.makeMove(n.move, ui);
-        	if (currPos.halfMoveClock == 0) {
-        		pos = new Position(currPos);
-        		mList.clear();
-        	}
+            Node n = moveList.get(i);
+            mList.add(n.move);
+            currPos.makeMove(n.move, ui);
+            if (currPos.halfMoveClock == 0) {
+                pos = new Position(currPos);
+                mList.clear();
+            }
         }
         return new Pair<Position, ArrayList<Move>>(pos, mList);
     }
 
     private final void handleDrawCmd(String drawCmd) {
-    	Position pos = tree.currentPos;
+        Position pos = tree.currentPos;
         if (drawCmd.startsWith("rep") || drawCmd.startsWith("50")) {
             boolean rep = drawCmd.startsWith("rep");
             Move m = null;
             String ms = null;
             int firstSpace = drawCmd.indexOf(" ");
             if (firstSpace >= 0) {
-            	ms = drawCmd.substring(firstSpace + 1);
-            	if (ms.length() > 0) {
-            		m = TextIO.stringToMove(pos, ms);
-            	}
+                ms = drawCmd.substring(firstSpace + 1);
+                if (ms.length() > 0) {
+                    m = TextIO.stringToMove(pos, ms);
+                }
             }
             boolean valid;
             if (rep) {
@@ -409,14 +409,14 @@ public class Game {
                 List<Node> moveList = ml.first;
                 Position tmpPos = new Position(tree.startPos);
                 if (tmpPos.drawRuleEquals(posToCompare))
-                	repetitions++;
+                    repetitions++;
                 int nMoves = ml.second;
                 for (int i = 0; i < nMoves; i++) {
-                	Node n = moveList.get(i);
-                	tmpPos.makeMove(n.move, ui);
-                	TextIO.fixupEPSquare(tmpPos);
+                    Node n = moveList.get(i);
+                    tmpPos.makeMove(n.move, ui);
+                    TextIO.fixupEPSquare(tmpPos);
                     if (tmpPos.drawRuleEquals(posToCompare))
-                    	repetitions++;
+                        repetitions++;
                 }
                 if (repetitions >= 3)
                     valid = true;
@@ -429,10 +429,10 @@ public class Game {
                 valid = tmpPos.halfMoveClock >= 100;
             }
             if (valid) {
-            	String playerAction = rep ? "draw rep" : "draw 50";
+                String playerAction = rep ? "draw rep" : "draw 50";
                 if (m != null)
-                	playerAction += " " + TextIO.moveToString(pos, m, false);
-            	addToGameTree(new Move(0, 0, 0), playerAction);
+                    playerAction += " " + TextIO.moveToString(pos, m, false);
+                addToGameTree(new Move(0, 0, 0), playerAction);
             } else {
                 pendingDrawOffer = true;
                 if (m != null) {
@@ -447,7 +447,7 @@ public class Game {
             }
         } else if (drawCmd.equals("accept")) {
             if (haveDrawOffer())
-            	addToGameTree(new Move(0, 0, 0), "draw accept");
+                addToGameTree(new Move(0, 0, 0), "draw accept");
         }
     }
 }

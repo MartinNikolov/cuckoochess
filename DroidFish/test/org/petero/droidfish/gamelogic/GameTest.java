@@ -258,11 +258,11 @@ public class GameTest {
         game.processString("e4");
         game.processString("c5");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-		game.processString("draw accept");
+        game.processString("draw accept");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-		game.processString("draw rep");
+        game.processString("draw rep");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-		game.processString("draw 50");
+        game.processString("draw 50");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         assertEquals(Piece.EMPTY, game.tree.currentPos.getPiece(TextIO.getSquare("e5")));
     }
@@ -459,7 +459,7 @@ public class GameTest {
         assertEquals(expectedPos, hist.first);
         
         for (int i = 0; i < 6; i++)
-        	game.undoMove();
+            game.undoMove();
         hist = game.getUCIHistory();
         assertEquals(0, hist.second.size());
         expectedPos = TextIO.readFEN(TextIO.startPosFEN);

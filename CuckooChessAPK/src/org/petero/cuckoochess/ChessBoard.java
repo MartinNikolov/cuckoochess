@@ -13,7 +13,7 @@ import chess.Piece;
 import chess.Position;
 
 public class ChessBoard extends View {
-	private Position pos;
+    private Position pos;
     private int selectedSquare;
     private float cursorX, cursorY;
     private boolean cursorVisible;
@@ -27,9 +27,9 @@ public class ChessBoard extends View {
     private Paint whitePiecePaint;
     private Paint blackPiecePaint;
     
-	public ChessBoard(Context context, AttributeSet attrs) {
-		super(context, attrs);
-    	pos = new Position();
+    public ChessBoard(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        pos = new Position();
         selectedSquare = -1;
         cursorX = cursorY = 0;
         cursorVisible = false;
@@ -59,15 +59,15 @@ public class ChessBoard extends View {
         blackPiecePaint = new Paint();
         blackPiecePaint.setARGB(255, 0, 0, 0);
         blackPiecePaint.setAntiAlias(true);
-	}
+    }
 
-	public void setFont(Typeface tf) {
-		whitePiecePaint.setTypeface(tf);
-		blackPiecePaint.setTypeface(tf);
-		invalidate();
-	}
+    public void setFont(Typeface tf) {
+        whitePiecePaint.setTypeface(tf);
+        blackPiecePaint.setTypeface(tf);
+        invalidate();
+    }
 
-	/**
+    /**
      * Set the board to a given state.
      * @param pos
      */
@@ -96,19 +96,19 @@ public class ChessBoard extends View {
         }
     }
 
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		int width = getMeasuredWidth();
-		int height = getMeasuredHeight();
-		int minSize = Math.min(width, height);
-		setMeasuredDimension(minSize, minSize);
-	}
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int minSize = Math.min(width, height);
+        setMeasuredDimension(minSize, minSize);
+    }
 
-	@Override
-	protected void onDraw(Canvas canvas) {
-		final int width = getWidth();
-		final int height = getHeight();
+    @Override
+    protected void onDraw(Canvas canvas) {
+        final int width = getWidth();
+        final int height = getHeight();
         sqSize = (Math.min(width, height) - 4) / 8;
         x0 = (width - sqSize * 8) / 2;
         y0 = (height - sqSize * 8) / 2;
@@ -134,10 +134,10 @@ public class ChessBoard extends View {
             canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, redOutline);
         }
         if (cursorVisible) {
-        	int x = Math.round(cursorX);
-        	int y = Math.round(cursorY);
-        	int x0 = getXCrd(x);
-        	int y0 = getYCrd(y);
+            int x = Math.round(cursorX);
+            int y = Math.round(cursorY);
+            int x0 = getXCrd(x);
+            int y0 = getYCrd(y);
             greenOutline.setStrokeWidth(sqSize/(float)16);
             canvas.drawRect(x0, y0, x0 + sqSize, y0 + sqSize, greenOutline);
         }
@@ -190,8 +190,8 @@ public class ChessBoard extends View {
                 break;
         }
         if (ps.length() > 0) {
-        	Paint paint = Piece.isWhite(p) ? whitePiecePaint : blackPiecePaint;
-        	paint.setTextSize(sqSize);
+            Paint paint = Piece.isWhite(p) ? whitePiecePaint : blackPiecePaint;
+            paint.setTextSize(sqSize);
             Rect bounds = new Rect();
             paint.getTextBounds(ps, 0, ps.length(), bounds);
             int xCent = bounds.centerX();
@@ -231,15 +231,15 @@ public class ChessBoard extends View {
         return sq;
     }
 
-	final Move mousePressed(int sq) {
-		if (sq < 0)
-			return null;
-    	cursorVisible = false;
+    final Move mousePressed(int sq) {
+        if (sq < 0)
+            return null;
+        cursorVisible = false;
         if (selectedSquare >= 0) {
-        	int p = pos.getPiece(selectedSquare);
-        	if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
-        		setSelection(-1); // Remove selection of opponents last moving piece
-        	}
+            int p = pos.getPiece(selectedSquare);
+            if ((p == Piece.EMPTY) || (Piece.isWhite(p) != pos.whiteMove)) {
+                setSelection(-1); // Remove selection of opponents last moving piece
+            }
         }
 
         int p = pos.getPiece(sq);
@@ -254,52 +254,52 @@ public class ChessBoard extends View {
             setSelection(-1);
         } else {
             boolean myColor = (p != Piece.EMPTY) && (Piece.isWhite(p) == pos.whiteMove);
-        	if (myColor) {
-        		setSelection(sq);
-        	}
+            if (myColor) {
+                setSelection(sq);
+            }
         }
         return null;
     }
 
-	public static class OnTrackballListener {
-    	public void onTrackballEvent(MotionEvent event) { }
-	}
-	OnTrackballListener otbl = null;
-	public void setOnTrackballListener(OnTrackballListener onTrackballListener) {
-		otbl = onTrackballListener;
-	}
-	@Override
-	public boolean onTrackballEvent(MotionEvent event) {
-		if (otbl != null) {
-			otbl.onTrackballEvent(event);
-			return true;
-		}
-		return false;
-	}
-	
-	public Move handleTrackballEvent(MotionEvent event) {
-		switch (event.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-			invalidate();
-			if (cursorVisible) {
-				int x = Math.round(cursorX);
-				int y = Math.round(cursorY);
-				cursorX = x;
-				cursorY = y;
-				int sq = Position.getSquare(x, y);
-				return mousePressed(sq);
-			}
-			return null;
-		}
-		cursorVisible = true;
-		int c = flipped ? -1 : 1;
-		cursorX += c * event.getX();
-		cursorY -= c * event.getY();
-		if (cursorX < 0) cursorX = 0;
-		if (cursorX > 7) cursorX = 7;
-		if (cursorY < 0) cursorY = 0;
-		if (cursorY > 7) cursorY = 7;
-		invalidate();
-		return null;
-	}
+    public static class OnTrackballListener {
+        public void onTrackballEvent(MotionEvent event) { }
+    }
+    OnTrackballListener otbl = null;
+    public void setOnTrackballListener(OnTrackballListener onTrackballListener) {
+        otbl = onTrackballListener;
+    }
+    @Override
+    public boolean onTrackballEvent(MotionEvent event) {
+        if (otbl != null) {
+            otbl.onTrackballEvent(event);
+            return true;
+        }
+        return false;
+    }
+    
+    public Move handleTrackballEvent(MotionEvent event) {
+        switch (event.getAction()) {
+        case MotionEvent.ACTION_DOWN:
+            invalidate();
+            if (cursorVisible) {
+                int x = Math.round(cursorX);
+                int y = Math.round(cursorY);
+                cursorX = x;
+                cursorY = y;
+                int sq = Position.getSquare(x, y);
+                return mousePressed(sq);
+            }
+            return null;
+        }
+        cursorVisible = true;
+        int c = flipped ? -1 : 1;
+        cursorX += c * event.getX();
+        cursorY -= c * event.getY();
+        if (cursorX < 0) cursorX = 0;
+        if (cursorX > 7) cursorX = 7;
+        if (cursorY < 0) cursorY = 0;
+        if (cursorY > 7) cursorY = 7;
+        invalidate();
+        return null;
+    }
 }

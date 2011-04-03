@@ -10,10 +10,10 @@ package chess;
  * @author petero
  */
 public class MoveGen {
-	static MoveGen instance;
-	static {
-		instance = new MoveGen();
-	}
+    static MoveGen instance;
+    static {
+        instance = new MoveGen();
+    }
 
     /**
      * Generate and return a list of pseudo-legal moves.
@@ -705,167 +705,167 @@ public class MoveGen {
      * corresponding direction, 8*dy+dx.
      */
     static final int getDirection(int from, int to) {
-		int dx = Position.getX(to) - Position.getX(from);
-		int dy = Position.getY(to) - Position.getY(from);
-		if (dx == 0)					// Vertical rook direction
-			return (dy > 0) ? 8 : -8;
-		if (dy == 0)					// Horizontal rook direction
-			return (dx > 0) ? 1 : -1;
-		if (Math.abs(dx) == Math.abs(dy)) // Bishop direction
-			return ((dy > 0) ? 8 : -8) + (dx > 0 ? 1 : -1);
-		if (Math.abs(dx * dy) == 2)		// Knight direction
-			return dy * 8 + dx;
-		return 0;
-	}
+        int dx = Position.getX(to) - Position.getX(from);
+        int dy = Position.getY(to) - Position.getY(from);
+        if (dx == 0)                    // Vertical rook direction
+            return (dy > 0) ? 8 : -8;
+        if (dy == 0)                    // Horizontal rook direction
+            return (dx > 0) ? 1 : -1;
+        if (Math.abs(dx) == Math.abs(dy)) // Bishop direction
+            return ((dy > 0) ? 8 : -8) + (dx > 0 ? 1 : -1);
+        if (Math.abs(dx * dy) == 2)     // Knight direction
+            return dy * 8 + dx;
+        return 0;
+    }
 
-	/**
-	 * Return the next piece in a given direction, starting from sq.
-	 */
+    /**
+     * Return the next piece in a given direction, starting from sq.
+     */
     private static final int nextPiece(Position pos, int sq, int delta) {
-    	while (true) {
-    		sq += delta;
-    		int p = pos.getPiece(sq);
-    		if (p != Piece.EMPTY)
-    			return p;
-    	}
+        while (true) {
+            sq += delta;
+            int p = pos.getPiece(sq);
+            if (p != Piece.EMPTY)
+                return p;
+        }
     }
 
     /** Like nextPiece(), but handles board edges. */
     private static final int nextPieceSafe(Position pos, int sq, int delta) {
-    	int dx = 0, dy = 0;
-    	switch (delta) {
-    	case 1: dx=1; dy=0; break;
-    	case 9: dx=1; dy=1; break;
-    	case 8: dx=0; dy=1; break;
-    	case 7: dx=-1; dy=1; break;
-    	case -1: dx=-1; dy=0; break;
-    	case -9: dx=-1; dy=-1; break;
-    	case -8: dx=0; dy=-1; break;
-    	case -7: dx=1; dy=-1; break;
-    	}
-    	int x = Position.getX(sq);
-    	int y = Position.getY(sq);
-    	while (true) {
-    		x += dx;
-    		y += dy;
-    		if ((x < 0) || (x > 7) || (y < 0) || (y > 7)) {
-    			return Piece.EMPTY;
-    		}
-    		int p = pos.getPiece(Position.getSquare(x, y));
-    		if (p != Piece.EMPTY)
-    			return p;
-    	}
+        int dx = 0, dy = 0;
+        switch (delta) {
+        case 1: dx=1; dy=0; break;
+        case 9: dx=1; dy=1; break;
+        case 8: dx=0; dy=1; break;
+        case 7: dx=-1; dy=1; break;
+        case -1: dx=-1; dy=0; break;
+        case -9: dx=-1; dy=-1; break;
+        case -8: dx=0; dy=-1; break;
+        case -7: dx=1; dy=-1; break;
+        }
+        int x = Position.getX(sq);
+        int y = Position.getY(sq);
+        while (true) {
+            x += dx;
+            y += dy;
+            if ((x < 0) || (x > 7) || (y < 0) || (y > 7)) {
+                return Piece.EMPTY;
+            }
+            int p = pos.getPiece(Position.getSquare(x, y));
+            if (p != Piece.EMPTY)
+                return p;
+        }
     }
     
     /**
      * Return true if making a move delivers check to the opponent
      */
-	public static final boolean givesCheck(Position pos, Move m) {
-		boolean wtm = pos.whiteMove;
-    	int oKingSq = pos.getKingSq(!wtm);
-    	int oKing = wtm ? Piece.BKING : Piece.WKING;
-		int p = Piece.makeWhite(m.promoteTo == Piece.EMPTY ? pos.getPiece(m.from) : m.promoteTo);
-    	int d1 = MoveGen.getDirection(m.to, oKingSq);
-    	switch (d1) {
-    	case 8: case -8: case 1: case -1: // Rook direction
-    		if ((p == Piece.WQUEEN) || (p == Piece.WROOK))
-    			if ((d1 != 0) && (MoveGen.nextPiece(pos, m.to, d1) == oKing))
-    				return true;
-    		break;
-    	case 9: case 7: case -9: case -7: // Bishop direction
-    		if ((p == Piece.WQUEEN) || (p == Piece.WBISHOP)) {
-    			if ((d1 != 0) && (MoveGen.nextPiece(pos, m.to, d1) == oKing))
-    				return true;
-    		} else if (p == Piece.WPAWN) {
-    			if (((d1 > 0) == wtm) && (pos.getPiece(m.to + d1) == oKing))
-    				return true;
-    		}
-    		break;
-    	default:
-    		if (d1 != 0) { // Knight direction
-    			if (p == Piece.WKNIGHT)
-    				return true;
-    		}
-    	}
-    	int d2 = MoveGen.getDirection(m.from, oKingSq);
-    	if ((d2 != 0) && (d2 != d1) && (MoveGen.nextPiece(pos, m.from, d2) == oKing)) {
-    		int p2 = MoveGen.nextPieceSafe(pos, m.from, -d2);
-    		switch (d2) {
-        	case 8: case -8: case 1: case -1: // Rook direction
-        		if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
-        			(p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
-        			return true;
-        		break;
-        	case 9: case 7: case -9: case -7: // Bishop direction
-        		if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
-            		(p2 == (wtm ? Piece.WBISHOP : Piece.BBISHOP)))
-        			return true;
-        		break;
-    		}
-    	}
-    	if ((m.promoteTo != Piece.EMPTY) && (d1 != 0) && (d1 == d2)) {
-        	switch (d1) {
-        	case 8: case -8: case 1: case -1: // Rook direction
-        		if ((p == Piece.WQUEEN) || (p == Piece.WROOK))
-        			if ((d1 != 0) && (MoveGen.nextPiece(pos, m.from, d1) == oKing))
-        				return true;
-        		break;
-        	case 9: case 7: case -9: case -7: // Bishop direction
-        		if ((p == Piece.WQUEEN) || (p == Piece.WBISHOP)) {
-        			if ((d1 != 0) && (MoveGen.nextPiece(pos, m.from, d1) == oKing))
-        				return true;
-        		}
-        		break;
-        	}
-    	}
-    	if (p == Piece.WKING) {
-    		if (m.to - m.from == 2) { // O-O
-    			if (MoveGen.nextPieceSafe(pos, m.from, -1) == oKing)
-    				return true;
-    			if (MoveGen.nextPieceSafe(pos, m.from + 1, wtm ? 8 : -8) == oKing)
-    				return true;
-    		} else if (m.to - m.from == -2) { // O-O-O
-    			if (MoveGen.nextPieceSafe(pos, m.from, 1) == oKing)
-    				return true;
-    			if (MoveGen.nextPieceSafe(pos, m.from - 1, wtm ? 8 : -8) == oKing)
-    				return true;
-    		}
-    	} else if (p == Piece.WPAWN) {
-    		if (pos.getPiece(m.to) == Piece.EMPTY) {
-    			int dx = Position.getX(m.to) - Position.getX(m.from);
-    			if (dx != 0) { // en passant
-    				int epSq = m.from + dx;
-    		    	int d3 = MoveGen.getDirection(epSq, oKingSq);
-    		    	switch (d3) {
-    		    	case 9: case 7: case -9: case -7:
-    		        	if (MoveGen.nextPiece(pos, epSq, d3) == oKing) {
-    		        		int p2 = MoveGen.nextPieceSafe(pos, epSq, -d3);
-    		        		if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
-    		                	(p2 == (wtm ? Piece.WBISHOP : Piece.BBISHOP)))
-    		        			return true;
-    		        	}
-    		        	break;
-					case 1:
-						if (MoveGen.nextPiece(pos, Math.max(epSq, m.from), d3) == oKing) {
-    		        		int p2 = MoveGen.nextPieceSafe(pos, Math.min(epSq, m.from), -d3);
-    		        		if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
-    		            		(p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
-    		            		return true;
-						}
-						break;
-					case -1:
-						if (MoveGen.nextPiece(pos, Math.min(epSq, m.from), d3) == oKing) {
-    		        		int p2 = MoveGen.nextPieceSafe(pos, Math.max(epSq, m.from), -d3);
-    		        		if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
-    		            		(p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
-    		            		return true;
-						}
-						break;
-    		    	}
-    			}
-    		}
-    	}
-    	return false;
+    public static final boolean givesCheck(Position pos, Move m) {
+        boolean wtm = pos.whiteMove;
+        int oKingSq = pos.getKingSq(!wtm);
+        int oKing = wtm ? Piece.BKING : Piece.WKING;
+        int p = Piece.makeWhite(m.promoteTo == Piece.EMPTY ? pos.getPiece(m.from) : m.promoteTo);
+        int d1 = MoveGen.getDirection(m.to, oKingSq);
+        switch (d1) {
+        case 8: case -8: case 1: case -1: // Rook direction
+            if ((p == Piece.WQUEEN) || (p == Piece.WROOK))
+                if ((d1 != 0) && (MoveGen.nextPiece(pos, m.to, d1) == oKing))
+                    return true;
+            break;
+        case 9: case 7: case -9: case -7: // Bishop direction
+            if ((p == Piece.WQUEEN) || (p == Piece.WBISHOP)) {
+                if ((d1 != 0) && (MoveGen.nextPiece(pos, m.to, d1) == oKing))
+                    return true;
+            } else if (p == Piece.WPAWN) {
+                if (((d1 > 0) == wtm) && (pos.getPiece(m.to + d1) == oKing))
+                    return true;
+            }
+            break;
+        default:
+            if (d1 != 0) { // Knight direction
+                if (p == Piece.WKNIGHT)
+                    return true;
+            }
+        }
+        int d2 = MoveGen.getDirection(m.from, oKingSq);
+        if ((d2 != 0) && (d2 != d1) && (MoveGen.nextPiece(pos, m.from, d2) == oKing)) {
+            int p2 = MoveGen.nextPieceSafe(pos, m.from, -d2);
+            switch (d2) {
+            case 8: case -8: case 1: case -1: // Rook direction
+                if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
+                    (p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
+                    return true;
+                break;
+            case 9: case 7: case -9: case -7: // Bishop direction
+                if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
+                    (p2 == (wtm ? Piece.WBISHOP : Piece.BBISHOP)))
+                    return true;
+                break;
+            }
+        }
+        if ((m.promoteTo != Piece.EMPTY) && (d1 != 0) && (d1 == d2)) {
+            switch (d1) {
+            case 8: case -8: case 1: case -1: // Rook direction
+                if ((p == Piece.WQUEEN) || (p == Piece.WROOK))
+                    if ((d1 != 0) && (MoveGen.nextPiece(pos, m.from, d1) == oKing))
+                        return true;
+                break;
+            case 9: case 7: case -9: case -7: // Bishop direction
+                if ((p == Piece.WQUEEN) || (p == Piece.WBISHOP)) {
+                    if ((d1 != 0) && (MoveGen.nextPiece(pos, m.from, d1) == oKing))
+                        return true;
+                }
+                break;
+            }
+        }
+        if (p == Piece.WKING) {
+            if (m.to - m.from == 2) { // O-O
+                if (MoveGen.nextPieceSafe(pos, m.from, -1) == oKing)
+                    return true;
+                if (MoveGen.nextPieceSafe(pos, m.from + 1, wtm ? 8 : -8) == oKing)
+                    return true;
+            } else if (m.to - m.from == -2) { // O-O-O
+                if (MoveGen.nextPieceSafe(pos, m.from, 1) == oKing)
+                    return true;
+                if (MoveGen.nextPieceSafe(pos, m.from - 1, wtm ? 8 : -8) == oKing)
+                    return true;
+            }
+        } else if (p == Piece.WPAWN) {
+            if (pos.getPiece(m.to) == Piece.EMPTY) {
+                int dx = Position.getX(m.to) - Position.getX(m.from);
+                if (dx != 0) { // en passant
+                    int epSq = m.from + dx;
+                    int d3 = MoveGen.getDirection(epSq, oKingSq);
+                    switch (d3) {
+                    case 9: case 7: case -9: case -7:
+                        if (MoveGen.nextPiece(pos, epSq, d3) == oKing) {
+                            int p2 = MoveGen.nextPieceSafe(pos, epSq, -d3);
+                            if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
+                                (p2 == (wtm ? Piece.WBISHOP : Piece.BBISHOP)))
+                                return true;
+                        }
+                        break;
+                    case 1:
+                        if (MoveGen.nextPiece(pos, Math.max(epSq, m.from), d3) == oKing) {
+                            int p2 = MoveGen.nextPieceSafe(pos, Math.min(epSq, m.from), -d3);
+                            if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
+                                (p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
+                                return true;
+                        }
+                        break;
+                    case -1:
+                        if (MoveGen.nextPiece(pos, Math.min(epSq, m.from), d3) == oKing) {
+                            int p2 = MoveGen.nextPieceSafe(pos, Math.max(epSq, m.from), -d3);
+                            if ((p2 == (wtm ? Piece.WQUEEN : Piece.BQUEEN)) ||
+                                (p2 == (wtm ? Piece.WROOK : Piece.BROOK)))
+                                return true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -922,7 +922,7 @@ public class MoveGen {
         int length = 0;
         UndoInfo ui = new UndoInfo();
         for (int mi = 0; moveList[mi] != null; mi++) {
-        	Move m = moveList[mi];
+            Move m = moveList[mi];
             pos.makeMove(m, ui);
             pos.setWhiteMove(!pos.whiteMove);
             if (!inCheck(pos))

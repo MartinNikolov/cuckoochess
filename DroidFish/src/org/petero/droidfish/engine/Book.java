@@ -64,9 +64,9 @@ public class Book {
         }).start();
     }
 
-	public final void setBookFileName(String bookFileName) {
-		externalBook.setBookFileName(bookFileName);
-	}
+    public final void setBookFileName(String bookFileName) {
+        externalBook.setBookFileName(bookFileName);
+    }
     
     private synchronized final void initInternalBook() {
         if (numBookMoves >= 0)
@@ -76,36 +76,36 @@ public class Book {
         rndGen = new SecureRandom();
         rndGen.setSeed(System.currentTimeMillis());
         numBookMoves = 0;
-    	try {
+        try {
             InputStream inStream = getClass().getResourceAsStream("/book.bin");
             List<Byte> buf = new ArrayList<Byte>(8192);
             byte[] tmpBuf = new byte[1024];
             while (true) {
-            	int len = inStream.read(tmpBuf);
-            	if (len <= 0) break;
-            	for (int i = 0; i < len; i++)
-            		buf.add(tmpBuf[i]);
+                int len = inStream.read(tmpBuf);
+                if (len <= 0) break;
+                for (int i = 0; i < len; i++)
+                    buf.add(tmpBuf[i]);
             }
             Position startPos = TextIO.readFEN(TextIO.startPosFEN);
-	        Position pos = new Position(startPos);
-	        UndoInfo ui = new UndoInfo();
-	        int len = buf.size();
-	        for (int i = 0; i < len; i += 2) {
-	        	int b0 = buf.get(i); if (b0 < 0) b0 += 256;
-	        	int b1 = buf.get(i+1); if (b1 < 0) b1 += 256;
-	        	int move = (b0 << 8) + b1;
-	        	if (move == 0) {
-	        		pos = new Position(startPos);
-	        	} else {
-	        	    boolean bad = ((move >> 15) & 1) != 0;
-	        	    int prom = (move >> 12) & 7;
-	        		Move m = new Move(move & 63, (move >> 6) & 63,
+            Position pos = new Position(startPos);
+            UndoInfo ui = new UndoInfo();
+            int len = buf.size();
+            for (int i = 0; i < len; i += 2) {
+                int b0 = buf.get(i); if (b0 < 0) b0 += 256;
+                int b1 = buf.get(i+1); if (b1 < 0) b1 += 256;
+                int move = (b0 << 8) + b1;
+                if (move == 0) {
+                    pos = new Position(startPos);
+                } else {
+                    boolean bad = ((move >> 15) & 1) != 0;
+                    int prom = (move >> 12) & 7;
+                    Move m = new Move(move & 63, (move >> 6) & 63,
                                       promToPiece(prom, pos.whiteMove));
-	        	    if (!bad)
-	        	        addToBook(pos, m);
-	        		pos.makeMove(m, ui);
-	        	}
-	        }
+                    if (!bad)
+                        addToBook(pos, m);
+                    pos.makeMove(m, ui);
+                }
+            }
         } catch (ChessParseError ex) {
             throw new RuntimeException();
         } catch (IOException ex) {
@@ -140,7 +140,7 @@ public class Book {
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
-    	List<BookEntry> bookMoves = getBookEntries(pos);
+        List<BookEntry> bookMoves = getBookEntries(pos);
         if (bookMoves == null) {
             return null;
         }
@@ -152,7 +152,7 @@ public class Book {
             BookEntry be = bookMoves.get(i);
             if (!legalMoves.contains(be.move)) {
                 // If an illegal move was found, it means there was a hash collision,
-            	// or a corrupt external book file.
+                // or a corrupt external book file.
                 return null;
             }
             sum += getWeight(bookMoves.get(i).count);
@@ -163,7 +163,7 @@ public class Book {
         int rnd = rndGen.nextInt(sum);
         sum = 0;
         for (int i = 0; i < bookMoves.size(); i++) {
-        	sum += getWeight(bookMoves.get(i).count);
+            sum += getWeight(bookMoves.get(i).count);
             if (rnd < sum) {
                 return bookMoves.get(i).move;
             }
@@ -173,11 +173,11 @@ public class Book {
     }
 
     final private int getWeight(int count) {
-    	if (externalBook.enabled()) {
-    		return count;
-    	} else {
-    		return (int)(Math.sqrt(count) * 100 + 1);
-    	}
+        if (externalBook.enabled()) {
+            return count;
+        } else {
+            return (int)(Math.sqrt(count) * 100 + 1);
+        }
     }
 
     /** Return a string describing all book moves. */
@@ -186,21 +186,21 @@ public class Book {
         ArrayList<Move> bookMoveList = new ArrayList<Move>();
         List<BookEntry> bookMoves = getBookEntries(pos);
         if (bookMoves != null) {
-        	Collections.sort(bookMoves, new Comparator<BookEntry>() {
-        		public int compare(BookEntry arg0, BookEntry arg1) {
-        			if (arg1.count != arg0.count)
-        				return arg1.count - arg0.count;
-        			String str0 = TextIO.moveToUCIString(arg0.move);
-        			String str1 = TextIO.moveToUCIString(arg1.move);
-        			return str0.compareTo(str1);
-        		}});
-        	int totalCount = 0;
-        	for (BookEntry be : bookMoves)
-        		totalCount += be.count;
-        	if (totalCount <= 0) totalCount = 1;
+            Collections.sort(bookMoves, new Comparator<BookEntry>() {
+                public int compare(BookEntry arg0, BookEntry arg1) {
+                    if (arg1.count != arg0.count)
+                        return arg1.count - arg0.count;
+                    String str0 = TextIO.moveToUCIString(arg0.move);
+                    String str1 = TextIO.moveToUCIString(arg1.move);
+                    return str0.compareTo(str1);
+                }});
+            int totalCount = 0;
+            for (BookEntry be : bookMoves)
+                totalCount += be.count;
+            if (totalCount <= 0) totalCount = 1;
             for (BookEntry be : bookMoves) {
-            	Move m = be.move;
-            	bookMoveList.add(m);
+                Move m = be.move;
+                bookMoveList.add(m);
                 String moveStr = TextIO.moveToString(pos, m, false);
                 ret.append(moveStr);
                 ret.append(':');
@@ -214,18 +214,18 @@ public class Book {
 
     /** Creates the book.bin file. */
     public static void main(String[] args) throws IOException {
-    	List<Byte> binBook = createBinBook();
-    	FileOutputStream out = new FileOutputStream("../src/book.bin");
-    	int bookLen = binBook.size();
-    	byte[] binBookA = new byte[bookLen];
-    	for (int i = 0; i < bookLen; i++)
-    		binBookA[i] = binBook.get(i);
-    	out.write(binBookA);
-    	out.close();
+        List<Byte> binBook = createBinBook();
+        FileOutputStream out = new FileOutputStream("../src/book.bin");
+        int bookLen = binBook.size();
+        byte[] binBookA = new byte[bookLen];
+        for (int i = 0; i < bookLen; i++)
+            binBookA[i] = binBook.get(i);
+        out.write(binBookA);
+        out.close();
     }
     
     public static List<Byte> createBinBook() {
-    	List<Byte> binBook = new ArrayList<Byte>(0);
+        List<Byte> binBook = new ArrayList<Byte>(0);
         try {
             InputStream inStream = new Object().getClass().getResourceAsStream("/book.txt");
             InputStreamReader inFile = new InputStreamReader(inStream);
@@ -248,7 +248,7 @@ public class Book {
             System.out.println("Can't read opening book resource");
             throw new RuntimeException();
         }
-    	return binBook;
+        return binBook;
     }
 
     /** Add a sequence of moves, starting from the initial position, to the binary opening book. */
@@ -278,14 +278,14 @@ public class Book {
         return true;
     }
 
-	private final List<BookEntry> getBookEntries(Position pos) {
-		if (externalBook.enabled()) {
-			return externalBook.getBookEntries(pos);
-		} else {
-	        initInternalBook();
-			return bookMap.get(pos.zobristHash());
-		}
-	}
+    private final List<BookEntry> getBookEntries(Position pos) {
+        if (externalBook.enabled()) {
+            return externalBook.getBookEntries(pos);
+        } else {
+            initInternalBook();
+            return bookMap.get(pos.zobristHash());
+        }
+    }
 
     private static int pieceToProm(int p) {
         switch (p) {

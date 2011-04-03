@@ -33,7 +33,7 @@ public class Main {
         } else if ((args.length == 2) && args[0].equals("tree")) {
             TreeLogger.main(new String[]{args[1]});
         } else {
-        	uci.UCIProtocol.main(false);
+            uci.UCIProtocol.main(false);
         }
     }
 }

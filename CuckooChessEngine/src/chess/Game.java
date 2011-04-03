@@ -79,19 +79,19 @@ public class Game {
                 return "Game over, draw by stalemate!";
             case DRAW_REP:
             {
-            	String ret = "Game over, draw by repetition!";
-            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
-            		ret = ret + " [" + drawStateMoveStr + "]";
-            	}
-            	return ret;
+                String ret = "Game over, draw by repetition!";
+                if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
+                    ret = ret + " [" + drawStateMoveStr + "]";
+                }
+                return ret;
             }
             case DRAW_50:
             {
                 String ret = "Game over, draw by 50 move rule!";
-            	if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
-            		ret = ret + " [" + drawStateMoveStr + "]";  
-            	}
-            	return ret;
+                if ((drawStateMoveStr != null) && (drawStateMoveStr.length() > 0)) {
+                    ret = ret + " [" + drawStateMoveStr + "]";  
+                }
+                return ret;
             }
             case DRAW_NO_MATE:
                 return "Game over, draw by impossibility of mate!";
@@ -266,20 +266,20 @@ public class Game {
                 return false;
             }
         } else if (moveStr.startsWith("perft ")) {
-        	try {
-        		String depthStr = moveStr.substring(moveStr.indexOf(" ") + 1);
-        		int depth = Integer.parseInt(depthStr);
-        		MoveGen moveGen = new MoveGen();
-        		long t0 = System.currentTimeMillis();
-        		long nodes = perfT(moveGen, pos, depth);
-        		long t1 = System.currentTimeMillis();
-        		System.out.printf("perft(%d) = %d, t=%.3fs\n", depth, nodes, (t1 - t0)*1e-3);
-        	}
-        	catch (NumberFormatException nfe) {
+            try {
+                String depthStr = moveStr.substring(moveStr.indexOf(" ") + 1);
+                int depth = Integer.parseInt(depthStr);
+                MoveGen moveGen = new MoveGen();
+                long t0 = System.currentTimeMillis();
+                long nodes = perfT(moveGen, pos, depth);
+                long t1 = System.currentTimeMillis();
+                System.out.printf("perft(%d) = %d, t=%.3fs\n", depth, nodes, (t1 - t0)*1e-3);
+            }
+            catch (NumberFormatException nfe) {
                 System.out.printf("Number format exception: %s\n", nfe.getMessage());
                 return false;
-        	}
-        	return true;
+            }
+            return true;
         } else {
             return false;
         }
@@ -294,9 +294,9 @@ public class Game {
         }
     }
 
-	public List<String> getPosHistory() {
+    public List<String> getPosHistory() {
         List<String> ret = new ArrayList<String>();
-    	
+        
         Position pos = new Position(this.pos);
         for (int i = currentMove; i > 0; i--) {
             pos.unMakeMove(moveList.get(i - 1), uiInfoList.get(i - 1));
@@ -315,7 +315,7 @@ public class Game {
         int numUndo = moveList.size() - currentMove;
         ret.add(((Integer)numUndo).toString());
         return ret;
-	}
+    }
 
     /**
      * Print a list of all moves.
@@ -471,7 +471,7 @@ public class Game {
                 drawState = rep ? GameState.DRAW_REP : GameState.DRAW_50;
                 drawStateMoveStr = null;
                 if (m != null) {
-                	drawStateMoveStr = TextIO.moveToString(pos, m, false);
+                    drawStateMoveStr = TextIO.moveToString(pos, m, false);
                 }
             } else {
                 pendingDrawOffer = true;
@@ -549,9 +549,9 @@ public class Game {
     }
 
     final static long perfT(MoveGen moveGen, Position pos, int depth) {
-		if (depth == 0)
-			return 1;
-		long nodes = 0;
+        if (depth == 0)
+            return 1;
+        long nodes = 0;
         Move[] moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if (depth == 1) {
@@ -564,10 +564,10 @@ public class Game {
         for (Move m : moves) {
             if (m == null)
                 break;
-        	pos.makeMove(m, ui);
-        	nodes += perfT(moveGen, pos, depth - 1);
-        	pos.unMakeMove(m, ui);
+            pos.makeMove(m, ui);
+            nodes += perfT(moveGen, pos, depth - 1);
+            pos.unMakeMove(m, ui);
         }
-		return nodes;
-	}
+        return nodes;
+    }
 }

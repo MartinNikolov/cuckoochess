@@ -52,6 +52,6 @@ public class Move {
 
     /** Useful for debugging. */
     public final String toString() {
-    	return TextIO.moveToUCIString(this);
+        return TextIO.moveToUCIString(this);
     }
 }

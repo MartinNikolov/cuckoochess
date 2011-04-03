@@ -142,8 +142,8 @@ public class Position {
     }
     /** Set a square to a piece value. */
     public final void setPiece(int square, int piece) {
-    	// Update hash key
-    	int oldPiece = squares[square];
+        // Update hash key
+        int oldPiece = squares[square];
         hashKey ^= psHashKeys[oldPiece][square];
         hashKey ^= psHashKeys[piece][square];
         
@@ -255,14 +255,14 @@ public class Position {
             }
         }
         if (!nullMove) {
-        	int rook = wtm ? Piece.WROOK : Piece.BROOK;
-        	if (p == rook) {
-        		removeCastleRights(move.from);
-        	}
-        	int oRook = wtm ? Piece.BROOK : Piece.WROOK;
-        	if (capP == oRook) {
-        		removeCastleRights(move.to);
-        	}
+            int rook = wtm ? Piece.WROOK : Piece.BROOK;
+            if (p == rook) {
+                removeCastleRights(move.from);
+            }
+            int oRook = wtm ? Piece.BROOK : Piece.WROOK;
+            if (capP == oRook) {
+                removeCastleRights(move.to);
+            }
         }
 
         // Handle en passant and epSquare
@@ -296,7 +296,7 @@ public class Position {
         if (move.promoteTo != Piece.EMPTY) {
             setPiece(move.to, move.promoteTo);
         } else {
-        	setPiece(move.to, p);
+            setPiece(move.to, p);
         }
         setWhiteMove(!wtm);
     }
@@ -311,7 +311,7 @@ public class Position {
         halfMoveClock = ui.halfMoveClock;
         boolean wtm = whiteMove;
         if (move.promoteTo != Piece.EMPTY) {
-        	p = wtm ? Piece.WPAWN : Piece.BPAWN;
+            p = wtm ? Piece.WPAWN : Piece.BPAWN;
             setPiece(move.from, p);
         }
         if (!wtm) {
@@ -333,11 +333,11 @@ public class Position {
 
         // Handle en passant
         if (move.to == epSquare) {
-        	if (p == Piece.WPAWN) {
+            if (p == Piece.WPAWN) {
                 setPiece(move.to - 8, Piece.BPAWN);
-        	} else if (p == Piece.BPAWN) {
+            } else if (p == Piece.BPAWN) {
                 setPiece(move.to + 8, Piece.WPAWN);
-        	}
+            }
         }
     }
     
@@ -383,7 +383,7 @@ public class Position {
     final long computeZobristHash() {
         long hash = 0;
         for (int sq = 0; sq < 64; sq++) {
-        	int p = squares[sq];
+            int p = squares[sq];
             hash ^= psHashKeys[p][sq];
         }
         if (whiteMove)
@@ -412,6 +412,6 @@ public class Position {
 
     /** Useful for debugging. */
     public final String toString() {
-    	return TextIO.asciiBoard(this);
+        return TextIO.asciiBoard(this);
     }
 }

@@ -26,8 +26,8 @@ import chess.Position;
  * @author petero
  */
 public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
-	private static final long serialVersionUID = 7357610346389734323L;
-	ChessBoardPainter cbp;
+    private static final long serialVersionUID = 7357610346389734323L;
+    ChessBoardPainter cbp;
     ChessController ctrl;
     final static int ttLogSize = 19; // Use 2^19 hash entries.
     String moveListStr = "";
@@ -382,16 +382,16 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     }
 
     public void setMoveListString(String str) {
-    	moveListStr = str;
-    	str = moveListStr + "\n" + thinkingStr;
+        moveListStr = str;
+        str = moveListStr + "\n" + thinkingStr;
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }
     }
     
     public void setThinkingString(String str) {
-    	thinkingStr = str;
-    	str = moveListStr + "\n" + thinkingStr;
+        thinkingStr = str;
+        str = moveListStr + "\n" + thinkingStr;
         if (!str.equals(LogTextArea.getText())) {
             LogTextArea.setText(str);
         }
@@ -406,8 +406,8 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
         return ShowThinking.isSelected();
     }
 
-	public void requestPromotePiece() {
-		runOnUIThread(new Runnable() {
+    public void requestPromotePiece() {
+        runOnUIThread(new Runnable() {
             public void run() {
                 Object[] options = { "Queen", "Rook", "Bishop", "Knight" };
                 int choice = JOptionPane.showOptionDialog(
@@ -415,19 +415,19 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
                         0, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 ctrl.reportPromotePiece(choice);
             }
-		});
-	}
+        });
+    }
 
-	public void runOnUIThread(Runnable runnable) {
-		SwingUtilities.invokeLater(runnable);
-	}
+    public void runOnUIThread(Runnable runnable) {
+        SwingUtilities.invokeLater(runnable);
+    }
 
-	@Override
-	public boolean randomMode() {
-		return false;
-	}
+    @Override
+    public boolean randomMode() {
+        return false;
+    }
 
-	@Override
-	public void reportInvalidMove(Move m) {
-	}
+    @Override
+    public void reportInvalidMove(Move m) {
+    }
 }

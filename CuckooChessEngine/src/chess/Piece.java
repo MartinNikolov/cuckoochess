@@ -36,7 +36,7 @@ public class Piece {
         return pType < BKING;
     }
     public static final int makeWhite(int pType) {
-    	return pType < BKING ? pType : pType - (BKING - WKING);
+        return pType < BKING ? pType : pType - (BKING - WKING);
     }
     public static final int makeBlack(int pType) {
         return ((pType > EMPTY) && (pType < BKING)) ? pType + (BKING - WKING) : pType;
