@@ -25,7 +25,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.petero.droidfish.engine.Book.BookEntry;
+import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;

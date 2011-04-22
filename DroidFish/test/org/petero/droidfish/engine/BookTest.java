@@ -54,7 +54,7 @@ public class BookTest {
     @Test
     public void testGetBookMove() throws ChessParseError {
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
-        Book book = new Book();
+        DroidBook book = new DroidBook();
         Move move = book.getBookMove(pos);
         checkValid(pos, move);
         
@@ -70,7 +70,7 @@ public class BookTest {
     @Test
     public void testGetAllBookMoves() throws ChessParseError {
         Position pos = TextIO.readFEN(TextIO.startPosFEN);
-        Book book = new Book();
+        DroidBook book = new DroidBook();
         String moveListString = book.getAllBookMoves(pos).first;
         String[] strMoves = moveListString.split(":[0-9]* ");
         assertTrue(strMoves.length > 1);

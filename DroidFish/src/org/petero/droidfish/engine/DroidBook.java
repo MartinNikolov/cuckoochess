@@ -47,7 +47,7 @@ import chess.Piece;
  * Implements an opening book.
  * @author petero
  */
-public class Book {
+public class DroidBook {
     static class BookEntry {
         Move move;
         int count;
@@ -66,7 +66,7 @@ public class Book {
     
     static PolyglotBook externalBook = null;
 
-    public Book() {
+    public DroidBook() {
         if (externalBook == null)
             externalBook = new PolyglotBook(); 
         new Thread(new Runnable() {

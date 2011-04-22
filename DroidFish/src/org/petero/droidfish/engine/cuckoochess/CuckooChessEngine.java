@@ -41,7 +41,7 @@ public class CuckooChessEngine implements UCIEngine {
     private ArrayList<Move> moves;
 
     // Engine data
-    private EngineControl engine;
+    private DroidEngineControl engine;
 
     private int strength = 1000;
 
@@ -145,7 +145,7 @@ public class CuckooChessEngine implements UCIEngine {
             if (cmd.equals("uci")) {
                 os.printf("id name %s%n", ComputerPlayer.engineName);
                 os.printf("id author Peter Osterlund%n");
-                EngineControl.printOptions(os);
+                DroidEngineControl.printOptions(os);
                 os.printf("uciok%n");
             } else if (cmd.equals("isready")) {
                 initEngine(os);
@@ -267,7 +267,7 @@ public class CuckooChessEngine implements UCIEngine {
 
     private final void initEngine(NioPrintStream os) {
         if (engine == null) {
-            engine = new EngineControl(os);
+            engine = new DroidEngineControl(os);
         }
     }
 

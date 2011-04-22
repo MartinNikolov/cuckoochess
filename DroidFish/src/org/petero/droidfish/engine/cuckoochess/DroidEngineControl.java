@@ -39,7 +39,7 @@ import java.util.Random;
  * Control the search thread.
  * @author petero
  */
-public class EngineControl {
+public class DroidEngineControl {
     NioPrintStream os;
 
     Thread engineThread;
@@ -111,7 +111,7 @@ public class EngineControl {
         }
     }
 
-    public EngineControl(NioPrintStream os) {
+    public DroidEngineControl(NioPrintStream os) {
         this.os = os;
         threadMutex = new Object();
         setupTT();

@@ -33,7 +33,7 @@ import org.petero.droidfish.activities.EditPGNLoad;
 import org.petero.droidfish.activities.EditPGNSave;
 import org.petero.droidfish.activities.LoadScid;
 import org.petero.droidfish.activities.Preferences;
-import org.petero.droidfish.gamelogic.ChessController;
+import org.petero.droidfish.gamelogic.DroidChessController;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Position;
@@ -114,7 +114,7 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!! Release scripts should collect source code for cuckoochess too.
 
     private ChessBoard cb;
-    private ChessController ctrl = null;
+    private DroidChessController ctrl = null;
     private boolean mShowThinking;
     private boolean mWhiteBasedScores;
     private boolean mShowBookHints;
@@ -165,7 +165,7 @@ public class DroidFish extends Activity implements GUIInterface {
         initUI(true);
 
         gameTextListener = new PgnScreenText(pgnOptions);
-        ctrl = new ChessController(this, gameTextListener, pgnOptions);
+        ctrl = new DroidChessController(this, gameTextListener, pgnOptions);
         ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
         ctrl.newGame(gameMode);
@@ -674,7 +674,7 @@ public class DroidFish extends Activity implements GUIInterface {
         case RESULT_EDITCOMMENTS:
             if (resultCode == RESULT_OK) {
                 Bundle bundle = data.getBundleExtra("org.petero.droidfish.comments");
-                ChessController.CommentInfo commInfo = new ChessController.CommentInfo();
+                DroidChessController.CommentInfo commInfo = new DroidChessController.CommentInfo();
                 commInfo.preComment = bundle.getString("preComment");
                 commInfo.postComment = bundle.getString("postComment");
                 commInfo.nag = bundle.getInt("nag");
@@ -1265,7 +1265,7 @@ public class DroidFish extends Activity implements GUIInterface {
                     case EDIT_COMMENTS: {
                         Intent i = new Intent(DroidFish.this, EditComments.class);
                         i.setAction("");
-                        ChessController.CommentInfo commInfo = ctrl.getComments();
+                        DroidChessController.CommentInfo commInfo = ctrl.getComments();
                         Bundle bundle = new Bundle();
                         bundle.putString("preComment", commInfo.preComment);
                         bundle.putString("postComment", commInfo.postComment);

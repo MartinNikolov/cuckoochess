@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.petero.droidfish.PGNOptions;
-import org.petero.droidfish.engine.ComputerPlayer;
+import org.petero.droidfish.engine.DroidComputerPlayer;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 
 /**
@@ -32,14 +32,14 @@ import org.petero.droidfish.gamelogic.GameTree.Node;
 public class Game {
     boolean pendingDrawOffer;
     GameTree tree;
-    private ComputerPlayer computerPlayer;
+    private DroidComputerPlayer computerPlayer;
     TimeControl timeController;
     private boolean gamePaused;
     private boolean addFirst;
 
     PgnToken.PgnTokenReceiver gameTextListener;
 
-    public Game(ComputerPlayer computerPlayer, PgnToken.PgnTokenReceiver gameTextListener,
+    public Game(DroidComputerPlayer computerPlayer, PgnToken.PgnTokenReceiver gameTextListener,
                 int timeControl, int movesPerSession, int timeIncrement) {
         this.computerPlayer = computerPlayer;
         this.gameTextListener = gameTextListener;
@@ -55,7 +55,7 @@ public class Game {
         updateTimeControl(true);
     }
 
-    public final void setComputerPlayer(ComputerPlayer computerPlayer) {
+    public final void setComputerPlayer(DroidComputerPlayer computerPlayer) {
         this.computerPlayer = computerPlayer;
     }
 

@@ -24,7 +24,7 @@ import java.util.List;
 import org.petero.droidfish.GUIInterface;
 import org.petero.droidfish.GameMode;
 import org.petero.droidfish.PGNOptions;
-import org.petero.droidfish.engine.ComputerPlayer;
+import org.petero.droidfish.engine.DroidComputerPlayer;
 import org.petero.droidfish.gamelogic.Game.GameState;
 import org.petero.droidfish.gamelogic.GameTree.Node;
 
@@ -32,8 +32,8 @@ import org.petero.droidfish.gamelogic.GameTree.Node;
  * The glue between the chess engine and the GUI.
  * @author petero
  */
-public class ChessController {
-    private ComputerPlayer computerPlayer = null;
+public class DroidChessController {
+    private DroidComputerPlayer computerPlayer = null;
     private PgnToken.PgnTokenReceiver gameTextListener = null;
     private String bookFileName = "";
     private Game game;
@@ -168,7 +168,7 @@ public class ChessController {
     SearchListener listener;
 
     
-    public ChessController(GUIInterface gui, PgnToken.PgnTokenReceiver gameTextListener, PGNOptions options) {
+    public DroidChessController(GUIInterface gui, PgnToken.PgnTokenReceiver gameTextListener, PGNOptions options) {
         this.gui = gui;
         this.gameTextListener = gameTextListener;
         pgnOptions = options;
@@ -211,7 +211,7 @@ public class ChessController {
         stopAnalysis();
         this.gameMode = gameMode;
         if (computerPlayer == null) {
-            computerPlayer = new ComputerPlayer(engine);
+            computerPlayer = new DroidComputerPlayer(engine);
             computerPlayer.setListener(listener);
             computerPlayer.setBookFileName(bookFileName);
         }
@@ -283,7 +283,7 @@ public class ChessController {
 
     private final void setPlayerNames(Game game) {
         if (game != null) {
-            String engine = ComputerPlayer.getEngineName();
+            String engine = DroidComputerPlayer.getEngineName();
             String white = gameMode.playerWhite() ? "Player" : engine;
             String black = gameMode.playerBlack() ? "Player" : engine;
             game.tree.setPlayerNames(white, black);

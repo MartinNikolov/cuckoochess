@@ -36,20 +36,20 @@ import org.petero.droidfish.gamelogic.UndoInfo;
  * A computer algorithm player.
  * @author petero
  */
-public class ComputerPlayer {
+public class DroidComputerPlayer {
     private static String engineName = "";
 
     private static UCIEngine uciEngine = null;
     private SearchListener listener;
-    private Book book;
+    private DroidBook book;
     private boolean newGame = false;
     private String engine = "";
 
-    public ComputerPlayer(String engine) {
+    public DroidComputerPlayer(String engine) {
         this.engine = engine;
         startEngine();
         listener = null;
-        book = new Book();
+        book = new DroidBook();
     }
 
     private final void startEngine() {
