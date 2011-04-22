@@ -115,7 +115,7 @@ public class CuckooChessEngine implements UCIEngine {
         if (ret == null)
             return null;
         if (ret.length() > 0) {
-            System.out.printf("Engine -> GUI: %s\n", ret);
+//            System.out.printf("Engine -> GUI: %s\n", ret);
         }
         return ret;
     }
@@ -130,7 +130,7 @@ public class CuckooChessEngine implements UCIEngine {
 
     @Override
     public final synchronized void writeLineToEngine(String data) {
-        System.out.printf("GUI -> Engine: %s\n", data);
+//        System.out.printf("GUI -> Engine: %s\n", data);
         try {
             String s = data + "\n";
             guiToEngine.sink().write(ByteBuffer.wrap(s.getBytes()));

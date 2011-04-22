@@ -480,7 +480,6 @@ public class DroidFish extends Activity implements GUIInterface {
         int timeIncrement = Integer.parseInt(tmp);
         ctrl.setTimeLimit(timeControl, movesPerSession, timeIncrement);
 
-
         tmp = settings.getString("scrollSensitivity", "2");
         scrollSensitivity = Float.parseFloat(tmp);
         invertScrollDirection = settings.getBoolean("invertScrollDirection", false);

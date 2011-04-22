@@ -58,18 +58,27 @@ class NioInputStream {
 
     public String readLine(int timeoutMillis) {
         try {
-            // Refill inBuf
-            if (timeoutMillis < 1)
-                timeoutMillis = 1;
-            selector.select(timeoutMillis);
-            buffer.clear();
-            for (SelectionKey sk : selector.selectedKeys())
-                if (sk.isValid() && sk.isReadable())
-                    in.read(buffer);
-            buffer.flip();
-            while (buffer.position() < buffer.limit()) {
-                byte b = buffer.get();
-                inBuf.add((char)b);
+            boolean haveNewLine = false;
+            for (int i = 0; i < inBuf.size(); i++) {
+                if (inBuf.get(i) == '\n') {
+                    haveNewLine = true;
+                    break;
+                }
+            }
+            if (!haveNewLine) {
+                // Refill inBuf
+                if (timeoutMillis < 1)
+                    timeoutMillis = 1;
+                selector.select(timeoutMillis);
+                buffer.clear();
+                for (SelectionKey sk : selector.selectedKeys())
+                    if (sk.isValid() && sk.isReadable())
+                        in.read(buffer);
+                buffer.flip();
+                while (buffer.position() < buffer.limit()) {
+                    byte b = buffer.get();
+                    inBuf.add((char)b);
+                }
             }
 
             // Extract line
