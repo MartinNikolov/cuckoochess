@@ -102,7 +102,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! How to handle hour-glass time control?
     // FIXME!!! What should happen if you change time controls in the middle of a game?
 
-    // FIXME!!! Implement "limit strength" option
     // FIXME!!! Implement pondering (permanent brain)
     // FIXME!!! Implement multi-variation analysis mode
     // FIXME!!! Online play on FICS
@@ -111,7 +110,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Implement "hint" feature
 
     // FIXME!! There should only be one Book.java file
-    // FIXME!! Release scripts should collect source code for cuckoochess too.
 
     private ChessBoard cb;
     private DroidChessController ctrl = null;
