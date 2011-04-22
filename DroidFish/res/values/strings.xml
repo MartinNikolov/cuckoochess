@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">DroidFish</string>
+	<string-array name="engine_texts">
+	    <item>Stockfish</item>
+	    <item>CuckooChess</item>
+	</string-array>
+	<string-array name="engine_values">
+	   <item>stockfish</item>
+	   <item>cuckoochess</item>
+	</string-array>
 	<string-array name="moves_per_session_texts">
 	    <item>Whole Game</item>
 	    <item>1 move</item>
@@ -261,4 +269,5 @@ you are not actively using the program.\
 	<string name="load_next_game">Load Next Game</string>
 	<string name="no_prev_game">No previous game</string>
 	<string name="no_next_game">No next game</string>
+	<string name="strength_ignored">You must use the CuckooChess engine for reduced playing strength. Strength setting ignored.</string>
 </resources>

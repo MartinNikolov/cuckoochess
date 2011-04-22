@@ -127,7 +127,7 @@ public class DroidFish extends Activity implements GUIInterface {
     private ScrollView moveListScroll;
     private TextView moveList;
     private TextView thinking;
-    private TextView whiteClock, blackClock;
+    private TextView whiteClock, blackClock, titleText;
 
     SharedPreferences settings;
 
@@ -238,6 +238,7 @@ public class DroidFish extends Activity implements GUIInterface {
             getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title);
             whiteClock = (TextView)findViewById(R.id.white_clock);
             blackClock = (TextView)findViewById(R.id.black_clock);
+            titleText  = (TextView)findViewById(R.id.title_text);
         }
         status = (TextView)findViewById(R.id.status);
         moveListScroll = (ScrollView)findViewById(R.id.scrollView);
@@ -467,6 +468,10 @@ public class DroidFish extends Activity implements GUIInterface {
         maxNumArrows = Integer.parseInt(tmp);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
+        String engine = settings.getString("engine", "");
+        int strength = settings.getInt("strength", 1000);
+        setEngineStrength(engine, strength);
+
         tmp = settings.getString("timeControl", "300000");
         int timeControl = Integer.parseInt(tmp);
         tmp = settings.getString("movesPerSession", "60");
@@ -512,6 +517,20 @@ public class DroidFish extends Activity implements GUIInterface {
 
         gameTextListener.clear();
         ctrl.prefsChanged();
+    }
+
+    private final void setEngineStrength(String engine, int strength) {
+        ctrl.setEngineStrength(engine, strength);
+        boolean isCuckooChess = engine.equals("cuckoochess");
+        if ((strength < 1000) && !isCuckooChess) {
+            Toast.makeText(getApplicationContext(), R.string.strength_ignored,
+                    Toast.LENGTH_LONG).show();
+        }
+        if (isCuckooChess) {
+            titleText.setText(String.format("%s: %d%%", getString(R.string.app_name), strength / 10));
+        } else {
+            titleText.setText(getString(R.string.app_name));
+        }
     }
 
     private final void setFullScreenMode(boolean fullScreenMode) {

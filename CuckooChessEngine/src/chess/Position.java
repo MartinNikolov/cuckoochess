@@ -579,7 +579,7 @@ public class Position {
 
     /* ------------- Hashing code ------------------ */
     
-    private static long[][] psHashKeys;    // [piece][square]
+    static long[][] psHashKeys;    // [piece][square]
     private static long whiteHashKey;
     private static long[] castleHashKeys;  // [castleMask]
     private static long[] epHashKeys;      // [epFile + 1] (epFile==-1 for no ep)

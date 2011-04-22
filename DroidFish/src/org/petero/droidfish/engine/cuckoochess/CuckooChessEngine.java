@@ -43,6 +43,8 @@ public class CuckooChessEngine implements UCIEngine {
     // Engine data
     private EngineControl engine;
 
+    private int strength = 1000;
+
     // Set to true to break out of main loop
     private boolean quit;
 
@@ -74,6 +76,17 @@ public class CuckooChessEngine implements UCIEngine {
             startProcess();
             processAlive = true;
         }
+    }
+
+    @Override
+    public void setStrength(int strength) {
+        this.strength = strength;
+        writeLineToEngine(String.format("setoption name strength value %d", strength));
+    }
+    
+    @Override
+    public String addStrengthToName() {
+        return String.format(" (%.1f%%)", strength * 0.1);
     }
 
     private final void startProcess() {

@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Control the search thread.
@@ -65,6 +66,10 @@ public class EngineControl {
     boolean ownBook = false;
     boolean analyseMode = false;
     boolean ponderMode = true;
+
+    // Reduced strength variables
+    int strength = 1000;
+    long randomSeed = 0;
 
     /**
      * This class is responsible for sending "info" strings during search.
@@ -151,6 +156,7 @@ public class EngineControl {
     }
 
     final public void newGame() {
+        randomSeed = new Random().nextLong();
         tt.clear();
     }
 
@@ -214,6 +220,7 @@ public class EngineControl {
         sc = new Search(pos, posHashList, posHashListSize, tt);
         sc.timeLimit(minTimeLimit, maxTimeLimit);
         sc.setListener(new SearchListener(os));
+        sc.setStrength(strength, randomSeed);
         Move[] moves = moveGen.pseudoLegalMoves(pos);
         moves = MoveGen.removeIllegal(pos, moves);
         if ((searchMoves != null) && (searchMoves.size() > 0)) {
@@ -354,6 +361,7 @@ public class EngineControl {
         os.printf("option name UCI_AnalyseMode type check default false%n");
         os.printf("option name UCI_EngineAbout type string default %s by Peter Osterlund, see http://web.comhem.se/petero2home/javachess/index.html%n",
                 ComputerPlayer.engineName);
+        os.printf("option name Strength type spin default 1000 min 0 max 1000\n");
     }
 
     final void setOption(String optionName, String optionValue) {
@@ -367,6 +375,8 @@ public class EngineControl {
                 ponderMode = Boolean.parseBoolean(optionValue);
             } else if (optionName.equals("uci_analysemode")) {
                 analyseMode = Boolean.parseBoolean(optionValue);
+            } else if (optionName.equals("strength")) {
+                strength = Integer.parseInt(optionValue);
             }
         } catch (NumberFormatException nfe) {
         }

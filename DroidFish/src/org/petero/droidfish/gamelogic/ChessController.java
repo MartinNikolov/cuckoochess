@@ -43,6 +43,9 @@ public class ChessController {
     private Thread computerThread;
     private Thread analysisThread;
 
+    private String engine = "";
+    private int strength = 1000;
+
     private int timeControl;
     private int movesPerSession;
     private int timeIncrement;
@@ -208,10 +211,11 @@ public class ChessController {
         stopAnalysis();
         this.gameMode = gameMode;
         if (computerPlayer == null) {
-            computerPlayer = new ComputerPlayer();
+            computerPlayer = new ComputerPlayer(engine);
             computerPlayer.setListener(listener);
             computerPlayer.setBookFileName(bookFileName);
         }
+        computerPlayer.setEngineStrength(engine, strength);
         game = new Game(computerPlayer, gameTextListener, timeControl, movesPerSession, timeIncrement);
         setPlayerNames(game);
         updateGameMode();
@@ -279,7 +283,7 @@ public class ChessController {
 
     private final void setPlayerNames(Game game) {
         if (game != null) {
-            String engine = ComputerPlayer.engineName;
+            String engine = ComputerPlayer.getEngineName();
             String white = gameMode.playerWhite() ? "Player" : engine;
             String black = gameMode.playerBlack() ? "Player" : engine;
             game.tree.setPlayerNames(white, black);
@@ -652,6 +656,7 @@ public class ChessController {
             final int movesToGo = game.timeController.getMovesToTC();
             computerThread = new Thread(new Runnable() {
                 public void run() {
+                    computerPlayer.setEngineStrength(engine, strength);
                     final String cmd = computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
                                                                wTime, bTime, inc, movesToGo);
                     final SearchStatus localSS = ss;
@@ -707,8 +712,10 @@ public class ChessController {
                 final boolean alive = game.tree.getGameState() == GameState.ALIVE;
                 analysisThread = new Thread(new Runnable() {
                     public void run() {
-                        if (alive)
+                        if (alive) {
+                            computerPlayer.setEngineStrength(engine, 1000);
                             computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
+                        }
                     }
                 });
                 listener.clearSearchInfo();
@@ -730,6 +737,19 @@ public class ChessController {
             analysisThread = null;
             listener.clearSearchInfo();
             updateGUI();
+        }
+    }
+
+    public final synchronized void setEngineStrength(String engine, int strength) {
+        boolean newEngine = !engine.equals(this.engine);
+        if (newEngine || (strength != this.strength)) {
+            this.engine = engine;
+            this.strength = strength;
+            if (newEngine && (analysisThread != null)) {
+                stopAnalysis();
+                updateComputeThreads(true);
+                updateGUI();
+            }
         }
     }
 

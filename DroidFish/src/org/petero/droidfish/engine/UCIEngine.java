@@ -37,4 +37,10 @@ public interface UCIEngine {
 
     /** Write a line to the engine. \n will be added automatically. */
     public abstract void writeLineToEngine(String data);
+
+    /** Set the engine strength, allowed values 0 - 1000. */
+    public abstract void setStrength(int strength);
+
+    /** Add strength information to the engine name. */
+    public abstract String addStrengthToName();
 }

@@ -38,6 +38,16 @@ public class NativePipedProcess implements UCIEngine {
         }
     }
 
+    @Override
+    public void setStrength(int strength) {
+        // Engine doesn't support strength setting
+    }
+
+    @Override
+    public String addStrengthToName() {
+        return "";
+    }
+
     /** Shut down process. */
     @Override
     public final void shutDown() {

@@ -65,7 +65,13 @@ public class Search {
     boolean searchNeedMoreTime; // True if negaScout should use up to maxTimeMillis time.
     private int maxNodes;   // Maximum number of nodes to search (approximately)
     int nodesToGo;          // Number of nodes until next time check
-    
+    public int nodesBetweenTimeCheck = 5000; // How often to check remaining time
+
+    // Reduced strength variables
+    private int strength = 1000; // Strength (0-1000)
+    boolean weak = false;        // Set to strength < 1000
+    long randomSeed = 0;
+
     // Search statistics stuff
     int nodes;
     int qNodes;
@@ -158,6 +164,14 @@ public class Search {
     final public void timeLimit(int minTimeLimit, int maxTimeLimit) {
         minTimeMillis = minTimeLimit;
         maxTimeMillis = maxTimeLimit;
+    }
+
+    final public void setStrength(int strength, long randomSeed) {
+        if (strength < 0) strength = 0;
+        if (strength > 1000) strength = 1000;
+        this.strength = strength;
+        weak = strength < 1000;
+        this.randomSeed = randomSeed;
     }
 
     final public Move iterativeDeepening(Move[] scMovesIn,
@@ -410,7 +424,7 @@ public class Search {
             searchTreeInfo[ply].nodeIdx = idx;
         }
         if (--nodesToGo <= 0) {
-            nodesToGo = 5000;
+            nodesToGo = nodesBetweenTimeCheck;
             long tNow = System.currentTimeMillis();
             long timeLimit = searchNeedMoreTime ? maxTimeMillis : minTimeMillis;
             if (    ((timeLimit >= 0) && (tNow - tStart >= timeLimit)) ||
@@ -454,7 +468,6 @@ public class Search {
             if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
             return 0;            // No need to test for mate here, since it would have been
                                  // discovered the first time the position came up.
-            // FIXME! Sometimes draws in won positions. Xboard bug or cuckoochess bug?
         }
 
         int evalScore = UNKNOWN_SCORE;
@@ -713,6 +726,9 @@ public class Search {
                 posHashListSize--;
                 pos.unMakeMove(m, ui);
             }
+            if (weak && haveLegalMoves)
+                if (weakPlaySkipMove(pos, m, ply))
+                    score = illegalScore;
             m.score = score;
 
             if (score != illegalScore) {
@@ -758,6 +774,26 @@ public class Search {
         }
         moveGen.returnMoveList(moves);
         return bestScore;
+    }
+
+    /** Return true if move should be skipped in order to make engine play weaker. */
+    private final boolean weakPlaySkipMove(Position pos, Move m, int ply) {
+        long rndL = pos.zobristHash() ^ Position.psHashKeys[0][m.from] ^
+                    Position.psHashKeys[0][m.to] ^ randomSeed;
+        double rnd = ((rndL & 0x7fffffffffffffffL) % 1000000000) / 1e9;
+
+        double s = strength * 1e-3;
+        double offs = 4 - 15 * s;
+        double effPly = ply * Evaluate.interpolate(pos.wMtrl + pos.bMtrl, 0, 30, Evaluate.qV * 4, 100) * 1e-2;
+        double t = effPly + offs;
+        double p = 1/(1+Math.exp(t)); // Probability to "see" move
+        boolean easyMove = ((pos.getPiece(m.to) != Piece.EMPTY) ||
+                            (ply < 2) || (searchTreeInfo[ply-2].currentMove.to == m.from));
+        if (easyMove)
+            p = 1-(1-p)*(1-p);
+        if (rnd > p)
+            return true;
+        return false;
     }
 
     private static final boolean passedPawnPush(Position pos, Move m) {

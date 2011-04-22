@@ -37,15 +37,23 @@ import org.petero.droidfish.gamelogic.UndoInfo;
  * @author petero
  */
 public class ComputerPlayer {
-    public static String engineName = "";
+    private static String engineName = "";
 
     private static UCIEngine uciEngine = null;
     private SearchListener listener;
     private Book book;
     private boolean newGame = false;
+    private String engine = "";
 
-    public ComputerPlayer() {
-        boolean useCuckoo = false;
+    public ComputerPlayer(String engine) {
+        this.engine = engine;
+        startEngine();
+        listener = null;
+        book = new Book();
+    }
+
+    private final void startEngine() {
+        boolean useCuckoo = engine.equals("cuckoochess");
         if (uciEngine == null) {
             if (useCuckoo) {
                 uciEngine = new CuckooChessEngine();
@@ -65,8 +73,15 @@ public class ComputerPlayer {
             uciEngine.writeLineToEngine("ucinewgame");
             syncReady();
         }
-        listener = null;
-        book = new Book();
+    }
+
+    public final void setEngineStrength(String engine, int strength) {
+        if (!engine.equals(this.engine)) {
+            shutdownEngine();
+            this.engine = engine;
+            startEngine();
+        }
+        uciEngine.setStrength(strength);
     }
 
     private static int getNumCPUs() {
@@ -113,6 +128,10 @@ public class ComputerPlayer {
                 }
             }
         }
+    }
+
+    public static String getEngineName() {
+        return engineName + uciEngine.addStrengthToName();
     }
 
     /** Convert a string to tokens by splitting at whitespace characters. */

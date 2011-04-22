@@ -16,6 +16,22 @@
 			android:defaultValue="false">
 		</CheckBoxPreference>
 	</PreferenceCategory>
+    <PreferenceCategory
+        android:title="Engine Settings">
+        <ListPreference
+            android:key="engine"
+            android:title="Engine"
+            android:summary="Chess Engine"
+            android:entryValues="@array/engine_values"
+            android:entries="@array/engine_texts"
+            android:defaultValue="droidfish">
+        </ListPreference>
+        <org.petero.droidfish.SeekBarPreference
+            android:key="strength"
+            android:defaultValue="1000"
+            android:title="Strength">
+        </org.petero.droidfish.SeekBarPreference>
+    </PreferenceCategory>
 	<PreferenceCategory
 		android:title="Time Control">
 		<ListPreference
