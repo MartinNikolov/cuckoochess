@@ -163,7 +163,7 @@ public class DroidComputerPlayer {
     }
     
     /** Stop the engine process. */
-    public final void shutdownEngine() {
+    public final synchronized void shutdownEngine() {
         if (uciEngine != null) {
             uciEngine.shutDown();
             uciEngine = null;
@@ -263,11 +263,14 @@ public class DroidComputerPlayer {
         while (true) {
             int timeout = 2000;
             while (true) {
+                UCIEngine uci = uciEngine;
+                if (uci == null)
+                    break;
                 if (shouldStop && !stopSent) {
-                    uciEngine.writeLineToEngine("stop");
+                    uci.writeLineToEngine("stop");
                     stopSent = true;
                 }
-                String s = uciEngine.readLineFromEngine(timeout);
+                String s = uci.readLineFromEngine(timeout);
                 if (s.length() == 0)
                     break;
                 String[] tokens = tokenize(s);
@@ -475,8 +478,9 @@ public class DroidComputerPlayer {
         }
     }
 
-    public final void stopSearch() {
+    public final synchronized void stopSearch() {
         shouldStop = true;
-        uciEngine.writeLineToEngine("stop");
+        if (uciEngine != null)
+            uciEngine.writeLineToEngine("stop");
     }
 }

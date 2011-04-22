@@ -69,12 +69,14 @@ public class DroidBook {
     public DroidBook() {
         if (externalBook == null)
             externalBook = new PolyglotBook(); 
-        new Thread(new Runnable() {
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 initInternalBook();
             }
-        }).start();
+        });
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
     }
 
     public final void setBookFileName(String bookFileName) {

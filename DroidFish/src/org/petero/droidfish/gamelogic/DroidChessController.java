@@ -36,7 +36,7 @@ public class DroidChessController {
     private DroidComputerPlayer computerPlayer = null;
     private PgnToken.PgnTokenReceiver gameTextListener = null;
     private String bookFileName = "";
-    private Game game;
+    private Game game = null;
     private GUIInterface gui;
     private GameMode gameMode;
     private PGNOptions pgnOptions;
@@ -339,7 +339,7 @@ public class DroidChessController {
 
     /** Return true if computer player is using CPU power. */
     public final boolean computerBusy() {
-        if (game.getGameState() != GameState.ALIVE)
+        if ((game == null) || (game.getGameState() != GameState.ALIVE))
             return false;
         return gameMode.analysisMode() || !humansTurn();
     }
@@ -600,6 +600,8 @@ public class DroidChessController {
     }
 
     final private void updateMoveList() {
+        if (game == null)
+            return;
         if (!gameTextListener.isUpToDate()) {
             PGNOptions tmpOptions = new PGNOptions();
             tmpOptions.exp.variations     = pgnOptions.view.variations;

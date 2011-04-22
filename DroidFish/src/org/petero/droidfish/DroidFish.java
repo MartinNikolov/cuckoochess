@@ -166,7 +166,6 @@ public class DroidFish extends Activity implements GUIInterface {
 
         gameTextListener = new PgnScreenText(pgnOptions);
         ctrl = new DroidChessController(this, gameTextListener, pgnOptions);
-        ctrl.newGame(new GameMode(GameMode.TWO_PLAYERS));
         readPrefs();
         ctrl.newGame(gameMode);
         {
