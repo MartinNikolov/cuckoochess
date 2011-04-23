@@ -25,7 +25,6 @@ package chess;
 public class History {
     private int countSuccess[][];
     private int countFail[][];
-    int numUpdates;
 
     public History() {
         countSuccess = new int[Piece.nPieceTypes][64];
@@ -36,7 +35,6 @@ public class History {
                 countFail[p][sq] = 0;
             }
         }
-        numUpdates = 0;
     }
 
     /** Record move as a success. */
