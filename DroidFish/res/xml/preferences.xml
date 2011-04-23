@@ -24,7 +24,7 @@
             android:summary="Chess Engine"
             android:entryValues="@array/engine_values"
             android:entries="@array/engine_texts"
-            android:defaultValue="droidfish">
+            android:defaultValue="stockfish">
         </ListPreference>
         <org.petero.droidfish.SeekBarPreference
             android:key="strength"
