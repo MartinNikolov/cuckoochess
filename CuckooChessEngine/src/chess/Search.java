@@ -565,15 +565,17 @@ public class Search {
 
         boolean futilityPrune = false;
         int futilityScore = alpha;
-        if (!inCheck && (depth < 4) && (posExtend == 0)) {
+        if (!inCheck && (depth < 5) && (posExtend == 0)) {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
                 if (depth == 1) {
                     margin = 150;
                 } else if (depth == 2) {
                     margin = 300;
-                } else {
+                } else if (depth == 3) {
                     margin = 450;
+                } else {
+                    margin = 600;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
                     evalScore = eval.evalPos(pos);
