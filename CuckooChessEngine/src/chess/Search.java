@@ -29,6 +29,8 @@ import java.util.Comparator;
  * @author petero
  */
 public class Search {
+    final static int plyScale = 8; // Fractional ply resolution
+
     Position pos;
     MoveGen moveGen;
     Evaluate eval;
@@ -38,7 +40,6 @@ public class Search {
     int posHashListSize;        // Number of used entries in posHashList
     int posHashFirstNew;        // First entry in posHashList that has not been played OTB.
     TranspositionTable tt;
-    int depth;
     TreeLogger log = null;
 
     private static final class SearchTreeInfo {
@@ -199,6 +200,7 @@ public class Search {
             searchTreeInfo[i].allowNullMove = true;
         }
         try {
+        int depth;
         for (depth = 1; ; depth++) {
             initNodeStats();
             if (listener != null) listener.notifyDepth(depth);
@@ -239,12 +241,12 @@ public class Search {
                 pos.makeMove(m, ui);
                 SearchTreeInfo sti = searchTreeInfo[0];
                 sti.currentMove = m;
-                sti.lmr = lmr;
+                sti.lmr = lmr * plyScale;
                 sti.nodeIdx = -1;
-                int score = -negaScout(-beta, -alpha, 1, depth - lmr - 1, -1, givesCheck);
+                int score = -negaScout(-beta, -alpha, 1, (depth - lmr - 1) * plyScale, -1, givesCheck);
                 if ((lmr > 0) && (score > alpha)) {
                     sti.lmr = 0;
-                    score = -negaScout(-beta, -alpha, 1, depth - 1, -1, givesCheck);
+                    score = -negaScout(-beta, -alpha, 1, (depth - 1) * plyScale, -1, givesCheck);
                 }
                 int nodesThisMove = nodes + qNodes;
                 posHashListSize--;
@@ -271,7 +273,7 @@ public class Search {
                     nodes = qNodes = 0;
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
-                    score = -negaScout(-Search.MATE0, -score, 1, depth - 1, -1, givesCheck);
+                    score = -negaScout(-Search.MATE0, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
                     nodesThisMove += nodes + qNodes;
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
@@ -284,7 +286,7 @@ public class Search {
                     nodes = qNodes = 0;
                     posHashList[posHashListSize++] = pos.zobristHash();
                     pos.makeMove(m, ui);
-                    score = -negaScout(-score, Search.MATE0, 1, depth - 1, -1, givesCheck);
+                    score = -negaScout(-score, Search.MATE0, 1, (depth - 1) * plyScale, -1, givesCheck);
                     nodesThisMove += nodes + qNodes;
                     posHashListSize--;
                     pos.unMakeMove(m, ui);
@@ -420,7 +422,7 @@ public class Search {
                                final boolean inCheck) throws StopSearch {
         if (log != null) {
             SearchTreeInfo sti = searchTreeInfo[ply-1];
-            long idx = log.logNodeStart(sti.nodeIdx, sti.currentMove, alpha, beta, ply, depth);
+            long idx = log.logNodeStart(sti.nodeIdx, sti.currentMove, alpha, beta, ply, depth/plyScale);
             searchTreeInfo[ply].nodeIdx = idx;
         }
         if (--nodesToGo <= 0) {
@@ -439,7 +441,7 @@ public class Search {
         // Collect statistics
         if (verbose) {
             if (ply < 20) nodesPlyVec[ply]++;
-            if (depth < 20) nodesDepthVec[depth]++;
+            if (depth < 20*plyScale) nodesDepthVec[depth/plyScale]++;
         }
         nodes++;
         totalNodes++;
@@ -479,7 +481,8 @@ public class Search {
             int score = ent.getScore(ply);
             evalScore = ent.evalScore;
             int plyToMate = MATE0 - Math.abs(score);
-            if ((beta == alpha + 1) && ((ent.depth >= depth) || (ent.depth >= plyToMate))) {
+            int eDepth = ent.getDepth();
+            if ((beta == alpha + 1) && ((eDepth >= depth) || (eDepth >= plyToMate*plyScale))) {
                 if (    (ent.type == TTEntry.T_EXACT) ||
                         (ent.type == TTEntry.T_GE) && (score >= beta) ||
                         (ent.type == TTEntry.T_LE) && (score <= alpha)) {
@@ -491,7 +494,7 @@ public class Search {
             ent.getMove(hashMove);
         }
         
-        int posExtend = inCheck ? 1 : 0; // Check extension
+        int posExtend = inCheck ? plyScale : 0; // Check extension
 
         // If out of depth, perform quiescence search
         if (depth + posExtend <= 0) {
@@ -507,14 +510,14 @@ public class Search {
             }
             emptyMove.score = score;
             tt.insert(hKey, emptyMove, type, ply, depth, q0Eval);
-            if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, type, evalScore, hKey);
+            if (log != null) log.logNodeEnd(sti.nodeIdx, score, type, evalScore, hKey);
             return score;
         }
 
         // Try null-move pruning
         // FIXME! Try null-move verification in late endgames. See loss in round 21.
         sti.currentMove = emptyMove;
-        if (    (depth >= 3) && !inCheck && sti.allowNullMove &&
+        if (    (depth >= 3*plyScale) && !inCheck && sti.allowNullMove &&
                 (Math.abs(beta) <= MATE0 / 2)) {
             if (MoveGen.canTakeKing(pos)) {
                 int score = MATE0 - ply;
@@ -528,12 +531,12 @@ public class Search {
                 nullOk = (pos.bMtrl > pos.bMtrlPawns) && (pos.bMtrlPawns > 0);
             }
             if (nullOk) {
-                final int R = (depth > 6) ? 3 : 2;
+                final int R = (depth > 6*plyScale) ? 4*plyScale : 3*plyScale;
                 pos.setWhiteMove(!pos.whiteMove);
                 int epSquare = pos.getEpSquare();
                 pos.setEpSquare(-1);
                 searchTreeInfo[ply+1].allowNullMove = false;
-                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R - 1, -1, false);
+                int score = -negaScout(-beta, -(beta - 1), ply + 1, depth - R, -1, false);
                 searchTreeInfo[ply+1].allowNullMove = true;
                 pos.setEpSquare(epSquare);
                 pos.setWhiteMove(!pos.whiteMove);
@@ -545,7 +548,7 @@ public class Search {
                     if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_GE, evalScore, hKey);
                     return score;
                 } else {
-                    if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5)) {
+                    if ((searchTreeInfo[ply-1].lmr > 0) && (depth < 5*plyScale)) {
                         Move m1 = searchTreeInfo[ply-1].currentMove;
                         Move m2 = searchTreeInfo[ply+1].bestMove; // threat move
                         if (m1.from != m1.to) {
@@ -563,16 +566,34 @@ public class Search {
             }
         }
 
+        // Razoring
+        if ((Math.abs(alpha) <= MATE0 / 2) && (depth < 4*plyScale) && (beta == alpha + 1)) {
+            if (evalScore == UNKNOWN_SCORE) {
+                evalScore = eval.evalPos(pos);
+            }
+            final int razorMargin = 250;
+            if (evalScore < beta - razorMargin) {
+                qNodes--;
+                totalNodes--;
+                q0Eval = evalScore;
+                int score = quiesce(alpha-razorMargin, beta-razorMargin, ply, 0, inCheck);
+                if (score <= alpha-razorMargin) {
+                    if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_LE, evalScore, hKey);
+                    return score;
+                }
+            }
+        }
+
         boolean futilityPrune = false;
         int futilityScore = alpha;
-        if (!inCheck && (depth < 5) && (posExtend == 0)) {
+        if (!inCheck && (depth < 5*plyScale) && (posExtend == 0)) {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
-                if (depth == 1) {
+                if (depth <= plyScale) {
                     margin = 150;
-                } else if (depth == 2) {
+                } else if (depth <= 2*plyScale) {
                     margin = 300;
-                } else if (depth == 3) {
+                } else if (depth <= 3*plyScale) {
                     margin = 450;
                 } else {
                     margin = 600;
@@ -587,10 +608,10 @@ public class Search {
             }
         }
 
-        if ((depth > 4) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
+        if ((depth > 4*plyScale) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
             // No hash move at PV node. Try internal iterative deepening.
             long savedNodeIdx = sti.nodeIdx;
-            negaScout(alpha, beta, ply, (depth > 8) ? (depth - 5) : (depth - 4), -1, inCheck);
+            negaScout(alpha, beta, ply, (depth > 8*plyScale) ? (depth - 5*plyScale) : (depth - 4*plyScale), -1, inCheck);
             sti.nodeIdx = savedNodeIdx;
             ent = tt.probe(hKey);
             if (ent.type != TTEntry.T_EMPTY) {
@@ -658,17 +679,17 @@ public class Search {
                     if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
                     int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
                     if (sVal > tVal - pV / 2)
-                        moveExtend = 1;
+                        moveExtend = plyScale;
                 }
                 if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
                     // Extend if going into pawn endgame
                     int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
                     if (pos.whiteMove) {
                         if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
-                            moveExtend = 1;
+                            moveExtend = plyScale;
                     } else {
                         if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
-                            moveExtend = 1;
+                            moveExtend = plyScale;
                     }
                 }
             }
@@ -687,23 +708,23 @@ public class Search {
             } else {
                 int extend = Math.max(posExtend, moveExtend);
                 int lmr = 0;
-                if ((depth >= 3) && mayReduce && (extend == 0)) {
+                if ((depth >= 3*plyScale) && mayReduce && (extend == 0)) {
                     if (!givesCheck && !passedPawnPush(pos, m)) {
                         lmrCount++;
-                        if ((lmrCount > 3) && (depth > 3)) {
-                            lmr = 2;
+                        if ((lmrCount > 3) && (depth > 3*plyScale)) {
+                            lmr = 2*plyScale;
                         } else {
-                            lmr = 1;
+                            lmr = 1*plyScale;
                         }
                     }
                 }
                 posHashList[posHashListSize++] = pos.zobristHash();
                 pos.makeMove(m, ui);
                 sti.currentMove = m;
-                int newDepth = depth - 1 + extend - lmr;
+                int newDepth = depth - plyScale + extend - lmr;
 /*              int nodes0 = nodes;
                 int qNodes0 = qNodes;
-                if ((ply < 3) && (newDepth > 1)) {
+                if ((ply < 3) && (newDepth > plyScale)) {
                     System.out.printf("%2d %5s %5d %5d %6s %6s ",
                             mi, "-", alpha, beta, "-", "-");
                     for (int i = 0; i < ply; i++)
@@ -747,11 +768,11 @@ public class Search {
             if (alpha >= beta) {
                 if (pos.getPiece(m.to) == Piece.EMPTY) {
                     kt.addKiller(ply, m);
-                    ht.addSuccess(pos, m, depth);
+                    ht.addSuccess(pos, m, depth/plyScale);
                     for (int mi2 = mi - 1; mi2 >= 0; mi2--) {
                         Move m2 = moves[mi2];
                         if (pos.getPiece(m2.to) == Piece.EMPTY)
-                            ht.addFail(pos, m2, depth);
+                            ht.addFail(pos, m2, depth/plyScale);
                     }
                 }
                 tt.insert(hKey, m, TTEntry.T_GE, ply, depth, evalScore);

@@ -31,10 +31,9 @@ public class TranspositionTable {
         long key;               // Zobrist hash key
         private short move;     // from + (to<<6) + (promote<<12)
         private short score;    // Score from search
-        byte depth;             // Search depth
+        private short depthSlot; // Search depth (bit 0-14) and hash slot (bit 15).
         byte generation;        // Increase when OTB position changes
         public byte type;       // exact score, lower bound, upper bound
-        byte hashSlot;          // Which hash function was used for hashing, 0 or 1.
         short evalScore;        // Score from static evaluation 
         // FIXME!!! Test storing both upper and lower bound in each hash entry.
 
@@ -51,8 +50,8 @@ public class TranspositionTable {
             if ((type == T_EXACT) != (other.type == T_EXACT)) {
                 return type == T_EXACT;         // Exact score more valuable than lower/upper bound
             }
-            if (depth != other.depth) {
-                return depth > other.depth;     // Larger depth is more valuable
+            if (getDepth() != other.getDepth()) {
+                return getDepth() > other.getDepth();     // Larger depth is more valuable
             }
             return false;   // Otherwise, pretty much equally valuable
         }
@@ -61,7 +60,7 @@ public class TranspositionTable {
         public final boolean valuable(int currGen) {
             if (generation != currGen)
                 return false;
-            return (type == T_EXACT) || (depth > 3);
+            return (type == T_EXACT) || (getDepth() > 3 * Search.plyScale);
         }
 
         public final void getMove(Move m) {
@@ -93,6 +92,26 @@ public class TranspositionTable {
             }
             this.score = (short)score;
         }
+
+        /** Get depth from the hash entry. */
+        public final int getDepth() {
+            return depthSlot & 0x7fff;
+        }
+
+        /** Set depth. */
+        public final void setDepth(int d) {
+            depthSlot &= 0x8000;
+            depthSlot |= ((short)d) & 0x7fff;
+        }
+
+        final int getHashSlot() {
+            return depthSlot >>> 15;
+        }
+
+        public final void setHashSlot(int s) {
+            depthSlot &= 0x7fff;
+            depthSlot |= (s << 15);
+        }
     }
     TTEntry[] table;
     TTEntry emptySlot;
@@ -105,7 +124,7 @@ public class TranspositionTable {
         for (int i = 0; i < numEntries; i++) {
             TTEntry ent = new TTEntry();
             ent.key = 0;
-            ent.depth = 0;
+            ent.depthSlot = 0;
             ent.type = TTEntry.T_EMPTY;
             table[i] = ent;
         }
@@ -115,6 +134,7 @@ public class TranspositionTable {
     }
 
     public final void insert(long key, Move sm, int type, int ply, int depth, int evalScore) {
+        if (depth < 0) depth = 0;
         int idx0 = h0(key);
         int idx1 = h1(key);
         TTEntry ent = table[idx0];
@@ -129,22 +149,22 @@ public class TranspositionTable {
                 hashSlot = 0;
             }
             if (ent.valuable(generation)) {
-                int altEntIdx = (ent.hashSlot == 0) ? h1(ent.key) : h0(ent.key);
+                int altEntIdx = (ent.getHashSlot() == 0) ? h1(ent.key) : h0(ent.key);
                 if (ent.betterThan(table[altEntIdx], generation)) {
                     TTEntry altEnt = table[altEntIdx];
                     altEnt.key = ent.key;
                     altEnt.move = ent.move;
                     altEnt.score = ent.score;
-                    altEnt.depth = ent.depth;
-                    altEnt.generation = ent.generation;
+                    altEnt.depthSlot = ent.depthSlot;
+                    altEnt.generation = (byte)ent.generation;
                     altEnt.type = ent.type;
-                    altEnt.hashSlot = (byte)(1 - ent.hashSlot);
+                    altEnt.setHashSlot(1 - ent.getHashSlot());
                     altEnt.evalScore = ent.evalScore;
                 }
             }
         }
         boolean doStore = true;
-        if ((ent.key == key) && (ent.depth > depth) && (ent.type == type)) {
+        if ((ent.key == key) && (ent.getDepth() > depth) && (ent.type == type)) {
             if (type == TTEntry.T_EXACT) {
                 doStore = false;
             } else if ((type == TTEntry.T_GE) && (sm.score <= ent.score)) {
@@ -158,10 +178,10 @@ public class TranspositionTable {
                 ent.setMove(sm);
             ent.key = key;
             ent.setScore(sm.score, ply);
-            ent.depth = (byte)depth;
-            ent.generation = generation;
+            ent.setDepth(depth);
+            ent.generation = (byte)generation;
             ent.type = (byte)type;
-            ent.hashSlot = hashSlot;
+            ent.setHashSlot(hashSlot);
             ent.evalScore = (short)evalScore;
         }
     }
@@ -274,7 +294,8 @@ public class TranspositionTable {
         int unused = 0;
         int thisGen = 0;
         List<Integer> depHist = new ArrayList<Integer>();
-        for (int i = 0; i < 20; i++) {
+        final int maxDepth = 20;
+        for (int i = 0; i < maxDepth; i++) {
             depHist.add(0);
         }
         for (TTEntry ent : table) {
@@ -284,13 +305,13 @@ public class TranspositionTable {
                 if (ent.generation == generation) {
                     thisGen++;
                 }
-                if (ent.depth < 20) {
-                    depHist.set(ent.depth, depHist.get(ent.depth) + 1);
+                if (ent.getDepth() < maxDepth) {
+                    depHist.set(ent.getDepth(), depHist.get(ent.getDepth()) + 1);
                 }
             }
         }
         System.out.printf("Hash stats: unused:%d thisGen:%d\n", unused, thisGen);
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < maxDepth; i++) {
             System.out.printf("%2d %d\n", i, depHist.get(i));
         }
     }

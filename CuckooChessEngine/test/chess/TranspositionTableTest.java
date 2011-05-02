@@ -58,10 +58,10 @@ public class TranspositionTableTest {
         ent1.key = 1;
         ent1.setMove(move);
         ent1.setScore(score, ply);
-        ent1.depth = 3;
+        ent1.setDepth(3);
         ent1.generation = 0;
         ent1.type = TranspositionTable.TTEntry.T_EXACT;
-        ent1.hashSlot = 0;
+        ent1.setHashSlot(0);
         Move tmpMove = new Move(0,0,0);
         ent1.getMove(tmpMove);
         assertEquals(move, tmpMove);
@@ -76,10 +76,10 @@ public class TranspositionTableTest {
         move = new Move(8, 0, Piece.BQUEEN);
         ent2.setMove(move);
         ent2.setScore(score, ply);
-        ent2.depth = 99;
+        ent2.setDepth(99);
         ent2.generation = 0;
         ent2.type = TranspositionTable.TTEntry.T_EXACT;
-        ent2.hashSlot = 0;
+        ent2.setHashSlot(0);
         ent2.getMove(tmpMove);
         assertEquals(move, tmpMove);
         assertEquals(score, ent2.getScore(ply));
@@ -94,7 +94,7 @@ public class TranspositionTableTest {
         assertTrue(ent2.betterThan(ent1, 1));  // ent1 has wrong generation
 
         ent2.generation = 0;
-        ent1.depth = ent2.depth = 7;
+        ent1.setDepth(7); ent2.setDepth(7);
         ent1.type = TranspositionTable.TTEntry.T_GE;
         assertTrue(ent2.betterThan(ent1, 0));
         ent2.type = TranspositionTable.TTEntry.T_LE;
@@ -109,10 +109,10 @@ public class TranspositionTableTest {
         move = new Move(8, 0, Piece.BQUEEN);
         ent3.setMove(move);
         ent3.setScore(score, ply);
-        ent3.depth = 99;
+        ent3.setDepth(99);
         ent3.generation = 0;
         ent3.type = TranspositionTable.TTEntry.T_EXACT;
-        ent3.hashSlot = 0;
+        ent3.setHashSlot(0);
         ent3.getMove(tmpMove);
         assertEquals(move, tmpMove);
         assertEquals(score, ent3.getScore(ply));
@@ -152,7 +152,7 @@ public class TranspositionTableTest {
             int ply = i + 1;
             int depth = i * 2 + 5;
             assertEquals(score, ent.getScore(ply));
-            assertEquals(depth, ent.depth);
+            assertEquals(depth, ent.getDepth());
             assertEquals(score * 2 + 3, ent.evalScore);
             Move tmpMove = new Move(0,0,0);
             ent.getMove(tmpMove);

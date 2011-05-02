@@ -54,35 +54,36 @@ public class SearchTest {
 
         Position pos = TextIO.readFEN("3k4/8/3K2R1/8/8/8/8/8 w - - 0 1");
         Search sc = new Search(pos, nullHist, 0, tt);
-        int score = sc.negaScout(-mate0, mate0, 0, 2, -1, MoveGen.inCheck(pos));
+        final int plyScale = Search.plyScale;
+        int score = sc.negaScout(-mate0, mate0, 0, 2*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(mate0 - 2, score);     // depth 2 is enough to find mate in 1
         int score2 = idSearch(sc, 2).score;
         assertEquals(score, score2);
         
         pos = TextIO.readFEN("8/1P6/k7/2K5/8/8/8/8 w - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
-        score = sc.negaScout(-mate0, mate0, 0, 4, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 4*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(mate0 - 4, score);     // depth 4 is enough to find mate in 2
         score2 = idSearch(sc, 4).score;
         assertEquals(score, score2);
         
         pos = TextIO.readFEN("8/5P1k/5K2/8/8/8/8/8 w - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
-        score = sc.negaScout(-mate0, mate0, 0, 5, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 5*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(mate0 - 4, score);     // must avoid stale-mate after f8Q
         score2 = idSearch(sc, 5).score;
         assertEquals(score, score2);
 
         pos = TextIO.readFEN("4k3/8/3K1Q2/8/8/8/8/8 b - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
-        score = sc.negaScout(-mate0, mate0, 0, 2, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 2*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(0, score);             // Position is stale-mate
 
         pos = TextIO.readFEN("3kB3/8/1N1K4/8/8/8/8/8 w - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
-        score = sc.negaScout(-mate0, mate0, 0, 3, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 3*plyScale, -1, MoveGen.inCheck(pos));
         assertTrue(Math.abs(score) < 50);   // Stale-mate trap
-        score2 = idSearch(sc, 3).score;
+        score2 = idSearch(sc, 5).score;
         assertEquals(score, score2);
 
         pos = TextIO.readFEN("8/8/2K5/3QP3/P6P/1q6/8/k7 w - - 31 51");
@@ -106,19 +107,20 @@ public class SearchTest {
         Position pos = TextIO.readFEN("8/1R2k3/R7/8/8/8/8/1K6 b - - 0 1");
         Search sc = new Search(pos, nullHist, 0, tt);
         sc.maxTimeMillis = -1;
-        int score = sc.negaScout(-mate0, mate0, 0, 2, -1, MoveGen.inCheck(pos));
+        final int plyScale = Search.plyScale;
+        int score = sc.negaScout(-mate0, mate0, 0, 2*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(matedInOne, score);
         
         pos = TextIO.readFEN("8/1R2k3/R7/8/8/8/8/1K6 b - - 99 80");
         sc = new Search(pos, nullHist, 0, tt);
         sc.maxTimeMillis = -1;
-        score = sc.negaScout(-mate0, mate0, 0, 2, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 2*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(0, score);     // Draw by 50-move rule
 
         pos = TextIO.readFEN("8/1R2k3/R7/8/8/8/8/1K6 b - - 98 80");
         sc = new Search(pos, nullHist, 0, tt);
         sc.maxTimeMillis = -1;
-        score = sc.negaScout(-mate0, mate0, 0, 2, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 2*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(matedInOne, score);     // No draw
         
         pos = TextIO.readFEN("8/1R2k3/R7/8/8/8/8/1K6 b - - 99 80");
@@ -162,7 +164,8 @@ public class SearchTest {
         Position pos = TextIO.readFEN("7k/5RR1/8/8/8/8/q3q3/2K5 w - - 0 1");
         Search sc = new Search(pos, nullHist, 0, tt);
         sc.maxTimeMillis = -1;
-        int score = sc.negaScout(-mate0, mate0, 0, 3, -1, MoveGen.inCheck(pos));
+        final int plyScale = Search.plyScale;
+        int score = sc.negaScout(-mate0, mate0, 0, 3*plyScale, -1, MoveGen.inCheck(pos));
         assertEquals(0, score);
         
         pos = TextIO.readFEN("7k/5RR1/8/8/8/8/q3q3/2K5 w - - 0 1");
@@ -180,7 +183,7 @@ public class SearchTest {
         pos = TextIO.readFEN("7k/5RR1/8/8/8/8/1q3q2/3K4 w - - 0 1");
         sc = new Search(pos, nullHist, 0, tt);
         sc.maxTimeMillis = -1;
-        score = sc.negaScout(-mate0, mate0, 0, 3, -1, MoveGen.inCheck(pos));
+        score = sc.negaScout(-mate0, mate0, 0, 3*plyScale, -1, MoveGen.inCheck(pos));
         assertTrue(score < 0);
         
         pos = TextIO.readFEN("qn6/qn4k1/pp3R2/5R2/8/8/8/K7 w - - 0 1");
