@@ -879,6 +879,7 @@ public class Search {
             moves = moveGen.pseudoLegalCaptures(pos);
             scoreCaptureList(moves, ply);
         }
+        // FIXME! Try MVV/LVA ordering + SEE>0 pruning
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
         for (int mi = 0; moves[mi] != null; mi++) {
             if (mi < 8) {

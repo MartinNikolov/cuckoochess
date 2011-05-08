@@ -86,7 +86,7 @@ public class CuckooChessEngine implements UCIEngine {
     
     @Override
     public String addStrengthToName() {
-        return String.format(" (%.1f%%)", strength * 0.1);
+        return strength < 1000 ? String.format(" (%.1f%%)", strength * 0.1) : "";
     }
 
     private final void startProcess() {

@@ -517,12 +517,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
     private final void setEngineStrength(String engine, int strength) {
         ctrl.setEngineStrength(engine, strength);
-        boolean isCuckooChess = engine.equals("cuckoochess");
-        if ((strength < 1000) && !isCuckooChess) {
-            Toast.makeText(getApplicationContext(), R.string.strength_ignored,
-                    Toast.LENGTH_LONG).show();
-        }
-        if (isCuckooChess) {
+        if (strength < 1000) {
             titleText.setText(String.format("%s: %d%%", getString(R.string.app_name), strength / 10));
         } else {
             titleText.setText(getString(R.string.app_name));

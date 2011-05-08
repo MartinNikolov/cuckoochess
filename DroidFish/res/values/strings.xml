@@ -269,5 +269,4 @@ you are not actively using the program.\
 	<string name="load_next_game">Load Next Game</string>
 	<string name="no_prev_game">No previous game</string>
 	<string name="no_next_game">No next game</string>
-	<string name="strength_ignored">You must use the CuckooChess engine for reduced playing strength. Strength setting ignored.</string>
 </resources>

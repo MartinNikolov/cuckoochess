@@ -25,6 +25,8 @@ public class NativePipedProcess implements UCIEngine {
 
     private boolean processAlive;
 
+    private int strength = 1000;
+
     NativePipedProcess() {
         processAlive = false;
     }
@@ -40,12 +42,13 @@ public class NativePipedProcess implements UCIEngine {
 
     @Override
     public void setStrength(int strength) {
-        // Engine doesn't support strength setting
+        this.strength = strength;
+        writeLineToEngine(String.format("setoption name Skill Level value %d", strength/50));
     }
 
     @Override
     public String addStrengthToName() {
-        return "";
+        return strength < 1000 ? String.format(" (%.1f%%)", strength * 0.1) : "";
     }
 
     /** Shut down process. */
