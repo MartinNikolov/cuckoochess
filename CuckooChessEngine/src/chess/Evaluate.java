@@ -222,9 +222,13 @@ public class Evaluate {
             kpkTable = new byte[2*32*64*48/8];
             InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
             try {
-                int len = inStream.read(kpkTable);
-                if (len != kpkTable.length)
-                    throw new RuntimeException();
+                int off = 0;
+                while (off < kpkTable.length) {
+                    int len = inStream.read(kpkTable, off, kpkTable.length - off);
+                    if (len < 0)
+                        throw new RuntimeException();
+                    off += len;
+                }
                 inStream.close();
             } catch (IOException e) {
                 throw new RuntimeException();
