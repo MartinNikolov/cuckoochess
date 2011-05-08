@@ -5,11 +5,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := stockfish
 LOCAL_SRC_FILES := \
 	evaluate.cpp  move.cpp      search.cpp \
-	benchmark.cpp    history.cpp   movegen.cpp   tt.cpp \
+	benchmark.cpp    movegen.cpp   tt.cpp \
 	bitbase.cpp      main.cpp      movepick.cpp  uci.cpp \
 	bitboard.cpp     pawns.cpp     ucioption.cpp \
 	book.cpp         material.cpp  position.cpp \
-	endgame.cpp      misc.cpp      san.cpp   timeman.cpp
+	endgame.cpp      misc.cpp      timeman.cpp   thread.cpp
 
 LOCAL_CFLAGS    := -I$(LOCAL_PATH)/../stlport/stlport \
 	 -mandroid \
