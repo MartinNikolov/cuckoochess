@@ -70,7 +70,7 @@ public class SeekBarPreference extends Preference
         bar.setLayoutParams(lp);
 
         LinearLayout layout = new LinearLayout(getContext());
-        layout.setPadding(20, 5, 10, 5);
+        layout.setPadding(25, 5, 25, 5);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.addView(row1);
         layout.addView(bar);
