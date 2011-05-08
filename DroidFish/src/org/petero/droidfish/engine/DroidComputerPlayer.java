@@ -52,7 +52,7 @@ public class DroidComputerPlayer {
         book = new DroidBook();
     }
 
-    private final void startEngine() {
+    private final synchronized void startEngine() {
         boolean useCuckoo = engine.equals("cuckoochess");
         if (uciEngine == null) {
             if (useCuckoo) {
@@ -75,13 +75,14 @@ public class DroidComputerPlayer {
         }
     }
 
-    public final void setEngineStrength(String engine, int strength) {
+    public final synchronized void setEngineStrength(String engine, int strength) {
         if (!engine.equals(this.engine)) {
             shutdownEngine();
             this.engine = engine;
             startEngine();
         }
-        uciEngine.setStrength(strength);
+        if (uciEngine != null)
+            uciEngine.setStrength(strength);
     }
 
     private static int getNumCPUs() {
