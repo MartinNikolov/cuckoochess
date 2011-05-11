@@ -871,15 +871,12 @@ public class Search {
         Move[] moves;
         if (inCheck) {
             moves = moveGen.checkEvasions(pos);
-            scoreMoveList(moves, ply);
         } else if (tryChecks) {
             moves = moveGen.pseudoLegalCapturesAndChecks(pos);
-            scoreMoveList(moves, ply);
         } else {
             moves = moveGen.pseudoLegalCaptures(pos);
-            scoreCaptureList(moves, ply);
         }
-        // FIXME! Try MVV/LVA ordering + SEE>0 pruning
+        scoreMoveListMvvLva(moves);
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
         for (int mi = 0; moves[mi] != null; mi++) {
             if (mi < 8) {
@@ -897,9 +894,6 @@ public class Search {
             if (inCheck) {
                 // Allow all moves
             } else {
-                if (m.score < 0) {
-                    continue;
-                }
                 if ((pos.getPiece(m.to) == Piece.EMPTY) && (m.promoteTo == Piece.EMPTY)) {
                     // Non-capture
                     if (!tryChecks)
@@ -911,6 +905,8 @@ public class Search {
                     if (SEE(m) < 0) // Needed because m.score is not computed for non-captures
                         continue;
                 } else {
+                    if (SEE(m) < 0)
+                        continue;
                     int capt = Evaluate.pieceValue[pos.getPiece(m.to)];
                     int prom = Evaluate.pieceValue[m.promoteTo];
                     int optimisticScore = evalScore + capt + prom + 200;
@@ -1097,7 +1093,16 @@ public class Search {
             m.score = SEE(m);
         }
     }
-    
+
+    private final void scoreMoveListMvvLva(Move[] moves) {
+        for (int i = 0; moves[i] != null; i++) {
+            Move m = moves[i];
+            int v = pos.getPiece(m.to);
+            int a = pos.getPiece(m.from);
+            m.score = Evaluate.pieceValue[v] * 10000 - Evaluate.pieceValue[a];
+        }
+    }
+
     /**
      * Find move with highest score and move it to the front of the list.
      */
