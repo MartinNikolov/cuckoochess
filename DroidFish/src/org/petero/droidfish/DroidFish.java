@@ -135,9 +135,9 @@ public class DroidFish extends Activity implements GUIInterface {
     private MediaPlayer moveSound;
     private boolean animateMoves;
 
-    private final String bookDir = "DroidFish";
-    private final String pgnDir = "DroidFish" + File.separator + "pgn";
-    private final String scidDir = "scid";
+    private final static String bookDir = "DroidFish";
+    private final static String pgnDir = "DroidFish" + File.separator + "pgn";
+    private final static String scidDir = "scid";
     private String currentBookFile = "";
     private PGNOptions pgnOptions = new PGNOptions();
 
@@ -1302,15 +1302,15 @@ public class DroidFish extends Activity implements GUIInterface {
                         List<Move> pvMovesTmp = pvMoves;
                         if (pvMovesTmp != null && (pvMovesTmp.size() > 0)) {
                             String[] tmp = thinkingStr.split(" ");
-                            String preComment = "";
+                            StringBuilder preComment = new StringBuilder();
                             for (int i = 0; i < 2; i++) {
                                 if (i < tmp.length) {
-                                    if (i > 0) preComment += " ";
-                                    preComment += tmp[i];
+                                    if (i > 0) preComment.append(' ');
+                                    preComment.append(tmp[i]);
                                 }
                             }
-                            if (preComment.length() > 0) preComment += ":";
-                            ctrl.addVariation(preComment, pvMovesTmp);
+                            if (preComment.length() > 0) preComment.append(':');
+                            ctrl.addVariation(preComment.toString(), pvMovesTmp);
                         }
                         break;
                     }
@@ -1585,7 +1585,7 @@ public class DroidFish extends Activity implements GUIInterface {
         int nestLevel = 0;
         boolean col0 = true;
         Node currNode = null;
-        final int indentStep = 15;
+        final static int indentStep = 15;
         int currPos = 0, endPos = 0;
         boolean upToDate = false;
         PGNOptions options;

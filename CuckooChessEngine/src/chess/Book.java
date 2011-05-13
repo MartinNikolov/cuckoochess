@@ -71,6 +71,7 @@ public class Book {
                 for (int i = 0; i < len; i++)
                     buf.add(tmpBuf[i]);
             }
+            inStream.close();
             Position startPos = TextIO.readFEN(TextIO.startPosFEN);
             Position pos = new Position(startPos);
             UndoInfo ui = new UndoInfo();
@@ -207,6 +208,7 @@ public class Book {
                 }
 //              System.out.printf("no:%d line:%s%n", lnr.getLineNumber(), line);
             }
+            lnr.close();
         } catch (ChessParseError ex) {
             throw new RuntimeException();
         } catch (IOException ex) {

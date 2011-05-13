@@ -103,4 +103,9 @@ public class GameMode {
             return false;
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }

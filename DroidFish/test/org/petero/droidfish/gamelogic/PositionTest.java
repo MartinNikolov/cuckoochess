@@ -198,7 +198,6 @@ public class PositionTest {
         assertEquals(-1, pos.getEpSquare());
         pos.unMakeMove(move, ui);
         assertTrue(pos.equals(origPos2));
-        pos = origPos;
     }
     
     /**

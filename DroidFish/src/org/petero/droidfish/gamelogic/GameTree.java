@@ -1082,11 +1082,11 @@ public class GameTree {
                 boolean nullSkip = moveStr.equals("--") && (playerAction.length() > 0) && !options.exp.playerAction;
                 if (!nullSkip) {
                     if (mn.wtm) {
-                        out.processToken(this, PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+                        out.processToken(this, PgnToken.INTEGER, Integer.valueOf(mn.moveNo).toString());
                         out.processToken(this, PgnToken.PERIOD, null);
                     } else {
                         if (needMoveNr) {
-                            out.processToken(this, PgnToken.INTEGER, new Integer(mn.moveNo).toString());
+                            out.processToken(this, PgnToken.INTEGER, Integer.valueOf(mn.moveNo).toString());
                             for (int i = 0; i < 3; i++)
                                 out.processToken(this, PgnToken.PERIOD, null);
                         }
@@ -1100,7 +1100,7 @@ public class GameTree {
                 }
             }
             if ((nag > 0) && options.exp.nag) {
-                out.processToken(this, PgnToken.NAG, new Integer(nag).toString());
+                out.processToken(this, PgnToken.NAG, Integer.valueOf(nag).toString());
                 if (options.exp.moveNrAfterNag)
                     needMoveNr = true;
             }
@@ -1218,7 +1218,7 @@ public class GameTree {
                         else if (ann.equals("!?")) nag = 5;
                         else if (ann.equals("?!")) nag = 6;
                         if (nag > 0)
-                            scanner.putBack(new PgnToken(PgnToken.NAG, new Integer(nag).toString()));
+                            scanner.putBack(new PgnToken(PgnToken.NAG, Integer.valueOf(nag).toString()));
                     }
                     if (tok.token.length() > 0) {
                         if (moveAdded) {

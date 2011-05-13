@@ -112,7 +112,7 @@ public class PGNFile {
             f.close();
         }
 
-        private final int EOF = -1024;
+        private final static int EOF = -1024;
 
         final String readLine() throws IOException {
             // First handle the common case where the next line is entirely 

@@ -219,16 +219,17 @@ public class Evaluate {
     /** Constructor. */
     public Evaluate() {
         if (kpkTable == null) {
-            kpkTable = new byte[2*32*64*48/8];
+            byte[] table = new byte[2*32*64*48/8];
             InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
             try {
                 int off = 0;
-                while (off < kpkTable.length) {
-                    int len = inStream.read(kpkTable, off, kpkTable.length - off);
+                while (off < table.length) {
+                    int len = inStream.read(table, off, table.length - off);
                     if (len < 0)
                         throw new RuntimeException();
                     off += len;
                 }
+                kpkTable = table;
                 inStream.close();
             } catch (IOException e) {
                 throw new RuntimeException();

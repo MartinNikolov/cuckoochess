@@ -86,6 +86,7 @@ public class DroidComputerPlayer {
     }
 
     private static int getNumCPUs() {
+        // FIXME! Try sysconf(_SC_NPROCESSORS_ONLN) before parsing /proc/stat, 
         try {
             FileReader fr = new FileReader("/proc/stat");
             BufferedReader inBuf = new BufferedReader(fr);

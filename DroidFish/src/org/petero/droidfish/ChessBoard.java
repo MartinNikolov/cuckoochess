@@ -360,7 +360,7 @@ public class ChessBoard extends View {
         sqSize = Math.min(getSqSizeW(width), getSqSizeH(height));
         blackPiecePaint.setTextSize(sqSize);
         whitePiecePaint.setTextSize(sqSize);
-        labelPaint.setTextSize(sqSize/4);
+        labelPaint.setTextSize(sqSize/4.0f);
         computeOrigin(width, height);
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
@@ -504,7 +504,7 @@ public class ChessBoard extends View {
 
     private void drawLabel(Canvas canvas, int xCrd, int yCrd, boolean right,
                            boolean bottom, char c) {
-        String s = new String();
+        String s = "";
         s += c;
         if (labelBounds == null) {
             labelBounds = new Rect();

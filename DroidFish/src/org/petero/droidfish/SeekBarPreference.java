@@ -16,8 +16,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class SeekBarPreference extends Preference 
                                implements OnSeekBarChangeListener {
-    private final int maxValue = 1000;
-    private final int DEFAULT_STRENGTH = 1000;
+    private final static int maxValue = 1000;
+    private final static int DEFAULT_STRENGTH = 1000;
     private int currVal = DEFAULT_STRENGTH;
     private TextView currValBox;
 

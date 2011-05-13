@@ -109,7 +109,7 @@ public class Search {
         }
     }
 
-    class StopSearch extends Exception {
+    static class StopSearch extends Exception {
         private static final long serialVersionUID = -5546906604987117015L;
         public StopSearch() {
         }
@@ -1087,13 +1087,6 @@ public class Search {
             m.score = score;
         }
     }
-    final void scoreCaptureList(Move[] moves, int ply) {
-        for (int i = 0; moves[i] != null; i++) {
-            Move m = moves[i];
-            m.score = SEE(m);
-        }
-    }
-
     private final void scoreMoveListMvvLva(Move[] moves) {
         for (int i = 0; moves[i] != null; i++) {
             Move m = moves[i];

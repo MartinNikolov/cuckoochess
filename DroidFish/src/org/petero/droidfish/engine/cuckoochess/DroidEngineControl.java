@@ -196,7 +196,7 @@ public class DroidEngineControl {
             final int margin = Math.min(1000, time * 9 / 10);
             int timeLimit = (time + inc * (moves - 1) - margin) / moves;
             minTimeLimit = (int)(timeLimit * 0.85);
-            maxTimeLimit = (int)(minTimeLimit * (Math.max(2.5, Math.min(4.0, moves / 2))));
+            maxTimeLimit = (int)(minTimeLimit * (Math.max(2.5, Math.min(4.0, moves / 2.0))));
 
             // Leave at least 1s on the clock, but can't use negative time
             minTimeLimit = clamp(minTimeLimit, 1, time - margin);

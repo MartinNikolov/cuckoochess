@@ -27,7 +27,7 @@ import java.util.List;
  * @author petero
  */
 public class TextIO {
-    static public final String startPosFEN = new String("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    static public final String startPosFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     /** Parse a FEN string and return a chess Position object. */
     public static final Position readFEN(String fen) throws ChessParseError {

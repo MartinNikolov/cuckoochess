@@ -569,7 +569,7 @@ public class DroidChessController {
     }
 
     final private void updateGUI() {
-        String str = new Integer(game.currPos().fullMoveCounter).toString();
+        String str = Integer.valueOf(game.currPos().fullMoveCounter).toString();
         str += game.currPos().whiteMove ? ". White's move" : "... Black's move";
         if (computerThread != null) str += " (thinking)";
         if (analysisThread != null) str += " (analyzing)";

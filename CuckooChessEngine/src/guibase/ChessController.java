@@ -64,8 +64,6 @@ public class ChessController {
 
         int pvDepth = 0;
         int pvScore = 0;
-        int pvTime = 0;
-        int pvNodes = 0;
         boolean pvIsMate = false;
         boolean pvUpperBound = false;
         boolean pvLowerBound = false;
@@ -112,8 +110,8 @@ public class ChessController {
                 boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             pvDepth = depth;
             pvScore = score;
-            pvTime = currTime = time;
-            pvNodes = currNodes = nodes;
+            currTime = time;
+            currNodes = nodes;
             currNps = nps;
             pvIsMate = isMate;
             pvUpperBound = upperBound;
@@ -485,7 +483,7 @@ public class ChessController {
     }
     
     public final void setThinkingPV() {
-        String str = new String();
+        String str = "";
         if (gui.showThinking()) {
             str = thinkingPV;
         }

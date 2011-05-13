@@ -94,23 +94,21 @@ public class UCIProtocol {
                 os.printf("readyok%n");
             } else if (cmd.equals("setoption")) {
                 initEngine(os);
-                String optionName = "";
-                String optionValue = "";
+                StringBuilder optionName = new StringBuilder();
+                StringBuilder optionValue = new StringBuilder();
                 if (tokens[1].endsWith("name")) {
                     int idx = 2;
                     while ((idx < tokens.length) && !tokens[idx].equals("value")) {
-                        optionName += tokens[idx++].toLowerCase();
-                        optionName += " ";
+                        optionName.append(tokens[idx++].toLowerCase());
+                        optionName.append(' ');
                     }
-                    optionName = optionName.trim();
                     if ((idx < tokens.length) && tokens[idx++].equals("value")) {
                         while ((idx < tokens.length)) {
-                            optionValue += tokens[idx++].toLowerCase();
-                            optionValue += " ";
+                            optionValue.append(tokens[idx++].toLowerCase());
+                            optionValue.append(' ');
                         }
-                        optionValue = optionValue.trim();
                     }
-                    engine.setOption(optionName, optionValue);
+                    engine.setOption(optionName.toString().trim(), optionValue.toString().trim());
                 }
             } else if (cmd.equals("ucinewgame")) {
                 if (engine != null) {
@@ -124,12 +122,12 @@ public class UCIProtocol {
                     fen = TextIO.startPosFEN;
                 } else if (tokens[idx].equals("fen")) {
                     idx++;
-                    fen = "";
+                    StringBuilder sb = new StringBuilder();
                     while ((idx < tokens.length) && !tokens[idx].equals("moves")) {
-                        fen += tokens[idx++];
-                        fen += " ";
+                        sb.append(tokens[idx++]);
+                        sb.append(' ');
                     }
-                    fen = fen.trim();
+                    fen = sb.toString().trim();
                 }
                 if (fen != null) {
                     pos = TextIO.readFEN(fen);

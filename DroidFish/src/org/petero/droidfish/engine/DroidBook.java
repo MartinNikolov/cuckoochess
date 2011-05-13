@@ -47,7 +47,7 @@ import chess.Piece;
  * Implements an opening book.
  * @author petero
  */
-public class DroidBook {
+public final class DroidBook {
     static class BookEntry {
         Move move;
         int count;
@@ -101,6 +101,7 @@ public class DroidBook {
                 for (int i = 0; i < len; i++)
                     buf.add(tmpBuf[i]);
             }
+            inStream.close();
             Position startPos = TextIO.readFEN(TextIO.startPosFEN);
             Position pos = new Position(startPos);
             UndoInfo ui = new UndoInfo();
@@ -257,6 +258,7 @@ public class DroidBook {
                 }
 //              System.out.printf("no:%d line:%s%n", lnr.getLineNumber(), line);
             }
+            lnr.close();
         } catch (ChessParseError ex) {
             throw new RuntimeException();
         } catch (IOException ex) {

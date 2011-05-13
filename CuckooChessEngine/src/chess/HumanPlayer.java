@@ -43,6 +43,8 @@ public class HumanPlayer implements Player {
             String color = pos.whiteMove ? "white" : "black";
             System.out.print(String.format("Enter move (%s):", color));
             String moveStr = in.readLine();
+            if (moveStr == null)
+                return "quit";
             if (moveStr.length() == 0) {
                 return lastCmd;
             } else {

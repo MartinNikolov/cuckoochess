@@ -56,7 +56,7 @@ public class ColorTheme {
     };
     private static final String prefPrefix = "color_";
 
-    private final int defaultTheme = 2;
+    private final static int defaultTheme = 2;
     final static String[] themeNames = { "Original", "XBoard", "Blue", "Grey" };
     private final static String themeColors[][] = {
     { 

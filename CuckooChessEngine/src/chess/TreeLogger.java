@@ -310,6 +310,8 @@ public final class TreeLogger {
             doPrint = true;
             System.out.printf("Command:");
             String cmdStr = in.readLine();
+            if (cmdStr == null)
+                return;
             if (cmdStr.length() == 0)
                 cmdStr = prevStr;
             if (cmdStr.startsWith("q")) {
