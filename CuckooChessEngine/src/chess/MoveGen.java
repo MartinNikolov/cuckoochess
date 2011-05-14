@@ -78,14 +78,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A1_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -155,14 +155,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A8_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -191,7 +191,7 @@ public class MoveGen {
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
             if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, true)) < 0) return moveList;
         }
-
+        returnMove(moveList[nMoves]); moveList[nMoves] = null;
         return moveList;
     }
 
@@ -350,6 +350,7 @@ public class MoveGen {
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & ((pos.whiteBB & validTargets) | epMask);
             if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, true)) < 0) return moveList;
         }
+        returnMove(moveList[nMoves]); moveList[nMoves] = null;
 
         /* Extra debug checks
         {
@@ -432,14 +433,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A1_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.WROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -538,14 +539,14 @@ public class MoveGen {
                         (pos.getPiece(k0 + 3) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 + 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 + 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 + 2, Piece.EMPTY);
                     }
                     if (((pos.getCastleMask() & (1 << Position.A8_CASTLE)) != 0) &&
                         ((OOO_SQ & (pos.whiteBB | pos.blackBB)) == 0) &&
                         (pos.getPiece(k0 - 4) == Piece.BROOK) &&
                         !sqAttacked(pos, k0) &&
                         !sqAttacked(pos, k0 - 1)) {
-                        moveList[nMoves++] = getMoveObj(k0, k0 - 2, Piece.EMPTY);
+                        setMove(moveList, nMoves++, k0, k0 - 2, Piece.EMPTY);
                     }
                 }
             }
@@ -585,6 +586,7 @@ public class MoveGen {
             m = ((m & BitBoard.maskRow6) >>> 8) & ~(pos.whiteBB | pos.blackBB);
             nMoves = addPawnDoubleMovesByMask(moveList, nMoves, pos, m & BitBoard.wPawnAttacks[wKingSq], 16);
         }
+        returnMove(moveList[nMoves]); moveList[nMoves] = null;
 
         return moveList;
     }
@@ -702,6 +704,7 @@ public class MoveGen {
             m = (pawns >>> 7) & BitBoard.maskBToHFiles & (pos.whiteBB | epMask);
             if ((nMoves = addPawnMovesByMask(moveList, nMoves, pos, m, 7, false)) < 0) return moveList;
         }
+        returnMove(moveList[nMoves]); moveList[nMoves] = null;
         return moveList;
     }
 
@@ -953,9 +956,8 @@ public class MoveGen {
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
-            returnMoveList(moveList);
-            moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-            moveList[0] = getMoveObj(sq + delta, sq, Piece.EMPTY);
+            setMove(moveList, 0, sq + delta, sq, Piece.EMPTY);
+            returnMove(moveList[1]); moveList[1] = null;
             return -1;
         }
         long promMask = mask & BitBoard.maskRow1Row8;
@@ -964,25 +966,25 @@ public class MoveGen {
             int sq = BitBoard.numberOfTrailingZeros(promMask);
             int sq0 = sq + delta;
             if (sq >= 56) { // White promotion
-                moveList[length++] = getMoveObj(sq0, sq, Piece.WQUEEN);
-                moveList[length++] = getMoveObj(sq0, sq, Piece.WKNIGHT);
+                setMove(moveList, length++, sq0, sq, Piece.WQUEEN);
+                setMove(moveList, length++, sq0, sq, Piece.WKNIGHT);
                 if (allPromotions) {
-                    moveList[length++] = getMoveObj(sq0, sq, Piece.WROOK);
-                    moveList[length++] = getMoveObj(sq0, sq, Piece.WBISHOP);
+                    setMove(moveList, length++, sq0, sq, Piece.WROOK);
+                    setMove(moveList, length++, sq0, sq, Piece.WBISHOP);
                 }
             } else { // Black promotion
-                moveList[length++] = getMoveObj(sq0, sq, Piece.BQUEEN);
-                moveList[length++] = getMoveObj(sq0, sq, Piece.BKNIGHT);
+                setMove(moveList, length++, sq0, sq, Piece.BQUEEN);
+                setMove(moveList, length++, sq0, sq, Piece.BKNIGHT);
                 if (allPromotions) {
-                    moveList[length++] = getMoveObj(sq0, sq, Piece.BROOK);
-                    moveList[length++] = getMoveObj(sq0, sq, Piece.BBISHOP);
+                    setMove(moveList, length++, sq0, sq, Piece.BROOK);
+                    setMove(moveList, length++, sq0, sq, Piece.BBISHOP);
                 }
             }
             promMask &= (promMask - 1);
         }
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList[length++] = getMoveObj(sq + delta, sq, Piece.EMPTY);
+            setMove(moveList, length++, sq + delta, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
         return length;
@@ -992,7 +994,7 @@ public class MoveGen {
                                                 long mask, int delta) {
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList[length++] = getMoveObj(sq + delta, sq, Piece.EMPTY);
+            setMove(moveList, length++, sq + delta, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
         return length;
@@ -1002,14 +1004,13 @@ public class MoveGen {
         long oKingMask = pos.pieceTypeBB[pos.whiteMove ? Piece.BKING : Piece.WKING];
         if ((mask & oKingMask) != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask & oKingMask);
-            returnMoveList(moveList);
-            moveList = getMoveListObj(); // Ugly! this only works because we get back the same object
-            moveList[0] = getMoveObj(sq0, sq, Piece.EMPTY);
+            setMove(moveList, 0, sq0, sq, Piece.EMPTY);
+            returnMove(moveList[1]); moveList[1] = null;
             return -1;
         }
         while (mask != 0) {
             int sq = BitBoard.numberOfTrailingZeros(mask);
-            moveList[length++] = getMoveObj(sq0, sq, Piece.EMPTY);
+            setMove(moveList, length++, sq0, sq, Piece.EMPTY);
             mask &= (mask - 1);
         }
         return length;
@@ -1022,16 +1023,22 @@ public class MoveGen {
     private Object[] moveListCache = new Object[200];
     private int moveListsInCache = 0;
     
-    private final Move getMoveObj(int from, int to, int promoteTo) {
-        if (movesInCache > 0) {
-            Move m = moveCache[--movesInCache];
-            m.from = from;
-            m.to = to;
-            m.promoteTo = promoteTo;
-            m.score = 0;
-            return m;
+    private final void setMove(Move[] moveList, int idx, int from, int to, int promoteTo) {
+        Move m = moveList[idx];
+        if (m == null) {
+            if (movesInCache > 0) {
+                m = moveCache[--movesInCache];
+                moveList[idx] = m;
+            } else {
+                m = new Move(from, to, promoteTo);
+                moveList[idx] = m;
+                return;
+            }
         }
-        return new Move(from, to, promoteTo);
+        m.from = from;
+        m.to = to;
+        m.promoteTo = promoteTo;
+        m.score = 0;
     }
 
     private static final int MAX_MOVES = 256;
@@ -1045,19 +1052,16 @@ public class MoveGen {
 
     /** Return all move objects in moveList to the move cache. */
     public final void returnMoveList(Move[] moveList) {
-        for (int mi = 0; moveList[mi] != null; mi++) {
-            if (movesInCache < moveCache.length)
-                moveCache[movesInCache++] = moveList[mi];
-            moveList[mi] = null;
-        }
         if (moveListsInCache < moveListCache.length) {
             moveListCache[moveListsInCache++] = moveList;
         }
     }
 
-    public final void returnMove(Move m) {
-        if (movesInCache < moveCache.length) {
-            moveCache[movesInCache++] = m;
+    private final void returnMove(Move m) {
+        if (m != null) {
+            if (movesInCache < moveCache.length) {
+                moveCache[movesInCache++] = m;
+            }
         }
     }
 }

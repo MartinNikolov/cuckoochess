@@ -458,53 +458,58 @@ public class Evaluate {
         score -= interpolate(pos.wMtrl - pos.wMtrlPawns, 0, 2 * phd.passedBonusB, hiMtrl, phd.passedBonusB);
 
         // Passed pawns are more dangerous if enemy king is far away
-        int mtrlNoPawns = pos.bMtrl - pos.bMtrlPawns;
+        int mtrlNoPawns;
         final int highMtrl = qV + rV;
-        if (mtrlNoPawns < highMtrl) {
-            int kingPos = pos.getKingSq(false);
-            int kingX = Position.getX(kingPos);
-            int kingY = Position.getY(kingPos);
-            long m = phd.passedPawnsW;
-            while (m != 0) {
-                int sq = BitBoard.numberOfTrailingZeros(m);
-                int x = Position.getX(sq);
-                int y = Position.getY(sq);
-                int pawnDist = Math.min(5, 7 - y);
-                int kingDistX = Math.abs(kingX - x);
-                int kingDistY = Math.abs(kingY - 7);
-                int kingDist = Math.max(kingDistX, kingDistY);
-                int kScore = kingDist * 4;
-                if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
-                score += interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
-                if (!pos.whiteMove)
-                    kingDist--;
-                if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
-                    score += 500; // King can't stop pawn
-                m &= m-1;
+        long m = phd.passedPawnsW;
+        if (m != 0) {
+            mtrlNoPawns = pos.bMtrl - pos.bMtrlPawns;
+            if (mtrlNoPawns < highMtrl) {
+                int kingPos = pos.getKingSq(false);
+                int kingX = Position.getX(kingPos);
+                int kingY = Position.getY(kingPos);
+                while (m != 0) {
+                    int sq = BitBoard.numberOfTrailingZeros(m);
+                    int x = Position.getX(sq);
+                    int y = Position.getY(sq);
+                    int pawnDist = Math.min(5, 7 - y);
+                    int kingDistX = Math.abs(kingX - x);
+                    int kingDistY = Math.abs(kingY - 7);
+                    int kingDist = Math.max(kingDistX, kingDistY);
+                    int kScore = kingDist * 4;
+                    if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
+                    score += interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
+                    if (!pos.whiteMove)
+                        kingDist--;
+                    if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
+                        score += 500; // King can't stop pawn
+                    m &= m-1;
+                }
             }
         }
-        mtrlNoPawns = pos.wMtrl - pos.wMtrlPawns;
-        if (mtrlNoPawns < highMtrl) {
-            int kingPos = pos.getKingSq(true);
-            int kingX = Position.getX(kingPos);
-            int kingY = Position.getY(kingPos);
-            long m = phd.passedPawnsB;
-            while (m != 0) {
-                int sq = BitBoard.numberOfTrailingZeros(m);
-                int x = Position.getX(sq);
-                int y = Position.getY(sq);
-                int pawnDist = Math.min(5, y);
-                int kingDistX = Math.abs(kingX - x);
-                int kingDistY = Math.abs(kingY - 0);
-                int kingDist = Math.max(kingDistX, kingDistY);
-                int kScore = kingDist * 4;
-                if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
-                score -= interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
-                if (pos.whiteMove)
-                    kingDist--;
-                if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
-                    score -= 500; // King can't stop pawn
-                m &= m-1;
+        m = phd.passedPawnsB;
+        if (m != 0) {
+            mtrlNoPawns = pos.wMtrl - pos.wMtrlPawns;
+            if (mtrlNoPawns < highMtrl) {
+                int kingPos = pos.getKingSq(true);
+                int kingX = Position.getX(kingPos);
+                int kingY = Position.getY(kingPos);
+                while (m != 0) {
+                    int sq = BitBoard.numberOfTrailingZeros(m);
+                    int x = Position.getX(sq);
+                    int y = Position.getY(sq);
+                    int pawnDist = Math.min(5, y);
+                    int kingDistX = Math.abs(kingX - x);
+                    int kingDistY = Math.abs(kingY - 0);
+                    int kingDist = Math.max(kingDistX, kingDistY);
+                    int kScore = kingDist * 4;
+                    if (kingDist > pawnDist) kScore += (kingDist - pawnDist) * (kingDist - pawnDist);
+                    score -= interpolate(mtrlNoPawns, 0, kScore, highMtrl, 0);
+                    if (pos.whiteMove)
+                        kingDist--;
+                    if ((pawnDist < kingDist) && (mtrlNoPawns == 0))
+                        score -= 500; // King can't stop pawn
+                    m &= m-1;
+                }
             }
         }
 
