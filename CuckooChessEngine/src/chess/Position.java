@@ -37,7 +37,7 @@ public class Position {
     public long whiteBB, blackBB;
     
     // Piece square table scores
-    public short[]  psScore1, psScore2;
+    public short[] psScore1, psScore2;
 
     public boolean whiteMove;
 

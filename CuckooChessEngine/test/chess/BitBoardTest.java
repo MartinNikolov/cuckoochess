@@ -72,7 +72,7 @@ public class BitBoardTest {
         // Tests that the set of nonzero elements is correct
         for (int sq1 = 0; sq1 < 64; sq1++) {
             for (int sq2 = 0; sq2 < 64; sq2++) {
-                int d = MoveGen.getDirection(sq1, sq2);
+                int d = BitBoard.getDirection(sq1, sq2);
                 if (d == 0) {
                     assertEquals(0, BitBoard.squaresBetween[sq1][sq2]);
                 } else {
@@ -84,7 +84,7 @@ public class BitBoardTest {
                         if ((Math.abs(dx) > 1) || (Math.abs(dy) > 1)) {
                             assertTrue(BitBoard.squaresBetween[sq1][sq2] != 0);
                         } else {
-                            assertTrue(BitBoard.squaresBetween[sq1][sq2] == 0);
+                            assertEquals(0, BitBoard.squaresBetween[sq1][sq2]);
                         }
                     }
                 }
@@ -95,8 +95,39 @@ public class BitBoardTest {
         assertEquals(0x000000001C000000L, BitBoard.squaresBetween[TextIO.getSquare("b4")][TextIO.getSquare("f4")]);
     }
 
+    /**
+     * If there is a piece type that can move from "from" to "to", return the
+     * corresponding direction, 8*dy+dx.
+     */
+    private static final int computeDirection(int from, int to) {
+        int dx = Position.getX(to) - Position.getX(from);
+        int dy = Position.getY(to) - Position.getY(from);
+        if (dx == 0) {                   // Vertical rook direction
+            if (dy == 0) return 0;
+            return (dy > 0) ? 8 : -8;
+        }
+        if (dy == 0)                    // Horizontal rook direction
+            return (dx > 0) ? 1 : -1;
+        if (Math.abs(dx) == Math.abs(dy)) // Bishop direction
+            return ((dy > 0) ? 8 : -8) + (dx > 0 ? 1 : -1);
+        if (Math.abs(dx * dy) == 2)     // Knight direction
+            return dy * 8 + dx;
+        return 0;
+    }
+
+    @Test
+    public void testGetDirection() {
+        System.out.println("getDirection");
+        for (int from = 0; from < 64; from++) {
+            for (int to = 0; to < 64; to++) {
+                assertEquals(computeDirection(from, to), BitBoard.getDirection(from, to));
+            }
+        }
+    }
+
     @Test
     public void testTrailingZeros() {
+        System.out.println("trailingZeros");
         for (int i = 0; i < 64; i++) {
             long mask = 1L << i;
             assertEquals(i, BitBoard.numberOfTrailingZeros(mask));

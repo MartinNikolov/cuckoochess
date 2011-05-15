@@ -21,12 +21,12 @@ package chess;
 public class BitBoard {
 
     /** Squares attacked by a king on a given square. */
-    public static long[] kingAttacks;
-    public static long[] knightAttacks;
-    public static long[] wPawnAttacks, bPawnAttacks;
+    public static final long[] kingAttacks;
+    public static final long[] knightAttacks;
+    public static final long[] wPawnAttacks, bPawnAttacks;
 
     // Squares preventing a pawn from being a passed pawn, if occupied by enemy pawn
-    static long[] wPawnBlockerMask, bPawnBlockerMask;
+    static final long[] wPawnBlockerMask, bPawnBlockerMask;
 
     public static final long maskAToGFiles = 0x7F7F7F7F7F7F7F7FL;
     public static final long maskBToHFiles = 0xFEFEFEFEFEFEFEFEL;
@@ -113,8 +113,8 @@ public class BitBoard {
         }
     }
 
-    private static long[][] rTables;
-    private static long[] rMasks;
+    private final static long[][] rTables;
+    private final static long[] rMasks;
     private final static int[] rBits = { 12, 11, 11, 11, 11, 11, 11, 12,
                                          11, 10, 10, 10, 10, 10, 10, 11,
                                          11, 10, 10, 10, 10, 10, 10, 11,
@@ -141,8 +141,8 @@ public class BitBoard {
         0xebffffb9ff9fc526L, 0x61fffeddfeedaeaeL, 0x53bfffedffdeb1a2L, 0x127fffb9ffdfb5f6L,
         0x411fffddffdbf4d6L, 0x0005000208040001L, 0x264038060100d004L, 0x7645fffecbfea79eL,
     };
-    private static long[][] bTables;
-    private static long[] bMasks;
+    private final static long[][] bTables;
+    private final static long[] bMasks;
     private final static int[] bBits = { 5, 4, 5, 5, 5, 5, 4, 5,
                                          4, 4, 5, 5, 5, 5, 4, 4,
                                          4, 4, 7, 7, 7, 7, 4, 4,
@@ -278,7 +278,7 @@ public class BitBoard {
         return rTables[sq][(int)(((occupied & rMasks[sq]) * rMagics[sq]) >>> (64 - rBits[sq]))];
     }
     
-    static long[][] squaresBetween;
+    static final long[][] squaresBetween;
     static {
         squaresBetween = new long[64][];
         for (int sq1 = 0; sq1 < 64; sq1++) {
@@ -303,6 +303,29 @@ public class BitBoard {
                 }
             }
         }
+    }
+
+    private static final byte dirTable[] = {
+            -9,   0,   0,   0,   0,   0,   0,  -8,   0,   0,   0,   0,   0,   0,  -7,
+        0,   0,  -9,   0,   0,   0,   0,   0,  -8,   0,   0,   0,   0,   0,  -7,   0,
+        0,   0,   0,  -9,   0,   0,   0,   0,  -8,   0,   0,   0,   0,  -7,   0,   0,
+        0,   0,   0,   0,  -9,   0,   0,   0,  -8,   0,   0,   0,  -7,   0,   0,   0,
+        0,   0,   0,   0,   0,  -9,   0,   0,  -8,   0,   0,  -7,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,  -9, -17,  -8, -15,  -7,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0, -10,  -9,  -8,  -7,  -6,   0,   0,   0,   0,   0,
+        0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   1,   1,   1,   1,   1,   1,   1,
+        0,   0,   0,   0,   0,   0,   6,   7,   8,   9,  10,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,   7,  15,   8,  17,   9,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   7,   0,   0,   8,   0,   0,   9,   0,   0,   0,   0,
+        0,   0,   0,   0,   7,   0,   0,   0,   8,   0,   0,   0,   9,   0,   0,   0,
+        0,   0,   0,   7,   0,   0,   0,   0,   8,   0,   0,   0,   0,   9,   0,   0,
+        0,   0,   7,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0,   9,   0,
+        0,   7,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0,   0,   9
+    };
+
+    static final int getDirection(int from, int to) {
+        int offs = to + (to|7) - from - (from|7) + 0x77;
+        return dirTable[offs];
     }
 
     public static final long southFill(long mask) {

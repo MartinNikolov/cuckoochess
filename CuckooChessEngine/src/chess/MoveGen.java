@@ -717,24 +717,6 @@ public class MoveGen {
     }
 
     /**
-     * If there is a piece type that can move from "from" to "to", return the
-     * corresponding direction, 8*dy+dx.
-     */
-    static final int getDirection(int from, int to) {
-        int dx = Position.getX(to) - Position.getX(from);
-        int dy = Position.getY(to) - Position.getY(from);
-        if (dx == 0)                    // Vertical rook direction
-            return (dy > 0) ? 8 : -8;
-        if (dy == 0)                    // Horizontal rook direction
-            return (dx > 0) ? 1 : -1;
-        if (Math.abs(dx) == Math.abs(dy)) // Bishop direction
-            return ((dy > 0) ? 8 : -8) + (dx > 0 ? 1 : -1);
-        if (Math.abs(dx * dy) == 2)     // Knight direction
-            return dy * 8 + dx;
-        return 0;
-    }
-
-    /**
      * Return the next piece in a given direction, starting from sq.
      */
     private static final int nextPiece(Position pos, int sq, int delta) {
@@ -781,7 +763,7 @@ public class MoveGen {
         int oKingSq = pos.getKingSq(!wtm);
         int oKing = wtm ? Piece.BKING : Piece.WKING;
         int p = Piece.makeWhite(m.promoteTo == Piece.EMPTY ? pos.getPiece(m.from) : m.promoteTo);
-        int d1 = MoveGen.getDirection(m.to, oKingSq);
+        int d1 = BitBoard.getDirection(m.to, oKingSq);
         switch (d1) {
         case 8: case -8: case 1: case -1: // Rook direction
             if ((p == Piece.WQUEEN) || (p == Piece.WROOK))
@@ -803,7 +785,7 @@ public class MoveGen {
                     return true;
             }
         }
-        int d2 = MoveGen.getDirection(m.from, oKingSq);
+        int d2 = BitBoard.getDirection(m.from, oKingSq);
         if ((d2 != 0) && (d2 != d1) && (MoveGen.nextPiece(pos, m.from, d2) == oKing)) {
             int p2 = MoveGen.nextPieceSafe(pos, m.from, -d2);
             switch (d2) {
@@ -851,7 +833,7 @@ public class MoveGen {
                 int dx = Position.getX(m.to) - Position.getX(m.from);
                 if (dx != 0) { // en passant
                     int epSq = m.from + dx;
-                    int d3 = MoveGen.getDirection(epSq, oKingSq);
+                    int d3 = BitBoard.getDirection(epSq, oKingSq);
                     switch (d3) {
                     case 9: case 7: case -9: case -7:
                         if (MoveGen.nextPiece(pos, epSq, d3) == oKing) {
