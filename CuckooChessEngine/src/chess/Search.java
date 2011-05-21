@@ -902,10 +902,10 @@ public class Search {
                     givesCheckComputed = true;
                     if (!givesCheck)
                         continue;
-                    if (SEE(m) < 0) // Needed because m.score is not computed for non-captures
+                    if (negSEE(m)) // Needed because m.score is not computed for non-captures
                         continue;
                 } else {
-                    if (SEE(m) < 0)
+                    if (negSEE(m))
                         continue;
                     int capt = Evaluate.pieceValue[pos.getPiece(m.to)];
                     int prom = Evaluate.pieceValue[m.promoteTo];
@@ -952,7 +952,14 @@ public class Search {
         return bestScore;
     }
 
-    
+    final private boolean negSEE(Move m) {
+        int p0 = Evaluate.pieceValue[pos.getPiece(m.from)];
+        int p1 = Evaluate.pieceValue[pos.getPiece(m.to)];
+        if (p1 >= p0)
+            return false;
+        return SEE(m) < 0;
+    }
+
     private int[] captures = new int[64];   // Value of captured pieces
     private UndoInfo seeUi = new UndoInfo();
 

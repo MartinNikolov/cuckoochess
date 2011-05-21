@@ -522,12 +522,7 @@ public class Position {
 
         // Perform move
         setSEEPiece(move.from, Piece.EMPTY);
-        // Handle promotion
-        if (move.promoteTo != Piece.EMPTY) {
-            setSEEPiece(move.to, move.promoteTo);
-        } else {
-            setSEEPiece(move.to, p);
-        }
+        setSEEPiece(move.to, p);
         whiteMove = !wtm;
     }
 
@@ -537,11 +532,7 @@ public class Position {
         setSEEPiece(move.from, p);
         setSEEPiece(move.to, ui.capturedPiece);
         boolean wtm = whiteMove;
-        if (move.promoteTo != Piece.EMPTY) {
-            p = wtm ? Piece.WPAWN : Piece.BPAWN;
-            setSEEPiece(move.from, p);
-        }
-        
+
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
         if (p == king) {
