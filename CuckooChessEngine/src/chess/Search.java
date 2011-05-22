@@ -189,7 +189,7 @@ public class Search {
         maxNodes = initialMaxNodes;
         nodesToGo = 0;
         Position origPos = new Position(pos);
-        final int aspirationDelta = 25;
+        final int aspirationDelta = 20;
         int bestScoreLastIter = 0;
         Move bestMove = scMoves[0].move;
         this.verbose = verbose;
@@ -588,7 +588,7 @@ public class Search {
         int futilityScore = alpha;
         if (!inCheck && (depth < 5*plyScale) && (posExtend == 0)) {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
-                int margin;
+                int margin; // FIXME! Try smaller values
                 if (depth <= plyScale) {
                     margin = 150;
                 } else if (depth <= 2*plyScale) {
@@ -608,15 +608,21 @@ public class Search {
             }
         }
 
-        if ((depth > 4*plyScale) && (beta > alpha + 1) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
-            // No hash move at PV node. Try internal iterative deepening.
-            long savedNodeIdx = sti.nodeIdx;
-            negaScout(alpha, beta, ply, (depth > 8*plyScale) ? (depth - 5*plyScale) : (depth - 4*plyScale), -1, inCheck);
-            sti.nodeIdx = savedNodeIdx;
-            ent = tt.probe(hKey);
-            if (ent.type != TTEntry.T_EMPTY) {
-                hashMove = sti.hashMove;
-                ent.getMove(hashMove);
+        if ((depth > 4*plyScale) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
+            // FIXME! Test IID at lower depth if LMR>0 at previous ply,
+            //        because that is a strong hint that this node is a CUT node
+            boolean isPv = beta > alpha + 1;
+            if (isPv || (depth > 8 * plyScale)) {
+                // No hash move. Try internal iterative deepening.
+                long savedNodeIdx = sti.nodeIdx;
+                int newDepth = isPv ? depth  - 2 * plyScale : depth * 3 / 8;
+                negaScout(alpha, beta, ply, newDepth, -1, inCheck);
+                sti.nodeIdx = savedNodeIdx;
+                ent = tt.probe(hKey);
+                if (ent.type != TTEntry.T_EMPTY) {
+                    hashMove = sti.hashMove;
+                    ent.getMove(hashMove);
+                }
             }
         }
 
