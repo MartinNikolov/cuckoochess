@@ -588,15 +588,15 @@ public class Search {
         int futilityScore = alpha;
         if (!inCheck && (depth < 5*plyScale) && (posExtend == 0)) {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
-                int margin; // FIXME! Try smaller values
+                int margin;
                 if (depth <= plyScale) {
-                    margin = 150;
+                    margin = 125;
                 } else if (depth <= 2*plyScale) {
-                    margin = 300;
+                    margin = 250;
                 } else if (depth <= 3*plyScale) {
-                    margin = 450;
+                    margin = 375;
                 } else {
-                    margin = 600;
+                    margin = 500;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
                     evalScore = eval.evalPos(pos);
@@ -609,8 +609,6 @@ public class Search {
         }
 
         if ((depth > 4*plyScale) && ((hashMove == null) || (hashMove.from == hashMove.to))) {
-            // FIXME! Test IID at lower depth if LMR>0 at previous ply,
-            //        because that is a strong hint that this node is a CUT node
             boolean isPv = beta > alpha + 1;
             if (isPv || (depth > 8 * plyScale)) {
                 // No hash move. Try internal iterative deepening.
