@@ -262,34 +262,43 @@ public class Search {
                     tt.insert(pos.historyHash(), m, type, 0, depth, UNKNOWN_SCORE);
                 }
                 if (score >= beta) {
-                    if (mi != 0) {
-                        needMoreTime = true;
+                    int retryDelta = aspirationDelta * 2;
+                    while (score >= beta) {
+                        beta = Math.min(score + retryDelta, Search.MATE0);
+                        retryDelta = Search.MATE0 * 2;
+                        if (mi != 0)
+                            needMoreTime = true;
+                        bestMove = m;
+                        if (verbose)
+                            System.out.printf("%-6s %6d %6d %6d >=\n", TextIO.moveToString(pos, m, false),
+                                    score, nodes, qNodes);
+                        notifyPV(depth, score, false, true, m);
+                        nodes = qNodes = 0;
+                        posHashList[posHashListSize++] = pos.zobristHash();
+                        pos.makeMove(m, ui);
+                        score = -negaScout(-beta, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        nodesThisMove += nodes + qNodes;
+                        posHashListSize--;
+                        pos.unMakeMove(m, ui);
                     }
-                    bestMove = m;
-                    if (verbose)
-                        System.out.printf("%-6s %6d %6d %6d >=\n", TextIO.moveToString(pos, m, false),
-                                score, nodes, qNodes);
-                    notifyPV(depth, score, false, true, m);
-                    nodes = qNodes = 0;
-                    posHashList[posHashListSize++] = pos.zobristHash();
-                    pos.makeMove(m, ui);
-                    score = -negaScout(-Search.MATE0, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
-                    nodesThisMove += nodes + qNodes;
-                    posHashListSize--;
-                    pos.unMakeMove(m, ui);
                 } else if ((mi == 0) && (score <= alpha)) {
-                    needMoreTime = searchNeedMoreTime = true;
-                    if (verbose)
-                        System.out.printf("%-6s %6d %6d %6d <=\n", TextIO.moveToString(pos, m, false),
-                                score, nodes, qNodes);
-                    notifyPV(depth, score, true, false, m);
-                    nodes = qNodes = 0;
-                    posHashList[posHashListSize++] = pos.zobristHash();
-                    pos.makeMove(m, ui);
-                    score = -negaScout(-score, Search.MATE0, 1, (depth - 1) * plyScale, -1, givesCheck);
-                    nodesThisMove += nodes + qNodes;
-                    posHashListSize--;
-                    pos.unMakeMove(m, ui);
+                    int retryDelta = Search.MATE0 * 2;
+                    while (score <= alpha) {
+                        alpha = Math.max(score - retryDelta, -Search.MATE0);
+                        retryDelta = Search.MATE0 * 2;
+                        needMoreTime = searchNeedMoreTime = true;
+                        if (verbose)
+                            System.out.printf("%-6s %6d %6d %6d <=\n", TextIO.moveToString(pos, m, false),
+                                    score, nodes, qNodes);
+                        notifyPV(depth, score, true, false, m);
+                        nodes = qNodes = 0;
+                        posHashList[posHashListSize++] = pos.zobristHash();
+                        pos.makeMove(m, ui);
+                        score = -negaScout(-score, -alpha, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        nodesThisMove += nodes + qNodes;
+                        posHashListSize--;
+                        pos.unMakeMove(m, ui);
+                    }
                 }
                 if (verbose || ((listener != null) && (depth > 1))) {
                     boolean havePV = false;
