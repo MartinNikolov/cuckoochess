@@ -27,7 +27,7 @@ import java.util.Random;
  * @author petero
  */
 public class ComputerPlayer implements Player {
-    public static String engineName = "CuckooChess 1.11a11";
+    public static String engineName = "CuckooChess 1.11a12";
 
     int minTimeMillis;
     int maxTimeMillis;

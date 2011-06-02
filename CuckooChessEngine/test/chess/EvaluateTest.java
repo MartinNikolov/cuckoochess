@@ -411,6 +411,18 @@ public class EvaluateTest {
         assertTrue(evalWhite(pos) > winScore);
     }
 
+    @Test
+    public void testCantWin() throws ChessParseError {
+        Position pos = TextIO.readFEN("8/8/8/3k4/3p4/3K4/4N3/8 w - - 0 1");
+        int score1 = evalWhite(pos);
+        assertTrue(score1 < 0);
+        UndoInfo ui = new UndoInfo();
+        pos.makeMove(TextIO.stringToMove(pos, "Nxd4"), ui);
+        int score2 = evalWhite(pos);
+        assertTrue(score2 <= 0);
+        assertTrue(score2 > score1);
+    }
+
     /** Return static evaluation score for white, regardless of whose turn it is to move. */
     final static int evalWhite(Position pos) {
         Evaluate eval = new Evaluate();

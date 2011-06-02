@@ -925,8 +925,7 @@ public class Evaluate {
         boolean handled = false;
         if ((wMtrlPawns + bMtrlPawns == 0) && (wMtrlNoPawns < rV) && (bMtrlNoPawns < rV)) {
             // King + minor piece vs king + minor piece is a draw
-            score /= 50;
-            handled = true;
+            return 0;
         }
         if (!handled && (pos.wMtrl == qV) && (pos.bMtrl == pV) &&
             (Long.bitCount(pos.pieceTypeBB[Piece.WQUEEN]) == 1)) {
@@ -948,22 +947,24 @@ public class Evaluate {
         }
         if (!handled && (score > 0)) {
             if ((wMtrlPawns == 0) && (wMtrlNoPawns <= bMtrlNoPawns + bV)) {
-                score /= 8;         // Too little excess material, probably draw
-                handled = true;
+                if (wMtrlNoPawns < rV) {
+                    return -pos.bMtrl / 50;
+                } else {
+                    score /= 8;         // Too little excess material, probably draw
+                    handled = true;
+                }
             } else if ((pos.pieceTypeBB[Piece.WROOK] | pos.pieceTypeBB[Piece.WKNIGHT] |
                         pos.pieceTypeBB[Piece.WQUEEN]) == 0) {
                 // Check for rook pawn + wrong color bishop
                 if (((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskBToHFiles) == 0) &&
                     ((pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskLightSq) == 0) &&
                     ((pos.pieceTypeBB[Piece.BKING] & 0x0303000000000000L) != 0)) {
-                    score /= 50;
-                    handled = true;
+                    return 0;
                 } else
                 if (((pos.pieceTypeBB[Piece.WPAWN] & BitBoard.maskAToGFiles) == 0) &&
                     ((pos.pieceTypeBB[Piece.WBISHOP] & BitBoard.maskDarkSq) == 0) &&
                     ((pos.pieceTypeBB[Piece.BKING] & 0xC0C0000000000000L) != 0)) {
-                    score /= 50;
-                    handled = true;
+                    return 0;
                 }
             }
         }
@@ -999,22 +1000,24 @@ public class Evaluate {
         }
         if (!handled && (score < 0)) {
             if ((bMtrlPawns == 0) && (bMtrlNoPawns <= wMtrlNoPawns + bV)) {
-                score /= 8;         // Too little excess material, probably draw
-                handled = true;
+                if (bMtrlNoPawns < rV) {
+                    return pos.wMtrl / 50;
+                } else {
+                    score /= 8;         // Too little excess material, probably draw
+                    handled = true;
+                }
             } else if ((pos.pieceTypeBB[Piece.BROOK] | pos.pieceTypeBB[Piece.BKNIGHT] |
                         pos.pieceTypeBB[Piece.BQUEEN]) == 0) {
                 // Check for rook pawn + wrong color bishop
                 if (((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskBToHFiles) == 0) &&
                     ((pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskDarkSq) == 0) &&
                     ((pos.pieceTypeBB[Piece.WKING] & 0x0303L) != 0)) {
-                    score /= 50;
-                    handled = true;
+                    return 0;
                 } else
                 if (((pos.pieceTypeBB[Piece.BPAWN] & BitBoard.maskAToGFiles) == 0) &&
                     ((pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskLightSq) == 0) &&
                     ((pos.pieceTypeBB[Piece.WKING] & 0xC0C0L) != 0)) {
-                    score /= 50;
-                    handled = true;
+                    return 0;
                 }
             }
         }
@@ -1052,7 +1055,6 @@ public class Evaluate {
 
         // FIXME! Add evaluation of KRKP
         // FIXME! Add evaluation of KRPKR   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
-        // FIXME! KBKP should not be score >0 for bishop side
     }
 
     private static final int evalKQKP(int wKing, int wQueen, int bKing, int bPawn) {
