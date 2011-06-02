@@ -159,11 +159,13 @@ public class DroidComputerPlayer {
     public final void maybeNewGame() {
         if (newGame) {
             newGame = false;
-            uciEngine.writeLineToEngine("ucinewgame");
-            syncReady();
+            if (uciEngine != null) {
+                uciEngine.writeLineToEngine("ucinewgame");
+                syncReady();
+            }
         }
     }
-    
+
     /** Stop the engine process. */
     public final synchronized void shutdownEngine() {
         if (uciEngine != null) {
