@@ -203,7 +203,19 @@ public class PositionTest {
         pos.unMakeMove(move, ui);
         assertTrue(pos.equals(origPos2));
     }
-    
+
+    @Test
+    public void testCastleMask() throws ChessParseError {
+        System.out.println("castleMask");
+        Position pos = TextIO.readFEN("rnbqk1nr/pppp1ppp/8/4p3/4P3/2N2N2/PPPP1bPP/R1BQKB1R w KQkq - 0 1");
+        UndoInfo ui = new UndoInfo();
+        Move m = TextIO.stringToMove(pos, "Kxf2");
+        pos.makeMove(m, ui);
+        int castleMask = (1 << Position.A8_CASTLE) |
+                         (1 << Position.H8_CASTLE);
+        assertEquals(castleMask, pos.getCastleMask());
+    }
+
     /**
      * Test of makeMove method, of class Position.
      */

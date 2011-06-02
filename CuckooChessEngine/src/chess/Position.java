@@ -205,23 +205,54 @@ public class Position {
         return (x & 1) == (y & 1);
     }
 
-    /** Return piece occuping a square. */
+    /** Return piece occupying a square. */
     public final int getPiece(int square) {
         return squares[square];
     }
+
+    /** Move a non-pawn piece to an empty square. */
+    private final void movePieceNotPawn(int from, int to) {
+        final int piece = squares[from];
+        hashKey ^= psHashKeys[piece][from];
+        hashKey ^= psHashKeys[piece][to];
+        hashKey ^= psHashKeys[Piece.EMPTY][from];
+        hashKey ^= psHashKeys[Piece.EMPTY][to];
+        
+        squares[from] = Piece.EMPTY;
+        squares[to] = piece;
+
+        final long sqMaskF = 1L << from;
+        final long sqMaskT = 1L << to;
+        pieceTypeBB[piece] &= ~sqMaskF;
+        pieceTypeBB[piece] |= sqMaskT;
+        if (Piece.isWhite(piece)) {
+            whiteBB &= ~sqMaskF;
+            whiteBB |= sqMaskT;
+            if (piece == Piece.WKING)
+                wKingSq = to;
+        } else {
+            blackBB &= ~sqMaskF;
+            blackBB |= sqMaskT;
+            if (piece == Piece.BKING)
+                bKingSq = to;
+        }
+
+        psScore1[piece] += Evaluate.psTab1[piece][to] - Evaluate.psTab1[piece][from];
+        psScore2[piece] += Evaluate.psTab2[piece][to] - Evaluate.psTab2[piece][from];
+    }
+
     /** Set a square to a piece value. */
     public final void setPiece(int square, int piece) {
         // Update hash key
-        int oldPiece = squares[square];
-        hashKey ^= psHashKeys[oldPiece][square];
+        int removedPiece = squares[square];
+        hashKey ^= psHashKeys[removedPiece][square];
         hashKey ^= psHashKeys[piece][square];
-        if ((oldPiece == Piece.WPAWN) || (oldPiece == Piece.BPAWN))
-            pHashKey ^= psHashKeys[oldPiece][square];
+        if ((removedPiece == Piece.WPAWN) || (removedPiece == Piece.BPAWN))
+            pHashKey ^= psHashKeys[removedPiece][square];
         if ((piece == Piece.WPAWN) || (piece == Piece.BPAWN))
             pHashKey ^= psHashKeys[piece][square];
         
         // Update material balance
-        int removedPiece = squares[square];
         int pVal = Evaluate.pieceValue[removedPiece];
         if (Piece.isWhite(removedPiece)) {
             wMtrl -= pVal;
@@ -368,37 +399,85 @@ public class Position {
         ui.halfMoveClock = halfMoveClock;
         boolean wtm = whiteMove;
         
-        int p = squares[move.from];
+        final int p = squares[move.from];
         int capP = squares[move.to];
         long fromMask = 1L << move.from;
 
+        int prevEpSquare = epSquare;
+        setEpSquare(-1);
+
         if ((capP != Piece.EMPTY) || (((pieceTypeBB[Piece.WPAWN] | pieceTypeBB[Piece.BPAWN]) & fromMask) != 0)) {
             halfMoveClock = 0;
+
+            // Handle en passant and epSquare
+            if (p == Piece.WPAWN) {
+                if (move.to - move.from == 2 * 8) {
+                    int x = Position.getX(move.to);
+                    if (    ((x > 0) && (squares[move.to - 1] == Piece.BPAWN)) ||
+                            ((x < 7) && (squares[move.to + 1] == Piece.BPAWN))) {
+                        setEpSquare(move.from + 8);
+                    }
+                } else if (move.to == prevEpSquare) {
+                    setPiece(move.to - 8, Piece.EMPTY);
+                }
+            } else if (p == Piece.BPAWN) {
+                if (move.to - move.from == -2 * 8) {
+                    int x = Position.getX(move.to);
+                    if (    ((x > 0) && (squares[move.to - 1] == Piece.WPAWN)) ||
+                            ((x < 7) && (squares[move.to + 1] == Piece.WPAWN))) {
+                        setEpSquare(move.from - 8);
+                    }
+                } else if (move.to == prevEpSquare) {
+                    setPiece(move.to + 8, Piece.EMPTY);
+                }
+            }
+
+            if (((pieceTypeBB[Piece.WKING] | pieceTypeBB[Piece.BKING]) & fromMask) != 0) {
+                if (wtm) {
+                    setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
+                    setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
+                } else {
+                    setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
+                    setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
+                }
+            }
+
+            // Perform move
+            setPiece(move.from, Piece.EMPTY);
+            // Handle promotion
+            if (move.promoteTo != Piece.EMPTY) {
+                setPiece(move.to, move.promoteTo);
+            } else {
+                setPiece(move.to, p);
+            }
         } else {
             halfMoveClock++;
+
+            // Handle castling
+            if (((pieceTypeBB[Piece.WKING] | pieceTypeBB[Piece.BKING]) & fromMask) != 0) {
+                int k0 = move.from;
+                if (move.to == k0 + 2) { // O-O
+                    movePieceNotPawn(k0 + 3, k0 + 1);
+                } else if (move.to == k0 - 2) { // O-O-O
+                    movePieceNotPawn(k0 - 4, k0 - 1);
+                }
+                if (wtm) {
+                    setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
+                    setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
+                } else {
+                    setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
+                    setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
+                }
+            }
+
+            // Perform move
+            movePieceNotPawn(move.from, move.to);
         }
         if (!wtm) {
             fullMoveCounter++;
         }
 
-        // Handle castling
-        if (((pieceTypeBB[Piece.WKING] | pieceTypeBB[Piece.BKING]) & fromMask) != 0) {
-            int k0 = move.from;
-            if (move.to == k0 + 2) { // O-O
-                setPiece(k0 + 1, squares[k0 + 3]);
-                setPiece(k0 + 3, Piece.EMPTY);
-            } else if (move.to == k0 - 2) { // O-O-O
-                setPiece(k0 - 1, squares[k0 - 4]);
-                setPiece(k0 - 4, Piece.EMPTY);
-            }
-            if (wtm) {
-                setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
-                setCastleMask(castleMask & ~(1 << Position.H1_CASTLE));
-            } else {
-                setCastleMask(castleMask & ~(1 << Position.A8_CASTLE));
-                setCastleMask(castleMask & ~(1 << Position.H8_CASTLE));
-            }
-        }
+        // Update castling rights when rook moves
         if ((BitBoard.maskCorners & fromMask) != 0) {
             int rook = wtm ? Piece.WROOK : Piece.BROOK;
             if (p == rook)
@@ -410,39 +489,6 @@ public class Position {
                 removeCastleRights(move.to);
         }
 
-        // Handle en passant and epSquare
-        int prevEpSquare = epSquare;
-        setEpSquare(-1);
-        if (p == Piece.WPAWN) {
-            if (move.to - move.from == 2 * 8) {
-                int x = Position.getX(move.to);
-                if (    ((x > 0) && (squares[move.to - 1] == Piece.BPAWN)) ||
-                        ((x < 7) && (squares[move.to + 1] == Piece.BPAWN))) {
-                    setEpSquare(move.from + 8);
-                }
-            } else if (move.to == prevEpSquare) {
-                setPiece(move.to - 8, Piece.EMPTY);
-            }
-        } else if (p == Piece.BPAWN) {
-            if (move.to - move.from == -2 * 8) {
-                int x = Position.getX(move.to);
-                if (    ((x > 0) && (squares[move.to - 1] == Piece.WPAWN)) ||
-                        ((x < 7) && (squares[move.to + 1] == Piece.WPAWN))) {
-                    setEpSquare(move.from - 8);
-                }
-            } else if (move.to == prevEpSquare) {
-                setPiece(move.to + 8, Piece.EMPTY);
-            }
-        }
-
-        // Perform move
-        setPiece(move.from, Piece.EMPTY);
-        // Handle promotion
-        if (move.promoteTo != Piece.EMPTY) {
-            setPiece(move.to, move.promoteTo);
-        } else {
-            setPiece(move.to, p);
-        }
         hashKey ^= whiteHashKey;
         whiteMove = !wtm;
     }
