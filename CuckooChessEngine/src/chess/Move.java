@@ -64,13 +64,6 @@ public class Move {
         this.score = m.score;
     }
 
-    public void copyFrom(Move m) {
-        from      = m.from;
-        to        = m.to;
-        promoteTo = m.promoteTo;
-//        score = m.score;
-    }
-
     /** Note that score is not included in the comparison. */
     @Override
     public boolean equals(Object o) {

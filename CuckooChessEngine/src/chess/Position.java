@@ -142,7 +142,7 @@ public class Position {
     }
 
     /**
-     * Return Zobrish hash value for the current position.
+     * Return Zobrist hash value for the current position.
      * Everything except the move counters are included in the hash value.
      */
     public final long zobristHash() {
@@ -516,11 +516,9 @@ public class Position {
         if (p == king) {
             int k0 = move.from;
             if (move.to == k0 + 2) { // O-O
-                setPiece(k0 + 3, squares[k0 + 1]);
-                setPiece(k0 + 1, Piece.EMPTY);
+                movePieceNotPawn(k0 + 1, k0 + 3);
             } else if (move.to == k0 - 2) { // O-O-O
-                setPiece(k0 - 4, squares[k0 - 1]);
-                setPiece(k0 - 1, Piece.EMPTY);
+                movePieceNotPawn(k0 - 1, k0 - 4);
             }
         }
 
