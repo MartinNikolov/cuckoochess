@@ -109,7 +109,7 @@ public class Search {
         }
     }
 
-    static class StopSearch extends Exception {
+    static final class StopSearch extends Exception {
         private static final long serialVersionUID = -5546906604987117015L;
         public StopSearch() {
         }
@@ -138,7 +138,7 @@ public class Search {
         Move move;
         int nodes;
         MoveInfo(Move m, int n) { move = m;  nodes = n; }
-        static public class SortByScore implements Comparator<MoveInfo> {
+        public static final class SortByScore implements Comparator<MoveInfo> {
             public int compare(MoveInfo mi1, MoveInfo mi2) {
                 if ((mi1 == null) && (mi2 == null))
                     return 0;
@@ -149,7 +149,7 @@ public class Search {
                 return mi2.move.score - mi1.move.score;
             }
         }
-        static public class SortByNodes implements Comparator<MoveInfo> {
+        public static final class SortByNodes implements Comparator<MoveInfo> {
             public int compare(MoveInfo mi1, MoveInfo mi2) {
                 if ((mi1 == null) && (mi2 == null))
                     return 0;
@@ -175,15 +175,14 @@ public class Search {
         this.randomSeed = randomSeed;
     }
 
-    final public Move iterativeDeepening(Move[] scMovesIn,
+    final public Move iterativeDeepening(MoveGen.MoveList scMovesIn,
             int maxDepth, int initialMaxNodes, boolean verbose) {
         tStart = System.currentTimeMillis();
 //        log = TreeLogger.getWriter("/home/petero/treelog.dmp", pos);
         totalNodes = 0;
-        MoveInfo[] scMoves = new MoveInfo[scMovesIn.length];
-        int len = 0;
-        for (int mi = 0; scMovesIn[mi] != null; mi++) {
-            Move m = scMovesIn[mi];
+        MoveInfo[] scMoves = new MoveInfo[scMovesIn.size];
+        for (int mi = 0, len = 0; mi < scMovesIn.size; mi++) {
+            Move m = scMovesIn.m[mi];
             scMoves[len++] = new MoveInfo(m, 0);
         }
         maxNodes = initialMaxNodes;
@@ -208,7 +207,7 @@ public class Search {
             int bestScore = -Search.MATE0;
             UndoInfo ui = new UndoInfo();
             boolean needMoreTime = false;
-            for (int mi = 0; scMoves[mi] != null; mi++) {
+            for (int mi = 0; mi < scMoves.length; mi++) {
                 searchNeedMoreTime = (mi > 0);
                 Move m = scMoves[mi].move;
                 if ((listener != null) && (System.currentTimeMillis() - tStart >= 1000)) {
@@ -377,8 +376,7 @@ public class Search {
 
             if (depth > 1) {
                 // Moves that were hard to search should be searched early in the next iteration
-                if ((scMoves[0] != null) && (scMoves[1] != null))
-                    Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
+                Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
             }
         }
         } catch (StopSearch ss) {
@@ -464,13 +462,15 @@ public class Search {
                 return score;
             }
             if (inCheck) {
-                Move[] moves = moveGen.pseudoLegalMoves(pos);
-                moves = MoveGen.removeIllegal(pos, moves);
-                if (moves[0] == null) {            // Can't claim draw if already check mated.
+                MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+                MoveGen.removeIllegal(pos, moves);
+                if (moves.size == 0) {            // Can't claim draw if already check mated.
                     int score = -(MATE0-(ply+1));
                     if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
+                    moveGen.returnMoveList(moves);
                     return score;
                 }
+                moveGen.returnMoveList(moves);
             }
             if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, 0, TTEntry.T_EXACT, UNKNOWN_SCORE, hKey);
             return 0;
@@ -635,7 +635,7 @@ public class Search {
 
         // Start searching move alternatives
         // FIXME! Try hash move before generating move list.
-        Move[] moves;
+        MoveGen.MoveList moves;
         if (inCheck)
             moves = moveGen.checkEvasions(pos);
         else 
@@ -655,7 +655,7 @@ public class Search {
         int bestScore = illegalScore;
         int bestMove = -1;
         int lmrCount = 0;
-        for (int mi = 0; moves[mi] != null; mi++) {
+        for (int mi = 0; mi < moves.size; mi++) {
             if ((mi == 1) && !seeDone) {
                 scoreMoveList(moves, ply, 1);
                 seeDone = true;
@@ -663,7 +663,7 @@ public class Search {
             if ((mi > 0) || !hashMoveSelected) {
                 selectBest(moves, mi);
             }
-            Move m = moves[mi];
+            Move m = moves.m[mi];
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 int score = MATE0-ply;
@@ -783,7 +783,7 @@ public class Search {
                     kt.addKiller(ply, m);
                     ht.addSuccess(pos, m, depth/plyScale);
                     for (int mi2 = mi - 1; mi2 >= 0; mi2--) {
-                        Move m2 = moves[mi2];
+                        Move m2 = moves.m[mi2];
                         if (pos.getPiece(m2.to) == Piece.EMPTY)
                             ht.addFail(pos, m2, depth/plyScale);
                     }
@@ -801,7 +801,7 @@ public class Search {
             return 0;       // Stale-mate
         }
         if (bestMove >= 0) {
-            tt.insert(hKey, moves[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
+            tt.insert(hKey, moves.m[bestMove], TTEntry.T_EXACT, ply, depth, evalScore);
             if (log != null) log.logNodeEnd(sti.nodeIdx, bestScore, TTEntry.T_EXACT, evalScore, hKey);
         } else {
             emptyMove.score = bestScore;
@@ -881,7 +881,7 @@ public class Search {
             alpha = score;
         int bestScore = score;
         final boolean tryChecks = (depth > -3);
-        Move[] moves;
+        MoveGen.MoveList moves;
         if (inCheck) {
             moves = moveGen.checkEvasions(pos);
         } else if (tryChecks) {
@@ -891,13 +891,13 @@ public class Search {
         }
         scoreMoveListMvvLva(moves);
         UndoInfo ui = searchTreeInfo[ply].undoInfo;
-        for (int mi = 0; moves[mi] != null; mi++) {
+        for (int mi = 0; mi < moves.size; mi++) {
             if (mi < 8) {
                 // If the first 8 moves didn't fail high, this is probably an ALL-node,
                 // so spending more effort on move ordering is probably wasted time.
                 selectBest(moves, mi);
             }
-            Move m = moves[mi];
+            Move m = moves.m[mi];
             if (pos.getPiece(m.to) == (pos.whiteMove ? Piece.BKING : Piece.WKING)) {
                 moveGen.returnMoveList(moves);
                 return MATE0-ply;       // King capture
@@ -1089,12 +1089,12 @@ public class Search {
      * Compute scores for each move in a move list, using SEE, killer and history information.
      * @param moves  List of moves to score.
      */
-    final void scoreMoveList(Move[] moves, int ply) {
+    final void scoreMoveList(MoveGen.MoveList moves, int ply) {
         scoreMoveList(moves, ply, 0);
     }
-    final void scoreMoveList(Move[] moves, int ply, int startIdx) {
-        for (int i = startIdx; moves[i] != null; i++) {
-            Move m = moves[i];
+    final void scoreMoveList(MoveGen.MoveList moves, int ply, int startIdx) {
+        for (int i = startIdx; i < moves.size; i++) {
+            Move m = moves.m[i];
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
             int score = isCapture ? SEE(m) : 0;
             int ks = kt.getKillerScore(ply, m);
@@ -1107,9 +1107,9 @@ public class Search {
             m.score = score;
         }
     }
-    private final void scoreMoveListMvvLva(Move[] moves) {
-        for (int i = 0; moves[i] != null; i++) {
-            Move m = moves[i];
+    private final void scoreMoveListMvvLva(MoveGen.MoveList moves) {
+        for (int i = 0; i < moves.size; i++) {
+            Move m = moves.m[i];
             int v = pos.getPiece(m.to);
             int a = pos.getPiece(m.from);
             m.score = Evaluate.pieceValue[v] * 10000 - Evaluate.pieceValue[a];
@@ -1119,33 +1119,33 @@ public class Search {
     /**
      * Find move with highest score and move it to the front of the list.
      */
-    final static void selectBest(Move[] moves, int startIdx) {
+    final static void selectBest(MoveGen.MoveList moves, int startIdx) {
         int bestIdx = startIdx;
-        int bestScore = moves[bestIdx].score;
-        for (int i = startIdx + 1; moves[i] != null; i++) {
-            int sc = moves[i].score;
+        int bestScore = moves.m[bestIdx].score;
+        for (int i = startIdx + 1; i < moves.size; i++) {
+            int sc = moves.m[i].score;
             if (sc > bestScore) {
                 bestIdx = i;
                 bestScore = sc;
             }
         }
         if (bestIdx != startIdx) {
-            Move m = moves[startIdx];
-            moves[startIdx] = moves[bestIdx];
-            moves[bestIdx] = m;
+            Move m = moves.m[startIdx];
+            moves.m[startIdx] = moves.m[bestIdx];
+            moves.m[bestIdx] = m;
         }
     }
 
     /** If hashMove exists in the move list, move the hash move to the front of the list. */
-    final static boolean selectHashMove(Move[] moves, Move hashMove) {
+    final static boolean selectHashMove(MoveGen.MoveList moves, Move hashMove) {
         if (hashMove == null) {
             return false;
         }
-        for (int i = 0; moves[i] != null; i++) {
-            Move m = moves[i];
+        for (int i = 0; i < moves.size; i++) {
+            Move m = moves.m[i];
             if (m.equals(hashMove)) {
-                moves[i] = moves[0];
-                moves[0] = m;
+                moves.m[i] = moves.m[0];
+                moves.m[0] = m;
                 m.score = 10000;
                 return true;
             }

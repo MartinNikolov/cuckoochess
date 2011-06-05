@@ -239,8 +239,8 @@ public class SearchTest {
     }
 
     private Move idSearch(Search sc, int maxDepth) {
-        Move[] moves = new MoveGen().pseudoLegalMoves(sc.pos);
-        moves = MoveGen.removeIllegal(sc.pos, moves);
+        MoveGen.MoveList moves = new MoveGen().pseudoLegalMoves(sc.pos);
+        MoveGen.removeIllegal(sc.pos, moves);
         sc.scoreMoveList(moves, 0);
         sc.timeLimit(-1, -1);
         Move bestM = sc.iterativeDeepening(moves, maxDepth, -1, false);
@@ -409,25 +409,25 @@ public class SearchTest {
         Position pos = TextIO.readFEN("r2qk2r/ppp2ppp/1bnp1nb1/1N2p3/3PP3/1PP2N2/1P3PPP/R1BQRBK1 w kq - 0 1");
         Search sc = new Search(pos, nullHist, 0, tt);
         MoveGen moveGen = new MoveGen();
-        Move[] moves = moveGen.pseudoLegalMoves(pos);
+        MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
         sc.scoreMoveList(moves, 0);
-        for (int i = 1; moves[i] != null; i++) {
+        for (int i = 1; i < moves.size; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves[i - 1].score;
-            int sc2 = moves[i].score;
+            int sc1 = moves.m[i - 1].score;
+            int sc2 = moves.m[i].score;
             assertTrue(sc2 <= sc1);
         }
 
         moves = moveGen.pseudoLegalMoves(pos);
-        moves[0].score = 17;
-        moves[1].score = 666;
-        moves[2].score = 4711;
+        moves.m[0].score = 17;
+        moves.m[1].score = 666;
+        moves.m[2].score = 4711;
         sc.scoreMoveList(moves, 0, 2);
-        assertEquals(17, moves[0].score);
-        for (int i = 2; moves[i] != null; i++) {
+        assertEquals(17, moves.m[0].score);
+        for (int i = 2; i < moves.size; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves[i - 1].score;
-            int sc2 = moves[i].score;
+            int sc1 = moves.m[i - 1].score;
+            int sc2 = moves.m[i].score;
             assertTrue(sc2 <= sc1);
         }
 
@@ -436,6 +436,6 @@ public class SearchTest {
         moves = moveGen.pseudoLegalMoves(pos);
         boolean res = Search.selectHashMove(moves, m);
         assertEquals(true, res);
-        assertEquals(m, moves[0]);
+        assertEquals(m, moves.m[0]);
     }
 }

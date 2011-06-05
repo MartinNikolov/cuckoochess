@@ -221,14 +221,14 @@ public class EngineControl {
         sc.timeLimit(minTimeLimit, maxTimeLimit);
         sc.setListener(new SearchListener(os));
         sc.setStrength(strength, randomSeed);
-        Move[] moves = moveGen.pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
+        MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+        MoveGen.removeIllegal(pos, moves);
         if ((searchMoves != null) && (searchMoves.size() > 0)) {
             Arrays.asList(moves).retainAll(searchMoves);
         }
-        final Move[] srchMoves = moves;
+        final MoveGen.MoveList srchMoves = moves;
         onePossibleMove = false;
-        if (((srchMoves[0] == null) || (srchMoves[1] == null)) && !infinite) {
+        if ((srchMoves.size < 2) && !infinite) {
             onePossibleMove = true;
             if (!ponder) {
                 if ((maxDepth < 0) || (maxDepth > 2)) maxDepth = 2;
@@ -318,11 +318,16 @@ public class EngineControl {
         if (ent.type != TTEntry.T_EMPTY) {
             ret = new Move(0, 0, 0);
             ent.getMove(ret);
-            Move[] moves = moveGen.pseudoLegalMoves(pos);
-            moves = MoveGen.removeIllegal(pos, moves);
-            if (!Arrays.asList(moves).contains(ret)) {
+            MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+            MoveGen.removeIllegal(pos, moves);
+            boolean contains = false;
+            for (int mi = 0; mi < moves.size; mi++)
+                if (moves.m[mi].equals(ret)) {
+                    contains = true;
+                    break;
+                }
+            if  (!contains)
                 ret = null;
-            }
         }
         pos.unMakeMove(m, ui);
         return ret;

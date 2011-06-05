@@ -148,9 +148,9 @@ public class Game {
      * Get the current state of the game.
      */
     public GameState getGameState() {
-        Move[] moves = new MoveGen().pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
-        if (moves[0] == null) {
+        MoveGen.MoveList moves = new MoveGen().pseudoLegalMoves(pos);
+        MoveGen.removeIllegal(pos, moves);
+        if (moves.size == 0) {
             if (MoveGen.inCheck(pos)) {
                 return pos.whiteMove ? GameState.BLACK_MATE : GameState.WHITE_MATE;
             } else {
@@ -565,22 +565,21 @@ public class Game {
         if (depth == 0)
             return 1;
         long nodes = 0;
-        Move[] moves = moveGen.pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
+        MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+        MoveGen.removeIllegal(pos, moves);
         if (depth == 1) {
-            int len;
-            for (len = 0; moves[len] != null; len++)
-                ;
-            return len;
+            int ret = moves.size;
+            moveGen.returnMoveList(moves);
+            return ret;
         }
         UndoInfo ui = new UndoInfo();
-        for (Move m : moves) {
-            if (m == null)
-                break;
+        for (int mi = 0; mi < moves.size; mi++) {
+            Move m = moves.m[mi];
             pos.makeMove(m, ui);
             nodes += perfT(moveGen, pos, depth - 1);
             pos.unMakeMove(m, ui);
         }
+        moveGen.returnMoveList(moves);
         return nodes;
     }
 }

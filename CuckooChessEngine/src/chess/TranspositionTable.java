@@ -19,7 +19,6 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -239,9 +238,15 @@ public class TranspositionTable {
             }
             m = new Move(0,0,0);
             ent.getMove(m);
-            Move[] moves = moveGen.pseudoLegalMoves(pos);
-            moves = MoveGen.removeIllegal(pos, moves);
-            if (!Arrays.asList(moves).contains(m))
+            MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+            MoveGen.removeIllegal(pos, moves);
+            boolean contains = false;
+            for (int mi = 0; mi < moves.size; mi++)
+                if (moves.m[mi].equals(m)) {
+                    contains = true;
+                    break;
+                }
+            if  (!contains)
                 break;
         }
         return ret;
@@ -266,9 +271,15 @@ public class TranspositionTable {
             }
             Move m = new Move(0,0,0);
             ent.getMove(m);
-            Move[] moves = moveGen.pseudoLegalMoves(pos);
-            moves = MoveGen.removeIllegal(pos, moves);
-            if (!Arrays.asList(moves).contains(m))
+            MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+            MoveGen.removeIllegal(pos, moves);
+            boolean contains = false;
+            for (int mi = 0; mi < moves.size; mi++)
+                if (moves.m[mi].equals(m)) {
+                    contains = true;
+                    break;
+                }
+            if  (!contains)
                 break;
             String moveStr = TextIO.moveToString(pos, m, false);
             if (repetition)

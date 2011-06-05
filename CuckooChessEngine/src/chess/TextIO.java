@@ -153,12 +153,11 @@ public class TextIO {
     public static final void fixupEPSquare(Position pos) {
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
-            Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
-            moves = MoveGen.removeIllegal(pos, moves);
+            MoveGen.MoveList moves = MoveGen.instance.pseudoLegalMoves(pos);
+            MoveGen.removeIllegal(pos, moves);
             boolean epValid = false;
-            for (Move m : moves) {
-                if (m == null)
-                    break;
+            for (int mi = 0; mi < moves.size; mi++) {
+                Move m = moves.m[mi];
                 if (m.to == epSquare) {
                     if (pos.getPiece(m.from) == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) {
                         epValid = true;
@@ -172,7 +171,7 @@ public class TextIO {
         }
     }
 
-    private static void safeSetPiece(Position pos, int col, int row, int p) throws ChessParseError {
+    private static final void safeSetPiece(Position pos, int col, int row, int p) throws ChessParseError {
         if (row < 0) throw new ChessParseError("Too many rows");
         if (col > 7) throw new ChessParseError("Too many columns");
         if ((p == Piece.WPAWN) || (p == Piece.BPAWN)) {
@@ -275,11 +274,11 @@ public class TextIO {
      *                 Otherwise, use short notation, eg Nf3
      */
     public static final String moveToString(Position pos, Move move, boolean longForm) {
-        Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
+        MoveGen.MoveList moves = MoveGen.instance.pseudoLegalMoves(pos);
+        MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
-    private static final String moveToString(Position pos, Move move, boolean longForm, Move[] moves) {
+    private static final String moveToString(Position pos, Move move, boolean longForm, MoveGen.MoveList moves) {
         StringBuilder ret = new StringBuilder();
         int wKingOrigPos = Position.getSquare(4, 0);
         int bKingOrigPos = Position.getSquare(4, 7);
@@ -318,8 +317,8 @@ public class TextIO {
                     int numSameTarget = 0;
                     int numSameFile = 0;
                     int numSameRow = 0;
-                    for (int mi = 0; moves[mi] != null; mi++) {
-                        Move m = moves[mi];
+                    for (int mi = 0; mi < moves.size; mi++) {
+                        Move m = moves.m[mi];
                         if (m == null)
                             break;
                         if ((pos.getPiece(m.from) == p) && (m.to == move.to)) {
@@ -354,9 +353,9 @@ public class TextIO {
         UndoInfo ui = new UndoInfo();
         if (MoveGen.givesCheck(pos, move)) {
             pos.makeMove(move, ui);
-            Move[] nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
-            nextMoves = MoveGen.removeIllegal(pos, nextMoves);
-            if (nextMoves[0] == null) {
+            MoveGen.MoveList nextMoves = MoveGen.instance.pseudoLegalMoves(pos);
+            MoveGen.removeIllegal(pos, nextMoves);
+            if (nextMoves.size == 0) {
                 ret.append('#');
             } else {
                 ret.append('+');
@@ -443,7 +442,7 @@ public class TextIO {
         return m;
     }
 
-    private static boolean isCapture(Position pos, Move move) {
+    private static final boolean isCapture(Position pos, Move move) {
         if (pos.getPiece(move.to) == Piece.EMPTY) {
             int p = pos.getPiece(move.from);
             if ((p == (pos.whiteMove ? Piece.WPAWN : Piece.BPAWN)) && (move.to == pos.getEpSquare())) {
@@ -466,20 +465,21 @@ public class TextIO {
         Move move = null;
         if (strMove.length() == 0)
             return move;
-        Move[] moves = MoveGen.instance.pseudoLegalMoves(pos);
-        moves = MoveGen.removeIllegal(pos, moves);
+        MoveGen.MoveList moves = MoveGen.instance.pseudoLegalMoves(pos);
+        MoveGen.removeIllegal(pos, moves);
         {
             char lastChar = strMove.charAt(strMove.length() - 1);
             if ((lastChar == '#') || (lastChar == '+')) {
-                Move[] subMoves = new Move[moves.length];
+                MoveGen.MoveList subMoves = new MoveGen.MoveList();
                 int len = 0;
-                for (int mi = 0; moves[mi] != null; mi++) {
-                    Move m = moves[mi];
+                for (int mi = 0; mi < moves.size; mi++) {
+                    Move m = moves.m[mi];
                     String str1 = TextIO.moveToString(pos, m, true, moves);
                     if (str1.charAt(str1.length() - 1) == lastChar) {
-                        subMoves[len++] = m;
+                        subMoves.m[len++] = m;
                     }
                 }
+                subMoves.size = len;
                 moves = subMoves;
                 strMove = normalizeMoveString(strMove);
             }
@@ -487,8 +487,8 @@ public class TextIO {
 
         for (int i = 0; i < 2; i++) {
             // Search for full match
-            for (int mi = 0; moves[mi] != null; mi++) {
-                Move m = moves[mi];
+            for (int mi = 0; mi < moves.size; mi++) {
+                Move m = moves.m[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true, moves));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false, moves));
                 if (i == 0) {
@@ -506,8 +506,8 @@ public class TextIO {
         
         for (int i = 0; i < 2; i++) {
             // Search for unique substring match
-            for (int mi = 0; moves[mi] != null; mi++) {
-                Move m = moves[mi];
+            for (int mi = 0; mi < moves.size; mi++) {
+                Move m = moves.m[mi];
                 String str1 = normalizeMoveString(TextIO.moveToString(pos, m, true));
                 String str2 = normalizeMoveString(TextIO.moveToString(pos, m, false));
                 boolean match;
@@ -535,7 +535,7 @@ public class TextIO {
      * Convert a string, such as "e4" to a square number.
      * @return The square number, or -1 if not a legal square.
      */
-    public static int getSquare(String s) {
+    public static final int getSquare(String s) {
         int x = s.charAt(0) - 'a';
         int y = s.charAt(1) - '1';
         if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
@@ -546,7 +546,7 @@ public class TextIO {
     /**
      * Convert a square number to a string, such as "e4".
      */
-    public static String squareToString(int square) {
+    public static final String squareToString(int square) {
         StringBuilder ret = new StringBuilder();
         int x = Position.getX(square);
         int y = Position.getY(square);
@@ -589,7 +589,7 @@ public class TextIO {
     /**
      * Convert move string to lower case and remove special check/mate symbols.
      */
-    private static String normalizeMoveString(String str) {
+    private static final String normalizeMoveString(String str) {
         if (str.length() > 0) {
             char lastChar = str.charAt(str.length() - 1);
             if ((lastChar == '#') || (lastChar == '+')) {

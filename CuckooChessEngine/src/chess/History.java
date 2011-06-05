@@ -22,17 +22,20 @@ package chess;
  * Implements the relative history heuristic.
  * @author petero
  */
-public class History {
-    private int countSuccess[][];
-    private int countFail[][];
+public final class History {
+    private final int countSuccess[][];
+    private final int countFail[][];
+    private final int score[][];
 
     public History() {
         countSuccess = new int[Piece.nPieceTypes][64];
         countFail = new int[Piece.nPieceTypes][64];
+        score = new int[Piece.nPieceTypes][64];
         for (int p = 0; p < Piece.nPieceTypes; p++) {
             for (int sq = 0; sq < 64; sq++) {
                 countSuccess[p][sq] = 0;
                 countFail[p][sq] = 0;
+                score[p][sq] = -1;
             }
         }
     }
@@ -47,6 +50,7 @@ public class History {
             countFail[p][m.to] /= 2;
         }
         countSuccess[p][m.to] = val;
+        score[p][m.to] = -1;
     }
 
     /** Record move as a failure. */
@@ -54,17 +58,23 @@ public class History {
         int p = pos.getPiece(m.from);
         int cnt = depth;
         countFail[p][m.to] += cnt;
+        score[p][m.to] = -1;
     }
 
     /** Get a score between 0 and 49, depending of the success/fail ratio of the move. */
     public final int getHistScore(Position pos, Move m) {
         int p = pos.getPiece(m.from);
+        int ret = score[p][m.to];
+        if (ret >= 0)
+            return ret;
         int succ = countSuccess[p][m.to];
         int fail = countFail[p][m.to];
         if (succ + fail > 0) {
-            return succ * 49 / (succ + fail);
+            ret = succ * 49 / (succ + fail);
         } else {
-            return 0;
+            ret = 0;
         }
+        score[p][m.to] = ret;
+        return ret;
     }
 }

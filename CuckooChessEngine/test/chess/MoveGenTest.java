@@ -426,14 +426,12 @@ public class MoveGenTest {
 
     private List<String> getMoveList0(Position pos, boolean onlyLegal) {
         MoveGen moveGen = new MoveGen();
-        Move[] moves = moveGen.pseudoLegalMoves(pos);
-        if (onlyLegal) {
-            moves = MoveGen.removeIllegal(pos, moves);
-        }
+        MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
+        if (onlyLegal)
+            MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
-        for (Move m : moves) {
-            if (m == null)
-                break;
+        for (int mi = 0; mi < moves.size; mi++) {
+            Move m = moves.m[mi];
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
@@ -501,18 +499,17 @@ public class MoveGenTest {
     }
 
     private List<String> getCaptureList(Position pos, boolean includeChecks, boolean onlyLegal) {
-        Move[] moves;
+        MoveGen.MoveList moves;
         if (includeChecks) {
             moves = new MoveGen().pseudoLegalCapturesAndChecks(pos);
         } else {
             moves = new MoveGen().pseudoLegalCaptures(pos);
         }
         if (onlyLegal)
-            moves = MoveGen.removeIllegal(pos, moves);
+            MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
-        for (Move m : moves) {
-            if (m == null)
-                break;
+        for (int mi = 0; mi < moves.size; mi++) {
+            Move m = moves.m[mi];
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }
@@ -522,13 +519,12 @@ public class MoveGenTest {
     private List<String> getCheckEvasions(Position pos, boolean onlyLegal) {
         if (!MoveGen.inCheck(pos))
             return null;
-        Move[] moves = new MoveGen().checkEvasions(pos);
+        MoveGen.MoveList moves = new MoveGen().checkEvasions(pos);
         if (onlyLegal)
-            moves = MoveGen.removeIllegal(pos, moves);
+            MoveGen.removeIllegal(pos, moves);
         ArrayList<String> strMoves = new ArrayList<String>();
-        for (Move m : moves) {
-            if (m == null)
-                break;
+        for (int mi = 0; mi < moves.size; mi++) {
+            Move m = moves.m[mi];
             String mStr = TextIO.moveToUCIString(m);
             strMoves.add(mStr);
         }

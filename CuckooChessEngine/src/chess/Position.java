@@ -614,11 +614,11 @@ public class Position {
 
     /* ------------- Hashing code ------------------ */
     
-    static long[][] psHashKeys;    // [piece][square]
-    private static long whiteHashKey;
-    private static long[] castleHashKeys;  // [castleMask]
-    private static long[] epHashKeys;      // [epFile + 1] (epFile==-1 for no ep)
-    private static long[] moveCntKeys;     // [min(halfMoveClock, 100)]
+    static final long[][] psHashKeys;    // [piece][square]
+    private static final long whiteHashKey;
+    private static final long[] castleHashKeys;  // [castleMask]
+    private static final long[] epHashKeys;      // [epFile + 1] (epFile==-1 for no ep)
+    private static final long[] moveCntKeys;     // [min(halfMoveClock, 100)]
 
     static {
         psHashKeys = new long[Piece.nPieceTypes][64];

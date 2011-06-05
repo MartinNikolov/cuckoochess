@@ -197,7 +197,7 @@ public class Evaluate {
         long passedPawnsW;     // The most advanced passed pawns for each file
         long passedPawnsB;
     }
-    static PawnHashData[] pawnHash;
+    static final PawnHashData[] pawnHash;
     static {
         final int numEntries = 1<<16;
         pawnHash = new PawnHashData[numEntries];
@@ -401,7 +401,7 @@ public class Evaluate {
         return pBonus;
     }
 
-    static int[] castleFactor;
+    private static final int[] castleFactor;
     static {
         castleFactor = new int[256];
         for (int i = 0; i < 256; i++) {
@@ -827,7 +827,7 @@ public class Evaluate {
         long key;
         int score;
     }
-    static KingSafetyHashData[] kingSafetyHash;
+    private static final KingSafetyHashData[] kingSafetyHash;
     static {
         final int numEntries = 1 << 15;
         kingSafetyHash = new KingSafetyHashData[numEntries];
