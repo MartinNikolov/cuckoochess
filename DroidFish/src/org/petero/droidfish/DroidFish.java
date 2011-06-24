@@ -62,6 +62,8 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.Html;
@@ -109,7 +111,8 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
 
-    // FIXME!! There should only be one Book.java file
+    // FIXME!!! There should only be one Book.java file
+    // FIXME!!! Implement bookmark mechanism for positions in pgn files
 
     private ChessBoard cb;
     private DroidChessController ctrl = null;
@@ -146,6 +149,9 @@ public class DroidFish extends Activity implements GUIInterface {
 
     PgnScreenText gameTextListener;
 
+    private WakeLock wakeLock = null;
+    private boolean useWakeLock = false;
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -159,6 +165,11 @@ public class DroidFish extends Activity implements GUIInterface {
                 ctrl.setGameMode(gameMode);
             }
         });
+
+        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        setWakeLock(false);
+        wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "droidfish");
+        wakeLock.setReferenceCounted(false);
 
         initUI(true);
 
@@ -421,6 +432,7 @@ public class DroidFish extends Activity implements GUIInterface {
             ctrl.setGuiPaused(false);
         }
         updateNotification();
+        setWakeLock(useWakeLock);
         super.onResume();
     }
 
@@ -436,6 +448,7 @@ public class DroidFish extends Activity implements GUIInterface {
         }
         lastVisibleMillis = System.currentTimeMillis();
         updateNotification();
+        setWakeLock(false);
         super.onPause();
     }
 
@@ -482,6 +495,8 @@ public class DroidFish extends Activity implements GUIInterface {
         invertScrollDirection = settings.getBoolean("invertScrollDirection", false);
         boolean fullScreenMode = settings.getBoolean("fullScreenMode", false);
         setFullScreenMode(fullScreenMode);
+        useWakeLock = settings.getBoolean("wakeLock", false);
+        setWakeLock(useWakeLock);
 
         tmp = settings.getString("fontSize", "12");
         int fontSize = Integer.parseInt(tmp);
@@ -513,6 +528,16 @@ public class DroidFish extends Activity implements GUIInterface {
 
         gameTextListener.clear();
         ctrl.prefsChanged();
+    }
+
+    private synchronized final void setWakeLock(boolean enableLock) {
+        WakeLock wl = wakeLock;
+        if (wl != null) {
+            if (wl.isHeld())
+                wl.release();
+            if (enableLock)
+                wl.acquire();
+        }
     }
 
     private final void setEngineStrength(String engine, int strength) {

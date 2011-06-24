@@ -114,6 +114,11 @@
 			android:summary="Fullscreen mode hides the status bar"
 			android:defaultValue="false">
 		</CheckBoxPreference>
+        <CheckBoxPreference
+            android:key="wakeLock"
+            android:title="Disable Screen Timeout"
+            android:defaultValue="false">
+        </CheckBoxPreference>
 		<CheckBoxPreference
 			android:key="drawSquareLabels"
 			android:title="Square Labels"
