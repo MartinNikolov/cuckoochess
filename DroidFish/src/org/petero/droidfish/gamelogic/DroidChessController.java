@@ -283,7 +283,8 @@ public class DroidChessController {
 
     private final void setPlayerNames(Game game) {
         if (game != null) {
-            String engine = DroidComputerPlayer.getEngineName();
+            String engine = (computerPlayer != null) ? computerPlayer.getEngineName() :
+                                                       "Computer";
             String white = gameMode.playerWhite() ? "Player" : engine;
             String black = gameMode.playerBlack() ? "Player" : engine;
             game.tree.setPlayerNames(white, black);

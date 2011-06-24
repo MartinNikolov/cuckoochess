@@ -64,6 +64,7 @@ public class GameTree {
     final void setPlayerNames(String white, String black) {
         this.white = white;
         this.black = black;
+        updateListener();
     }
 
     /** Set start position. Drops the whole game tree. */

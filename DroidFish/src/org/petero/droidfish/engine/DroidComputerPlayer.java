@@ -132,8 +132,11 @@ public class DroidComputerPlayer {
         }
     }
 
-    public static String getEngineName() {
-        return engineName + uciEngine.addStrengthToName();
+    public synchronized String getEngineName() {
+        if (uciEngine != null)
+            return engineName + uciEngine.addStrengthToName();
+        else
+            return engineName;
     }
 
     /** Convert a string to tokens by splitting at whitespace characters. */
