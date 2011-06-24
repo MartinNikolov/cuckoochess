@@ -224,7 +224,7 @@ public class EngineControl {
         MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
         MoveGen.removeIllegal(pos, moves);
         if ((searchMoves != null) && (searchMoves.size() > 0)) {
-            Arrays.asList(moves).retainAll(searchMoves);
+            Arrays.asList(moves.m).retainAll(searchMoves);
         }
         final MoveGen.MoveList srchMoves = moves;
         onePossibleMove = false;
