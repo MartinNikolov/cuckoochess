@@ -188,7 +188,6 @@ public class Search {
         maxNodes = initialMaxNodes;
         nodesToGo = 0;
         Position origPos = new Position(pos);
-        final int aspirationDelta = 20;
         int bestScoreLastIter = 0;
         Move bestMove = scMoves[0].move;
         this.verbose = verbose;
@@ -203,6 +202,7 @@ public class Search {
         for (depth = 1; ; depth++) {
             initNodeStats();
             if (listener != null) listener.notifyDepth(depth);
+            int aspirationDelta = (Math.abs(bestScoreLastIter) <= MATE0 / 2) ? 20 : 1000;
             int alpha = depth > 1 ? Math.max(bestScoreLastIter - aspirationDelta, -Search.MATE0) : -Search.MATE0;
             int bestScore = -Search.MATE0;
             UndoInfo ui = new UndoInfo();
