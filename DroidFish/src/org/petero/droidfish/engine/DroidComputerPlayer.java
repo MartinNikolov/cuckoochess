@@ -86,7 +86,7 @@ public class DroidComputerPlayer {
     }
 
     private static int getNumCPUs() {
-        // FIXME! Try sysconf(_SC_NPROCESSORS_ONLN) before parsing /proc/stat, 
+        int nCPUsFromProc = 1;
         try {
             FileReader fr = new FileReader("/proc/stat");
             BufferedReader inBuf = new BufferedReader(fr);
@@ -98,11 +98,14 @@ public class DroidComputerPlayer {
             }
             inBuf.close();
             if (nCPUs < 1) nCPUs = 1;
-            return nCPUs;
+            nCPUsFromProc = nCPUs;
         } catch (IOException e) {
-            return 1;
         }
+        int nCPUsFromOS = getNPhysicalProcessors();
+        return Math.max(nCPUsFromProc, nCPUsFromOS);
     }
+
+    private final static native int getNPhysicalProcessors();
 
     public final void setListener(SearchListener listener) {
         this.listener = listener;

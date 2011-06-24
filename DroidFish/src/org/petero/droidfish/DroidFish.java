@@ -113,6 +113,7 @@ public class DroidFish extends Activity implements GUIInterface {
 
     // FIXME!!! There should only be one Book.java file
     // FIXME!!! Implement bookmark mechanism for positions in pgn files
+    // FIXME!!! Make program be able to receive pgn files from gmail. (MIME handler?)
 
     private ChessBoard cb;
     private DroidChessController ctrl = null;
