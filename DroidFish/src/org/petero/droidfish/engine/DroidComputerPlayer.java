@@ -349,7 +349,7 @@ public class DroidComputerPlayer {
             drawStr = "draw 50";
         } else if (canClaimDrawRep(pos, posHashList, posHashListSize, posHashListSize)) {
             drawStr = "draw rep";
-        } else {
+        } else if (move != null) {
             String strMove = TextIO.moveToString(pos, move, false);
             posHashList[posHashListSize++] = pos.zobristHash();
             UndoInfo ui = new UndoInfo();
