@@ -218,6 +218,7 @@ you are not actively using the program.\
     <string name="tools_menu">Tools</string>
     <string name="load_save_menu">Load/Save Game</string>
 	<string name="goto_move">Goto move</string>
+    <string name="select_strength">Select Strength</string>
 	<string name="invalid_number_format">Invalid number format</string>
 	<string name="side_to_move">Side to Move</string>
 	<string name="clear_board">Clear Board</string>

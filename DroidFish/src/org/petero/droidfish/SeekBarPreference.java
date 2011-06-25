@@ -1,5 +1,6 @@
 package org.petero.droidfish;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
@@ -7,8 +8,13 @@ import android.graphics.Typeface;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -60,7 +66,7 @@ public class SeekBarPreference extends Preference
         row1.addView(name);
         row1.addView(currValBox);
 
-        SeekBar bar = new SeekBar(getContext());
+        final SeekBar bar = new SeekBar(getContext());
         bar.setMax(maxValue);
         bar.setProgress(currVal);
         bar.setOnSeekBarChangeListener(this);
@@ -75,6 +81,53 @@ public class SeekBarPreference extends Preference
         layout.addView(row1);
         layout.addView(bar);
         layout.setId(android.R.id.widget_frame);
+
+        currValBox.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Dialog dialog = new Dialog(getContext());
+                dialog.setContentView(R.layout.select_strength);
+                dialog.setTitle(R.string.select_strength);
+                final EditText strengthView = (EditText)dialog.findViewById(R.id.selstrength_number);
+                Button ok = (Button)dialog.findViewById(R.id.selstrength_ok);
+                Button cancel = (Button)dialog.findViewById(R.id.selstrength_cancel);
+                strengthView.setText(currValBox.getText().toString().replaceAll("%", ""));
+                final Runnable selectStrength = new Runnable() {
+                    public void run() {
+                        try {
+                            String txt = strengthView.getText().toString();
+                            int strength = (int)(Double.parseDouble(txt) * 10 + 0.5);
+                            if (strength < 0) strength = 0;
+                            if (strength > maxValue) strength = maxValue;
+                            dialog.cancel();
+                            onProgressChanged(bar, strength, false);
+                        } catch (NumberFormatException nfe) {
+                        }
+                    }
+                };
+                strengthView.setOnKeyListener(new OnKeyListener() {
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                            selectStrength.run();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                ok.setOnClickListener(new OnClickListener() {
+                    public void onClick(View v) {
+                        selectStrength.run();
+                    }
+                });
+                cancel.setOnClickListener(new OnClickListener() {
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+
+                dialog.show();
+            }
+        });
 
         return layout; 
     }
