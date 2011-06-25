@@ -20,6 +20,8 @@ package org.petero.droidfish;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,6 +49,7 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -113,10 +116,9 @@ public class DroidFish extends Activity implements GUIInterface {
 
     // FIXME!!! There should only be one Book.java file
     // FIXME!!! Implement bookmark mechanism for positions in pgn files
-    // FIXME!!! Make program be able to receive pgn files from gmail. (MIME handler?)
 
     private ChessBoard cb;
-    private DroidChessController ctrl = null;
+    private static DroidChessController ctrl = null;
     private boolean mShowThinking;
     private boolean mWhiteBasedScores;
     private boolean mShowBookHints;
@@ -152,11 +154,13 @@ public class DroidFish extends Activity implements GUIInterface {
 
     private WakeLock wakeLock = null;
     private boolean useWakeLock = false;
-    
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String pgn = getPgnIntent();
 
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
@@ -175,6 +179,8 @@ public class DroidFish extends Activity implements GUIInterface {
         initUI(true);
 
         gameTextListener = new PgnScreenText(pgnOptions);
+        if (ctrl != null)
+            ctrl.shutdownEngine();
         ctrl = new DroidChessController(this, gameTextListener, pgnOptions);
         readPrefs();
         ctrl.newGame(gameMode);
@@ -193,6 +199,35 @@ public class DroidFish extends Activity implements GUIInterface {
         ctrl.setGuiPaused(true);
         ctrl.setGuiPaused(false);
         ctrl.startGame();
+        if (pgn != null) {
+            try {
+                ctrl.setFENOrPGN(pgn);
+            } catch (ChessParseError e) {
+            }
+        }
+    }
+
+    private String getPgnIntent() {
+        String pgn = null;
+        try {
+            Intent intent = getIntent();
+            if ((intent.getData() != null) && intent.getScheme().equals("content")) {
+                ContentResolver resolver = getContentResolver();
+                InputStream in = resolver.openInputStream(intent.getData());
+                String tmp = "";
+                while (true) {
+                    byte[] buffer = new byte[16384];
+                    int len = in.read(buffer);
+                    if (len <= 0)
+                        break;
+                    tmp += new String(buffer, 0, len);
+                }
+                pgn = tmp;
+            }
+        } catch (IOException e) {
+            Toast.makeText(getApplicationContext(), "Failed to read pgn data", Toast.LENGTH_SHORT).show();
+        }
+        return pgn;
     }
 
     private final byte[] strToByteArr(String str) {

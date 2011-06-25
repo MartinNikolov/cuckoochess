@@ -47,7 +47,11 @@ public class DroidComputerPlayer {
 
     public DroidComputerPlayer(String engine) {
         this.engine = engine;
-        startEngine();
+        if (uciEngine != null) {
+            stopSearch();
+        } else {
+            startEngine();
+        }
         listener = null;
         book = new DroidBook();
     }
