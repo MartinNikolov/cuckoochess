@@ -97,4 +97,7 @@ public class NativePipedProcess implements UCIEngine {
 
     /** Write data to the process. */
     private final native void writeToProcess(String data);
+
+    /** Return number of physical processors, i.e. hyper-threading ignored. */
+    final static native int getNPhysicalProcessors();
 }

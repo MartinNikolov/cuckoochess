@@ -105,11 +105,9 @@ public class DroidComputerPlayer {
             nCPUsFromProc = nCPUs;
         } catch (IOException e) {
         }
-        int nCPUsFromOS = getNPhysicalProcessors();
+        int nCPUsFromOS = NativePipedProcess.getNPhysicalProcessors();
         return Math.max(nCPUsFromProc, nCPUsFromOS);
     }
-
-    private final static native int getNPhysicalProcessors();
 
     public final void setListener(SearchListener listener) {
         this.listener = listener;

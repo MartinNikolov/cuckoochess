@@ -158,12 +158,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_petero_droidfish_engine_NativePipedPr
 }
 
 /*
- * Class:     org_petero_droidfish_engine_DroidComputerPlayer
+ * Class:     org_petero_droidfish_engine_NativePipedProcess
  * Method:    getNPhysicalProcessors
  * Signature: ()I
  */
-extern "C" JNIEXPORT jint JNICALL Java_org_petero_droidfish_engine_DroidComputerPlayer_getNPhysicalProcessors
-  (JNIEnv *, jclass)
+extern "C" JNIEXPORT jint JNICALL Java_org_petero_droidfish_engine_NativePipedProcess_getNPhysicalProcessors
+		(JNIEnv *, jclass)
 {
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
