@@ -30,15 +30,21 @@ import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 
-public class PolyglotBook {
-    File bookFile;
+public class PolyglotBook implements IOpeningBook {
+    private File bookFile;
 
     PolyglotBook() {
         bookFile = new File("");
     }
 
-    final void setBookFileName(String fileName) {
+    @Override
+    public final void setBookFileName(String fileName) {
         bookFile = new File(fileName);
+    }
+
+    @Override
+    public int getWeight(int count) {
+        return count;
     }
 
     /** Compute a polyglot hash key corresponding to a position. */
@@ -283,12 +289,17 @@ public class PolyglotBook {
         0xF8D626AAAF278509L,
     };
 
+    static boolean canHandle(String filename) {
+        return filename.endsWith(".bin");
+    }
+
     /** Return true if the external book is available. */
-    final boolean enabled() {
+    @Override
+    public final boolean enabled() {
         return bookFile.canRead();
     }
 
-    static class PGBookEntry {
+    private static class PGBookEntry {
         private byte[] data;
 
         PGBookEntry() {
@@ -350,7 +361,7 @@ public class PolyglotBook {
         final int getWeight() { return (int)getBytes(10, 2); }
     }
 
-    final void readEntry(RandomAccessFile f, long entNo, PGBookEntry ent) throws IOException {
+    private final void readEntry(RandomAccessFile f, long entNo, PGBookEntry ent) throws IOException {
         f.seek(entNo * 16);
         if (f.read(ent.data) != 16) {
             for (int i = 0; i < 16; i++) ent.data[i] = 0;
@@ -366,7 +377,8 @@ public class PolyglotBook {
         }
     }
 
-    final List<BookEntry> getBookEntries(Position pos) {
+    @Override
+    public final List<BookEntry> getBookEntries(Position pos) {
         try {
             RandomAccessFile f = new RandomAccessFile(bookFile, "r");
             long numEntries = f.length() / 16;

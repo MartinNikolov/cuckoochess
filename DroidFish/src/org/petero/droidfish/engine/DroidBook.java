@@ -28,9 +28,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.petero.droidfish.gamelogic.ChessParseError;
@@ -60,106 +58,35 @@ public final class DroidBook {
             return TextIO.moveToUCIString(move) + " (" + count + ")";
         }
     }
-    private static Map<Long, List<BookEntry>> bookMap;
-    private static Random rndGen;
-    private static int numBookMoves = -1;
+    private static Random rndGen = null;
     
-    static PolyglotBook externalBook = null;
+    private static IOpeningBook externalBook = null;
+    private static IOpeningBook internalBook = null;
 
     public DroidBook() {
         if (externalBook == null)
-            externalBook = new PolyglotBook(); 
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initInternalBook();
-            }
-        });
-        t.setPriority(Thread.MIN_PRIORITY);
-        t.start();
+            externalBook = new NullBook();
+        if (internalBook == null)
+            internalBook  = new InternalBook();
+        if (rndGen == null) {
+            rndGen = new SecureRandom();
+            rndGen.setSeed(System.currentTimeMillis());
+        }
     }
 
     public final void setBookFileName(String bookFileName) {
+        if (PolyglotBook.canHandle(bookFileName))
+            externalBook = new PolyglotBook();
+        else
+            externalBook = new NullBook();
         externalBook.setBookFileName(bookFileName);
-    }
-    
-    private synchronized final void initInternalBook() {
-        if (numBookMoves >= 0)
-            return;
-        long t0 = System.currentTimeMillis();
-        bookMap = new HashMap<Long, List<BookEntry>>();
-        rndGen = new SecureRandom();
-        rndGen.setSeed(System.currentTimeMillis());
-        numBookMoves = 0;
-        try {
-            InputStream inStream = getClass().getResourceAsStream("/book.bin");
-            List<Byte> buf = new ArrayList<Byte>(8192);
-            byte[] tmpBuf = new byte[1024];
-            while (true) {
-                int len = inStream.read(tmpBuf);
-                if (len <= 0) break;
-                for (int i = 0; i < len; i++)
-                    buf.add(tmpBuf[i]);
-            }
-            inStream.close();
-            Position startPos = TextIO.readFEN(TextIO.startPosFEN);
-            Position pos = new Position(startPos);
-            UndoInfo ui = new UndoInfo();
-            int len = buf.size();
-            for (int i = 0; i < len; i += 2) {
-                int b0 = buf.get(i); if (b0 < 0) b0 += 256;
-                int b1 = buf.get(i+1); if (b1 < 0) b1 += 256;
-                int move = (b0 << 8) + b1;
-                if (move == 0) {
-                    pos = new Position(startPos);
-                } else {
-                    boolean bad = ((move >> 15) & 1) != 0;
-                    int prom = (move >> 12) & 7;
-                    Move m = new Move(move & 63, (move >> 6) & 63,
-                                      promToPiece(prom, pos.whiteMove));
-                    if (!bad)
-                        addToBook(pos, m);
-                    pos.makeMove(m, ui);
-                }
-            }
-        } catch (ChessParseError ex) {
-            throw new RuntimeException();
-        } catch (IOException ex) {
-            System.out.println("Can't read opening book resource");
-            throw new RuntimeException();
-        }
-        {
-            long t1 = System.currentTimeMillis();
-            System.out.printf("Book moves:%d (parse time:%.3f)%n", numBookMoves,
-                    (t1 - t0) / 1000.0);
-        }
-    }
-
-    /** Add a move to a position in the opening book. */
-    private final void addToBook(Position pos, Move moveToAdd) {
-        List<BookEntry> ent = bookMap.get(pos.zobristHash());
-        if (ent == null) {
-            ent = new ArrayList<BookEntry>();
-            bookMap.put(pos.zobristHash(), ent);
-        }
-        for (int i = 0; i < ent.size(); i++) {
-            BookEntry be = ent.get(i);
-            if (be.move.equals(moveToAdd)) {
-                be.count++;
-                return;
-            }
-        }
-        BookEntry be = new BookEntry(moveToAdd);
-        ent.add(be);
-        numBookMoves++;
     }
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
         List<BookEntry> bookMoves = getBookEntries(pos);
-        if (bookMoves == null) {
+        if (bookMoves == null)
             return null;
-        }
 
         ArrayList<Move> legalMoves = new MoveGen().pseudoLegalMoves(pos);
         legalMoves = MoveGen.removeIllegal(pos, legalMoves);
@@ -190,10 +117,17 @@ public final class DroidBook {
 
     final private int getWeight(int count) {
         if (externalBook.enabled()) {
-            return count;
+            return externalBook.getWeight(count);
         } else {
-            return (int)(Math.sqrt(count) * 100 + 1);
+            return internalBook.getWeight(count);
         }
+    }
+
+    private final List<BookEntry> getBookEntries(Position pos) {
+        if (externalBook.enabled())
+            return externalBook.getBookEntries(pos);
+        else
+            return internalBook.getBookEntries(pos);
     }
 
     /** Return a string describing all book moves. */
@@ -295,15 +229,6 @@ public final class DroidBook {
         return true;
     }
 
-    private final List<BookEntry> getBookEntries(Position pos) {
-        if (externalBook.enabled()) {
-            return externalBook.getBookEntries(pos);
-        } else {
-            initInternalBook();
-            return bookMap.get(pos.zobristHash());
-        }
-    }
-
     private static int pieceToProm(int p) {
         switch (p) {
         case Piece.WQUEEN: case Piece.BQUEEN:
@@ -316,16 +241,6 @@ public final class DroidBook {
             return 4;
         default:
             return 0;
-        }
-    }
-
-    private static int promToPiece(int prom, boolean whiteMove) {
-        switch (prom) {
-        case 1: return whiteMove ? Piece.WQUEEN : Piece.BQUEEN;
-        case 2: return whiteMove ? Piece.WROOK  : Piece.BROOK;
-        case 3: return whiteMove ? Piece.WBISHOP : Piece.BBISHOP;
-        case 4: return whiteMove ? Piece.WKNIGHT : Piece.BKNIGHT;
-        default: return Piece.EMPTY;
         }
     }
 }
