@@ -587,6 +587,7 @@ public class Search {
                 q0Eval = evalScore;
                 int score = quiesce(alpha-razorMargin, beta-razorMargin, ply, 0, inCheck);
                 if (score <= alpha-razorMargin) {
+                    // FIXME! Test storing in transposition table
                     if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_LE, evalScore, hKey);
                     return score;
                 }
