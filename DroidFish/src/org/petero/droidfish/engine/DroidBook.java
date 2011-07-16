@@ -75,7 +75,9 @@ public final class DroidBook {
     }
 
     public final void setBookFileName(String bookFileName) {
-        if (PolyglotBook.canHandle(bookFileName))
+        if (CtgBook.canHandle(bookFileName))
+            externalBook = new CtgBook();
+        else if (PolyglotBook.canHandle(bookFileName))
             externalBook = new PolyglotBook();
         else
             externalBook = new NullBook();
