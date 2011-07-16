@@ -29,6 +29,7 @@ import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
 import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.TextIO;
+import org.petero.droidfish.gamelogic.UndoInfo;
 
 public class CtgBook implements IOpeningBook {
 
@@ -72,45 +73,47 @@ public class CtgBook implements IOpeningBook {
             ctbF = new RandomAccessFile(ctbFile, "r");
             ctoF = new RandomAccessFile(ctoFile, "r");
 
-            boolean mirrorColor = !pos.whiteMove;
-            if (mirrorColor)
-                pos = mirrorPosColor(pos);
-
-            boolean mirrorLeftRight = false;
-            if ((pos.getCastleMask() == 0) && (Position.getX(pos.getKingSq(true)) < 4)) {
-                pos = mirrorPosLeftRight(pos);
-                mirrorLeftRight = true;
-            }
-
             CtbFile ctb = new CtbFile(ctbF);
-            byte[] encodedPos = positionToByteArray(pos);
             CtoFile cto = new CtoFile(ctoF);
-            ArrayList<Integer> hashIdxList = CtoFile.getHashIndices(encodedPos, ctb);
+            CtgFile ctg = new CtgFile(ctgF, ctb, cto);
 
-            CtgFile ctg = new CtgFile(ctgF);
-            PositionData pd = null;
-            for (int i = 0; i < hashIdxList.size(); i++) {
-                int page = cto.getPage(hashIdxList.get(i));
-                if (page < 0)
-                    continue;
-                pd = ctg.findInPage(page, encodedPos);
-                if (pd != null)
-                    break;
-            }
-
-            List<BookEntry> ret = new ArrayList<BookEntry>();
+            List<BookEntry> ret = null;
+            PositionData pd = ctg.getPositionData(pos);
             if (pd != null) {
-                pd.getBookMoves(pos, ret);
-                // FIXME! Set weights
-            }
-
-            if (mirrorLeftRight) {
-                for (int i = 0; i < ret.size(); i++)
-                    ret.get(i).move = mirrorMoveLeftRight(ret.get(i).move);
-            }
-            if (mirrorColor) {
-                for (int i = 0; i < ret.size(); i++)
-                    ret.get(i).move = mirrorMoveColor(ret.get(i).move);
+                boolean mirrorColor = pd.mirrorColor;
+                boolean mirrorLeftRight = pd.mirrorLeftRight;
+                ret = pd.getBookMoves();
+                UndoInfo ui = new UndoInfo();
+                for (BookEntry be : ret) {
+                    pd.pos.makeMove(be.move, ui);
+                    PositionData movePd = ctg.getPositionData(pd.pos);
+                    pd.pos.unMakeMove(be.move, ui);
+                    int weight = be.count;
+                    if (movePd == null) {
+//                        System.out.printf("%s : no pos\n", TextIO.moveToUCIString(be.move));
+                        weight = 0;
+                    } else {
+                        int recom = movePd.getRecommendation();
+                        switch (recom) {
+                        case 0x40: weight = 0; break;
+                        case 0x80: weight *= 10; break;
+                        }
+                        int score = movePd.getOpponentScore();
+//                        int w0 = weight;
+                        weight = (int)Math.round(Math.min(weight * 0.125 * score, 5000000));
+//                        System.out.printf("%s : w0:%d score:%d %d\n", TextIO.moveToUCIString(be.move),
+//                                w0, score, weight);
+                    }
+                    be.count = weight;
+                }
+                if (mirrorLeftRight) {
+                    for (int i = 0; i < ret.size(); i++)
+                        ret.get(i).move = mirrorMoveLeftRight(ret.get(i).move);
+                }
+                if (mirrorColor) {
+                    for (int i = 0; i < ret.size(); i++)
+                        ret.get(i).move = mirrorMoveColor(ret.get(i).move);
+                }
             }
             return ret;
         } catch (IOException e) {
@@ -187,7 +190,7 @@ public class CtgBook implements IOpeningBook {
     }
 
     /** Converts a position to a byte array. */
-    private final byte[] positionToByteArray(Position pos) {
+    private final static byte[] positionToByteArray(Position pos) {
         BitVector bits = new BitVector();
         bits.addBits(0, 8); // Header byte
         for (int x = 0; x < 8; x++) {
@@ -300,12 +303,46 @@ public class CtgBook implements IOpeningBook {
     }
 
     private final static class CtgFile {
-        RandomAccessFile f;
-        CtgFile(RandomAccessFile f) {
+        private RandomAccessFile f;
+        private CtbFile ctb;
+        private CtoFile cto;
+        CtgFile(RandomAccessFile f, CtbFile ctb, CtoFile cto) {
             this.f = f;
+            this.ctb = ctb;
+            this.cto = cto;
         }
 
-        final PositionData findInPage(int page, byte[] encodedPos) throws IOException {
+        final PositionData getPositionData(Position pos) throws IOException {
+            boolean mirrorColor = !pos.whiteMove;
+            if (mirrorColor)
+                pos = mirrorPosColor(pos);
+
+            boolean mirrorLeftRight = false;
+            if ((pos.getCastleMask() == 0) && (Position.getX(pos.getKingSq(true)) < 4)) {
+                pos = mirrorPosLeftRight(pos);
+                mirrorLeftRight = true;
+            }
+
+            byte[] encodedPos = positionToByteArray(pos);
+            ArrayList<Integer> hashIdxList = CtoFile.getHashIndices(encodedPos, ctb);
+
+            PositionData pd = null;
+            for (int i = 0; i < hashIdxList.size(); i++) {
+                int page = cto.getPage(hashIdxList.get(i));
+                if (page < 0)
+                    continue;
+                pd = findInPage(page, encodedPos);
+                if (pd != null) {
+                    pd.pos = pos;
+                    pd.mirrorColor = mirrorColor;
+                    pd.mirrorLeftRight = mirrorLeftRight;
+                    break;
+                }
+            }
+            return pd;
+        }
+
+        private final PositionData findInPage(int page, byte[] encodedPos) throws IOException {
             byte[] pageBuf = readBytes(f, (page+1)*4096, 4096);
             try {
                 int nPos = extractInt(pageBuf, 0, 2);
@@ -342,6 +379,10 @@ public class CtgBook implements IOpeningBook {
         private int moveBytes;
         final static int posInfoBytes = 3*4 + 4 + (3+4)*2 + 1 + 1 + 1;
 
+        Position pos;
+        boolean mirrorColor = false;
+        boolean mirrorLeftRight = false;
+
         PositionData(byte[] pageBuf, int offs) {
             posLen = pageBuf[offs] & 0x1f;
             moveBytes = extractInt(pageBuf, offs + posLen, 1);
@@ -351,7 +392,8 @@ public class CtgBook implements IOpeningBook {
                 buf[i] = pageBuf[offs + i];
         }
 
-        final void getBookMoves(Position pos, List<BookEntry> entries) {
+        final ArrayList<BookEntry> getBookMoves() {
+            ArrayList<BookEntry> entries = new ArrayList<BookEntry>();
             int nMoves = (moveBytes - 1) / 2;
             for (int mi = 0; mi < nMoves; mi++) {
                 int move  = extractInt(buf, posLen + 1 + mi * 2, 1);
@@ -359,6 +401,7 @@ public class CtgBook implements IOpeningBook {
                 Move m = decodeMove(pos, move);
                 if (m == null)
                     continue;
+//                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
                 BookEntry ent = new BookEntry(m);
                 switch (flags) {
                 case 0x00: ent.count = 8;       break; // No annotation
@@ -372,6 +415,22 @@ public class CtgBook implements IOpeningBook {
                 }
                 entries.add(ent);
             }
+            return entries;
+        }
+
+        /** Return (wins + draws/2) / games. */
+        final int getOpponentScore() {
+            int statStart = posLen + moveBytes;
+//            int wins  = extractInt(buf, statStart + 3, 3);
+            int loss  = extractInt(buf, statStart + 6, 3);
+            int draws = extractInt(buf, statStart + 9, 3);
+            return loss * 2 + draws;
+        }
+
+        final int getRecommendation() {
+            int statStart = posLen + moveBytes;
+            int recom = extractInt(buf, statStart + 30, 1);
+            return recom;
         }
 
         private static final class MoveInfo {
@@ -589,13 +648,13 @@ public class CtgBook implements IOpeningBook {
         }
     }
 
-    private final int mirrorSquareColor(int sq) {
+    private final static int mirrorSquareColor(int sq) {
         int x = Position.getX(sq);
         int y = 7 - Position.getY(sq);
         return Position.getSquare(x, y);
     }
 
-    private final int mirrorPieceColor(int piece) {
+    private final static int mirrorPieceColor(int piece) {
         if (Piece.isWhite(piece)) {
             piece = Piece.makeBlack(piece);
         } else {
@@ -604,7 +663,7 @@ public class CtgBook implements IOpeningBook {
         return piece;
     }
 
-    private final Position mirrorPosColor(Position pos) {
+    private final static Position mirrorPosColor(Position pos) {
         Position ret = new Position(pos);
         for (int sq = 0; sq < 64; sq++) {
             int mSq = mirrorSquareColor(sq);
@@ -629,7 +688,7 @@ public class CtgBook implements IOpeningBook {
         return ret;
     }
 
-    private Move mirrorMoveColor(Move m) {
+    private final static Move mirrorMoveColor(Move m) {
         if (m == null) return null;
         Move ret = new Move(m);
         ret.from = mirrorSquareColor(m.from);
@@ -638,13 +697,13 @@ public class CtgBook implements IOpeningBook {
         return ret;
     }
 
-    private final int mirrorSquareLeftRight(int sq) {
+    private final static int mirrorSquareLeftRight(int sq) {
         int x = 7 - Position.getX(sq);
         int y = Position.getY(sq);
         return Position.getSquare(x, y);
     }
 
-    private final Position mirrorPosLeftRight(Position pos) {
+    private final static Position mirrorPosLeftRight(Position pos) {
         Position ret = new Position(pos);
         for (int sq = 0; sq < 64; sq++) {
             int mSq = mirrorSquareLeftRight(sq);
@@ -662,7 +721,7 @@ public class CtgBook implements IOpeningBook {
         return ret;
     }
 
-    private Move mirrorMoveLeftRight(Move m) {
+    private final static Move mirrorMoveLeftRight(Move m) {
         if (m == null) return null;
         Move ret = new Move(m);
         ret.from = mirrorSquareLeftRight(m.from);

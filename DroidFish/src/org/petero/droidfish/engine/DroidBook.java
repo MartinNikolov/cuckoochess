@@ -137,6 +137,20 @@ public final class DroidBook {
         StringBuilder ret = new StringBuilder();
         ArrayList<Move> bookMoveList = new ArrayList<Move>();
         List<BookEntry> bookMoves = getBookEntries(pos);
+
+        // Check legality
+        if (bookMoves != null) {
+            ArrayList<Move> legalMoves = new MoveGen().pseudoLegalMoves(pos);
+            legalMoves = MoveGen.removeIllegal(pos, legalMoves);
+            for (int i = 0; i < bookMoves.size(); i++) {
+                BookEntry be = bookMoves.get(i);
+                if (!legalMoves.contains(be.move)) {
+                    bookMoves = null;
+                    break;
+                }
+            }
+        }
+
         if (bookMoves != null) {
             Collections.sort(bookMoves, new Comparator<BookEntry>() {
                 public int compare(BookEntry arg0, BookEntry arg1) {
