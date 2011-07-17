@@ -24,6 +24,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
@@ -32,12 +33,13 @@ import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 public class CtgBook implements IOpeningBook {
+    private BookOptions options = new BookOptions();
+    private File ctgFile;
+    private File ctbFile;
+    private File ctoFile;
 
-    File ctgFile;
-    File ctbFile;
-    File ctoFile;
-
-    static boolean canHandle(String filename) {
+    static boolean canHandle(BookOptions options) {
+        String filename = options.filename;
         return (filename.endsWith(".ctg") ||
                 filename.endsWith(".ctb") ||
                 filename.endsWith(".cto"));
@@ -51,16 +53,13 @@ public class CtgBook implements IOpeningBook {
     }
 
     @Override
-    public void setBookFileName(String fileName) {
+    public void setOptions(BookOptions options) {
+        this.options = new BookOptions(options);
+        String fileName = options.filename;
         int len = fileName.length();
         ctgFile = new File(fileName.substring(0, len-1) + "g");
         ctbFile = new File(fileName.substring(0, len-1) + "b");
         ctoFile = new File(fileName.substring(0, len-1) + "o");
-    }
-
-    @Override
-    public int getWeight(int count) {
-        return count;
     }
 
     @Override
@@ -88,23 +87,39 @@ public class CtgBook implements IOpeningBook {
                     pd.pos.makeMove(be.move, ui);
                     PositionData movePd = ctg.getPositionData(pd.pos);
                     pd.pos.unMakeMove(be.move, ui);
-                    int weight = be.count;
+                    double weight = be.weight;
                     if (movePd == null) {
-//                        System.out.printf("%s : no pos\n", TextIO.moveToUCIString(be.move));
+                        System.out.printf("%s : no pos\n", TextIO.moveToUCIString(be.move));
                         weight = 0;
                     } else {
                         int recom = movePd.getRecommendation();
-                        switch (recom) {
-                        case 0x40: weight = 0; break;
-                        case 0x80: weight *= 10; break;
+                        if ((recom >= 64) && (recom < 128)) {
+                            if (options.tournamentMode)
+                                weight = 0;
+                        } else if (recom >= 128) {
+                            if (options.preferMainLines)
+                                weight *= 10;
                         }
                         int score = movePd.getOpponentScore();
-//                        int w0 = weight;
-                        weight = (int)Math.round(Math.min(weight * 0.125 * score, 5000000));
-//                        System.out.printf("%s : w0:%d rec:%d score:%d %d\n", TextIO.moveToUCIString(be.move),
-//                                w0, recom, score, weight);
+                        double w0 = weight;
+                        switch (options.randomness) {
+                        case BookOptions.RANDOM_LOW:
+                            weight = weight * score;
+                            if (weight > 1)
+                                weight *= weight;
+                            break;
+                        case BookOptions.RANDOM_MEDIUM:
+                            weight = weight * score;
+                            break;
+                        case BookOptions.RANDOM_HIGH:
+                            if (weight > 0)
+                                weight = 1;
+                            break;
+                        }
+                        System.out.printf("%s : w0:%.3f rec:%d score:%d %.3f\n", TextIO.moveToUCIString(be.move),
+                                w0, recom, score, weight);
                     }
-                    be.count = weight;
+                    be.weight = weight;
                 }
                 if (mirrorLeftRight) {
                     for (int i = 0; i < ret.size(); i++)
@@ -401,18 +416,18 @@ public class CtgBook implements IOpeningBook {
                 Move m = decodeMove(pos, move);
                 if (m == null)
                     continue;
-//                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
+                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
                 BookEntry ent = new BookEntry(m);
                 switch (flags) {
                 default:
-                case 0x00: ent.count = 8;       break; // No annotation
-                case 0x01: ent.count = 64;      break; // !
-                case 0x02: ent.count = 0;       break; // ?
-                case 0x03: ent.count = 256;     break; // !!
-                case 0x04: ent.count = 0;       break; // ??
-                case 0x05: ent.count = 4;       break; // !?
-                case 0x06: ent.count = 1;       break; // ?!
-                case 0x08: ent.count = 1000000; break; // Only move
+                case 0x00: ent.weight = 1;       break; // No annotation
+                case 0x01: ent.weight = 8;       break; // !
+                case 0x02: ent.weight = 0;       break; // ?
+                case 0x03: ent.weight = 32;      break; // !!
+                case 0x04: ent.weight = 0;       break; // ??
+                case 0x05: ent.weight = 0.5;     break; // !?
+                case 0x06: ent.weight = 0.125;   break; // ?!
+                case 0x08: ent.weight = 1000000; break; // Only move
                 }
                 entries.add(ent);
             }

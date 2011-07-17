@@ -21,6 +21,7 @@ package org.petero.droidfish.gamelogic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.GUIInterface;
 import org.petero.droidfish.GameMode;
 import org.petero.droidfish.PGNOptions;
@@ -35,7 +36,7 @@ import org.petero.droidfish.gamelogic.GameTree.Node;
 public class DroidChessController {
     private DroidComputerPlayer computerPlayer = null;
     private PgnToken.PgnTokenReceiver gameTextListener = null;
-    private String bookFileName = "";
+    private BookOptions bookOptions = new BookOptions();
     private Game game = null;
     private GUIInterface gui;
     private GameMode gameMode;
@@ -175,11 +176,11 @@ public class DroidChessController {
         listener = new SearchListener();
     }
 
-    public final void setBookFileName(String bookFileName) {
-        if (!this.bookFileName.equals(bookFileName)) {
-            this.bookFileName = bookFileName;
+    public final void setBookOptions(BookOptions options) {
+        if (!bookOptions.equals(options)) {
+            bookOptions = options;
             if (computerPlayer != null) {
-                computerPlayer.setBookFileName(bookFileName);
+                computerPlayer.setBookOptions(bookOptions);
                 if (analysisThread != null) {
                     stopAnalysis();
                     startAnalysis();
@@ -213,7 +214,7 @@ public class DroidChessController {
         if (computerPlayer == null) {
             computerPlayer = new DroidComputerPlayer(engine);
             computerPlayer.setListener(listener);
-            computerPlayer.setBookFileName(bookFileName);
+            computerPlayer.setBookOptions(bookOptions);
         }
         computerPlayer.setEngineStrength(engine, strength);
         game = new Game(computerPlayer, gameTextListener, timeControl, movesPerSession, timeIncrement);

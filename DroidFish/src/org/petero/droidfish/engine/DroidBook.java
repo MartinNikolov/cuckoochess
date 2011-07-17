@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
@@ -48,20 +49,22 @@ import chess.Piece;
 public final class DroidBook {
     static class BookEntry {
         Move move;
-        int count;
+        double weight;
         BookEntry(Move move) {
             this.move = move;
-            count = 1;
+            weight = 1;
         }
         @Override
         public String toString() {
-            return TextIO.moveToUCIString(move) + " (" + count + ")";
+            return TextIO.moveToUCIString(move) + " (" + weight + ")";
         }
     }
     private static Random rndGen = null;
     
     private static IOpeningBook externalBook = null;
     private static IOpeningBook internalBook = null;
+
+    private BookOptions options = null;
 
     public DroidBook() {
         if (externalBook == null)
@@ -74,69 +77,65 @@ public final class DroidBook {
         }
     }
 
-    public final void setBookFileName(String bookFileName) {
-        if (CtgBook.canHandle(bookFileName))
+    public final void setOptions(BookOptions options) {
+        this.options = options;
+        if (CtgBook.canHandle(options))
             externalBook = new CtgBook();
-        else if (PolyglotBook.canHandle(bookFileName))
+        else if (PolyglotBook.canHandle(options))
             externalBook = new PolyglotBook();
         else
             externalBook = new NullBook();
-        externalBook.setBookFileName(bookFileName);
+        externalBook.setOptions(options);
+        internalBook.setOptions(options);
     }
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
-        List<BookEntry> bookMoves = getBookEntries(pos);
+        if ((options != null) && (pos.fullMoveCounter > options.maxLength))
+            return null;
+        List<BookEntry> bookMoves = getBook().getBookEntries(pos);
         if (bookMoves == null)
             return null;
 
         ArrayList<Move> legalMoves = new MoveGen().pseudoLegalMoves(pos);
         legalMoves = MoveGen.removeIllegal(pos, legalMoves);
-        int sum = 0;
-        for (int i = 0; i < bookMoves.size(); i++) {
+        double sum = 0;
+        final int nMoves = bookMoves.size();
+        for (int i = 0; i < nMoves; i++) {
             BookEntry be = bookMoves.get(i);
             if (!legalMoves.contains(be.move)) {
                 // If an illegal move was found, it means there was a hash collision,
                 // or a corrupt external book file.
                 return null;
             }
-            sum += getWeight(bookMoves.get(i).count);
+            sum += bookMoves.get(i).weight;
         }
         if (sum <= 0) {
             return null;
         }
-        int rnd = rndGen.nextInt(sum);
+        double rnd = rndGen.nextDouble() * sum;
         sum = 0;
-        for (int i = 0; i < bookMoves.size(); i++) {
-            sum += getWeight(bookMoves.get(i).count);
-            if (rnd < sum) {
+        for (int i = 0; i < nMoves; i++) {
+            sum += bookMoves.get(i).weight;
+            if (rnd < sum)
                 return bookMoves.get(i).move;
-            }
         }
-        // Should never get here
-        throw new RuntimeException();
+        return bookMoves.get(nMoves-1).move;
     }
 
-    final private int getWeight(int count) {
+    final private IOpeningBook getBook() {
         if (externalBook.enabled()) {
-            return externalBook.getWeight(count);
+            return externalBook;
         } else {
-            return internalBook.getWeight(count);
+            return internalBook;
         }
-    }
-
-    private final List<BookEntry> getBookEntries(Position pos) {
-        if (externalBook.enabled())
-            return externalBook.getBookEntries(pos);
-        else
-            return internalBook.getBookEntries(pos);
     }
 
     /** Return a string describing all book moves. */
     public final Pair<String,ArrayList<Move>> getAllBookMoves(Position pos) {
         StringBuilder ret = new StringBuilder();
         ArrayList<Move> bookMoveList = new ArrayList<Move>();
-        List<BookEntry> bookMoves = getBookEntries(pos);
+        List<BookEntry> bookMoves = getBook().getBookEntries(pos);
 
         // Check legality
         if (bookMoves != null) {
@@ -154,23 +153,24 @@ public final class DroidBook {
         if (bookMoves != null) {
             Collections.sort(bookMoves, new Comparator<BookEntry>() {
                 public int compare(BookEntry arg0, BookEntry arg1) {
-                    if (arg1.count != arg0.count)
-                        return arg1.count - arg0.count;
+                    double wd = arg1.weight - arg0.weight;
+                    if (wd != 0)
+                        return (wd > 0) ? 1 : -1;
                     String str0 = TextIO.moveToUCIString(arg0.move);
                     String str1 = TextIO.moveToUCIString(arg1.move);
                     return str0.compareTo(str1);
                 }});
-            int totalCount = 0;
+            double totalWeight = 0;
             for (BookEntry be : bookMoves)
-                totalCount += be.count;
-            if (totalCount <= 0) totalCount = 1;
+                totalWeight += be.weight;
+            if (totalWeight <= 0) totalWeight = 1;
             for (BookEntry be : bookMoves) {
                 Move m = be.move;
                 bookMoveList.add(m);
                 String moveStr = TextIO.moveToString(pos, m, false);
                 ret.append(moveStr);
                 ret.append(':');
-                int percent = (be.count * 100 + totalCount / 2) / totalCount;
+                int percent = (int)Math.round(be.weight * 100 / totalWeight);
                 ret.append(percent);
                 ret.append(' ');
             }

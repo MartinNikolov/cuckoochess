@@ -231,12 +231,44 @@
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="Other">
-		<EditTextPreference
-			android:key="bookFile"
-			android:title="Book Filename"
-			android:summary="Polyglot book file in DroidFish directory on SD Card"
-			android:defaultValue="">
-		</EditTextPreference>
+        <PreferenceScreen
+            android:key="bookSettings"
+            android:title="Opening Book Settings"
+            android:summary="Settings for opening book usage">
+            <ListPreference
+                android:key="bookMaxLength"
+                android:title="Book Length"
+                android:summary="Maximum book line length"
+                android:entryValues="@array/book_line_length_values"
+                android:entries="@array/book_line_length_texts"
+                android:defaultValue="1000000">
+            </ListPreference>
+            <CheckBoxPreference
+                android:key="bookPreferMainLines"
+                android:title="Prefer main lines"
+                android:summary="Prefer book moves marked as main moves"
+                android:defaultValue="true">
+            </CheckBoxPreference>
+            <CheckBoxPreference
+                android:key="bookTournamentMode"
+                android:title="Tournament mode"
+                android:summary="Ignore moves marked as not for tournament play"
+                android:defaultValue="true">
+            </CheckBoxPreference>
+            <ListPreference
+                android:key="bookRandomization"
+                android:title="Book Randomization"
+                android:entryValues="@array/book_randomization_values"
+                android:entries="@array/book_randomization_texts"
+                android:defaultValue="1">
+            </ListPreference>
+    		<EditTextPreference
+                android:key="bookFile"
+                android:title="Book Filename"
+                android:summary="Polyglot book file in DroidFish directory on SD Card"
+                android:defaultValue="">
+            </EditTextPreference>
+		</PreferenceScreen>
 		<PreferenceScreen
 			android:key="pgnSettings"
 			android:title="PGN Settings"

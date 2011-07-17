@@ -117,6 +117,9 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! There should only be one Book.java file
     // FIXME!!! Implement bookmark mechanism for positions in pgn files
 
+    // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)
+    // FIXME!!! Green color for "main move". Red color for "don't play in tournaments" moves.
+
     private ChessBoard cb;
     private static DroidChessController ctrl = null;
     private boolean mShowThinking;
@@ -144,7 +147,7 @@ public class DroidFish extends Activity implements GUIInterface {
     private final static String bookDir = "DroidFish";
     private final static String pgnDir = "DroidFish" + File.separator + "pgn";
     private final static String scidDir = "scid";
-    private String currentBookFile = "";
+    private BookOptions bookOptions = new BookOptions();
     private PGNOptions pgnOptions = new PGNOptions();
 
     private long lastVisibleMillis; // Time when GUI became invisible. 0 if currently visible.
@@ -497,9 +500,14 @@ public class DroidFish extends Activity implements GUIInterface {
         super.onDestroy();
     }
 
+    private final int getIntSetting(String settingName, int defaultValue) {
+        String tmp = settings.getString(settingName, String.format("%d", defaultValue));
+        int value = Integer.parseInt(tmp);
+        return value;
+    }
+
     private final void readPrefs() {
-        String tmp = settings.getString("gameMode", "1");
-        int modeNr = Integer.parseInt(tmp);
+        int modeNr = getIntSetting("gameMode", 1);
         gameMode = new GameMode(modeNr);
         boardFlipped = settings.getBoolean("boardFlipped", false);
         autoSwapSides = settings.getBoolean("autoSwapSides", false);
@@ -510,40 +518,39 @@ public class DroidFish extends Activity implements GUIInterface {
 
         mShowThinking = settings.getBoolean("showThinking", false);
         mWhiteBasedScores = settings.getBoolean("whiteBasedScores", false);
-        tmp = settings.getString("thinkingArrows", "2");
-        maxNumArrows = Integer.parseInt(tmp);
+        maxNumArrows = getIntSetting("thinkingArrows", 2);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
         String engine = settings.getString("engine", "");
         int strength = settings.getInt("strength", 1000);
         setEngineStrength(engine, strength);
 
-        tmp = settings.getString("timeControl", "300000");
-        int timeControl = Integer.parseInt(tmp);
-        tmp = settings.getString("movesPerSession", "60");
-        int movesPerSession = Integer.parseInt(tmp);
-        tmp = settings.getString("timeIncrement", "0");
-        int timeIncrement = Integer.parseInt(tmp);
+        int timeControl = getIntSetting("timeControl", 300000);
+        int movesPerSession = getIntSetting("movesPerSession", 60);
+        int timeIncrement = getIntSetting("timeIncrement", 0);
         ctrl.setTimeLimit(timeControl, movesPerSession, timeIncrement);
 
-        tmp = settings.getString("scrollSensitivity", "2");
-        scrollSensitivity = Float.parseFloat(tmp);
+        scrollSensitivity = Float.parseFloat(settings.getString("scrollSensitivity", "2"));
         invertScrollDirection = settings.getBoolean("invertScrollDirection", false);
         boolean fullScreenMode = settings.getBoolean("fullScreenMode", false);
         setFullScreenMode(fullScreenMode);
         useWakeLock = settings.getBoolean("wakeLock", false);
         setWakeLock(useWakeLock);
 
-        tmp = settings.getString("fontSize", "12");
-        int fontSize = Integer.parseInt(tmp);
+        int fontSize = getIntSetting("fontSize", 12);
         status.setTextSize(fontSize);
         moveList.setTextSize(fontSize);
         thinking.setTextSize(fontSize);
         soundEnabled = settings.getBoolean("soundEnabled", false);
         animateMoves = settings.getBoolean("animateMoves", true);
 
-        String bookFile = settings.getString("bookFile", "");
-        setBookFile(bookFile);
+        bookOptions.filename = settings.getString("bookFile", "");
+        bookOptions.maxLength = getIntSetting("bookMaxLength", 1000000);
+        bookOptions.preferMainLines = settings.getBoolean("bookPreferMainLines", true);
+        bookOptions.tournamentMode = settings.getBoolean("bookTournamentMode", true);
+        bookOptions.randomness = getIntSetting("bookRandomization", 1);
+        setBookOptions();
+
         updateThinkingInfo();
 
         pgnOptions.view.variations  = settings.getBoolean("viewVariations",     true);
@@ -595,14 +602,14 @@ public class DroidFish extends Activity implements GUIInterface {
         getWindow().setAttributes(attrs);
     }
 
-    private final void setBookFile(String bookFile) {
-        currentBookFile = bookFile;
-        if (bookFile.length() > 0) {
+    private final void setBookOptions() {
+        BookOptions options = new BookOptions(bookOptions);
+        if (options.filename.length() > 0) {
             File extDir = Environment.getExternalStorageDirectory();
             String sep = File.separator;
-            bookFile = extDir.getAbsolutePath() + sep + bookDir + sep + bookFile;
+            options.filename = extDir.getAbsolutePath() + sep + bookDir + sep + options.filename;
         }
-        ctrl.setBookFileName(bookFile);
+        ctrl.setBookOptions(options);
     }
 
     @Override
@@ -1049,16 +1056,10 @@ public class DroidFish extends Activity implements GUIInterface {
                 @Override
                 public boolean accept(String filename) {
                     int dotIdx = filename.lastIndexOf(".");
-                    if (dotIdx >= 0) {
-                        String ext = filename.substring(dotIdx+1);
-                        String extL = ext.toLowerCase();
-                        if (extL.equals("ctg") ||
-                            extL.equals("ctb") ||
-                            extL.equals("cto")) {
-                            return ext.equals("ctg");
-                        }
-                    }
-                    return true;
+                    if (dotIdx < 0)
+                        return false;
+                    String ext = filename.substring(dotIdx+1);
+                    return (ext.equals("ctg") || ext.equals("bin"));
                 }
             });
             final int numFiles = fileNames.length;
@@ -1069,7 +1070,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final CharSequence[] finalItems = items;
             int defaultItem = numFiles;
             for (int i = 0; i < numFiles; i++) {
-                if (currentBookFile.equals(items[i])) {
+                if (bookOptions.filename.equals(items[i])) {
                     defaultItem = i;
                     break;
                 }
@@ -1084,7 +1085,8 @@ public class DroidFish extends Activity implements GUIInterface {
                         bookFile = finalItems[item].toString();
                     editor.putString("bookFile", bookFile);
                     editor.commit();
-                    setBookFile(bookFile);
+                    bookOptions.filename = bookFile;
+                    setBookOptions();
                     dialog.dismiss();
                 }
             });

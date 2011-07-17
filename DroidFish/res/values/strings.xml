@@ -129,6 +129,34 @@
     	<item>1</item>
 	    <item>0.5</item>
 	</string-array>
+    <string-array name="book_line_length_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+        <item>50</item>
+        <item>1000000</item>
+    </string-array>
+    <string-array name="book_line_length_texts">
+        <item>5 moves</item>
+        <item>10 moves</item>
+        <item>15 moves</item>
+        <item>20 moves</item>
+        <item>30 moves</item>
+        <item>50 moves</item>
+        <item>Unlimited</item>
+    </string-array>
+    <string-array name="book_randomization_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="book_randomization_texts">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+    </string-array>
 	<string name="about_info">\
 <b>About</b>\n\
 <i>DroidFish</i> is an Android port of the famous <i>stockfish 2.1</i> chess engine. \
@@ -159,7 +187,8 @@ DroidFish contains a small internal opening book. If you want to use \
 a larger book, you can configure DroidFish to use external <i>polyglot</i> \
 or <i>CTG</i> book files:\n\
 1. Create a directory called <i>DroidFish</i> on the SD card.\n\
-2a. Copy one or more polyglot book files to the <i>DroidFish</i> directory.\n\
+2a. Copy one or more polyglot book files to the <i>DroidFish</i> directory. \
+Polyglot books must have the file extension .bin.\n\
 2b. Copy one more more CTG book files to the <i>DroidFish</i> directory. A CTG \
 book consists of three files with file extensions .ctg, .ctb and .cto. \
 You must copy all three files.\n\

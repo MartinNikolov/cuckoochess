@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.cuckoochess.CuckooChessEngine;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.MoveGen;
@@ -113,8 +114,8 @@ public class DroidComputerPlayer {
         this.listener = listener;
     }
 
-    public final void setBookFileName(String bookFileName) {
-        book.setBookFileName(bookFileName);
+    public final void setBookOptions(BookOptions options) {
+        book.setOptions(options);
     }
     
     private void readUCIOptions() {

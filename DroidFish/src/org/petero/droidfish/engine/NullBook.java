@@ -20,6 +20,7 @@ package org.petero.droidfish.engine;
 
 import java.util.List;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.Position;
 
@@ -36,11 +37,6 @@ public class NullBook implements IOpeningBook {
     }
 
     @Override
-    public void setBookFileName(String fileName) {
-    }
-
-    @Override
-    public int getWeight(int count) {
-        return 1;
+    public void setOptions(BookOptions options) {
     }
 }

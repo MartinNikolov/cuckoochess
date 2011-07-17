@@ -20,6 +20,7 @@ package org.petero.droidfish.engine;
 
 import java.util.List;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.Position;
 
@@ -27,12 +28,9 @@ interface IOpeningBook {
     /** Return true if book is currently enabled. */
     boolean enabled();
 
-    /** Set external book filename. */
-    void setBookFileName(String fileName);
+    /** Set book options, including filename. */
+    void setOptions(BookOptions options);
 
     /** Get all book entries for a position. */
     List<BookEntry> getBookEntries(Position pos);
-
-    /** Convert a count to a weight used in probability calculations. */
-    int getWeight(int count);
 }

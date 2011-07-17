@@ -25,6 +25,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Piece;
@@ -32,19 +33,17 @@ import org.petero.droidfish.gamelogic.Position;
 
 public class PolyglotBook implements IOpeningBook {
     private File bookFile;
+    private BookOptions options;
 
     PolyglotBook() {
         bookFile = new File("");
+        options = new BookOptions();
     }
 
     @Override
-    public final void setBookFileName(String fileName) {
-        bookFile = new File(fileName);
-    }
-
-    @Override
-    public int getWeight(int count) {
-        return count;
+    public final void setOptions(BookOptions options) {
+        bookFile = new File(options.filename);
+        this.options = new BookOptions(options);
     }
 
     /** Compute a polyglot hash key corresponding to a position. */
@@ -289,8 +288,8 @@ public class PolyglotBook implements IOpeningBook {
         0xF8D626AAAF278509L,
     };
 
-    static boolean canHandle(String filename) {
-        return filename.endsWith(".bin");
+    static boolean canHandle(BookOptions options) {
+        return options.filename.endsWith(".bin");
     }
 
     /** Return true if the external book is available. */
@@ -409,7 +408,18 @@ public class PolyglotBook implements IOpeningBook {
                     break;
                 Move m = ent.getMove(pos);
                 BookEntry be = new BookEntry(m);
-                be.count = ent.getWeight();
+                double w = ent.getWeight();
+                switch (options.randomness) {
+                case BookOptions.RANDOM_LOW:
+                    w *= w;
+                    break;
+                case BookOptions.RANDOM_MEDIUM:
+                    break;
+                case BookOptions.RANDOM_HIGH:
+                    w = 1;
+                    break;
+                }
+                be.weight = w;
                 ret.add(be);
                 entNo++;
             }

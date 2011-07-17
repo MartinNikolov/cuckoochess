@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.petero.droidfish.BookOptions;
 import org.petero.droidfish.engine.DroidBook.BookEntry;
 import org.petero.droidfish.gamelogic.ChessParseError;
 import org.petero.droidfish.gamelogic.Move;
@@ -34,6 +35,7 @@ import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 public class InternalBook implements IOpeningBook {
+    private BookOptions options = new BookOptions();
 
     private static Map<Long, List<BookEntry>> bookMap;
     private static int numBookMoves = -1;
@@ -61,16 +63,30 @@ public class InternalBook implements IOpeningBook {
     @Override
     public List<BookEntry> getBookEntries(Position pos) {
         initInternalBook();
-        return bookMap.get(pos.zobristHash());
+        List<BookEntry> ents = bookMap.get(pos.zobristHash());
+        List<BookEntry> ret = new ArrayList<BookEntry>();
+        for (BookEntry be : ents) {
+            BookEntry be2 = new BookEntry(be.move);
+            double w = be.weight;
+            switch (options.randomness) {
+            case BookOptions.RANDOM_LOW:
+                break;
+            case BookOptions.RANDOM_MEDIUM:
+                w = Math.sqrt(w) * 100 + 1;
+                break;
+            case BookOptions.RANDOM_HIGH:
+                w = 1;
+                break;
+            }
+            be2.weight = w;
+            ret.add(be2);
+        }
+        return ret;
     }
 
     @Override
-    public void setBookFileName(String fileName) {
-    }
-
-    @Override
-    public int getWeight(int count) {
-        return (int)(Math.sqrt(count) * 100 + 1);
+    public void setOptions(BookOptions options) {
+        this.options = new BookOptions(options);
     }
 
     private synchronized final void initInternalBook() {
@@ -134,7 +150,7 @@ public class InternalBook implements IOpeningBook {
         for (int i = 0; i < ent.size(); i++) {
             BookEntry be = ent.get(i);
             if (be.move.equals(moveToAdd)) {
-                be.count++;
+                be.weight++;
                 return;
             }
         }
