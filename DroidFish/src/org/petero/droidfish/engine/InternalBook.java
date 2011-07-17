@@ -64,6 +64,8 @@ public class InternalBook implements IOpeningBook {
     public List<BookEntry> getBookEntries(Position pos) {
         initInternalBook();
         List<BookEntry> ents = bookMap.get(pos.zobristHash());
+        if (ents == null)
+            return null;
         List<BookEntry> ret = new ArrayList<BookEntry>();
         for (BookEntry be : ents) {
             BookEntry be2 = new BookEntry(be.move);
