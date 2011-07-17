@@ -1045,7 +1045,22 @@ public class DroidFish extends Activity implements GUIInterface {
             return dialog;
         }
         case SELECT_BOOK_DIALOG: {
-            String[] fileNames = findFilesInDirectory(bookDir, null);
+            String[] fileNames = findFilesInDirectory(bookDir, new FileNameFilter() {
+                @Override
+                public boolean accept(String filename) {
+                    int dotIdx = filename.lastIndexOf(".");
+                    if (dotIdx >= 0) {
+                        String ext = filename.substring(dotIdx+1);
+                        String extL = ext.toLowerCase();
+                        if (extL.equals("ctg") ||
+                            extL.equals("ctb") ||
+                            extL.equals("cto")) {
+                            return ext.equals("ctg");
+                        }
+                    }
+                    return true;
+                }
+            });
             final int numFiles = fileNames.length;
             CharSequence[] items = new CharSequence[numFiles + 1];
             for (int i = 0; i < numFiles; i++)
@@ -1115,7 +1130,12 @@ public class DroidFish extends Activity implements GUIInterface {
             return alert;
         }
         case SELECT_SCID_FILE_DIALOG: {
-            final String[] fileNames = findFilesInDirectory(scidDir, ".si4");
+            final String[] fileNames = findFilesInDirectory(scidDir, new FileNameFilter() {
+                @Override
+                public boolean accept(String filename) {
+                    return filename.endsWith(".si4");
+                }
+            });
             final int numFiles = fileNames.length;
             if (numFiles == 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1498,7 +1518,11 @@ public class DroidFish extends Activity implements GUIInterface {
         }
     }
 
-    private final String[] findFilesInDirectory(String dirName, final String endsWith) {
+    private static interface FileNameFilter {
+        boolean accept(String filename);
+    }
+
+    private final String[] findFilesInDirectory(String dirName, final FileNameFilter filter) {
         File extDir = Environment.getExternalStorageDirectory();
         String sep = File.separator;
         File dir = new File(extDir.getAbsolutePath() + sep + dirName);
@@ -1506,11 +1530,7 @@ public class DroidFish extends Activity implements GUIInterface {
             public boolean accept(File pathname) {
                 if (!pathname.isFile())
                     return false;
-                if (endsWith != null) {
-                    if (!pathname.getAbsolutePath().endsWith(endsWith))
-                        return false;
-                }
-                return true;
+                return (filter == null) || filter.accept(pathname.getAbsolutePath());
             }
         });
         if (files == null)

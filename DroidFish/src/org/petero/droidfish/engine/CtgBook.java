@@ -101,8 +101,8 @@ public class CtgBook implements IOpeningBook {
                         int score = movePd.getOpponentScore();
 //                        int w0 = weight;
                         weight = (int)Math.round(Math.min(weight * 0.125 * score, 5000000));
-//                        System.out.printf("%s : w0:%d score:%d %d\n", TextIO.moveToUCIString(be.move),
-//                                w0, score, weight);
+//                        System.out.printf("%s : w0:%d rec:%d score:%d %d\n", TextIO.moveToUCIString(be.move),
+//                                w0, recom, score, weight);
                     }
                     be.count = weight;
                 }
@@ -404,6 +404,7 @@ public class CtgBook implements IOpeningBook {
 //                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
                 BookEntry ent = new BookEntry(m);
                 switch (flags) {
+                default:
                 case 0x00: ent.count = 8;       break; // No annotation
                 case 0x01: ent.count = 64;      break; // !
                 case 0x02: ent.count = 0;       break; // ?
@@ -710,7 +711,6 @@ public class CtgBook implements IOpeningBook {
             int piece = pos.getPiece(sq);
             ret.setPiece(mSq, piece);
         }
-        ret.setWhiteMove(!pos.whiteMove);
         int epSquare = pos.getEpSquare();
         if (epSquare >= 0) {
             int mEpSquare = mirrorSquareLeftRight(epSquare);

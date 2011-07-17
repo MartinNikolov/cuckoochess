@@ -154,11 +154,15 @@ The Android version can often search 15 ply or deeper on a 1GHz Snapdragon CPU.\
 go to the previous/next variation.\n\
 * Long press left/right buttons for additional game navigation commands.\n\
 \n\
-<b>Opening book</b>\n\
+<b>Opening books</b>\n\
 DroidFish contains a small internal opening book. If you want to use \
-a larger book, you can configure DroidFish to use a <i>polyglot</i> book file:\n\
+a larger book, you can configure DroidFish to use external <i>polyglot</i> \
+or <i>CTG</i> book files:\n\
 1. Create a directory called <i>DroidFish</i> on the SD card.\n\
-2. Copy one or more polyglot book files to the <i>DroidFish</i> directory.\n\
+2a. Copy one or more polyglot book files to the <i>DroidFish</i> directory.\n\
+2b. Copy one more more CTG book files to the <i>DroidFish</i> directory. A CTG \
+book consists of three files with file extensions .ctg, .ctb and .cto. \
+You must copy all three files.\n\
 3. From the program menu, activate the <i>Select opening book</i> function.\n\
 4. Select the opening book file you want to use.\n\
 \n\
