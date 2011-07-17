@@ -247,13 +247,13 @@
                 android:key="bookPreferMainLines"
                 android:title="Prefer main lines"
                 android:summary="Prefer book moves marked as main moves"
-                android:defaultValue="true">
+                android:defaultValue="false">
             </CheckBoxPreference>
             <CheckBoxPreference
                 android:key="bookTournamentMode"
                 android:title="Tournament mode"
                 android:summary="Ignore moves marked as not for tournament play"
-                android:defaultValue="true">
+                android:defaultValue="false">
             </CheckBoxPreference>
             <ListPreference
                 android:key="bookRandomization"

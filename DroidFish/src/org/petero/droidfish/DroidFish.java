@@ -546,8 +546,8 @@ public class DroidFish extends Activity implements GUIInterface {
 
         bookOptions.filename = settings.getString("bookFile", "");
         bookOptions.maxLength = getIntSetting("bookMaxLength", 1000000);
-        bookOptions.preferMainLines = settings.getBoolean("bookPreferMainLines", true);
-        bookOptions.tournamentMode = settings.getBoolean("bookTournamentMode", true);
+        bookOptions.preferMainLines = settings.getBoolean("bookPreferMainLines", false);
+        bookOptions.tournamentMode = settings.getBoolean("bookTournamentMode", false);
         bookOptions.randomness = getIntSetting("bookRandomization", 1);
         setBookOptions();
 

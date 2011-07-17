@@ -89,7 +89,7 @@ public class CtgBook implements IOpeningBook {
                     pd.pos.unMakeMove(be.move, ui);
                     double weight = be.weight;
                     if (movePd == null) {
-                        System.out.printf("%s : no pos\n", TextIO.moveToUCIString(be.move));
+//                        System.out.printf("%s : no pos\n", TextIO.moveToUCIString(be.move));
                         weight = 0;
                     } else {
                         int recom = movePd.getRecommendation();
@@ -101,7 +101,7 @@ public class CtgBook implements IOpeningBook {
                                 weight *= 10;
                         }
                         int score = movePd.getOpponentScore();
-                        double w0 = weight;
+//                        double w0 = weight;
                         switch (options.randomness) {
                         case BookOptions.RANDOM_LOW:
                             weight = weight * score;
@@ -116,8 +116,8 @@ public class CtgBook implements IOpeningBook {
                                 weight = 1;
                             break;
                         }
-                        System.out.printf("%s : w0:%.3f rec:%d score:%d %.3f\n", TextIO.moveToUCIString(be.move),
-                                w0, recom, score, weight);
+//                        System.out.printf("%s : w0:%.3f rec:%d score:%d %.3f\n", TextIO.moveToUCIString(be.move),
+//                                w0, recom, score, weight);
                     }
                     be.weight = weight;
                 }
@@ -416,7 +416,7 @@ public class CtgBook implements IOpeningBook {
                 Move m = decodeMove(pos, move);
                 if (m == null)
                     continue;
-                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
+//                System.out.printf("mi:%d m:%s flags:%d\n", mi, TextIO.moveToUCIString(m), flags);
                 BookEntry ent = new BookEntry(m);
                 switch (flags) {
                 default:

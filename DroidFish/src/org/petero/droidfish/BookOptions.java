@@ -23,8 +23,8 @@ public class BookOptions {
     public String filename = "";
 
     public int maxLength = 1000000;
-    public boolean preferMainLines = true;
-    public boolean tournamentMode = true;
+    public boolean preferMainLines = false;
+    public boolean tournamentMode = false;
     public int randomness = 1;
 
     final public static int RANDOM_LOW    = 0;
