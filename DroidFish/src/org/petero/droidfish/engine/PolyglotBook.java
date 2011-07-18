@@ -33,17 +33,14 @@ import org.petero.droidfish.gamelogic.Position;
 
 public class PolyglotBook implements IOpeningBook {
     private File bookFile;
-    private BookOptions options;
 
     PolyglotBook() {
         bookFile = new File("");
-        options = new BookOptions();
     }
 
     @Override
     public final void setOptions(BookOptions options) {
         bookFile = new File(options.filename);
-        this.options = new BookOptions(options);
     }
 
     /** Compute a polyglot hash key corresponding to a position. */
@@ -408,18 +405,7 @@ public class PolyglotBook implements IOpeningBook {
                     break;
                 Move m = ent.getMove(pos);
                 BookEntry be = new BookEntry(m);
-                double w = ent.getWeight();
-                switch (options.randomness) {
-                case BookOptions.RANDOM_LOW:
-                    w *= w;
-                    break;
-                case BookOptions.RANDOM_MEDIUM:
-                    break;
-                case BookOptions.RANDOM_HIGH:
-                    w = 1;
-                    break;
-                }
-                be.weight = w;
+                be.weight = ent.getWeight();
                 ret.add(be);
                 entNo++;
             }

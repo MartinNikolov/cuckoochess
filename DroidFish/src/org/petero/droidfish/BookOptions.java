@@ -25,11 +25,7 @@ public class BookOptions {
     public int maxLength = 1000000;
     public boolean preferMainLines = false;
     public boolean tournamentMode = false;
-    public int randomness = 1;
-
-    final public static int RANDOM_LOW    = 0;
-    final public static int RANDOM_MEDIUM = 1;
-    final public static int RANDOM_HIGH   = 2;
+    public double random = 0; // Scale probabilities according to p^(exp(-random))
 
     public BookOptions() { }
 
@@ -38,7 +34,7 @@ public class BookOptions {
         maxLength = other.maxLength;
         preferMainLines = other.preferMainLines;
         tournamentMode = other.tournamentMode;
-        randomness = other.randomness;
+        random = other.random;
     }
 
     @Override
@@ -51,6 +47,6 @@ public class BookOptions {
                 (maxLength == other.maxLength) &&
                 (preferMainLines == other.preferMainLines) &&
                 (tournamentMode == other.tournamentMode) &&
-                (randomness == other.randomness));
+                (random == other.random));
     }
 }

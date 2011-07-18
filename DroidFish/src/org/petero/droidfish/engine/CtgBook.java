@@ -102,20 +102,7 @@ public class CtgBook implements IOpeningBook {
                         }
                         int score = movePd.getOpponentScore();
 //                        double w0 = weight;
-                        switch (options.randomness) {
-                        case BookOptions.RANDOM_LOW:
-                            weight = weight * score;
-                            if (weight > 1)
-                                weight *= weight;
-                            break;
-                        case BookOptions.RANDOM_MEDIUM:
-                            weight = weight * score;
-                            break;
-                        case BookOptions.RANDOM_HIGH:
-                            if (weight > 0)
-                                weight = 1;
-                            break;
-                        }
+                          weight = weight * score;
 //                        System.out.printf("%s : w0:%.3f rec:%d score:%d %.3f\n", TextIO.moveToUCIString(be.move),
 //                                w0, recom, score, weight);
                     }

@@ -35,8 +35,6 @@ import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
 
 public class InternalBook implements IOpeningBook {
-    private BookOptions options = new BookOptions();
-
     private static Map<Long, List<BookEntry>> bookMap;
     private static int numBookMoves = -1;
 
@@ -69,18 +67,7 @@ public class InternalBook implements IOpeningBook {
         List<BookEntry> ret = new ArrayList<BookEntry>();
         for (BookEntry be : ents) {
             BookEntry be2 = new BookEntry(be.move);
-            double w = be.weight;
-            switch (options.randomness) {
-            case BookOptions.RANDOM_LOW:
-                break;
-            case BookOptions.RANDOM_MEDIUM:
-                w = Math.sqrt(w) * 100 + 1;
-                break;
-            case BookOptions.RANDOM_HIGH:
-                w = 1;
-                break;
-            }
-            be2.weight = w;
+            be2.weight = Math.sqrt(be.weight) * 100 + 1;
             ret.add(be2);
         }
         return ret;
@@ -88,7 +75,6 @@ public class InternalBook implements IOpeningBook {
 
     @Override
     public void setOptions(BookOptions options) {
-        this.options = new BookOptions(options);
     }
 
     private synchronized final void initInternalBook() {

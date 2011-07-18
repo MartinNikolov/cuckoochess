@@ -147,16 +147,6 @@
         <item>50 moves</item>
         <item>Unlimited</item>
     </string-array>
-    <string-array name="book_randomization_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string-array name="book_randomization_texts">
-        <item>Low</item>
-        <item>Medium</item>
-        <item>High</item>
-    </string-array>
 	<string name="about_info">\
 <b>About</b>\n\
 <i>DroidFish</i> is an Android port of the famous <i>stockfish 2.1</i> chess engine. \
@@ -251,7 +241,8 @@ you are not actively using the program.\
     <string name="tools_menu">Tools</string>
     <string name="load_save_menu">Load/Save Game</string>
 	<string name="goto_move">Goto move</string>
-    <string name="select_strength">Select Strength</string>
+    <string name="edit_strength">Edit Strength</string>
+    <string name="edit_randomization">Edit Randomization</string>
 	<string name="invalid_number_format">Invalid number format</string>
 	<string name="side_to_move">Side to Move</string>
 	<string name="clear_board">Clear Board</string>

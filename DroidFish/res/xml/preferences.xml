@@ -255,13 +255,11 @@
                 android:summary="Ignore moves marked as not for tournament play"
                 android:defaultValue="false">
             </CheckBoxPreference>
-            <ListPreference
-                android:key="bookRandomization"
-                android:title="Book Randomization"
-                android:entryValues="@array/book_randomization_values"
-                android:entries="@array/book_randomization_texts"
-                android:defaultValue="1">
-            </ListPreference>
+            <org.petero.droidfish.SeekBarPreference
+                android:key="bookRandom"
+                android:defaultValue="500"
+                android:title="Book Randomization">
+            </org.petero.droidfish.SeekBarPreference>
     		<EditTextPreference
                 android:key="bookFile"
                 android:title="Book Filename"

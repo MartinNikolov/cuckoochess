@@ -108,7 +108,7 @@ public final class DroidBook {
                 // or a corrupt external book file.
                 return null;
             }
-            sum += bookMoves.get(i).weight;
+            sum += scaleWeight(bookMoves.get(i).weight);
         }
         if (sum <= 0) {
             return null;
@@ -116,11 +116,19 @@ public final class DroidBook {
         double rnd = rndGen.nextDouble() * sum;
         sum = 0;
         for (int i = 0; i < nMoves; i++) {
-            sum += bookMoves.get(i).weight;
+            sum += scaleWeight(bookMoves.get(i).weight);
             if (rnd < sum)
                 return bookMoves.get(i).move;
         }
         return bookMoves.get(nMoves-1).move;
+    }
+
+    private final double scaleWeight(double w) {
+        if (w <= 0)
+            return 0;
+        if (options == null)
+            return w;
+        return Math.pow(w, Math.exp(-options.random));
     }
 
     final private IOpeningBook getBook() {
@@ -162,7 +170,7 @@ public final class DroidBook {
                 }});
             double totalWeight = 0;
             for (BookEntry be : bookMoves)
-                totalWeight += be.weight;
+                totalWeight += scaleWeight(be.weight);
             if (totalWeight <= 0) totalWeight = 1;
             for (BookEntry be : bookMoves) {
                 Move m = be.move;
@@ -170,7 +178,7 @@ public final class DroidBook {
                 String moveStr = TextIO.moveToString(pos, m, false);
                 ret.append(moveStr);
                 ret.append(':');
-                int percent = (int)Math.round(be.weight * 100 / totalWeight);
+                int percent = (int)Math.round(scaleWeight(be.weight) * 100 / totalWeight);
                 ret.append(percent);
                 ret.append(' ');
             }
