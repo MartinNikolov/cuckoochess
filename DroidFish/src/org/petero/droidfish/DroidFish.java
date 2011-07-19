@@ -108,7 +108,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! What should happen if you change time controls in the middle of a game?
 
     // FIXME!!! Implement pondering (permanent brain)
-    // FIXME!!! Implement multi-variation analysis mode
     // FIXME!!! Online play on FICS
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
