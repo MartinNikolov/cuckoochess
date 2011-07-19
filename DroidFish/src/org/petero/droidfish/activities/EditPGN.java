@@ -96,7 +96,8 @@ public class EditPGN extends ListActivity {
             final EditPGN lpgn = this;
             new Thread(new Runnable() {
                 public void run() {
-                    readFile();
+                    if (!readFile())
+                        return;
                     runOnUiThread(new Runnable() {
                         public void run() {
                             lpgn.showList();
@@ -118,7 +119,8 @@ public class EditPGN extends ListActivity {
             } else {
                 new Thread(new Runnable() {
                     public void run() {
-                        readFile();
+                        if (!readFile())
+                            return;
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 if (loadItem >= gamesInFile.size()) {
@@ -148,7 +150,8 @@ public class EditPGN extends ListActivity {
                 final EditPGN lpgn = this;
                 new Thread(new Runnable() {
                     public void run() {
-                        readFile();
+                        if (!readFile())
+                            return;
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 if (gamesInFile.size() == 0) {
@@ -344,18 +347,30 @@ public class EditPGN extends ListActivity {
         }
     }
 
-    private final void readFile() {
+    private final boolean readFile() {
         String fileName = pgnFile.getName();
         if (!fileName.equals(lastFileName))
             defaultItem = 0;
         long modTime = new File(fileName).lastModified();
         if (cacheValid && (modTime == lastModTime) && fileName.equals(lastFileName))
-            return;
-        lastModTime = modTime;
-        lastFileName = fileName;
+            return true;
         pgnFile = new PGNFile(fileName);
         gamesInFile = pgnFile.getGameInfo(this, progress);
+        if (gamesInFile == null) { // Out of memory
+            gamesInFile = new ArrayList<GameInfo>();
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "File too large", Toast.LENGTH_SHORT).show();
+                }
+            });
+            setResult(RESULT_CANCELED);
+            finish();
+            return false;
+        }
         cacheValid = true;
+        lastModTime = modTime;
+        lastFileName = fileName;
+        return true;
     }
 
     private final void sendBackResult(GameInfo gi) {

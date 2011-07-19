@@ -40,55 +40,26 @@ public class PGNFile {
     public final String getName() {
         return fileName.getAbsolutePath();
     }
-    
+
     static final class GameInfo {
-        String event = "";
-        String site = "";
-        String date = "";
-        String round = "";
-        String white = "";
-        String black = "";
-        String result = "";
+        String info = "";
         long startPos;
         long endPos;
 
         final GameInfo setNull(long currPos) {
-            event = null;
+            info = null;
             startPos = currPos;
             endPos = currPos;
             return this;
         }
-        
-        final boolean isNull() { return event == null; }
+
+        final boolean isNull() { return info == null; }
 
         public String toString() {
-            if (event == null)
+            if (info == null)
                 return "--";
-            StringBuilder info = new StringBuilder(128);
-            info.append(white);
-            info.append(" - ");
-            info.append(black);
-            if (date.length() > 0) {
-                info.append(' ');
-                info.append(date);
-            }
-            if (round.length() > 0) {
-                info.append(' ');
-                info.append(round);
-            }
-            if (event.length() > 0) {
-                info.append(' ');
-                info.append(event);
-            }
-            if (site.length() > 0) {
-                info.append(' ');
-                info.append(site);
-            }
-            info.append(' ');
-            info.append(result);
-            return info.toString();
+            return info;
         }
-
     }
     
     
@@ -169,9 +140,46 @@ public class PGNFile {
             return buffer[bufPos++];
         }
     }
-    
-    /** Return info about all PGN games in a file. */
-    public final ArrayList<GameInfo> getGameInfo(Activity activity, 
+
+    private final static class HeaderInfo {
+        String event = "";
+        String site = "";
+        String date = "";
+        String round = "";
+        String white = "";
+        String black = "";
+        String result = "";
+
+        public String toString() {
+            StringBuilder info = new StringBuilder(128);
+            info.append(white);
+            info.append(" - ");
+            info.append(black);
+            if (date.length() > 0) {
+                info.append(' ');
+                info.append(date);
+            }
+            if (round.length() > 0) {
+                info.append(' ');
+                info.append(round);
+            }
+            if (event.length() > 0) {
+                info.append(' ');
+                info.append(event);
+            }
+            if (site.length() > 0) {
+                info.append(' ');
+                info.append(site);
+            }
+            info.append(' ');
+            info.append(result);
+            return info.toString();
+        }
+    }
+
+    /** Return info about all PGN games in a file, or null if out of memory.
+     * @param context */
+    public final ArrayList<GameInfo> getGameInfo(Activity activity,
                                                  final ProgressDialog progress) {
         ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
         
@@ -181,7 +189,7 @@ public class PGNFile {
             BufferedRandomAccessFileReader f = new BufferedRandomAccessFileReader(fileName.getAbsolutePath());
             long fileLen = f.length();
             GameInfo gi = null;
-            GameInfo prevGi = new GameInfo();
+            HeaderInfo hi = null;
             boolean inHeader = false;
             long filePos = 0;
             while (true) {
@@ -202,6 +210,7 @@ public class PGNFile {
                         inHeader = true;
                         if (gi != null) {
                             gi.endPos = filePos;
+                            gi.info = hi.toString();
                             gamesInFile.add(gi);
                             final int newPercent = (int)(filePos * 100 / fileLen);
                             if (newPercent > percent) {
@@ -214,40 +223,34 @@ public class PGNFile {
                                     });
                                 }
                             }
-                            prevGi = gi;
                         }
                         gi = new GameInfo();
                         gi.startPos = filePos;
                         gi.endPos = -1;
+                        hi = new HeaderInfo();
                     }
                     if (line.startsWith("[Event ")) {
-                        gi.event = line.substring(8, len - 2);
-                        if (gi.event.equals("?")) gi.event = "";
-                        else if (gi.event.equals(prevGi.event)) gi.event = prevGi.event;
+                        hi.event = line.substring(8, len - 2);
+                        if (hi.event.equals("?")) hi.event = "";
                     } else if (line.startsWith("[Site ")) {
-                        gi.site = line.substring(7, len - 2);
-                        if (gi.site.equals("?")) gi.site = "";
-                        else if (gi.site.equals(prevGi.site)) gi.site = prevGi.site;
+                        hi.site = line.substring(7, len - 2);
+                        if (hi.site.equals("?")) hi.site = "";
                     } else if (line.startsWith("[Date ")) {
-                        gi.date = line.substring(7, len - 2);
-                        if (gi.date.equals("?")) gi.date = "";
-                        else if (gi.date.equals(prevGi.date)) gi.date = prevGi.date;
+                        hi.date = line.substring(7, len - 2);
+                        if (hi.date.equals("?")) hi.date = "";
                     } else if (line.startsWith("[Round ")) {
-                        gi.round = line.substring(8, len - 2);
-                        if (gi.round.equals("?")) gi.round = "";
-                        else if (gi.round.equals(prevGi.round)) gi.round = prevGi.round;
+                        hi.round = line.substring(8, len - 2);
+                        if (hi.round.equals("?")) hi.round = "";
                     } else if (line.startsWith("[White ")) {
-                        gi.white = line.substring(8, len - 2);
-                        if (gi.white.equals(prevGi.white)) gi.white = prevGi.white;
+                        hi.white = line.substring(8, len - 2);
                     } else if (line.startsWith("[Black ")) {
-                        gi.black = line.substring(8, len - 2);
-                        if (gi.black.equals(prevGi.black)) gi.black = prevGi.black;
+                        hi.black = line.substring(8, len - 2);
                     } else if (line.startsWith("[Result ")) {
-                        gi.result = line.substring(9, len - 2);
-                        if (gi.result.equals("1-0")) gi.result = "1-0";
-                        else if (gi.result.equals("0-1")) gi.result = "0-1";
-                        else if ((gi.result.equals("1/2-1/2")) || (gi.result.equals("1/2"))) gi.result = "1/2-1/2";
-                        else gi.result = "*";
+                        hi.result = line.substring(9, len - 2);
+                        if (hi.result.equals("1-0")) hi.result = "1-0";
+                        else if (hi.result.equals("0-1")) hi.result = "0-1";
+                        else if ((hi.result.equals("1/2-1/2")) || (hi.result.equals("1/2"))) hi.result = "1/2-1/2";
+                        else hi.result = "*";
                     }
                 } else {
                     inHeader = false;
@@ -255,10 +258,14 @@ public class PGNFile {
             }
             if (gi != null) {
                 gi.endPos = filePos;
+                gi.info = hi.toString();
                 gamesInFile.add(gi);
             }
             f.close();
         } catch (IOException e) {
+        } catch (OutOfMemoryError e) {
+            gamesInFile.clear();
+            gamesInFile = null;
         }
 
         return gamesInFile;
