@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 import org.petero.droidfish.R;
 import org.petero.droidfish.activities.PGNFile.GameInfo;
+import org.petero.droidfish.activities.PGNFile.GameInfoResult;
+import org.petero.droidfish.gamelogic.Pair;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,6 +33,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -63,6 +66,8 @@ public class EditPGN extends ListActivity {
     String lastFileName = "";
     long lastModTime = -1;
 
+    Thread workThread = null;
+
     boolean loadGame; // True when loading game, false when saving
     String pgnToSave;
     
@@ -94,7 +99,7 @@ public class EditPGN extends ListActivity {
             loadGame = true;
             showDialog(PROGRESS_DIALOG);
             final EditPGN lpgn = this;
-            new Thread(new Runnable() {
+            workThread = new Thread(new Runnable() {
                 public void run() {
                     if (!readFile())
                         return;
@@ -104,7 +109,8 @@ public class EditPGN extends ListActivity {
                         }
                     });
                 }
-            }).start();
+            });
+            workThread.start();
         } else if (action.equals("org.petero.droidfish.loadFileNextGame") ||
                    action.equals("org.petero.droidfish.loadFilePrevGame")) {
             pgnFile = new PGNFile(fileName);
@@ -117,7 +123,7 @@ public class EditPGN extends ListActivity {
                 setResult(RESULT_CANCELED);
                 finish();
             } else {
-                new Thread(new Runnable() {
+                workThread = new Thread(new Runnable() {
                     public void run() {
                         if (!readFile())
                             return;
@@ -135,7 +141,8 @@ public class EditPGN extends ListActivity {
                             }
                         });
                     }
-                }).start();
+                });
+                workThread.start();
             }
         } else if (action.equals("org.petero.droidfish.saveFile")) {
             loadGame = false;
@@ -148,7 +155,7 @@ public class EditPGN extends ListActivity {
                 pgnFile = new PGNFile(fileName);
                 showDialog(PROGRESS_DIALOG);
                 final EditPGN lpgn = this;
-                new Thread(new Runnable() {
+                workThread = new Thread(new Runnable() {
                     public void run() {
                         if (!readFile())
                             return;
@@ -163,7 +170,8 @@ public class EditPGN extends ListActivity {
                             }
                         });
                     }
-                }).start();
+                });
+                workThread.start();
             }
         } else { // Unsupported action
             setResult(RESULT_CANCELED);
@@ -189,6 +197,19 @@ public class EditPGN extends ListActivity {
         editor.putLong("lastModTime", lastModTime);
         editor.commit();
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (workThread != null) {
+            workThread.interrupt();
+            try {
+                workThread.join();
+            } catch (InterruptedException e) {
+            }
+            workThread = null;
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -276,7 +297,14 @@ public class EditPGN extends ListActivity {
             progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progress.setTitle(R.string.reading_pgn_file);
             progress.setMessage(getString(R.string.please_wait));
-            progress.setCancelable(false);
+            progress.setOnCancelListener(new OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    Thread thr = workThread;
+                    if (thr != null)
+                        thr.interrupt();
+                }
+            });
             return progress;
         case DELETE_GAME_DIALOG: {
             final GameInfo gi = selectedGi;
@@ -355,18 +383,21 @@ public class EditPGN extends ListActivity {
         if (cacheValid && (modTime == lastModTime) && fileName.equals(lastFileName))
             return true;
         pgnFile = new PGNFile(fileName);
-        gamesInFile = pgnFile.getGameInfo(this, progress);
-        if (gamesInFile == null) { // Out of memory
+        Pair<GameInfoResult, ArrayList<GameInfo>> p = pgnFile.getGameInfo(this, progress);
+        if (p.first != GameInfoResult.OK) {
             gamesInFile = new ArrayList<GameInfo>();
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(getApplicationContext(), "File too large", Toast.LENGTH_SHORT).show();
-                }
-            });
+            if (p.first == GameInfoResult.OUT_OF_MEMORY) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "File too large", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
             setResult(RESULT_CANCELED);
             finish();
             return false;
         }
+        gamesInFile = p.second;
         cacheValid = true;
         lastModTime = modTime;
         lastFileName = fileName;

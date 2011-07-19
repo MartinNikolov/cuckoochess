@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
+import org.petero.droidfish.gamelogic.Pair;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -177,12 +179,16 @@ public class PGNFile {
         }
     }
 
-    /** Return info about all PGN games in a file, or null if out of memory.
-     * @param context */
-    public final ArrayList<GameInfo> getGameInfo(Activity activity,
-                                                 final ProgressDialog progress) {
+    public static enum GameInfoResult {
+        OK,
+        CANCEL,
+        OUT_OF_MEMORY;
+    }
+
+    /** Return info about all PGN games in a file. */
+    public final Pair<GameInfoResult,ArrayList<GameInfo>> getGameInfo(Activity activity,
+                                                                      final ProgressDialog progress) {
         ArrayList<GameInfo> gamesInFile = new ArrayList<GameInfo>();
-        
         try {
             int percent = -1;
             gamesInFile.clear();
@@ -223,6 +229,8 @@ public class PGNFile {
                                     });
                                 }
                             }
+                            if (Thread.currentThread().isInterrupted())
+                                return new Pair<GameInfoResult,ArrayList<GameInfo>>(GameInfoResult.CANCEL, null);
                         }
                         gi = new GameInfo();
                         gi.startPos = filePos;
@@ -266,9 +274,10 @@ public class PGNFile {
         } catch (OutOfMemoryError e) {
             gamesInFile.clear();
             gamesInFile = null;
+            return new Pair<GameInfoResult,ArrayList<GameInfo>>(GameInfoResult.OUT_OF_MEMORY, null);
         }
 
-        return gamesInFile;
+        return new Pair<GameInfoResult,ArrayList<GameInfo>>(GameInfoResult.OK, gamesInFile);
     }
 
     private final void mkDirs() {
