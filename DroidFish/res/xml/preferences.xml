@@ -263,7 +263,7 @@
     		<EditTextPreference
                 android:key="bookFile"
                 android:title="Book Filename"
-                android:summary="Polyglot book file in DroidFish directory on SD Card"
+                android:summary="Polyglot or CTG book file in DroidFish directory on SD Card"
                 android:defaultValue="">
             </EditTextPreference>
 		</PreferenceScreen>
