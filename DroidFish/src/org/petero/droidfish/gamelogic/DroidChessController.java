@@ -804,7 +804,7 @@ public class DroidChessController {
     }
 
     private Object shutdownEngineLock = new Object();
-    public final void shutdownEngine() {
+    public final synchronized void shutdownEngine() {
         synchronized (shutdownEngineLock) {
             gameMode = new GameMode(GameMode.TWO_PLAYERS);
             ss.searchResultWanted = false;
