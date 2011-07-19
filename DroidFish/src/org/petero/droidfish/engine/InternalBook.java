@@ -80,7 +80,7 @@ public class InternalBook implements IOpeningBook {
     private synchronized final void initInternalBook() {
         if (numBookMoves >= 0)
             return;
-        long t0 = System.currentTimeMillis();
+//        long t0 = System.currentTimeMillis();
         bookMap = new HashMap<Long, List<BookEntry>>();
         numBookMoves = 0;
         try {
@@ -120,11 +120,11 @@ public class InternalBook implements IOpeningBook {
             System.out.println("Can't read opening book resource");
             throw new RuntimeException();
         }
-        {
+/*        {
             long t1 = System.currentTimeMillis();
             System.out.printf("Book moves:%d (parse time:%.3f)%n", numBookMoves,
                     (t1 - t0) / 1000.0);
-        }
+        } */
     }
 
     

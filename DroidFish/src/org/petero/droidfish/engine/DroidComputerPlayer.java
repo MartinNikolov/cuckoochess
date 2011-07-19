@@ -32,6 +32,7 @@ import org.petero.droidfish.gamelogic.Position;
 import org.petero.droidfish.gamelogic.SearchListener;
 import org.petero.droidfish.gamelogic.TextIO;
 import org.petero.droidfish.gamelogic.UndoInfo;
+import org.petero.droidfish.gamelogic.SearchListener.PvInfo;
 
 /**
  * A computer algorithm player.
@@ -45,6 +46,7 @@ public class DroidComputerPlayer {
     private DroidBook book;
     private boolean newGame = false;
     private String engine = "";
+    private int maxPV = 1;  // >1 if multiPV mode is supported
 
     public DroidComputerPlayer(String engine) {
         this.engine = engine;
@@ -90,6 +92,17 @@ public class DroidComputerPlayer {
             uciEngine.setStrength(strength);
     }
 
+    public final synchronized int getMaxPV() {
+        return maxPV;
+    }
+
+    public final synchronized void setNumPV(int numPV) {
+        if ((uciEngine != null) && (maxPV > 1)) {
+            int num = Math.min(maxPV, numPV);
+            uciEngine.writeLineToEngine(String.format("setoption name MultiPV value %d", num));
+        }
+    }
+
     private static int getNumCPUs() {
         int nCPUsFromProc = 1;
         try {
@@ -120,6 +133,7 @@ public class DroidComputerPlayer {
     
     private void readUCIOptions() {
         int timeout = 1000;
+        maxPV = 1;
         while (true) {
             String s = uciEngine.readLineFromEngine(timeout);
             String[] tokens = tokenize(s);
@@ -134,6 +148,15 @@ public class DroidComputerPlayer {
                         engineName += tokens[i];
                     }
                 }
+            } else if ((tokens.length > 2) && tokens[2].toLowerCase().equals("multipv")) {
+                try {
+                    for (int i = 3; i < tokens.length; i++) {
+                        if (tokens[i].equals("max") && (i+1 < tokens.length)) {
+                            maxPV = Math.max(maxPV, Integer.parseInt(tokens[i+1]));
+                            break;
+                        }
+                    }
+                } catch (NumberFormatException nfe) { }
             }
         }
     }
@@ -395,9 +418,12 @@ public class DroidComputerPlayer {
     private int statTime = 0;
     private int statNodes = 0;
     private int statNps = 0;
+    private int pvNum = 0;
     private ArrayList<String> statPV = new ArrayList<String>();
     private String statCurrMove = "";
     private int statCurrMoveNr = 0;
+
+    private ArrayList<PvInfo> statPvInfo = new ArrayList<PvInfo>();
 
     private boolean depthModified = false;
     private boolean currMoveModified = false;
@@ -409,10 +435,12 @@ public class DroidComputerPlayer {
         currMoveModified = false;
         pvModified = false;
         statsModified = false;
+        statPvInfo.clear();
     }
 
     private final void parseInfoCmd(String[] tokens) {
         try {
+            boolean havePvData = false;
             int nTokens = tokens.length;
             int i = 1;
             while (i < nTokens - 1) {
@@ -435,11 +463,17 @@ public class DroidComputerPlayer {
                 } else if (is.equals("nps")) {
                     statNps = Integer.parseInt(tokens[i++]);
                     statsModified = true;
+                } else if (is.equals("multipv")) {
+                    pvNum = Integer.parseInt(tokens[i++]) - 1;
+                    if (pvNum < 0) pvNum = 0;
+                    if (pvNum > 255) pvNum = 255;
+                    pvModified = true;
                 } else if (is.equals("pv")) {
                     statPV.clear();
                     while (i < nTokens)
                         statPV.add(tokens[i++]);
                     pvModified = true;
+                    havePvData = true;
                     statPVDepth = statCurrDepth;
                 } else if (is.equals("score")) {
                     statIsMate = tokens[i++].equals("mate");
@@ -455,6 +489,18 @@ public class DroidComputerPlayer {
                     }
                     pvModified = true;
                 }
+            }
+            if (havePvData) {
+                while (statPvInfo.size() < pvNum)
+                    statPvInfo.add(new PvInfo(0, 0, 0, 0, 0, false, false, false, new ArrayList<Move>()));
+                while (statPvInfo.size() <= pvNum)
+                    statPvInfo.add(null);
+                ArrayList<Move> moves = new ArrayList<Move>();
+                int nMoves = statPV.size();
+                for (i = 0; i < nMoves; i++)
+                    moves.add(TextIO.UCIstringToMove(statPV.get(i)));
+                statPvInfo.set(pvNum, new PvInfo(statPVDepth, statScore, statTime, statNodes, statNps, statIsMate,
+                                             statUpperBound, statLowerBound, moves));
             }
         } catch (NumberFormatException nfe) {
             // Ignore
@@ -477,12 +523,7 @@ public class DroidComputerPlayer {
             currMoveModified = false;
         }
         if (pvModified) {
-            ArrayList<Move> moves = new ArrayList<Move>();
-            int nMoves = statPV.size();
-            for (int i = 0; i < nMoves; i++)
-                moves.add(TextIO.UCIstringToMove(statPV.get(i)));
-            listener.notifyPV(pos, statPVDepth, statScore, statTime, statNodes, statNps,
-                              statIsMate, statUpperBound, statLowerBound, moves);
+            listener.notifyPV(pos, statPvInfo);
             pvModified = false;
         }
         if (statsModified) {

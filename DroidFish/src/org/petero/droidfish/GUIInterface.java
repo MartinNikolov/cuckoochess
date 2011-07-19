@@ -18,6 +18,7 @@
 
 package org.petero.droidfish;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.petero.droidfish.gamelogic.Move;
@@ -40,7 +41,7 @@ public interface GUIInterface {
     public void moveListUpdated();
 
     /** Update the computer thinking information. */
-    public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves);
+    public void setThinkingInfo(String pvStr, String bookInfo, ArrayList<ArrayList<Move>> pvMoves, List<Move> bookMoves);
     
     /** Ask what to promote a pawn to. Should call reportPromotePiece() when done. */
     public void requestPromotePiece();

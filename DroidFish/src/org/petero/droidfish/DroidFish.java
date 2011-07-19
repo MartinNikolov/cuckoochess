@@ -802,12 +802,13 @@ public class DroidFish extends Activity implements GUIInterface {
     private String thinkingStr = "";
     private String bookInfoStr = "";
     private String variantStr = "";
-    private List<Move> pvMoves = null;
+    private ArrayList<ArrayList<Move>> pvMoves = new ArrayList<ArrayList<Move>>();
     private List<Move> bookMoves = null;
     private List<Move> variantMoves = null;
 
     @Override
-    public void setThinkingInfo(String pvStr, String bookInfo, List<Move> pvMoves, List<Move> bookMoves) {
+    public void setThinkingInfo(String pvStr, String bookInfo,
+                                ArrayList<ArrayList<Move>> pvMoves, List<Move> bookMoves) {
         thinkingStr = pvStr;
         bookInfoStr = bookInfo;
         this.pvMoves = pvMoves;
@@ -849,8 +850,17 @@ public class DroidFish extends Activity implements GUIInterface {
         }
 
         List<Move> hints = null;
-        if (mShowThinking || gameMode.analysisMode())
-            hints = pvMoves;
+        if (mShowThinking || gameMode.analysisMode()) {
+            ArrayList<ArrayList<Move>> pvMovesTmp = pvMoves;
+            if (pvMovesTmp.size() == 1) {
+                hints = pvMovesTmp.get(0);
+            } else if (pvMovesTmp.size() > 1) {
+                hints = new ArrayList<Move>();
+                for (ArrayList<Move> pv : pvMovesTmp)
+                    if (!pv.isEmpty())
+                        hints.add(pv.get(0));
+            }
+        }
         if ((hints == null) && mShowBookHints)
             hints = bookMoves;
         if ((variantMoves != null) && variantMoves.size() > 1) {
@@ -1366,37 +1376,55 @@ public class DroidFish extends Activity implements GUIInterface {
             return alert;
         }
         case THINKING_MENU_DIALOG: {
-            {
-                List<Move> pvMovesTmp = pvMoves;
-                if (pvMovesTmp == null || (pvMovesTmp.size() == 0))
-                    return null;
-            }
+            if (pvMoves.isEmpty())
+                return null;
             final int ADD_ANALYSIS = 0;
+            final int MULTIPV_DEC = 1;
+            final int MULTIPV_INC = 2;
             List<CharSequence> lst = new ArrayList<CharSequence>();
             List<Integer> actions = new ArrayList<Integer>();
             lst.add("Add Analysis"); actions.add(ADD_ANALYSIS);
+            int maxPV = ctrl.maxPV();
+            final int numPV = ctrl.getNumPV();
+            if (numPV > 1) {
+                lst.add("Fewer Variations"); actions.add(MULTIPV_DEC);
+            }
+            if (numPV < maxPV) {
+                lst.add("More Variations"); actions.add(MULTIPV_INC);
+            }
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.edit_game);
+            builder.setTitle(R.string.analysis);
             builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     switch (finalActions.get(item)) {
                     case ADD_ANALYSIS: {
-                        List<Move> pvMovesTmp = pvMoves;
-                        if (pvMovesTmp != null && (pvMovesTmp.size() > 0)) {
-                            String[] tmp = thinkingStr.split(" ");
+                        ArrayList<ArrayList<Move>> pvMovesTmp = pvMoves;
+                        String[] pvStrs = thinkingStr.split("\n");
+                        for (int i = 0; i < pvMovesTmp.size(); i++) {
+                            ArrayList<Move> pv = pvMovesTmp.get(i);
                             StringBuilder preComment = new StringBuilder();
-                            for (int i = 0; i < 2; i++) {
-                                if (i < tmp.length) {
-                                    if (i > 0) preComment.append(' ');
-                                    preComment.append(tmp[i]);
+                            if (pvStrs.length > i) {
+                                String[] tmp = pvStrs[i].split(" ");
+                                for (int j = 0; j < 2; j++) {
+                                    if (j < tmp.length) {
+                                        if (j > 0) preComment.append(' ');
+                                        preComment.append(tmp[j]);
+                                    }
                                 }
+                                if (preComment.length() > 0) preComment.append(':');
                             }
-                            if (preComment.length() > 0) preComment.append(':');
-                            ctrl.addVariation(preComment.toString(), pvMovesTmp);
+                            boolean updateDefault = (i == 0);
+                            ctrl.addVariation(preComment.toString(), pv, updateDefault);
                         }
                         break;
                     }
+                    case MULTIPV_DEC:
+                        ctrl.setMultiPVMode(numPV - 1);
+                        break;
+                    case MULTIPV_INC:
+                        ctrl.setMultiPVMode(numPV + 1);
+                        break;
                     }
                 }
             });
@@ -1701,7 +1729,8 @@ public class DroidFish extends Activity implements GUIInterface {
         int paraStart = 0;
         int paraIndent = 0;
         boolean paraBold = false;
-        private final void newLine() {
+        private final void newLine() { newLine(false); }
+        private final void newLine(boolean eof) {
             if (!col0) {
                 if (paraIndent > 0) {
                     int paraEnd = sb.length();
@@ -1714,7 +1743,8 @@ public class DroidFish extends Activity implements GUIInterface {
                     sb.setSpan(new StyleSpan(Typeface.BOLD), paraStart, paraEnd,
                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-                sb.append('\n');
+                if (!eof)
+                    sb.append('\n');
                 paraStart = sb.length();
                 paraIndent = nestLevel;
                 paraBold = false;
@@ -1807,7 +1837,7 @@ public class DroidFish extends Activity implements GUIInterface {
                     newLine();
                 break;
             case PgnToken.EOF:
-                newLine();
+                newLine(true);
                 upToDate = true;
                 break;
             }

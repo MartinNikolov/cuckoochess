@@ -46,6 +46,7 @@ public class DroidChessController {
 
     private String engine = "";
     private int strength = 1000;
+    private int numPV = 1;
 
     private int timeControl;
     private int movesPerSession;
@@ -59,42 +60,40 @@ public class DroidChessController {
         private int currNps = 0;
         private int currTime = 0;
 
-        private int pvDepth = 0;
-        private int pvScore = 0;
-        private boolean pvIsMate = false;
-        private boolean pvUpperBound = false;
-        private boolean pvLowerBound = false;
-        private String bookInfo = "";
-        private String pvStr = "";
-        private List<Move> pvMoves = null;
-        private List<Move> bookMoves = null;
         private boolean whiteMove = true;
+        private String bookInfo = "";
+        private List<Move> bookMoves = null;
+
+        private ArrayList<PvInfo> pvInfoV = new ArrayList<PvInfo>();
 
         public final void clearSearchInfo() {
-            pvDepth = 0;
+            pvInfoV.clear();
             currDepth = 0;
             bookInfo = "";
-            pvMoves = null;
             bookMoves = null;
             setSearchInfo();
         }
 
         private final void setSearchInfo() {
             StringBuilder buf = new StringBuilder();
-            if (pvDepth > 0) {
-                buf.append(String.format("[%d] ", pvDepth));
+            for (int i = 0; i < pvInfoV.size(); i++) {
+                PvInfo pvi = pvInfoV.get(i);
+                if (pvi.depth <= 0)
+                    continue;
+                buf.append(String.format("[%d] ", pvi.depth));
                 boolean negateScore = !whiteMove && gui.whiteBasedScores();
-                if (pvUpperBound || pvLowerBound) {
-                    boolean upper = pvUpperBound ^ negateScore;
+                if (pvi.upperBound || pvi.lowerBound) {
+                    boolean upper = pvi.upperBound ^ negateScore;
                     buf.append(upper ? "<=" : ">=");
                 }
-                int score = negateScore ? -pvScore : pvScore;
-                if (pvIsMate) {
+                int score = negateScore ? -pvi.score : pvi.score;
+                if (pvi.isMate) {
                     buf.append(String.format("m%d", score));
                 } else {
                     buf.append(String.format("%.2f", score / 100.0));
                 }
-                buf.append(pvStr);
+
+                buf.append(pvi.pvStr);
                 buf.append("\n");
             }
             if (currDepth > 0) {
@@ -108,46 +107,51 @@ public class DroidChessController {
                 public void run() {
                     if (!localSS.searchResultWanted && (bookMoves != null))
                         return;
+                    ArrayList<ArrayList<Move>> pvMoves = new ArrayList<ArrayList<Move>>();
+                    for (int i = 0; i < pvInfoV.size(); i++)
+                        pvMoves.add(pvInfoV.get(i).pv);
                     gui.setThinkingInfo(newPV, newBookInfo, pvMoves, bookMoves);
                 }
             });
         }
 
+        @Override
         public void notifyDepth(int depth) {
             currDepth = depth;
             setSearchInfo();
         }
 
+        @Override
         public void notifyCurrMove(Position pos, Move m, int moveNr) {
             currMove = TextIO.moveToString(pos, m, false);
             currMoveNr = moveNr;
             setSearchInfo();
         }
 
-        public void notifyPV(Position pos, int depth, int score, int time, int nodes, int nps, boolean isMate,
-                boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
-            pvDepth = depth;
-            pvScore = score;
-            currTime = time;
-            currNodes = nodes;
-            currNps = nps;
-            pvIsMate = isMate;
-            pvUpperBound = upperBound;
-            pvLowerBound = lowerBound;
+        @SuppressWarnings("unchecked")
+        @Override
+        public void notifyPV(Position pos, ArrayList<PvInfo> pvInfo) {
+            pvInfoV = (ArrayList<PvInfo>) pvInfo.clone();
+            for (PvInfo pv : pvInfo) {
+                currTime = pv.time;
+                currNodes = pv.nodes;
+                currNps = pv.nps;
+
+                StringBuilder buf = new StringBuilder();
+                Position tmpPos = new Position(pos);
+                UndoInfo ui = new UndoInfo();
+                for (Move m : pv.pv) {
+                    buf.append(String.format(" %s", TextIO.moveToString(tmpPos, m, false)));
+                    tmpPos.makeMove(m, ui);
+                }
+                pv.pvStr = buf.toString();
+            }
             whiteMove = pos.whiteMove;
 
-            StringBuilder buf = new StringBuilder();
-            Position tmpPos = new Position(pos);
-            UndoInfo ui = new UndoInfo();
-            for (Move m : pv) {
-                buf.append(String.format(" %s", TextIO.moveToString(tmpPos, m, false)));
-                tmpPos.makeMove(m, ui);
-            }
-            pvStr = buf.toString();
-            pvMoves = pv;
             setSearchInfo();
         }
 
+        @Override
         public void notifyStats(int nodes, int nps, int time) {
             currNodes = nodes;
             currNps = nps;
@@ -161,7 +165,7 @@ public class DroidChessController {
             bookMoves = moveList;
             setSearchInfo();
         }
-        
+
         public void prefsChanged() {
             setSearchInfo();
         }
@@ -217,6 +221,7 @@ public class DroidChessController {
             computerPlayer.setBookOptions(bookOptions);
         }
         computerPlayer.setEngineStrength(engine, strength);
+        computerPlayer.setNumPV(numPV);
         game = new Game(computerPlayer, gameTextListener, timeControl, movesPerSession, timeIncrement);
         setPlayerNames(game);
         updateGameMode();
@@ -446,13 +451,13 @@ public class DroidChessController {
         }
     }
 
-    public final void addVariation(String preComment, List<Move> pvMoves) {
+    public final void addVariation(String preComment, List<Move> pvMoves, boolean updateDefault) {
         for (int i = 0; i < pvMoves.size(); i++) {
             Move m = pvMoves.get(i);
             String moveStr = TextIO.moveToUCIString(m);
             String pre = (i == 0) ? preComment : "";
             int varNo = game.tree.addMove(moveStr, "", 0, pre, "");
-            game.tree.goForward(varNo);
+            game.tree.goForward(varNo, updateDefault);
         }
         for (int i = 0; i < pvMoves.size(); i++)
             game.tree.goBack();
@@ -661,6 +666,7 @@ public class DroidChessController {
             computerThread = new Thread(new Runnable() {
                 public void run() {
                     computerPlayer.setEngineStrength(engine, strength);
+                    computerPlayer.setNumPV(1);
                     final String cmd = computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
                                                                wTime, bTime, inc, movesToGo);
                     final SearchStatus localSS = ss;
@@ -718,6 +724,7 @@ public class DroidChessController {
                     public void run() {
                         if (alive) {
                             computerPlayer.setEngineStrength(engine, 1000);
+                            computerPlayer.setNumPV(numPV);
                             computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
                         }
                     }
@@ -746,10 +753,35 @@ public class DroidChessController {
 
     public final synchronized void setEngineStrength(String engine, int strength) {
         boolean newEngine = !engine.equals(this.engine);
+        if (newEngine)
+            numPV = 1;
         if (newEngine || (strength != this.strength)) {
             this.engine = engine;
             this.strength = strength;
             if (newEngine && (analysisThread != null)) {
+                stopAnalysis();
+                updateComputeThreads(true);
+                updateGUI();
+            }
+        }
+    }
+
+    public final synchronized int maxPV() {
+        if (computerPlayer == null)
+            return 1;
+        return computerPlayer.getMaxPV();
+    }
+
+    public final int getNumPV() {
+        return this.numPV;
+    }
+
+    public final synchronized void setMultiPVMode(int numPV) {
+        if (numPV < 1) numPV = 1;
+        if (numPV > maxPV()) numPV = maxPV();
+        if (numPV != this.numPV) {
+            this.numPV = numPV;
+            if (analysisThread != null) {
                 stopAnalysis();
                 updateComputeThreads(true);
                 updateGUI();

@@ -281,6 +281,7 @@ you are not actively using the program.\
 	<string name="play_black">Play Black</string>
 	<string name="two_players">Two Players</string>
 	<string name="comp_vs_comp">Computer vs Computer</string>
+    <string name="analysis">Analysis</string>
 	<string name="edit_game">Edit Game</string>
 	<string name="edit_headers">Edit Headers</string>
 	<string name="edit_comments">Edit Comments</string>

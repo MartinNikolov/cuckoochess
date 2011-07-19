@@ -26,10 +26,35 @@ import java.util.List;
  * Used to get various search information during search
  */
 public interface SearchListener {
+    public final static class PvInfo {
+        int depth;
+        int score;
+        int time;
+        int nodes;
+        int nps;
+        boolean isMate;
+        boolean upperBound;
+        boolean lowerBound;
+        ArrayList<Move> pv;
+        String pvStr = "";
+
+        public PvInfo(int depth, int score, int time, int nodes, int nps,
+                      boolean isMate, boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
+            this.depth = depth;
+            this.score = score;
+            this.time = time;
+            this.nodes = nodes;
+            this.nps = nps;
+            this.isMate = isMate;
+            this.upperBound = upperBound;
+            this.lowerBound = lowerBound;
+            this.pv = pv;
+        }
+    }
+
     public void notifyDepth(int depth);
     public void notifyCurrMove(Position pos, Move m, int moveNr);
-    public void notifyPV(Position pos, int depth, int score, int time, int nodes, int nps,
-            boolean isMate, boolean upperBound, boolean lowerBound, ArrayList<Move> pv);
+    public void notifyPV(Position pos, ArrayList<PvInfo> pvInfo);
     public void notifyStats(int nodes, int nps, int time);
     public void notifyBookInfo(String bookInfo, List<Move> moveList);
 }
