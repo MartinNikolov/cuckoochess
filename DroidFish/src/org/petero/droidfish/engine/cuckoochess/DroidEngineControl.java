@@ -68,8 +68,9 @@ public class DroidEngineControl {
     boolean ponderMode = true;
 
     // Reduced strength variables
-    int strength = 1000;
-    long randomSeed = 0;
+    private int strength = 1000;
+    private long randomSeed = 0;
+    private Random rndGen = new Random();
 
     /**
      * This class is responsible for sending "info" strings during search.
@@ -156,7 +157,7 @@ public class DroidEngineControl {
     }
 
     final public void newGame() {
-        randomSeed = new Random().nextLong();
+        randomSeed = rndGen.nextLong();
         tt.clear();
     }
 

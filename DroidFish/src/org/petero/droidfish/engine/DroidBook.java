@@ -59,22 +59,19 @@ public final class DroidBook {
             return TextIO.moveToUCIString(move) + " (" + weight + ")";
         }
     }
-    private static Random rndGen = null;
-    
-    private static IOpeningBook externalBook = null;
-    private static IOpeningBook internalBook = null;
+    private Random rndGen = new SecureRandom();
 
+    private IOpeningBook externalBook = new NullBook();
+    private IOpeningBook internalBook = new InternalBook();
     private BookOptions options = null;
 
-    public DroidBook() {
-        if (externalBook == null)
-            externalBook = new NullBook();
-        if (internalBook == null)
-            internalBook  = new InternalBook();
-        if (rndGen == null) {
-            rndGen = new SecureRandom();
-            rndGen.setSeed(System.currentTimeMillis());
-        }
+    private static final DroidBook INSTANCE = new DroidBook();
+    public static DroidBook getInstance() {
+        return INSTANCE;
+    }
+
+    private DroidBook() {
+        rndGen.setSeed(System.currentTimeMillis());
     }
 
     public final void setOptions(BookOptions options) {

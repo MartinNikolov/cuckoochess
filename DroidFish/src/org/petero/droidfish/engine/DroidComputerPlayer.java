@@ -56,7 +56,7 @@ public class DroidComputerPlayer {
             startEngine();
         }
         listener = null;
-        book = new DroidBook();
+        book = DroidBook.getInstance();
     }
 
     private final synchronized void startEngine() {

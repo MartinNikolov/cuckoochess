@@ -49,4 +49,9 @@ public class BookOptions {
                 (tournamentMode == other.tournamentMode) &&
                 (random == other.random));
     }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }
