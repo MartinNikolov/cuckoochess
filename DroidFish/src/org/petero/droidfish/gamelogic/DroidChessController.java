@@ -351,6 +351,12 @@ public class DroidChessController {
         return gameMode.analysisMode() || !humansTurn();
     }
 
+    /** Return true if user is allowed to make a null move. */
+    public final boolean allowNullMove() {
+        return gameMode.analysisMode() || 
+               (gameMode.playerWhite() && gameMode.playerBlack() && !gameMode.clocksActive());
+    }
+
     private final boolean undoMoveNoUpdate() {
         if (game.getLastMove() == null)
             return false;
@@ -524,6 +530,19 @@ public class DroidChessController {
         }
     }
 
+    public final void makeHumanNullMove() {
+        if (humansTurn()) {
+            int varNo = game.tree.addMove("--", "", 0, "", "");
+            game.tree.goForward(varNo);
+            ss.searchResultWanted = false;
+            stopAnalysis();
+            stopComputerThinking();
+            updateComputeThreads(true);
+            updateGUI();
+            gui.setSelection(-1);
+        }
+    }
+
     Move promoteMove;
     public final void reportPromotePiece(int choice) {
         final boolean white = game.currPos().whiteMove;
@@ -641,14 +660,14 @@ public class DroidChessController {
 
     final private void setSelection() {
         Move m = game.getLastMove();
-        int sq = (m != null) ? m.to : -1;
+        int sq = ((m != null) && (m.from != m.to)) ? m.to : -1;
         gui.setSelection(sq);
     }
 
     private void setAnimMove(Position sourcePos, Move move, boolean forward) {
         gui.setAnimMove(sourcePos, move, forward);
     }
-    
+
     private final synchronized void startComputerThinking() {
         if (analysisThread != null) return;
         if (game.getGameState() != GameState.ALIVE) return;

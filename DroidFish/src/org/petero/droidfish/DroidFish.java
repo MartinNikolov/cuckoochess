@@ -95,14 +95,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DroidFish extends Activity implements GUIInterface {
-    // FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
     // FIXME!!! book.txt (and test classes) should not be included in apk
+    // FIXME!!! There should only be one Book.java file
     // FIXME!!! Current position in game should be visible: moveListScroll.scrollTo(0, y);
 
     // FIXME!!! PGN view option: game continuation (for training)
     // FIXME!!! Command to go to next/previous move in PGN export order.
     // FIXME!!! Remove invalid playerActions in PGN import (should be done in verifyChildren)
+    // FIXME!!! Implement bookmark mechanism for positions in pgn files
 
+    // FIXME!!! Computer clock should stop if phone turned off (computer stops thinking if unplugged)
     // FIXME!!! Add support for all time controls defined by the PGN standard
     // FIXME!!! How to handle hour-glass time control?
     // FIXME!!! What should happen if you change time controls in the middle of a game?
@@ -112,9 +114,7 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
-
-    // FIXME!!! There should only be one Book.java file
-    // FIXME!!! Implement bookmark mechanism for positions in pgn files
+    // FIXME!!! Use UCI_AnalyseMode if engine supports it
 
     // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)
     // FIXME!!! Green color for "main move". Red color for "don't play in tournaments" moves.
@@ -1315,6 +1315,7 @@ public class DroidFish extends Activity implements GUIInterface {
             final int REMOVE_SUBTREE = 2;
             final int MOVE_VAR_UP    = 3;
             final int MOVE_VAR_DOWN  = 4;
+            final int ADD_NULL_MOVE  = 5;
 
             List<CharSequence> lst = new ArrayList<CharSequence>();
             List<Integer> actions = new ArrayList<Integer>();
@@ -1326,6 +1327,9 @@ public class DroidFish extends Activity implements GUIInterface {
             if (ctrl.numVariations() > 1) {
                 lst.add(getString(R.string.move_var_up));   actions.add(MOVE_VAR_UP);
                 lst.add(getString(R.string.move_var_down)); actions.add(MOVE_VAR_DOWN);
+            }
+            if (ctrl.allowNullMove()) {
+                lst.add(getString(R.string.add_null_move)); actions.add(ADD_NULL_MOVE);
             }
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1367,6 +1371,9 @@ public class DroidFish extends Activity implements GUIInterface {
                         break;
                     case MOVE_VAR_DOWN:
                         ctrl.moveVariation(1);
+                        break;
+                    case ADD_NULL_MOVE:
+                        ctrl.makeHumanNullMove();
                         break;
                     }
                 }

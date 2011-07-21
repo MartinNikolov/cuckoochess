@@ -201,6 +201,10 @@ To add computer analysis to the game tree, long press the analysis information \
 when the computer is thinking and select <i>Add Analysis</i>. The current PV is \
 added as a variation in the game tree.\n\
 \n\
+In analysis mode, it is possible to add null moves to the game tree. Be aware though \
+that null moves are not included in the PGN standard and may not work in other PGN \
+reading chess programs.\n\
+\n\
 <b>Scid files</b>\n\
 If you have <i>Scid on the go</i> installed, you can read Scid database files \
 directly from DroidFish. Long press the chess board and select <i>Load game from \
@@ -238,6 +242,7 @@ you are not actively using the program.\
 	<string name="truncate_gametree">Truncate Game Tree</string>
 	<string name="move_var_up">Move Variation Up</string>
 	<string name="move_var_down">Move Variation Down</string>
+    <string name="add_null_move">Add Null Move</string>
     <string name="tools_menu">Tools</string>
     <string name="load_save_menu">Load/Save Game</string>
 	<string name="goto_move">Goto move</string>
