@@ -25,7 +25,7 @@ import org.petero.droidfish.gamelogic.Move;
 import org.petero.droidfish.gamelogic.Position;
 
 
-/** Interface between the gui and the ChessController. */
+/** Interface between the GUI and the ChessController. */
 public interface GUIInterface {
 
     /** Update the displayed board position. */

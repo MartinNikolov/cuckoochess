@@ -147,6 +147,12 @@
 			android:entries="@array/font_size_texts"
 			android:defaultValue="12">
 		</ListPreference>
+        <CheckBoxPreference
+            android:key="largeButtons"
+            android:title="Large Buttons"
+            android:summary="Use large buttons for game navigation and mode setting"
+            android:defaultValue="false">
+        </CheckBoxPreference>
 		<PreferenceScreen
 			android:key="colors"
 			android:title="Color Settings"

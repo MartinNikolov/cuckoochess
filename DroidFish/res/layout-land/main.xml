@@ -28,13 +28,13 @@
             android:id="@+id/undoButton"
             android:layout_width="36dp"
             android:layout_height="32dp"
-            android:src="@drawable/left_small">
+            android:src="@drawable/left">
         </ImageButton>
 		<ImageButton
             android:id="@+id/redoButton"
             android:layout_width="36dp"
             android:layout_height="32dp"
-            android:src="@drawable/right_small">
+            android:src="@drawable/right">
         </ImageButton>
 	</LinearLayout>
 	<TextView

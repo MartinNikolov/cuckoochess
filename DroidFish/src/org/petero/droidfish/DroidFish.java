@@ -60,6 +60,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -75,6 +76,7 @@ import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.StyleSpan;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -90,6 +92,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -133,6 +136,7 @@ public class DroidFish extends Activity implements GUIInterface {
     private ScrollView moveListScroll;
     private TextView moveList;
     private TextView thinking;
+    private ImageButton modeButton, undoButton, redoButton;
     private TextView whiteClock, blackClock, titleText;
 
     SharedPreferences settings;
@@ -415,14 +419,14 @@ public class DroidFish extends Activity implements GUIInterface {
             }
         });
 
-        ImageButton modeButton = (ImageButton)findViewById(R.id.modeButton);
+        modeButton = (ImageButton)findViewById(R.id.modeButton);
         modeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDialog(GAME_MODE_DIALOG);
             }
         });
-        ImageButton undoButton = (ImageButton)findViewById(R.id.undoButton);
+        undoButton = (ImageButton)findViewById(R.id.undoButton);
         undoButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -437,7 +441,7 @@ public class DroidFish extends Activity implements GUIInterface {
                 return true;
             }
         });
-        ImageButton redoButton = (ImageButton)findViewById(R.id.redoButton);
+        redoButton = (ImageButton)findViewById(R.id.redoButton);
         redoButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -542,6 +546,25 @@ public class DroidFish extends Activity implements GUIInterface {
         thinking.setTextSize(fontSize);
         soundEnabled = settings.getBoolean("soundEnabled", false);
         animateMoves = settings.getBoolean("animateMoves", true);
+
+        boolean largeButtons = settings.getBoolean("largeButtons", false);
+        Resources r = getResources();
+        int bWidth  = (int)Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, r.getDisplayMetrics()));
+        int bHeight = (int)Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, r.getDisplayMetrics()));
+        if (largeButtons) {
+            bWidth  = bWidth  * 3 / 2;
+            bHeight = bHeight * 3 / 2;
+            modeButton.setImageResource(R.drawable.mode_large);
+            undoButton.setImageResource(R.drawable.left_large);
+            redoButton.setImageResource(R.drawable.right_large);
+        } else {
+            modeButton.setImageResource(R.drawable.mode);
+            undoButton.setImageResource(R.drawable.left);
+            redoButton.setImageResource(R.drawable.right);
+        }
+        modeButton.setLayoutParams(new LinearLayout.LayoutParams(bWidth, bHeight));
+        undoButton.setLayoutParams(new LinearLayout.LayoutParams(bWidth, bHeight));
+        redoButton.setLayoutParams(new LinearLayout.LayoutParams(bWidth, bHeight));
 
         bookOptions.filename = settings.getString("bookFile", "");
         bookOptions.maxLength = getIntSetting("bookMaxLength", 1000000);
