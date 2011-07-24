@@ -124,4 +124,8 @@ public class TimeControl {
             nextTC += movesPerSession;
         return nextTC - currentMove;
     }
+
+    public final int getMovesPerSession() {
+        return movesPerSession;
+    }
 }

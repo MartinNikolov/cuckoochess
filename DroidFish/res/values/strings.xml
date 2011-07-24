@@ -219,9 +219,10 @@ GNU GPL v3\n\
 	</string>
 	<string name="cpu_warning">\
 <b>CPU Usage</b>\n\
-If you leave DroidFish running in the background and the <i>GameMode</i> setting \
-is set to <i>Analysis</i> or <i>Computer vs Computer</i>, or if <i>Thinking Time</i> \
-is set to a large value, DroidFish can use a lot of CPU power.\n\
+If you leave DroidFish running in the background and <i>GameMode</i> is set to \
+<i>Analysis</i> or <i>Computer vs Computer</i>, or if <i>Thinking Time</i> \
+is set to a large value, or if <i>Pondering</i> is enabled, DroidFish can use \
+a lot of CPU power.\n\
 \n\
 If you are running on battery power, it is recommended that you change settings to \
 conserve battery power, or that you exit <i>DroidFish</i> using the back button when \

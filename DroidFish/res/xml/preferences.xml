@@ -31,6 +31,12 @@
             android:defaultValue="1000"
             android:title="Strength">
         </org.petero.droidfish.SeekBarPreference>
+        <CheckBoxPreference
+            android:key="ponderMode"
+            android:title="Pondering"
+            android:summary="Let engine think while waiting for opponent's move"
+            android:defaultValue="false">
+        </CheckBoxPreference>
     </PreferenceCategory>
 	<PreferenceCategory
 		android:title="Time Control">

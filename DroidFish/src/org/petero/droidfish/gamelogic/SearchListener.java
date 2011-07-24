@@ -38,6 +38,21 @@ public interface SearchListener {
         ArrayList<Move> pv;
         String pvStr = "";
 
+        public PvInfo(PvInfo pvi) {
+            depth = pvi.depth;
+            score = pvi.score;
+            time = pvi.time;
+            nodes = pvi.nodes;
+            nps = pvi.nps;
+            isMate = pvi.isMate;
+            upperBound = pvi.upperBound;
+            lowerBound = pvi.lowerBound;
+            pv = new ArrayList<Move>(pvi.pv.size());
+            for (int i = 0; i < pvi.pv.size(); i++)
+                pv.add(pvi.pv.get(i));
+            pvStr = pvi.pvStr;
+        }
+
         public PvInfo(int depth, int score, int time, int nodes, int nps,
                       boolean isMate, boolean upperBound, boolean lowerBound, ArrayList<Move> pv) {
             this.depth = depth;
@@ -50,11 +65,16 @@ public interface SearchListener {
             this.lowerBound = lowerBound;
             this.pv = pv;
         }
+        
+        public final void removeFirstMove() {
+            if (!pv.isEmpty())
+                pv.remove(0);
+        }
     }
 
     public void notifyDepth(int depth);
     public void notifyCurrMove(Position pos, Move m, int moveNr);
-    public void notifyPV(Position pos, ArrayList<PvInfo> pvInfo);
+    public void notifyPV(Position pos, ArrayList<PvInfo> pvInfo, boolean isPonder);
     public void notifyStats(int nodes, int nps, int time);
     public void notifyBookInfo(String bookInfo, List<Move> moveList);
 }

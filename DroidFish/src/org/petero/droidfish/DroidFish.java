@@ -112,12 +112,14 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! How to handle hour-glass time control?
     // FIXME!!! What should happen if you change time controls in the middle of a game?
 
-    // FIXME!!! Implement pondering (permanent brain)
     // FIXME!!! Online play on FICS
     // FIXME!!! Add chess960 support
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
+
     // FIXME!!! Use UCI_AnalyseMode if engine supports it
+    // FIXME!!! Use "ponder" option
+    // FIXME!!! Optimize engine option setting. ("Skill Level", "MultiPV", "stop")
 
     // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)
     // FIXME!!! Green color for "main move". Red color for "don't play in tournaments" moves.
@@ -129,6 +131,7 @@ public class DroidFish extends Activity implements GUIInterface {
     private boolean mShowBookHints;
     private int maxNumArrows;
     private GameMode gameMode;
+    private boolean mPonderMode;
     private boolean boardFlipped;
     private boolean autoSwapSides;
 
@@ -528,6 +531,10 @@ public class DroidFish extends Activity implements GUIInterface {
         int strength = settings.getInt("strength", 1000);
         setEngineStrength(engine, strength);
 
+        mPonderMode = settings.getBoolean("ponderMode", false);
+        if (!mPonderMode)
+            ctrl.stopPonder();
+
         int timeControl = getIntSetting("timeControl", 300000);
         int movesPerSession = getIntSetting("movesPerSession", 60);
         int timeIncrement = getIntSetting("timeIncrement", 0);
@@ -693,7 +700,9 @@ public class DroidFish extends Activity implements GUIInterface {
         }
         case R.id.item_draw: {
             if (ctrl.humansTurn()) {
-                if (!ctrl.claimDrawIfPossible()) {
+                if (ctrl.claimDrawIfPossible()) {
+                    ctrl.stopPonder();
+                } else {
                     Toast.makeText(getApplicationContext(), R.string.offer_draw, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -804,6 +813,11 @@ public class DroidFish extends Activity implements GUIInterface {
     @Override
     public boolean whiteBasedScores() {
         return mWhiteBasedScores;
+    }
+
+    @Override
+    public boolean ponderMode() {
+        return mPonderMode;
     }
 
     /** Report a move made that is a candidate for GUI animation. */
@@ -1351,7 +1365,11 @@ public class DroidFish extends Activity implements GUIInterface {
                 lst.add(getString(R.string.move_var_up));   actions.add(MOVE_VAR_UP);
                 lst.add(getString(R.string.move_var_down)); actions.add(MOVE_VAR_DOWN);
             }
-            if (ctrl.allowNullMove()) {
+
+            boolean allowNullMove =
+                gameMode.analysisMode() || 
+                (gameMode.playerWhite() && gameMode.playerBlack() && !gameMode.clocksActive());
+            if (allowNullMove) {
                 lst.add(getString(R.string.add_null_move)); actions.add(ADD_NULL_MOVE);
             }
             final List<Integer> finalActions = actions;
@@ -1413,13 +1431,15 @@ public class DroidFish extends Activity implements GUIInterface {
             List<CharSequence> lst = new ArrayList<CharSequence>();
             List<Integer> actions = new ArrayList<Integer>();
             lst.add("Add Analysis"); actions.add(ADD_ANALYSIS);
-            int maxPV = ctrl.maxPV();
             final int numPV = ctrl.getNumPV();
-            if (numPV > 1) {
-                lst.add("Fewer Variations"); actions.add(MULTIPV_DEC);
-            }
-            if (numPV < maxPV) {
-                lst.add("More Variations"); actions.add(MULTIPV_INC);
+            if (gameMode.analysisMode()) {
+                int maxPV = ctrl.maxPV();
+                if (numPV > 1) {
+                    lst.add("Fewer Variations"); actions.add(MULTIPV_DEC);
+                }
+                if (numPV < maxPV) {
+                    lst.add("More Variations"); actions.add(MULTIPV_INC);
+                }
             }
             final List<Integer> finalActions = actions;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);

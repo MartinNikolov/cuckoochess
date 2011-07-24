@@ -48,6 +48,8 @@ public class DroidComputerPlayer {
     private String engine = "";
     private int maxPV = 1;  // >1 if multiPV mode is supported
 
+    private boolean havePonderHit = false;
+
     public DroidComputerPlayer(String engine) {
         this.engine = engine;
         if (uciEngine != null) {
@@ -206,6 +208,11 @@ public class DroidComputerPlayer {
         }
     }
 
+    public final synchronized void ponderHit() {
+        havePonderHit = true;
+        uciEngine.writeLineToEngine("ponderhit");
+    }
+
     /**
      * Do a search and return a command from the computer player.
      * The command can be a valid move string, in which case the move is played
@@ -215,12 +222,20 @@ public class DroidComputerPlayer {
      * @param mList List of moves to go from the earlier position to the current position.
      *              This list makes it possible for the computer to correctly handle draw
      *              by repetition/50 moves.
+     * @param ponderMove Move to ponder, or null for non-ponder search.
+     * @return The computer player command, and the next ponder move.
      */
-    public final String doSearch(Position prevPos, ArrayList<Move> mList, Position currPos,
-                                 boolean drawOffer,
-                                 int wTime, int bTime, int inc, int movesToGo) {
+    public final Pair<String,Move> doSearch(Position prevPos, ArrayList<Move> mList,
+                                            Position currPos, boolean drawOffer,
+                                            int wTime, int bTime, int inc, int movesToGo,
+                                            Move ponderMove) {
         if (listener != null) 
             listener.notifyBookInfo("", null);
+
+        if (ponderMove != null)
+            mList.add(ponderMove);
+
+        havePonderHit = false;
 
         // Set up for draw detection
         long[] posHashList = new long[mList.size()+1];
@@ -232,24 +247,26 @@ public class DroidComputerPlayer {
             p.makeMove(mList.get(i), ui);
         }
 
-        // If we have a book move, play it.
-        Move bookMove = book.getBookMove(currPos);
-        if (bookMove != null) {
-            if (canClaimDraw(currPos, posHashList, posHashListSize, bookMove) == "") {
-                return TextIO.moveToString(currPos, bookMove, false);
+        if (ponderMove == null) {
+            // If we have a book move, play it.
+            Move bookMove = book.getBookMove(currPos);
+            if (bookMove != null) {
+                if (canClaimDraw(currPos, posHashList, posHashListSize, bookMove) == "") {
+                    return new Pair<String,Move>(TextIO.moveToString(currPos, bookMove, false), null);
+                }
             }
-        }
 
-        // If only one legal move, play it without searching
-        ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(currPos);
-        moves = MoveGen.removeIllegal(currPos, moves);
-        if (moves.size() == 0) {
-            return ""; // User set up a position where computer has no valid moves.
-        }
-        if (moves.size() == 1) {
-            Move bestMove = moves.get(0);
-            if (canClaimDraw(currPos, posHashList, posHashListSize, bestMove) == "") {
-                return TextIO.moveToUCIString(bestMove);
+            // If only one legal move, play it without searching
+            ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(currPos);
+            moves = MoveGen.removeIllegal(currPos, moves);
+            if (moves.size() == 0) {
+                return new Pair<String,Move>("", null); // User set up a position where computer has no valid moves.
+            }
+            if (moves.size() == 1) {
+                Move bestMove = moves.get(0);
+                if (canClaimDraw(currPos, posHashList, posHashListSize, bestMove) == "") {
+                    return new Pair<String,Move>(TextIO.moveToUCIString(bestMove), null);
+                }
             }
         }
 
@@ -268,15 +285,19 @@ public class DroidComputerPlayer {
         uciEngine.writeLineToEngine(posStr.toString());
         if (wTime < 1) wTime = 1;
         if (bTime < 1) bTime = 1;
-        String goStr = String.format("go wtime %d btime %d", wTime, bTime);
+        StringBuilder goStr = new StringBuilder(96);
+        goStr.append(String.format("go wtime %d btime %d", wTime, bTime));
         if (inc > 0)
-            goStr += String.format(" winc %d binc %d", inc, inc);
-        if (movesToGo > 0) {
-            goStr += String.format(" movestogo %d", movesToGo);
-        }
-        uciEngine.writeLineToEngine(goStr);
+            goStr.append(String.format(" winc %d binc %d", inc, inc));
+        if (movesToGo > 0)
+            goStr.append(String.format(" movestogo %d", movesToGo));
+        if (ponderMove != null)
+            goStr.append(" ponder");
+        uciEngine.writeLineToEngine(goStr.toString());
 
-        String bestMove = monitorEngine(currPos);
+        Pair<String,String> pair = monitorEngine(currPos, ponderMove);
+        String bestMove = pair.first;
+        Move nextPonderMove = TextIO.UCIstringToMove(pair.second);
 
         // Claim draw if appropriate
         if (statScore <= 0) {
@@ -288,16 +309,18 @@ public class DroidComputerPlayer {
         if (drawOffer && !statIsMate && (statScore <= -300)) {
             bestMove = "draw accept";
         }
-        return bestMove;
+        return new Pair<String,Move>(bestMove, nextPonderMove);
     }
 
-    /** Wait for engine to respond with "bestmove". While waiting, monitor and report search info. */
-    private final String monitorEngine(Position pos) {
+    /** Wait for engine to respond with bestMove and ponderMove.
+     * While waiting, monitor and report search info. */
+    private final Pair<String,String> monitorEngine(Position pos, Move ponderMove) {
         // Monitor engine response
         clearInfo();
         boolean stopSent = false;
+        boolean ponderHitSeen = false;
         while (true) {
-            int timeout = 2000;
+            int timeout = 500;
             while (true) {
                 UCIEngine uci = uciEngine;
                 if (uci == null)
@@ -311,13 +334,21 @@ public class DroidComputerPlayer {
                     break;
                 String[] tokens = tokenize(s);
                 if (tokens[0].equals("info")) {
-                    parseInfoCmd(tokens);
+                    parseInfoCmd(tokens, ponderMove);
                 } else if (tokens[0].equals("bestmove")) {
-                    return tokens[1];
+                    String bestMove = tokens[1];
+                    String nextPonderMove = "";
+                    if ((tokens.length >= 4) && (tokens[2].equals("ponder")))
+                        nextPonderMove = tokens[3];
+                    return new Pair<String,String>(bestMove, nextPonderMove);
                 }
                 timeout = 0;
             }
-            notifyGUI(pos);
+            if (!ponderHitSeen && havePonderHit) {
+                pvModified = true;
+                ponderHitSeen = true;
+            }
+            notifyGUI(pos, ponderMove);
             try {
                 Thread.sleep(100); // 10 GUI updates per second is enough
             } catch (InterruptedException e) {
@@ -362,7 +393,7 @@ public class DroidComputerPlayer {
         String goStr = String.format("go infinite");
         uciEngine.writeLineToEngine(goStr);
 
-        monitorEngine(currPos);
+        monitorEngine(currPos, null);
     }
 
     /** Check if a draw claim is allowed, possibly after playing "move".
@@ -438,7 +469,7 @@ public class DroidComputerPlayer {
         statPvInfo.clear();
     }
 
-    private final void parseInfoCmd(String[] tokens) {
+    private final void parseInfoCmd(String[] tokens, Move ponderMove) {
         try {
             boolean havePvData = false;
             int nTokens = tokens.length;
@@ -496,6 +527,8 @@ public class DroidComputerPlayer {
                 while (statPvInfo.size() <= pvNum)
                     statPvInfo.add(null);
                 ArrayList<Move> moves = new ArrayList<Move>();
+                if (ponderMove != null)
+                    moves.add(ponderMove);
                 int nMoves = statPV.size();
                 for (i = 0; i < nMoves; i++)
                     moves.add(TextIO.UCIstringToMove(statPV.get(i)));
@@ -510,7 +543,7 @@ public class DroidComputerPlayer {
     }
 
     /** Notify GUI about search statistics. */
-    private final void notifyGUI(Position pos) {
+    private final void notifyGUI(Position pos, Move ponderMove) {
         if (listener == null)
             return;
         if (depthModified) {
@@ -523,7 +556,24 @@ public class DroidComputerPlayer {
             currMoveModified = false;
         }
         if (pvModified) {
-            listener.notifyPV(pos, statPvInfo);
+            Position notifyPos = pos;
+            ArrayList<PvInfo> pvInfo = statPvInfo;
+            boolean isPonder = ponderMove != null;
+            if (isPonder && havePonderHit) {
+                isPonder = false;
+
+                UndoInfo ui = new UndoInfo();
+                notifyPos = new Position(pos);
+                notifyPos.makeMove(ponderMove, ui);
+
+                pvInfo = new ArrayList<PvInfo>(statPvInfo.size());
+                for (int i = 0; i < statPvInfo.size(); i++) {
+                    PvInfo pvi = new PvInfo(statPvInfo.get(i));
+                    pvi.removeFirstMove();
+                    pvInfo.add(pvi);
+                }
+            }
+            listener.notifyPV(notifyPos, pvInfo, isPonder);
             pvModified = false;
         }
         if (statsModified) {
@@ -536,5 +586,6 @@ public class DroidComputerPlayer {
         shouldStop = true;
         if (uciEngine != null)
             uciEngine.writeLineToEngine("stop");
+        havePonderHit = false;
     }
 }
