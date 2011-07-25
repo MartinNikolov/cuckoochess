@@ -812,7 +812,6 @@ public class DroidChessController {
             this.strength = strength;
             if (newEngine && ((analysisThread != null) || (computerThread != null))) { 
                 stopAnalysis();
-                stopSearch();
                 updateComputeThreads(true);
                 updateGUI();
             }
