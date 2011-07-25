@@ -74,11 +74,10 @@ public class DroidComputerPlayer {
             readUCIOptions();
             int nThreads = getNumCPUs();
             if (nThreads > 8) nThreads = 8;
-            if (!useCuckoo) {
-                uciEngine.writeLineToEngine("setoption name Hash value 16");
-            }
-            uciEngine.writeLineToEngine("setoption name Ponder value false");
-            uciEngine.writeLineToEngine(String.format("setoption name Threads value %d", nThreads));
+            if (!useCuckoo)
+                uciEngine.setOption("Hash", 16);
+            uciEngine.setOption("Ponder", false);
+            uciEngine.setOption("Threads", nThreads);
             uciEngine.writeLineToEngine("ucinewgame");
             syncReady();
         }
@@ -101,7 +100,7 @@ public class DroidComputerPlayer {
     public final synchronized void setNumPV(int numPV) {
         if ((uciEngine != null) && (maxPV > 1)) {
             int num = Math.min(maxPV, numPV);
-            uciEngine.writeLineToEngine(String.format("setoption name MultiPV value %d", num));
+            uciEngine.setOption("MultiPV", num);
         }
     }
 
@@ -283,9 +282,8 @@ public class DroidComputerPlayer {
             }
         }
         maybeNewGame();
-        uciEngine.writeLineToEngine(String.format("setoption name Ponder value %s",
-                                                  ponderEnabled ? "true" : "false"));
-        uciEngine.writeLineToEngine("setoption name UCI_AnalyseMode value false");
+        uciEngine.setOption("Ponder", ponderEnabled);
+        uciEngine.setOption("UCI_AnalyseMode", false);
         uciEngine.writeLineToEngine(posStr.toString());
         if (wTime < 1) wTime = 1;
         if (bTime < 1) bTime = 1;
@@ -394,7 +392,7 @@ public class DroidComputerPlayer {
         }
         maybeNewGame();
         uciEngine.writeLineToEngine(posStr.toString());
-        uciEngine.writeLineToEngine("setoption name UCI_AnalyseMode value true");
+        uciEngine.setOption("UCI_AnalyseMode", true);
         String goStr = String.format("go infinite");
         uciEngine.writeLineToEngine(goStr);
 

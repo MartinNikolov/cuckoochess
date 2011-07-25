@@ -18,46 +18,15 @@
 
 package org.petero.droidfish.engine;
 
-public class NativePipedProcess implements UCIEngine {
+public class NativePipedProcess extends UCIEngineBase {
     static {
         System.loadLibrary("jni");
-    }
-
-    private boolean processAlive;
-
-    private int strength = 1000;
-
-    NativePipedProcess() {
-        processAlive = false;
-    }
-
-    /** Start process. */
-    @Override
-    public final void initialize() {
-        if (!processAlive) {
-            startProcess();
-            processAlive = true;
-        }
     }
 
     @Override
     public void setStrength(int strength) {
         this.strength = strength;
-        writeLineToEngine(String.format("setoption name Skill Level value %d", strength/50));
-    }
-
-    @Override
-    public String addStrengthToName() {
-        return strength < 1000 ? String.format(" (%.1f%%)", strength * 0.1) : "";
-    }
-
-    /** Shut down process. */
-    @Override
-    public final void shutDown() {
-        if (processAlive) {
-            writeLineToEngine("quit");
-            processAlive = false;
-        }
+        setOption("Skill Level", strength/50);
     }
 
     /**
@@ -86,7 +55,7 @@ public class NativePipedProcess implements UCIEngine {
     }
 
     /** Start the child process. */
-    private final native void startProcess();
+    protected final native void startProcess();
 
     /**
      * Read a line of data from the process.

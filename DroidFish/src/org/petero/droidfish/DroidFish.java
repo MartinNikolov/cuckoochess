@@ -117,7 +117,7 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
 
-    // FIXME!!! Optimize engine option setting. ("Skill Level", "MultiPV", "stop")
+    // FIXME!!! Don't send "stop" command when engine is already stopped
     // FIXME!!! Use non-polling method to update PV after ponder hit
 
     // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)

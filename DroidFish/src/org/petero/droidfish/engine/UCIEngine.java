@@ -21,10 +21,10 @@ package org.petero.droidfish.engine;
 public interface UCIEngine {
 
     /** Start engine. */
-    public abstract void initialize();
+    public void initialize();
 
     /** Shut down engine. */
-    public abstract void shutDown();
+    public void shutDown();
 
     /**
      * Read a line from the engine.
@@ -33,14 +33,19 @@ public interface UCIEngine {
      *         or empty string if no data available,
      *         or null if I/O error.
      */
-    public abstract String readLineFromEngine(int timeoutMillis);
+    public String readLineFromEngine(int timeoutMillis);
 
     /** Write a line to the engine. \n will be added automatically. */
-    public abstract void writeLineToEngine(String data);
+    public void writeLineToEngine(String data);
 
     /** Set the engine strength, allowed values 0 - 1000. */
-    public abstract void setStrength(int strength);
+    public void setStrength(int strength);
 
     /** Add strength information to the engine name. */
-    public abstract String addStrengthToName();
+    public String addStrengthToName();
+
+    /** Set an engine option. */
+    public void setOption(String name, int value);
+    public void setOption(String name, boolean value);
+    public void setOption(String name, String value);
 }

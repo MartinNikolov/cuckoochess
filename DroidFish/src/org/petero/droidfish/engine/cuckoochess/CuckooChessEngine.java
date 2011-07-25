@@ -28,13 +28,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Pipe;
 import java.util.ArrayList;
 
-import org.petero.droidfish.engine.UCIEngine;
+import org.petero.droidfish.engine.UCIEngineBase;
 
 /**
  * UCI interface to cuckoochess engine.
  * @author petero
  */
-public class CuckooChessEngine implements UCIEngine {
+public class CuckooChessEngine extends UCIEngineBase {
 
     // Data set by the "position" command.
     private Position pos;
@@ -43,12 +43,9 @@ public class CuckooChessEngine implements UCIEngine {
     // Engine data
     private DroidEngineControl engine;
 
-    private int strength = 1000;
-
     // Set to true to break out of main loop
     private boolean quit;
 
-    private boolean processAlive;
     private Pipe guiToEngine;
     private Pipe engineToGui;
     private NioInputStream inFromEngine;
@@ -61,7 +58,6 @@ public class CuckooChessEngine implements UCIEngine {
         }
         moves = new ArrayList<Move>();
         quit = false;
-        processAlive = false;
         try {
             guiToEngine = Pipe.open();
             engineToGui = Pipe.open();
@@ -71,25 +67,12 @@ public class CuckooChessEngine implements UCIEngine {
     }
 
     @Override
-    public final void initialize() {
-        if (!processAlive) {
-            startProcess();
-            processAlive = true;
-        }
-    }
-
-    @Override
     public void setStrength(int strength) {
         this.strength = strength;
-        writeLineToEngine(String.format("setoption name strength value %d", strength));
-    }
-    
-    @Override
-    public String addStrengthToName() {
-        return strength < 1000 ? String.format(" (%.1f%%)", strength * 0.1) : "";
+        setOption("strength", strength);
     }
 
-    private final void startProcess() {
+    protected final void startProcess() {
         new Thread(new Runnable() {
             public void run() {
                 NioInputStream in = new NioInputStream(guiToEngine);
@@ -118,14 +101,6 @@ public class CuckooChessEngine implements UCIEngine {
 //            System.out.printf("Engine -> GUI: %s\n", ret);
         }
         return ret;
-    }
-
-    @Override
-    public final void shutDown() {
-        if (processAlive) {
-            writeLineToEngine("quit");
-            processAlive = false;
-        }
     }
 
     @Override
