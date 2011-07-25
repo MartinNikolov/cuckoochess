@@ -810,8 +810,9 @@ public class DroidChessController {
         if (newEngine || (strength != this.strength)) {
             this.engine = engine;
             this.strength = strength;
-            if (newEngine && (analysisThread != null)) {
+            if (newEngine && ((analysisThread != null) || (computerThread != null))) { 
                 stopAnalysis();
+                stopSearch();
                 updateComputeThreads(true);
                 updateGUI();
             }
