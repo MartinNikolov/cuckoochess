@@ -75,12 +75,12 @@ public class EditComments extends Activity {
             }
         });
     }
-    
+
     private final void sendBackResult() {
         String pre = preComment.getText().toString().trim();
         String post = postComment.getText().toString().trim();
         int nagVal = Node.strToNag(nag.getText().toString());
-        
+
         Bundle bundle = new Bundle();
         bundle.putString("preComment", pre);
         bundle.putString("postComment", post);

@@ -59,7 +59,7 @@ public class ColorTheme {
     private final static int defaultTheme = 2;
     final static String[] themeNames = { "Original", "XBoard", "Blue", "Grey" };
     private final static String themeColors[][] = {
-    { 
+    {
         "#FF808080", "#FFBEBE5A", "#FFFF0000", "#FF00FF00", "#FF000000", "#FFFFFFFF", "#FF888888",
         "#A01F1FFF", "#A0FF1F1F", "#501F1FFF", "#50FF1F1F", "#1E1F1FFF", "#28FF1F1F", "#FFFF0000"
     },

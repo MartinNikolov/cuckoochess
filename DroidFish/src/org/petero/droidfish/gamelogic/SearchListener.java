@@ -65,7 +65,7 @@ public interface SearchListener {
             this.lowerBound = lowerBound;
             this.pv = pv;
         }
-        
+
         public final void removeFirstMove() {
             if (!pv.isEmpty())
                 pv.remove(0);

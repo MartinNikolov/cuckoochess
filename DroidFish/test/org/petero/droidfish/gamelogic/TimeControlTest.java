@@ -55,7 +55,7 @@ public class TimeControlTest {
         assertEquals(0, tc.getMovesToTC());
         assertEquals(totTime - 1000, tc.getRemainingTime(true, t0 + 4711));
         assertEquals(totTime, tc.getRemainingTime(false, t0 + 4711));
-        
+
         tc.setCurrentMove(1, false, totTime - 1000, totTime);
         assertEquals(0, tc.getMovesToTC());
         assertEquals(totTime - 1000, tc.getRemainingTime(true, t0 + 4711));
@@ -86,13 +86,13 @@ public class TimeControlTest {
 
         tc.setCurrentMove(2, true, 0, 0);
         assertEquals(39, tc.getMovesToTC());
-        
+
         tc.setCurrentMove(40, true, 0, 0);
         assertEquals(1, tc.getMovesToTC());
-        
+
         tc.setCurrentMove(41, true, 0, 0);
         assertEquals(40, tc.getMovesToTC());
-        
+
         tc.setCurrentMove(80, true, 0, 0);
         assertEquals(1, tc.getMovesToTC());
 
@@ -112,7 +112,7 @@ public class TimeControlTest {
         long t0 = 1342134;
         assertEquals(timeCont, tc.getRemainingTime(true, t0 + 4711));
         assertEquals(timeCont, tc.getRemainingTime(false, t0 + 4711));
-        
+
         tc.startTimer(t0 + 1000);
         wBaseTime = tc.moveMade(t0 + 2000, true);
         tc.setCurrentMove(5, false, wBaseTime, bBaseTime);
@@ -124,7 +124,7 @@ public class TimeControlTest {
         tc.setCurrentMove(6, true, wBaseTime, bBaseTime);
         assertEquals(timeCont - 1000 + timeCont + inc, tc.getRemainingTime(true, t0 + 4711));
         assertEquals(timeCont - 4000 + timeCont + inc, tc.getRemainingTime(false, t0 + 4711));
-        
+
         tc.startTimer(t0 + 6000);
         wBaseTime = tc.moveMade(t0 + 9000, true);
         tc.setCurrentMove(6, false, wBaseTime, bBaseTime);

@@ -99,7 +99,7 @@ public class TimeControl {
     /** Get remaining time */
     public final int getRemainingTime(boolean whiteToMove, long now) {
         long remaining = whiteToMove ? whiteBaseTime : blackBaseTime;
-        if (whiteToMove == this.whiteToMove) { 
+        if (whiteToMove == this.whiteToMove) {
             remaining -= elapsed;
             if (timerT0 != 0) {
                 remaining -= now - timerT0;
@@ -115,7 +115,7 @@ public class TimeControl {
     public final int getIncrement() {
         return (int)increment;
     }
-    
+
     public final int getMovesToTC() {
         if (movesPerSession <= 0)
             return 0;

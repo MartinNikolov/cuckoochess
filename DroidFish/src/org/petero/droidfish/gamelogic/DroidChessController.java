@@ -180,7 +180,7 @@ public class DroidChessController {
     }
     SearchListener listener;
 
-    
+
     public DroidChessController(GUIInterface gui, PgnToken.PgnTokenReceiver gameTextListener, PGNOptions options) {
         this.gui = gui;
         this.gameTextListener = gameTextListener;
@@ -238,7 +238,7 @@ public class DroidChessController {
 
     public final void startGame() {
         updateComputeThreads(true);
-        setSelection(); 
+        setSelection();
         updateGUI();
         updateGameMode();
     }
@@ -313,16 +313,16 @@ public class DroidChessController {
     public final void fromByteArray(byte[] data) {
         game.fromByteArray(data);
     }
-    
+
     public final byte[] toByteArray() {
         return game.tree.toByteArray();
     }
-    
+
     public final String getFEN() {
         return TextIO.toFEN(game.tree.currentPos);
     }
-    
-    /** Convert current game to PGN format. */ 
+
+    /** Convert current game to PGN format. */
     public final String getPGN() {
         return game.tree.toPGN(pgnOptions);
     }
@@ -387,7 +387,7 @@ public class DroidChessController {
         }
         return true;
     }
-    
+
     public final void undoMove() {
         if (game.getLastMove() != null) {
             ss.searchResultWanted = false;
@@ -427,11 +427,11 @@ public class DroidChessController {
             updateGUI();
         }
     }
-    
+
     public final int numVariations() {
         return game.numVariations();
     }
-    
+
     public final int currVariation() {
         return game.currVariation();
     }
@@ -788,7 +788,7 @@ public class DroidChessController {
             }
         }
     }
-    
+
     private final synchronized void stopAnalysis() {
         if (analysisThread != null) {
             computerPlayer.stopSearch();
@@ -810,7 +810,7 @@ public class DroidChessController {
         if (newEngine || (strength != this.strength)) {
             this.engine = engine;
             this.strength = strength;
-            if (newEngine && ((analysisThread != null) || (computerThread != null))) { 
+            if (newEngine && ((analysisThread != null) || (computerThread != null))) {
                 stopAnalysis();
                 updateComputeThreads(true);
                 updateGUI();

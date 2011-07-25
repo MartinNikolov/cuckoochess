@@ -42,7 +42,7 @@ public interface GUIInterface {
 
     /** Update the computer thinking information. */
     public void setThinkingInfo(String pvStr, String bookInfo, ArrayList<ArrayList<Move>> pvMoves, List<Move> bookMoves);
-    
+
     /** Ask what to promote a pawn to. Should call reportPromotePiece() when done. */
     public void requestPromotePiece();
 

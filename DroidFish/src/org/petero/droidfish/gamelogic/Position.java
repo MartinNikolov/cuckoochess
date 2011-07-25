@@ -39,14 +39,14 @@ public class Position {
     public static final int H1_CASTLE = 1; /** White short castle. */
     public static final int A8_CASTLE = 2; /** Black long castle. */
     public static final int H8_CASTLE = 3; /** Black short castle. */
-    
+
     private int castleMask;
 
     private int epSquare;
-    
+
     /** Number of half-moves since last 50-move reset. */
     public int halfMoveClock;
-    
+
     /** Game move number, starting from 1. */
     public int fullMoveCounter;
 
@@ -79,7 +79,7 @@ public class Position {
         wKingSq = other.wKingSq;
         bKingSq = other.bKingSq;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if ((o == null) || (o.getClass() != this.getClass()))
@@ -159,11 +159,11 @@ public class Position {
         int oldPiece = squares[square];
         hashKey ^= psHashKeys[oldPiece][square];
         hashKey ^= psHashKeys[piece][square];
-        
+
         // Update board
         squares[square] = piece;
 
-        // Update king position 
+        // Update king position
         if (piece == Piece.WKING) {
             wKingSq = square;
         } else if (piece == Piece.BKING) {
@@ -233,12 +233,12 @@ public class Position {
         ui.epSquare = epSquare;
         ui.halfMoveClock = halfMoveClock;
         boolean wtm = whiteMove;
-        
+
         int p = squares[move.from];
         int capP = squares[move.to];
 
         boolean nullMove = (move.from == 0) && (move.to == 0);
-        
+
         if (nullMove || (capP != Piece.EMPTY) || (p == (wtm ? Piece.WPAWN : Piece.BPAWN))) {
             halfMoveClock = 0;
         } else {
@@ -302,7 +302,7 @@ public class Position {
                 setPiece(move.to + 8, Piece.EMPTY);
             }
         }
-            
+
         // Perform move
         setPiece(move.from, Piece.EMPTY);
         // Handle promotion
@@ -313,7 +313,7 @@ public class Position {
         }
         setWhiteMove(!wtm);
     }
-    
+
     public final void unMakeMove(Move move, UndoInfo ui) {
         setWhiteMove(!whiteMove);
         int p = squares[move.to];
@@ -330,7 +330,7 @@ public class Position {
         if (!wtm) {
             fullMoveCounter--;
         }
-        
+
         // Handle castling
         int king = wtm ? Piece.WKING : Piece.BKING;
         int k0 = move.from;
@@ -353,7 +353,7 @@ public class Position {
             }
         }
     }
-    
+
     private final void removeCastleRights(int square) {
         if (square == Position.getSquare(0, 0)) {
             setCastleMask(castleMask & ~(1 << Position.A1_CASTLE));
@@ -367,7 +367,7 @@ public class Position {
     }
 
     /* ------------- Hashing code ------------------ */
-    
+
     private static long[][] psHashKeys;    // [piece][square]
     private static long whiteHashKey;
     private static long[] castleHashKeys;  // [castleMask]

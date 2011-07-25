@@ -77,7 +77,7 @@ public class DroidEngineControl {
      */
     static class SearchListener implements Search.Listener {
         NioPrintStream os;
-        
+
         SearchListener(NioPrintStream os) {
             this.os = os;
         }

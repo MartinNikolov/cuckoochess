@@ -76,7 +76,7 @@ public class MoveGen {
                     if (x > 0 && y > 0 && addDirection(moveList, pos, sq, 1, -9)) return moveList;
                     if (         y > 0 && addDirection(moveList, pos, sq, 1, -8)) return moveList;
                     if (x < 7 && y > 0 && addDirection(moveList, pos, sq, 1, -7)) return moveList;
-            
+
                     int k0 = wtm ? Position.getSquare(4,0) : Position.getSquare(4,7);
                     if (Position.getSquare(x,y) == k0) {
                         int aCastle = wtm ? Position.A1_CASTLE : Position.A8_CASTLE;
@@ -205,7 +205,7 @@ public class MoveGen {
         }
         p = checkDirection(pos, sq, 7-x,  1); if ((p == oQueen) || (p == oRook)) return true;
         p = checkDirection(pos, sq,   x, -1); if ((p == oQueen) || (p == oRook)) return true;
-        
+
         int oKingSq = pos.getKingSq(!isWhiteMove);
         if (oKingSq >= 0) {
             int ox = Position.getX(oKingSq);
@@ -213,7 +213,7 @@ public class MoveGen {
             if ((Math.abs(x - ox) <= 1) && (Math.abs(y - oy) <= 1))
                 return true;
         }
-        
+
         return false;
     }
 
@@ -313,7 +313,7 @@ public class MoveGen {
     private int movesInCache = 0;
     private Object[] moveListCache = new Object[200];
     private int moveListsInCache = 0;
-    
+
     private final Move getMoveObj(int from, int to, int promoteTo) {
         if (movesInCache > 0) {
             Move m = moveCache[--movesInCache];
@@ -346,7 +346,7 @@ public class MoveGen {
             moveListCache[moveListsInCache++] = moveList;
         }
     }
-    
+
     public final void returnMove(Move m) {
         if (movesInCache < moveCache.length) {
             moveCache[movesInCache++] = m;

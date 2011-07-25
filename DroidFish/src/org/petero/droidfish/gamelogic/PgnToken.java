@@ -45,7 +45,7 @@ public class PgnToken {
         this.type = type;
         this.token = token;
     }
-    
+
     public interface PgnTokenReceiver {
         /** If this method returns false, the object needs a full reinitialization, using clear() and processToken(). */
         public boolean isUpToDate();

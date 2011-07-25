@@ -27,7 +27,7 @@ import android.content.DialogInterface.OnDismissListener;
 import android.os.Bundle;
 
 public class CPUWarning extends Activity {
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

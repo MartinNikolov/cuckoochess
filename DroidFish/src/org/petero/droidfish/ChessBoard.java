@@ -50,7 +50,7 @@ public class ChessBoard extends View {
     public boolean flipped;
     public boolean drawSquareLabels;
     boolean oneTouchMoves;
-    
+
     List<Move> moveHints;
 
     protected Paint darkPaint;
@@ -61,7 +61,7 @@ public class ChessBoard extends View {
     private Paint blackPiecePaint;
     private Paint labelPaint;
     private ArrayList<Paint> moveMarkPaint;
-    
+
     public ChessBoard(Context context, AttributeSet attrs) {
         super(context, attrs);
         pos = new Position();
@@ -87,13 +87,13 @@ public class ChessBoard extends View {
 
         whitePiecePaint = new Paint();
         whitePiecePaint.setAntiAlias(true);
-        
+
         blackPiecePaint = new Paint();
         blackPiecePaint.setAntiAlias(true);
 
         labelPaint = new Paint();
         labelPaint.setAntiAlias(true);
-        
+
         moveMarkPaint = new ArrayList<Paint>();
         for (int i = 0; i < 6; i++) {
             Paint p = new Paint();
@@ -126,7 +126,7 @@ public class ChessBoard extends View {
     }
 
     private Handler handlerTimer = new Handler();
-    
+
     final class AnimInfo {
         AnimInfo() { startTime = -1; }
         boolean paused;
@@ -323,7 +323,7 @@ public class ChessBoard extends View {
     protected int getSqSizeH(int height) { return (height - 4) / 8; }
 
     protected int getMaxHeightPercentage() { return 75; }
-    
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -457,7 +457,7 @@ public class ChessBoard extends View {
             canvas.drawPath(path, p);
         }
     }
-    
+
     protected void drawExtraSquares(Canvas canvas) {
     }
 
@@ -525,7 +525,7 @@ public class ChessBoard extends View {
         }
         canvas.drawText(s, xCrd, yCrd, labelPaint);
     }
-    
+
     protected int getXCrd(int x) { return x0 + sqSize * (flipped ? 7 - x : x); }
     protected int getYCrd(int y) { return y0 + sqSize * (flipped ? y : 7 - y); }
     protected int getXSq(int xCrd) { int t = (xCrd - x0) / sqSize; return flipped ? 7 - t : t; }
@@ -623,7 +623,7 @@ public class ChessBoard extends View {
 
     protected int minValidY() { return 0; }
     protected int getSquare(int x, int y) { return Position.getSquare(x, y); }
-    
+
     public final Move handleTrackballEvent(MotionEvent event) {
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:

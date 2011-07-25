@@ -59,7 +59,7 @@ public class NativePipedProcess extends UCIEngineBase {
 
     /**
      * Read a line of data from the process.
-     * Return as soon as there is a full line of data to return, 
+     * Return as soon as there is a full line of data to return,
      * or when timeoutMillis milliseconds have passed.
      */
     private final native String readFromProcess(int timeoutMillis);

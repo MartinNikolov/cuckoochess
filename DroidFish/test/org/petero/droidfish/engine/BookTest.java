@@ -57,7 +57,7 @@ public class BookTest {
         DroidBook book = DroidBook.getInstance();
         Move move = book.getBookMove(pos);
         checkValid(pos, move);
-        
+
         // Test "out of book" condition
         pos.setCastleMask(0);
         move = book.getBookMove(pos);

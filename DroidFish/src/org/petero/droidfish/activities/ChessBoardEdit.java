@@ -38,7 +38,7 @@ public class ChessBoardEdit extends ChessBoard {
         super(context, attrs);
         drawSquareLabels = true;
     }
-    
+
     private final static int gap = 2;
 
     @Override
@@ -80,7 +80,7 @@ public class ChessBoardEdit extends ChessBoard {
         }
         return Piece.EMPTY;
     }
-    
+
     @Override
     protected int getXFromSq(int sq) {
         if (sq >= 0) {

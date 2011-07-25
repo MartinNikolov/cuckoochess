@@ -194,7 +194,7 @@ public final class DroidBook {
         out.write(binBookA);
         out.close();
     }
-    
+
     public static List<Byte> createBinBook() {
         List<Byte> binBook = new ArrayList<Byte>(0);
         try {

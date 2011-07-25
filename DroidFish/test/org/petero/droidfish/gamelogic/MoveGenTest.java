@@ -64,12 +64,12 @@ public class MoveGenTest {
         assertTrue(strMoves.contains("O-O"));
         assertTrue(strMoves.contains("O-O-O"));
         assertEquals(49, strMoves.size());
-        
+
         pos.setPiece(Position.getSquare(4,3), Piece.BROOK);
         strMoves = getMoveList(pos, false);
         assertTrue(!strMoves.contains("O-O"));      // In check, not castling possible
         assertTrue(!strMoves.contains("O-O-O"));
-        
+
         pos.setPiece(Position.getSquare(4, 3), Piece.EMPTY);
         pos.setPiece(Position.getSquare(5, 3), Piece.BROOK);
         strMoves = getMoveList(pos, false);
@@ -111,7 +111,7 @@ public class MoveGenTest {
         pos.setEpSquare(-1);
         strMoves = getMoveList(pos, false);
         assertEquals(21, strMoves.size());          // No ep, one less move possible
-        
+
         // Check black pawn moves
         pos.setWhiteMove(false);
         strMoves = getMoveList(pos, false);
@@ -150,13 +150,13 @@ public class MoveGenTest {
         pos.setPiece(Position.getSquare(3,3), Piece.EMPTY);
         pos.setPiece(Position.getSquare(5,3), Piece.WQUEEN);
         assertEquals(false, MoveGen.inCheck(pos));
-        
+
         pos.setPiece(Position.getSquare(4, 6), Piece.BROOK);
         assertEquals(true, MoveGen.inCheck(pos));
-        pos.setPiece(Position.getSquare(4, 4), Piece.WPAWN);        
+        pos.setPiece(Position.getSquare(4, 4), Piece.WPAWN);
         assertEquals(false, MoveGen.inCheck(pos));
 
-        pos.setPiece(Position.getSquare(2, 3), Piece.BKNIGHT);                
+        pos.setPiece(Position.getSquare(2, 3), Piece.BKNIGHT);
         assertEquals(true, MoveGen.inCheck(pos));
 
         pos.setPiece(Position.getSquare(2, 3), Piece.EMPTY);
@@ -178,7 +178,7 @@ public class MoveGenTest {
         assertTrue(strMoves.contains("Ke1-f2"));
         assertEquals(5, strMoves.size());
     }
-    
+
     /**
      * Test that if king capture is possible, only a king capture move is returned in the move list.
      */
@@ -195,14 +195,14 @@ public class MoveGenTest {
         strMoves = getMoveList(pos, false);
         assertEquals(1, strMoves.size());
         assertEquals("Ba3xe7", strMoves.get(0));
-        
+
         pos.setPiece(Position.getSquare(1, 3), Piece.WPAWN);
         pos.setPiece(Position.getSquare(5, 5), Piece.WPAWN);
         strMoves = getMoveList(pos, false);
         assertEquals(1, strMoves.size());
         assertEquals("f6xe7", strMoves.get(0));
     }
-    
+
     private List<String> getMoveList(Position pos, boolean onlyLegal) {
         ArrayList<Move> moves = new MoveGen().pseudoLegalMoves(pos);
         if (onlyLegal) {

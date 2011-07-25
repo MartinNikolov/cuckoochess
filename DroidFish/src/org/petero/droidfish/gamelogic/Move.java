@@ -44,7 +44,7 @@ public class Move {
         this.to = m.to;
         this.promoteTo = m.promoteTo;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if ((o == null) || (o.getClass() != this.getClass()))

@@ -53,7 +53,7 @@ public class GameTreeTest {
         gt.goBack();
         expectedPos.unMakeMove(move, ui);
         assertEquals(expectedPos, gt.currentPos);
-        
+
         varNo = gt.addMove("d4", "", 0, "", "");
         assertEquals(1, varNo);
         assertEquals(expectedPos, gt.currentPos);
@@ -70,7 +70,7 @@ public class GameTreeTest {
         assertEquals(expectedPos, gt.currentPos);
         varList = gt.variations();
         assertEquals(1, varList.size());
-        
+
         gt.goForward(-1);
         Move move2 = TextIO.UCIstringToMove("g8f6");
         UndoInfo ui2 = new UndoInfo();
@@ -85,11 +85,11 @@ public class GameTreeTest {
         expectedPos.unMakeMove(move, ui);
         assertEquals(expectedPos, gt.currentPos);
         assertEquals("", gt.currentNode.moveStr);
-        
+
         gt.goForward(-1); // Should remember that d2d4 was last visited branch
         expectedPos.makeMove(move, ui);
         assertEquals(expectedPos, gt.currentPos);
-        
+
         byte[] serialState = gt.toByteArray();
         gt = new GameTree(null);
         gt.fromByteArray(serialState);
@@ -142,7 +142,7 @@ public class GameTreeTest {
 
         gt.goForward(1);
         assertEquals("e4 c5 d4*", getMoveListAsString(gt));
-        
+
         gt.goBack();
         assertEquals("e4 c5* d4", getMoveListAsString(gt));
 
@@ -154,10 +154,10 @@ public class GameTreeTest {
 
         gt.goForward(1);
         assertEquals("d4*", getMoveListAsString(gt));
-        
+
         gt.goBack();
         assertEquals("*d4", getMoveListAsString(gt));
-        
+
         gt.goForward(0);
         assertEquals("e4* c5 d4", getMoveListAsString(gt));
     }
@@ -170,11 +170,11 @@ public class GameTreeTest {
         gt.addMove("c4", "", 0, "", "");
         assertEquals("e4 d4 c4", getVariationsAsString(gt));
         assertEquals(0, gt.currentNode.defaultChild);
-        
+
         gt.reorderVariation(1, 0);
         assertEquals("d4 e4 c4", getVariationsAsString(gt));
         assertEquals(1, gt.currentNode.defaultChild);
-        
+
         gt.reorderVariation(0, 2);
         assertEquals("e4 c4 d4", getVariationsAsString(gt));
         assertEquals(0, gt.currentNode.defaultChild);
@@ -198,7 +198,7 @@ public class GameTreeTest {
         gt.deleteVariation(0);
         assertEquals("d4 c4 f4", getVariationsAsString(gt));
         assertEquals(0, gt.currentNode.defaultChild);
-        
+
         gt.reorderVariation(0, 2);
         assertEquals("c4 f4 d4", getVariationsAsString(gt));
         assertEquals(2, gt.currentNode.defaultChild);
@@ -229,14 +229,14 @@ public class GameTreeTest {
         }
         return ret.toString();
     }
-    
+
     @Test
     public final void testGetRemainingTime() throws ChessParseError {
         GameTree gt = new GameTree(null);
         int initialTime = 60000;
         assertEquals(initialTime, gt.getRemainingTime(true, initialTime));
         assertEquals(initialTime, gt.getRemainingTime(false, initialTime));
-        
+
         gt.addMove("e4", "", 0, "", "");
         gt.goForward(-1);
         assertEquals(initialTime, gt.getRemainingTime(true, initialTime));
@@ -287,7 +287,7 @@ public class GameTreeTest {
         gt.goBack();
         assertEquals(45000, gt.getRemainingTime(true, initialTime));
         assertEquals(initialTime, gt.getRemainingTime(false, initialTime));
-        
+
         gt.goBack();
         gt.goBack();
         gt.goBack();
@@ -336,7 +336,7 @@ public class GameTreeTest {
         assertEquals("e4!",         lst.get(0).token);
         assertEquals(" comment { ", lst.get(1).token);
         assertEquals("e5?",         lst.get(2).token);
-        
+
         lst = getAllTokens("e4(c4 {(()\\} c5 ( e5))Nf6"); // e4 ( c4 comment c5 ( e5 ) ) Nf6
         assertEquals(10, lst.size());
         assertEquals("e4",                 lst.get(0).token);
@@ -357,7 +357,7 @@ public class GameTreeTest {
         assertEquals(PgnToken.STRING,        lst.get(2).type);
         assertEquals("string",               lst.get(2).token);
         assertEquals(PgnToken.RIGHT_BRACKET, lst.get(3).type);
-        
+
         lst = getAllTokens("[a \"str\\\"in\\\\g\"]"); // [ a str"in\g ]
         assertEquals(4, lst.size());
         assertEquals(PgnToken.LEFT_BRACKET,  lst.get(0).type);
@@ -390,7 +390,7 @@ public class GameTreeTest {
         assertEquals("1-0",             lst.get(1).token);
         assertEquals(PgnToken.SYMBOL,   lst.get(2).type);
         assertEquals("0-1",             lst.get(2).token);
-        
+
         // Test invalid data, unterminated tokens
         lst = getAllTokens("e4 e5 ; ( )"); // e4 e5 comment
         assertEquals(3, lst.size());
@@ -400,7 +400,7 @@ public class GameTreeTest {
         assertEquals("e5",              lst.get(1).token);
         assertEquals(PgnToken.COMMENT,  lst.get(2).type);
         assertEquals(" ( )",            lst.get(2).token);
-        
+
         lst = getAllTokens("e4 e5 {"); // e4 e5 ?
         assertTrue(lst.size() >= 2);
         assertEquals(PgnToken.SYMBOL,   lst.get(0).type);
@@ -414,7 +414,7 @@ public class GameTreeTest {
         assertEquals("e4",              lst.get(0).token);
         assertEquals(PgnToken.SYMBOL,   lst.get(1).type);
         assertEquals("e5",              lst.get(1).token);
-        
+
         // Test that reading beyond EOF produces more EOF tokens
         PgnScanner sc = new PgnScanner("e4 e5");
         assertEquals(PgnToken.SYMBOL, sc.nextToken().type);
@@ -472,7 +472,7 @@ public class GameTreeTest {
         assertEquals("e4", getVariationsAsString(gt));
         gt.goForward(0);
         assertEquals("e5", getVariationsAsString(gt));
-        
+
         // Test for broken PGN headers: [White "A "good" player"]
         res = gt.readPGN("[White \"A \"good\" player\"]\ne4", options);
         assertEquals(true, res);
@@ -536,7 +536,7 @@ public class GameTreeTest {
         gt.goForward(0);
         assertEquals(14, gt.currentNode.nag);
     }
-    
+
     @Test
     public final void testTime() throws ChessParseError {
         GameTree gt = new GameTree(null);
@@ -551,7 +551,7 @@ public class GameTreeTest {
         gt.goForward(0);
         assertEquals(43000, gt.currentNode.remainingTime);
         assertEquals(" x  y", gt.currentNode.postComment);
-        
+
         assertEquals("e5", getVariationsAsString(gt));
         gt.goForward(0);
         assertEquals(((1*60+2)*60+3)*1000, gt.currentNode.remainingTime);
@@ -578,7 +578,7 @@ public class GameTreeTest {
 
         String pgn = gt.toPGN(options);
         assertEquals(-1, pgn.indexOf("--"));
-        
+
         options.exp.playerAction = true;
         pgn = gt.toPGN(options);
         assertTrue(pgn.indexOf("--") >= 0);
@@ -588,13 +588,13 @@ public class GameTreeTest {
         assertEquals("--", getVariationsAsString(gt));
         gt.goForward(0);
         assertEquals(GameState.RESIGN_WHITE, gt.getGameState());
-        
+
         gt = new GameTree(null);
         gt.readPGN("1. -- {[%playeraction resign]}", options);
         assertEquals("--", getVariationsAsString(gt));
         gt.goForward(0);
         assertEquals(GameState.RESIGN_WHITE, gt.getGameState());
-        
+
         gt.readPGN("1. e4 -- {[%playeraction resign]}", options);
         assertEquals("e4", getVariationsAsString(gt));
         gt.goForward(0);
@@ -645,7 +645,7 @@ public class GameTreeTest {
 
     @Test
     public final void testPGNPromotion() throws ChessParseError {
-        // PGN standard specifies that promotion moves shall have an = sign 
+        // PGN standard specifies that promotion moves shall have an = sign
         // before the promotion piece
         GameTree gt = new GameTree(null);
         gt.setStartPos(TextIO.readFEN("rnbqkbnr/ppPppppp/8/8/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"));

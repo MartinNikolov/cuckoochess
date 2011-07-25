@@ -42,7 +42,7 @@ public class BookOptions {
         if ((o == null) || (o.getClass() != this.getClass()))
             return false;
         BookOptions other = (BookOptions)o;
-        
+
         return ((filename.equals(other.filename)) &&
                 (maxLength == other.maxLength) &&
                 (preferMainLines == other.preferMainLines) &&

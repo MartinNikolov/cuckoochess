@@ -45,7 +45,7 @@ public class EditHeaders extends Activity {
     private Button cancelButton;
 
     private TreeMap<String,String> headers = new TreeMap<String,String>();
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +60,7 @@ public class EditHeaders extends Activity {
 
         okButton = (Button)findViewById(R.id.ed_header_ok);
         cancelButton = (Button)findViewById(R.id.ed_header_cancel);
-        
+
         Intent data = getIntent();
         Bundle bundle = data.getBundleExtra("org.petero.droidfish.headers");
         ArrayList<String> tags = bundle.getStringArrayList("tags");
@@ -73,7 +73,7 @@ public class EditHeaders extends Activity {
         round.setText(headers.get("Round"));
         white.setText(headers.get("White"));
         black.setText(headers.get("Black"));
-        
+
         okButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 sendBackResult();
@@ -103,7 +103,7 @@ public class EditHeaders extends Activity {
         headers.put("Round", round.getText().toString().trim());
         headers.put("White", white.getText().toString().trim());
         headers.put("Black", black.getText().toString().trim());
-        
+
         Bundle bundle = new Bundle();
         ArrayList<String> tags = new ArrayList<String>();
         ArrayList<String> values = new ArrayList<String>();

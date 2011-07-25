@@ -80,30 +80,30 @@ public class TextIOTest {
         // Must not be possible to capture the king
         wasError = testFENParseError("8/8/8/8/8/8/8/k1RK4 w - - 0 1");
         assertEquals(true, wasError);
-        
+
         // Make sure bogus en passant square information is removed
         fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
         pos = TextIO.readFEN(fen);
         assertEquals(-1, pos.getEpSquare());
-        
+
         // Test for too many rows (slashes)
         wasError = testFENParseError("8/8/8/8/4k3/8/8/8/KBN5 w - - 0 1");
         assertEquals(true, wasError);
-        
+
         // Test for too many columns
         wasError = testFENParseError("8K/8/8/8/4k3/8/8/8 w - - 0 1");
         assertEquals(true, wasError);
-        
+
         // Pawns must not be on first/last rank
         wasError = testFENParseError("kp6/8/8/8/8/8/8/K7 w - - 0 1");
         assertEquals(true, wasError);
-        
+
         wasError = testFENParseError("kr/pppp/8/8/8/8/8/KBR w");
         assertEquals(false, wasError);  // OK not to specify castling flags and ep square
-        
+
         wasError = testFENParseError("k/8/8/8/8/8/8/K");
         assertEquals(true, wasError);   // Error side to move not specified
-        
+
         wasError = testFENParseError("");
         assertEquals(true, wasError);
 
@@ -112,10 +112,10 @@ public class TextIOTest {
 
         wasError = testFENParseError("1B1B4/6k1/7r/7P/6q1/r7/q7/7K b - - acn 6; acs 0;");
         assertEquals(false, wasError);  // Extra stuff after FEN string is allowed
-        
+
         pos = TextIO.readFEN("3r2k1/p4p1p/1ppq2p1/8/2PpQ3/1P5P/P4PP1/3R1K2 b - - 1 26\n");
         assertEquals(26, pos.fullMoveCounter);
-        
+
         // Test that insane move numbers are rejected. Otherwise, could cause problems
         // (excessive memory usage) for the clock history class.
         pos = TextIO.readFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 10000");
@@ -144,7 +144,7 @@ public class TextIOTest {
         }
         return wasError;
     }
-    
+
     /**
      * Test of moveToString method, of class TextIO.
      */
@@ -161,7 +161,7 @@ public class TextIOTest {
         move = new Move(Position.getSquare(6, 0), Position.getSquare(5, 2), Piece.EMPTY);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("Ng1-f3", result);
-        
+
         move = new Move(Position.getSquare(4, 7), Position.getSquare(2, 7),
                 Piece.EMPTY);
         result = TextIO.moveToString(pos, move, longForm);
@@ -177,11 +177,11 @@ public class TextIOTest {
         move = new Move(Position.getSquare(2,6), Position.getSquare(2,7), Piece.WKNIGHT);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("c7-c8N", result);
-        
+
         move = new Move(Position.getSquare(2,6), Position.getSquare(2,7), Piece.WQUEEN);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("c7-c8Q+", result);
-        
+
         // Test null move
         pos = TextIO.readFEN(TextIO.startPosFEN);
         Move nullMove = new Move(0, 0, 0);
@@ -202,11 +202,11 @@ public class TextIOTest {
         Move move = new Move(Position.getSquare(1, 6), Position.getSquare(1, 7), Piece.WROOK);
         String result = TextIO.moveToString(pos, move, longForm);
         assertEquals("b7-b8R+", result);    // check
-        
+
         move = new Move(Position.getSquare(1, 6), Position.getSquare(1, 7), Piece.WQUEEN);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("b7-b8Q#", result);    // check mate
-        
+
         move = new Move(Position.getSquare(1, 6), Position.getSquare(1, 7), Piece.WKNIGHT);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("b7-b8N", result);
@@ -225,7 +225,7 @@ public class TextIOTest {
         Position pos = TextIO.readFEN(fen);
         assertEquals(fen, TextIO.toFEN(pos));
         boolean longForm = false;
-        
+
         Move move = new Move(Position.getSquare(4,5), Position.getSquare(4,3), Piece.EMPTY);
         String result = TextIO.moveToString(pos, move, longForm);
         assertEquals("Qee4", result);   // File disambiguation needed
@@ -261,7 +261,7 @@ public class TextIOTest {
         move = new Move(Position.getSquare(7,6), Position.getSquare(7,4), Piece.EMPTY);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("h5", result);     // Regular pawn move
-        
+
         move = new Move(Position.getSquare(5,7), Position.getSquare(3,7), Piece.EMPTY);
         result = TextIO.moveToString(pos, move, longForm);
         assertEquals("Rfd8", result);     // File disambiguation needed
@@ -281,7 +281,7 @@ public class TextIOTest {
         assertEquals(mNe5, m);
         m = TextIO.stringToMove(pos, "N");
         assertEquals(null, m);
-        
+
         Move mQc6e4 = new Move(Position.getSquare(2, 5), Position.getSquare(4, 3), Piece.EMPTY);
         m = TextIO.stringToMove(pos, "Qc6-e4");
         assertEquals(mQc6e4, m);
@@ -299,7 +299,7 @@ public class TextIOTest {
         assertEquals(maxb1Q, m);
         m = TextIO.stringToMove(pos, "axb1Q+");
         assertEquals(maxb1Q, m);
-        
+
         Move mh5= new Move(Position.getSquare(7, 6), Position.getSquare(7, 4), Piece.EMPTY);
         m = TextIO.stringToMove(pos, "h5");
         assertEquals(mh5, m);
@@ -317,7 +317,7 @@ public class TextIOTest {
         assertEquals(TextIO.getSquare("b2"), m.from);
         m = TextIO.stringToMove(pos, "Bxc");
         assertEquals(TextIO.getSquare("d2"), m.from);
-        
+
         // Test castling. o-o is a substring of o-o-o, which could cause problems.
         pos = TextIO.readFEN("5k2/p1pQn3/1p2Bp1r/8/4P1pN/2N5/PPP2PPP/R3K2R w KQ - 0 16");
         Move kCastle = new Move(Position.getSquare(4,0), Position.getSquare(6,0), Piece.EMPTY);
@@ -348,19 +348,19 @@ public class TextIOTest {
         assertEquals(qCastle, m);
         m = TextIO.stringToMove(pos, "o-o+");
         assertEquals(kCastle, m);
-        
+
         // Test d8=Q+ syntax
         pos = TextIO.readFEN("1r3r2/2kP2Rp/p1bN1p2/2p5/5P2/2P5/P5PP/3R2K1 w - -");
         m = TextIO.stringToMove(pos, "d8=Q+");
         Move m2 = TextIO.stringToMove(pos, "d8Q");
         assertEquals(m2, m);
-        
+
         // Test null move
         pos = TextIO.readFEN(TextIO.startPosFEN);
         Move nullMove = new Move(0, 0, 0);
         m = TextIO.stringToMove(pos, "--");
         assertEquals(nullMove, m);
-        
+
         // Test extra characters
         pos = TextIO.readFEN(TextIO.startPosFEN);
         Move mNf3 = new Move(TextIO.getSquare("g1"), TextIO.getSquare("f3"), Piece.EMPTY);

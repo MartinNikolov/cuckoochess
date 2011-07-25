@@ -63,8 +63,8 @@ public class PGNFile {
             return info;
         }
     }
-    
-    
+
+
     static private final class BufferedRandomAccessFileReader {
         RandomAccessFile f;
         byte[] buffer = new byte[8192];
@@ -88,7 +88,7 @@ public class PGNFile {
         private final static int EOF = -1024;
 
         final String readLine() throws IOException {
-            // First handle the common case where the next line is entirely 
+            // First handle the common case where the next line is entirely
             // contained in the buffer
             for (int i = bufPos; i < bufLen; i++) {
                 byte b = buffer[i];
@@ -130,7 +130,7 @@ public class PGNFile {
             else
                 return new String(lineBuf, 0, lineLen);
         }
-        
+
         private final int getByte() throws IOException {
             if (bufPos >= bufLen) {
                 bufStartFilePos = f.getFilePointer();
@@ -372,7 +372,7 @@ public class PGNFile {
         }
         return false;
     }
-    
+
     private final static void copyData(RandomAccessFile fileReader,
                RandomAccessFile fileWriter,
                long nBytes) throws IOException {

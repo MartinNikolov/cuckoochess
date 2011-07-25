@@ -21,7 +21,7 @@ import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /** Lets user enter a percentage value using a seek bar. */
-public class SeekBarPreference extends Preference 
+public class SeekBarPreference extends Preference
                                implements OnSeekBarChangeListener {
     private final static int maxValue = 1000;
     private final static int DEFAULT_VALUE = 1000;
@@ -137,7 +137,7 @@ public class SeekBarPreference extends Preference
             }
         });
 
-        return layout; 
+        return layout;
     }
 
     private final String valToString() {
@@ -147,8 +147,8 @@ public class SeekBarPreference extends Preference
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
         if (!callChangeListener(progress)) {
-            seekBar.setProgress(currVal); 
-            return; 
+            seekBar.setProgress(currVal);
+            return;
         }
         seekBar.setProgress(progress);
         currVal = progress;
@@ -165,7 +165,7 @@ public class SeekBarPreference extends Preference
         notifyChanged();
     }
 
-    @Override 
+    @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
         int defVal = a.getInt(index, DEFAULT_VALUE);
         if (defVal > maxValue) defVal = maxValue;

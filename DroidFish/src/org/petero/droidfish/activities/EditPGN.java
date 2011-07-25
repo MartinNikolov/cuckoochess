@@ -70,7 +70,7 @@ public class EditPGN extends ListActivity {
 
     boolean loadGame; // True when loading game, false when saving
     String pgnToSave;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -278,7 +278,7 @@ public class EditPGN extends ListActivity {
         filterText.setText(lastSearchString);
         lv.requestFocus();
     }
-    
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);

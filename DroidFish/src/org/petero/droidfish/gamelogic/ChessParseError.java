@@ -24,9 +24,9 @@ package org.petero.droidfish.gamelogic;
  */
 public class ChessParseError extends Exception {
     private static final long serialVersionUID = -6051856171275301175L;
-    
+
     public Position pos;
-    
+
     public ChessParseError() {
     }
     public ChessParseError(String msg) {

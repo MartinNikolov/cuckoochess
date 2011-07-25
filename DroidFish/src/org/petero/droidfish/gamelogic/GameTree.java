@@ -52,7 +52,7 @@ public class GameTree {
     Position currentPos;    // Cached value. Computable from "currentNode".
 
     PgnToken.PgnTokenReceiver gameStateListener;
-    
+
     public GameTree(PgnToken.PgnTokenReceiver gameStateListener) {
         this.gameStateListener = gameStateListener;
         try {
@@ -89,7 +89,7 @@ public class GameTree {
         currentPos = new Position(startPos);
         updateListener();
     }
-    
+
     private final void updateListener() {
         if (gameStateListener != null) {
             gameStateListener.clear();
@@ -312,7 +312,7 @@ public class GameTree {
         final void putBack(PgnToken tok) {
             savedTokens.add(tok);
         }
-        
+
         final PgnToken nextToken() {
             if (savedTokens.size() > 0) {
                 int len = savedTokens.size();
@@ -419,7 +419,7 @@ public class GameTree {
             }
             return ret;
         }
-        
+
         final PgnToken nextTokenDropComments() {
             while (true) {
                 PgnToken tok = nextToken();
@@ -429,7 +429,7 @@ public class GameTree {
         }
     }
 
-    /** Import PGN data. */ 
+    /** Import PGN data. */
     public final boolean readPGN(String pgn, PGNOptions options) throws ChessParseError {
         PgnScanner scanner = new PgnScanner(pgn);
         PgnToken tok = scanner.nextToken();
@@ -484,7 +484,7 @@ public class GameTree {
             }
         }
         setStartPos(TextIO.readFEN(fen));
-        
+
         String result = "";
         for (int i = 0; i < nTags; i++) {
             String name = tagPairs.get(i).tagName;
@@ -682,7 +682,7 @@ public class GameTree {
         updateListener();
         return idx;
     }
-    
+
     /** Move a variation in the ordered list of variations. */
     public final void reorderVariation(int varNo, int newPos) {
         if (currentNode.verifyChildren(currentPos))
@@ -720,7 +720,7 @@ public class GameTree {
         }
         updateListener();
     }
-    
+
     /* Get linear game history, using default variations at branch points. */
     public final Pair<List<Node>, Integer> getMoveList() {
         List<Node> ret = new ArrayList<Node>();
@@ -821,7 +821,7 @@ public class GameTree {
         }
         return ret;
     }
-    
+
     public final String getPGNResultString() {
         String gameResult = "*";
         switch (getGameState()) {
@@ -884,7 +884,7 @@ public class GameTree {
         return false;
     }
 
-    
+
     /** Keep track of current move and side to move. Used for move number printing. */
     private static final class MoveNumber {
         final int moveNo;
@@ -920,7 +920,7 @@ public class GameTree {
         int nag;                    // Numeric annotation glyph
         String preComment;          // Comment before move
         String postComment;         // Comment after move
-        
+
         private Node parent;        // Null if root node
         int defaultChild;
         private List<Node> children;
@@ -1049,7 +1049,7 @@ public class GameTree {
             }
         }
 
-        /** Export whole tree rooted at "node" in PGN format. */ 
+        /** Export whole tree rooted at "node" in PGN format. */
         public static final void addPgnData(PgnToken.PgnTokenReceiver out, Node node,
                                             MoveNumber moveNum, PGNOptions options) {
             boolean needMoveNr = node.addPgnDataOneNode(out, moveNum, true, options);
@@ -1072,7 +1072,7 @@ public class GameTree {
             }
         }
 
-        /** Export this node in PGN format. */ 
+        /** Export this node in PGN format. */
         private final boolean addPgnDataOneNode(PgnToken.PgnTokenReceiver out, MoveNumber mn,
                                                 boolean needMoveNr, PGNOptions options) {
             if ((preComment.length() > 0) && options.exp.comments) {
@@ -1148,7 +1148,7 @@ public class GameTree {
             ret.append(secs);
             return ret.toString();
         }
-        
+
         private final Node addChild(Node child) {
             child.parent = this;
             children.add(child);
@@ -1184,7 +1184,7 @@ public class GameTree {
                     }
                     break;
                 case PgnToken.NAG:
-                    if (moveAdded && options.imp.nag) { // NAG must be after move 
+                    if (moveAdded && options.imp.nag) { // NAG must be after move
                         try {
                             nodeToAdd.nag = Integer.parseInt(tok.token);
                         } catch (NumberFormatException e) {
@@ -1251,7 +1251,7 @@ public class GameTree {
                         }
                     } catch (IndexOutOfBoundsException e) {
                     }
-                    if (options.imp.comments) { 
+                    if (options.imp.comments) {
                         if (moveAdded)
                             nodeToAdd.postComment += tok.token;
                         else
@@ -1269,7 +1269,7 @@ public class GameTree {
                 }
             }
         }
-        
+
         private static final Pair<String, String> extractExtInfo(String comment, String cmd) {
             comment = comment.replaceAll("\n|\r|\t", " ");
             String remaining = comment;
@@ -1285,7 +1285,7 @@ public class GameTree {
             }
             return new Pair<String, String>(remaining, param);
         }
-        
+
         /** Convert hh:mm:ss to milliseconds */
         private static final int parseTimeString(String str) {
             str = str.trim();
@@ -1314,7 +1314,7 @@ public class GameTree {
                 ret = -ret;
             return ret;
         }
-        
+
         public final static String nagStr(int nag) {
             switch (nag) {
             case 1: return "!";
@@ -1327,14 +1327,14 @@ public class GameTree {
             case 13: return " ∞";
             case 14: return " +/=";
             case 15: return " =/+";
-            case 16: return " +/-"; 
+            case 16: return " +/-";
             case 17: return " -/+";
             case 18: return " +-";
             case 19: return " -+";
             default: return "";
             }
         }
-  
+
         public final static int strToNag(String str) {
             if      (str.equals("!"))  return 1;
             else if (str.equals("?"))  return 2;

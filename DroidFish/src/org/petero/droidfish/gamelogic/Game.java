@@ -81,11 +81,11 @@ public class Game {
             updateTimeControl(false);
         return ret;
     }
-    
+
     final Position currPos() {
         return tree.currentPos;
     }
-    
+
     final Position prevPos() {
         Move m = tree.currentNode.move;
         if (m != null) {
@@ -150,7 +150,7 @@ public class Game {
         addToGameTree(m, pendingDrawOffer ? "draw offer" : "");
         return true;
     }
-    
+
     private final void addToGameTree(Move m, String playerAction) {
         if (m.equals(new Move(0, 0, 0))) { // Don't create more than one null move at a node
             List<Move> varMoves = tree.variations();
@@ -225,7 +225,7 @@ public class Game {
                 String ret = "Game over, draw by 50 move rule!";
                 String drawInfo = tree.getGameStateInfo();
                 if (drawInfo.length() > 0) {
-                    ret = ret + " [" + drawInfo + "]";  
+                    ret = ret + " [" + drawInfo + "]";
                 }
                 return ret;
             }
@@ -248,13 +248,13 @@ public class Game {
     public final Move getLastMove() {
         return tree.currentNode.move;
     }
-    
+
     /** Return true if there is a move to redo. */
     public final boolean canRedoMove() {
         int nVar = tree.variations().size();
         return nVar > 0;
     }
-    
+
     public final int numVariations() {
         if (tree.currentNode == tree.rootNode)
             return 1;

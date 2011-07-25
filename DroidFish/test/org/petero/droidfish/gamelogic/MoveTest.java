@@ -49,7 +49,7 @@ public class MoveTest {
     @After
     public void tearDown() {
     }
-    
+
     /**
      * Test of move constructor, of class Move.
      */
@@ -63,7 +63,7 @@ public class MoveTest {
         assertEquals(move.to,t);
         assertEquals(move.promoteTo, p);
     }
-    
+
     /**
      * Test of equals, of class Move.
      */

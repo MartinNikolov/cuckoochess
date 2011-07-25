@@ -48,7 +48,7 @@ public final class InternalBook implements IOpeningBook {
         t.setPriority(Thread.MIN_PRIORITY);
         t.start();
     }
-    
+
     static boolean canHandle(String filename) {
         return filename.length() == 0;
     }
@@ -127,7 +127,7 @@ public final class InternalBook implements IOpeningBook {
         } */
     }
 
-    
+
     /** Add a move to a position in the opening book. */
     private final void addToBook(Position pos, Move moveToAdd) {
         List<BookEntry> ent = bookMap.get(pos.zobristHash());

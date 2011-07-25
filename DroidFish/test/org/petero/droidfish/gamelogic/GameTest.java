@@ -72,13 +72,13 @@ public class GameTest {
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move made
-        
+
         res = game.processString("draw offer Bb5");
         assertEquals(true, res);
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
         assertEquals(Piece.WBISHOP, game.currPos().getPiece(Position.getSquare(1, 4))); // Bb5 move made
-        
+
         res = game.processString("draw accept");
         assertEquals(true, res);
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState());    // Draw by agreement
@@ -95,7 +95,7 @@ public class GameTest {
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move undone
         assertEquals(true, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        
+
         game.redoMove();
         assertEquals(Piece.BKNIGHT, game.currPos().getPiece(Position.getSquare(2, 5))); // Nc6 move redone
         assertEquals(false, game.haveDrawOffer());
@@ -111,7 +111,7 @@ public class GameTest {
         game.newGame();
         assertEquals(false, game.haveDrawOffer());
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        
+
         res = game.processString("draw offer e5");
         assertEquals(true, res);
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));   // Move invalid, not executed
@@ -131,7 +131,7 @@ public class GameTest {
         assertEquals(true,game.currPos().whiteMove);
         assertEquals(false, game.haveDrawOffer());
     }
-    
+
     /**
      * Test of draw by 50 move rule, of class Game.
      */
@@ -144,7 +144,7 @@ public class GameTest {
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Draw claim invalid
         res = game.processString("e4");
         assertEquals(true, game.haveDrawOffer());   // Invalid claim converted to draw offer
-        
+
         String fen = "8/4k3/8/P7/8/8/8/1N2K2R w K - 99 83";
         game.setPos(TextIO.readFEN(fen));
         res = game.processString("draw 50");
@@ -159,15 +159,15 @@ public class GameTest {
         game.processString("draw 50 a6");
         assertEquals(Game.GameState.ALIVE, game.getGameState());      // Pawn move resets counter
         assertEquals(Piece.WPAWN, game.currPos().getPiece(Position.getSquare(0, 5))); // Move a6 made
-        
+
         game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 O-O");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Castling doesn't reset counter
-        
+
         game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 Kf2");
         assertEquals(Game.GameState.DRAW_50, game.getGameState());    // Loss of castling right doesn't reset counter
-        
+
         game.setPos(TextIO.readFEN(fen));
         game.processString("draw 50 Ke3");
         assertEquals(Game.GameState.ALIVE, game.getGameState());    // Ke3 is invalid
@@ -179,7 +179,7 @@ public class GameTest {
         res = game.processString("draw accept");
         assertEquals(true, res);
         assertEquals(Game.GameState.DRAW_AGREE, game.getGameState()); // Can accept previous implicit offer
-        
+
         fen = "3k4/R7/3K4/8/8/8/8/8 w - - 99 78";
         game.setPos(TextIO.readFEN(fen));
         game.processString("Ra8");
@@ -215,7 +215,7 @@ public class GameTest {
         game.processString("draw rep Ng8");
         assertEquals(Game.GameState.DRAW_REP, game.getGameState());
         assertEquals(Piece.EMPTY, game.currPos().getPiece(Position.getSquare(6, 7))); // Ng8 not played
-        
+
         // Test draw by repetition when a "potential ep square but not real ep square" position is present.
         game.newGame();
         game.processString("e4");   // e3 is not a real epSquare here
@@ -245,7 +245,7 @@ public class GameTest {
         game.processString("Ng8");
         game.processString("draw rep Ng1");
         assertEquals(Game.GameState.ALIVE, game.getGameState());
-        
+
         // EP capture not valid because it would leave the king in check. Therefore
         // the position has been repeated three times at the end of the move sequence.
         game.setPos(TextIO.readFEN("4k2n/8/8/8/4p3/8/3P4/3KR2N w - - 0 1"));
@@ -310,7 +310,7 @@ public class GameTest {
         game.processString("resign");
         assertEquals(Game.GameState.RESIGN_BLACK, game.getGameState());
     }
-    
+
     /**
      * Test of processString method, of class Game.
      */
@@ -347,15 +347,15 @@ public class GameTest {
 
         game.newGame();
         assertEquals(TextIO.startPosFEN, TextIO.toFEN(game.currPos()));
-        
+
         String fen = "8/8/8/4k3/8/8/2p5/5K2 b - - 47 68";
         Position pos = TextIO.readFEN(fen);
         game.setPos(TextIO.readFEN(fen));
         assertEquals(pos, game.currPos());
-        
+
         res = game.processString("junk");
         assertEquals(false, res);
-        
+
         game.newGame();
         res = game.processString("e7e5");
         assertEquals(false, res);
@@ -373,7 +373,7 @@ public class GameTest {
         game.processString("g4");
         game.processString("Qh4");
         assertEquals(Game.GameState.BLACK_MATE, game.getGameState());
-        
+
         game.setPos(TextIO.readFEN("5k2/5P2/5K2/8/8/8/8/8 b - - 0 1"));
         assertEquals(Game.GameState.BLACK_STALEMATE, game.getGameState());
     }
@@ -433,25 +433,25 @@ public class GameTest {
         assertEquals(0, hist.second.size());
         Position expectedPos = new Position(game.currPos());
         assertEquals(expectedPos, hist.first);
-        
+
         game.processString("Nf3");
         hist = game.getUCIHistory();
         assertEquals(1, hist.second.size());
         assertEquals(TextIO.UCIstringToMove("g1f3"), hist.second.get(0));
         assertEquals(expectedPos, hist.first);
-        
+
         game.processString("e5");
         hist = game.getUCIHistory();
         expectedPos = new Position(game.currPos());
         assertEquals(0, hist.second.size());
         assertEquals(expectedPos, hist.first);
-        
+
         game.processString("Nc3");
         hist = game.getUCIHistory();
         assertEquals(1, hist.second.size());
         assertEquals(TextIO.UCIstringToMove("b1c3"), hist.second.get(0));
         assertEquals(expectedPos, hist.first);
-        
+
         game.processString("Nc6");
         hist = game.getUCIHistory();
         assertEquals(2, hist.second.size());
@@ -464,13 +464,13 @@ public class GameTest {
         expectedPos = new Position(game.currPos());
         assertEquals(0, hist.second.size());
         assertEquals(expectedPos, hist.first);
-        
+
         game.processString("Nf6");
         hist = game.getUCIHistory();
         assertEquals(1, hist.second.size());
         assertEquals(TextIO.UCIstringToMove("g8f6"), hist.second.get(0));
         assertEquals(expectedPos, hist.first);
-        
+
         for (int i = 0; i < 6; i++)
             game.undoMove();
         hist = game.getUCIHistory();

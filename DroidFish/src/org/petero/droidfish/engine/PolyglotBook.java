@@ -380,7 +380,7 @@ public class PolyglotBook implements IOpeningBook {
             long numEntries = f.length() / 16;
             long key = getHashKey(pos);
             PGBookEntry ent = new PGBookEntry();
-            
+
             // Find first entry with hash key >= wantedKey
             long lo = -1;
             long hi = numEntries;

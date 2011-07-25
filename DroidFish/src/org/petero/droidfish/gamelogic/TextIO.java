@@ -39,7 +39,7 @@ public class TextIO {
         for (int i = 0; i < words.length; i++) {
             words[i] = words[i].trim();
         }
-        
+
         // Piece placement
         int row = 7;
         int col = 0;
@@ -202,7 +202,7 @@ public class TextIO {
         }
         pos.setPiece(Position.getSquare(col, row), p);
     }
-    
+
     /** Return a FEN string corresponding to a chess Position object. */
     public static final String toFEN(Position pos) {
         StringBuilder ret = new StringBuilder();
@@ -265,7 +265,7 @@ public class TextIO {
         if (!anyCastle) {
             ret.append('-');
         }
-        
+
         // En passant target square
         {
             ret.append(' ');
@@ -287,7 +287,7 @@ public class TextIO {
 
         return ret.toString();
     }
-    
+
     /**
      * Convert a chess move to human readable form.
      * @param pos      The chess position.
@@ -300,7 +300,7 @@ public class TextIO {
         moves = MoveGen.removeIllegal(pos, moves);
         return moveToString(pos, move, longForm, moves);
     }
-    private static final String moveToString(Position pos, Move move, boolean longForm, 
+    private static final String moveToString(Position pos, Move move, boolean longForm,
                                              List<Move> moves) {
         if (move.equals(new Move(0, 0, 0)))
             return "--";
@@ -409,7 +409,7 @@ public class TextIO {
         int promPiece;              // -1 for unspecified
         MoveInfo() { piece = fromX = fromY = toX = toY = promPiece = -1; }
     }
-    
+
     /**
      * Convert a chess move string to a Move object.
      * The string may specify any combination of piece/source/target/promotion
@@ -613,7 +613,7 @@ public class TextIO {
         m = new Move(fromSq, toSq, promoteTo);
         return m;
     }
-    
+
     /**
      * Convert a string, such as "e4" to a square number.
      * @return The square number, or -1 if not a legal square.
@@ -679,7 +679,7 @@ public class TextIO {
         }
         return "";
     }
-    
+
     private final static int charToPiece(boolean white, char c) {
         switch (c) {
         case 'Q': case 'q': return white ? Piece.WQUEEN  : Piece.BQUEEN;

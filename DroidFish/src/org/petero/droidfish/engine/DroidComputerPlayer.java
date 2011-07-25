@@ -131,7 +131,7 @@ public class DroidComputerPlayer {
     public final void setBookOptions(BookOptions options) {
         book.setOptions(options);
     }
-    
+
     private void readUCIOptions() {
         int timeout = 1000;
         maxPV = 1;
@@ -229,7 +229,7 @@ public class DroidComputerPlayer {
                                             Position currPos, boolean drawOffer,
                                             int wTime, int bTime, int inc, int movesToGo,
                                             boolean ponderEnabled, Move ponderMove) {
-        if (listener != null) 
+        if (listener != null)
             listener.notifyBookInfo("", null);
 
         if (ponderMove != null)
@@ -423,11 +423,11 @@ public class DroidComputerPlayer {
         }
         return drawStr;
     }
-    
+
     private final static boolean canClaimDraw50(Position pos) {
         return (pos.halfMoveClock >= 100);
     }
-    
+
     private final static boolean canClaimDrawRep(Position pos, long[] posHashList, int posHashListSize, int posHashFirstNew) {
         int reps = 0;
         for (int i = posHashListSize - 4; i >= 0; i -= 2) {
@@ -441,7 +441,7 @@ public class DroidComputerPlayer {
         }
         return (reps >= 2);
     }
-    
+
 
     private int statCurrDepth = 0;
     private int statPVDepth = 0;

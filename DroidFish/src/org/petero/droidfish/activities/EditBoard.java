@@ -57,7 +57,7 @@ public class EditBoard extends Activity {
         super.onCreate(savedInstanceState);
 
         initUI();
-        
+
         Intent i = getIntent();
         Position pos;
         try {
@@ -134,7 +134,7 @@ public class EditBoard extends Activity {
             }
         });
     }
-    
+
     private void doMove(Move m) {
         if (m.to < 0) {
             if ((m.from < 0) || (cb.pos.getPiece(m.from) == Piece.EMPTY)) {
@@ -183,13 +183,13 @@ public class EditBoard extends Activity {
         TextIO.fixupEPSquare(cb.pos);
         TextIO.removeBogusCastleFlags(cb.pos);
     }
-    
+
     private final int getEPFile() {
         int epSquare = cb.pos.getEpSquare();
         if (epSquare < 0) return 8;
         return Position.getX(epSquare);
     }
-    
+
     private final void setEPFile(int epFile) {
         int epSquare = -1;
         if ((epFile >= 0) && (epFile < 8)) {
@@ -212,9 +212,9 @@ public class EditBoard extends Activity {
         return false;
     }
 
-    static final int EDIT_DIALOG = 0; 
-    static final int SIDE_DIALOG = 1; 
-    static final int CASTLE_DIALOG = 2; 
+    static final int EDIT_DIALOG = 0;
+    static final int SIDE_DIALOG = 1;
+    static final int CASTLE_DIALOG = 2;
     static final int EP_DIALOG = 3;
     static final int MOVCNT_DIALOG = 4;
 
