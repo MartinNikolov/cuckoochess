@@ -322,7 +322,6 @@ public class DroidComputerPlayer {
         // Monitor engine response
         clearInfo();
         boolean stopSent = false;
-        boolean ponderHitSeen = false;
         while (true) {
             int timeout = 2000;
             while (true) {
@@ -347,10 +346,6 @@ public class DroidComputerPlayer {
                     return new Pair<String,String>(bestMove, nextPonderMove);
                 }
                 timeout = 0;
-            }
-            if (!ponderHitSeen && havePonderHit) {
-                pvModified = true;
-                ponderHitSeen = true;
             }
             notifyGUI(pos, ponderMove);
             try {
