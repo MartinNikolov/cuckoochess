@@ -117,12 +117,14 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Make program translatable
     // FIXME!!! Implement "hint" feature
 
-    // FIXME!!! Use UCI_AnalyseMode if engine supports it
     // FIXME!!! Optimize engine option setting. ("Skill Level", "MultiPV", "stop")
     // FIXME!!! Use non-polling method to update PV after ponder hit
 
     // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)
     // FIXME!!! Green color for "main move". Red color for "don't play in tournaments" moves.
+
+    // FIXME!!! Add anti-lamer test: 8/8/8/8/8/8/3R3r/k3K2R w K - 0 1 bm O-O
+    // FIXME!!! Add anti-lamer test: 4kr2/8/8/4PpN1/8/8/4Q3/3RK3 w - f6 0 2 bm exf6
 
     private ChessBoard cb;
     private static DroidChessController ctrl = null;

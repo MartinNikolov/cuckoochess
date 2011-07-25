@@ -285,6 +285,7 @@ public class DroidComputerPlayer {
         maybeNewGame();
         uciEngine.writeLineToEngine(String.format("setoption name Ponder value %s",
                                                   ponderEnabled ? "true" : "false"));
+        uciEngine.writeLineToEngine("setoption name UCI_AnalyseMode value false");
         uciEngine.writeLineToEngine(posStr.toString());
         if (wTime < 1) wTime = 1;
         if (bTime < 1) bTime = 1;
@@ -393,6 +394,7 @@ public class DroidComputerPlayer {
         }
         maybeNewGame();
         uciEngine.writeLineToEngine(posStr.toString());
+        uciEngine.writeLineToEngine("setoption name UCI_AnalyseMode value true");
         String goStr = String.format("go infinite");
         uciEngine.writeLineToEngine(goStr);
 
