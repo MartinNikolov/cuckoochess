@@ -532,7 +532,8 @@ public class DroidChessController {
             if (doMove(m)) {
                 if (m.equals(ponderMove) && !gameMode.analysisMode() &&
                     (analysisThread == null) && (computerThread != null)) {
-                    computerPlayer.ponderHit();
+                    Position tmpPos = new Position(game.currPos());
+                    computerPlayer.ponderHit(tmpPos, ponderMove);
                 } else {
                     ss.searchResultWanted = false;
                     stopAnalysis();

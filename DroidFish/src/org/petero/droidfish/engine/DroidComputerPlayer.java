@@ -207,9 +207,11 @@ public class DroidComputerPlayer {
         }
     }
 
-    public final synchronized void ponderHit() {
+    public final synchronized void ponderHit(Position pos, Move ponderMove) {
         havePonderHit = true;
         uciEngine.writeLineToEngine("ponderhit");
+        pvModified = true;
+        notifyGUI(pos, ponderMove);
     }
 
     /**
@@ -322,7 +324,7 @@ public class DroidComputerPlayer {
         boolean stopSent = false;
         boolean ponderHitSeen = false;
         while (true) {
-            int timeout = 500;
+            int timeout = 2000;
             while (true) {
                 UCIEngine uci = uciEngine;
                 if (uci == null)
@@ -546,7 +548,7 @@ public class DroidComputerPlayer {
     }
 
     /** Notify GUI about search statistics. */
-    private final void notifyGUI(Position pos, Move ponderMove) {
+    private final synchronized void notifyGUI(Position pos, Move ponderMove) {
         if (listener == null)
             return;
         if (depthModified) {

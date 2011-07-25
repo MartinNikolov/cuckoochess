@@ -118,7 +118,6 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Implement "hint" feature
 
     // FIXME!!! Don't send "stop" command when engine is already stopped
-    // FIXME!!! Use non-polling method to update PV after ponder hit
 
     // FIXME!!! Show extended book info. (Win percent, number of games, performance rating, etc.)
     // FIXME!!! Green color for "main move". Red color for "don't play in tournaments" moves.
