@@ -109,7 +109,7 @@ public class DroidComputerPlayer {
         int nCPUsFromProc = 1;
         try {
             FileReader fr = new FileReader("/proc/stat");
-            BufferedReader inBuf = new BufferedReader(fr);
+            BufferedReader inBuf = new BufferedReader(fr, 8192);
             String line;
             int nCPUs = 0;
             while ((line = inBuf.readLine()) != null) {
