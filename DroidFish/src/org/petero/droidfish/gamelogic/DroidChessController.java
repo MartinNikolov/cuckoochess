@@ -716,7 +716,8 @@ public class DroidChessController {
                     computerPlayer.setNumPV(1);
                     final Pair<String,Move> pair =
                         computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
-                                                wTime, bTime, inc, fMovesToGo, fPonderMove);
+                                                wTime, bTime, inc, fMovesToGo,
+                                                gui.ponderMode(), fPonderMove);
                     final String cmd = pair.first;
                     final Move ponder = pair.second;
                     final SearchStatus localSS = ss;

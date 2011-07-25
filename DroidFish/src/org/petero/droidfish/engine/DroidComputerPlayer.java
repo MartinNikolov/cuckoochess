@@ -222,13 +222,14 @@ public class DroidComputerPlayer {
      * @param mList List of moves to go from the earlier position to the current position.
      *              This list makes it possible for the computer to correctly handle draw
      *              by repetition/50 moves.
+     * @param ponderEnabled True if pondering is enabled in the GUI. Can affect time management.
      * @param ponderMove Move to ponder, or null for non-ponder search.
      * @return The computer player command, and the next ponder move.
      */
     public final Pair<String,Move> doSearch(Position prevPos, ArrayList<Move> mList,
                                             Position currPos, boolean drawOffer,
                                             int wTime, int bTime, int inc, int movesToGo,
-                                            Move ponderMove) {
+                                            boolean ponderEnabled, Move ponderMove) {
         if (listener != null) 
             listener.notifyBookInfo("", null);
 
@@ -282,6 +283,8 @@ public class DroidComputerPlayer {
             }
         }
         maybeNewGame();
+        uciEngine.writeLineToEngine(String.format("setoption name Ponder value %s",
+                                                  ponderEnabled ? "true" : "false"));
         uciEngine.writeLineToEngine(posStr.toString());
         if (wTime < 1) wTime = 1;
         if (bTime < 1) bTime = 1;
