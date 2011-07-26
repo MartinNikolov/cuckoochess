@@ -89,11 +89,13 @@
     	<item>Small</item>
 	    <item>Medium</item>
     	<item>Large</item>
+        <item>Larger</item>
 	</string-array>
 	<string-array name="font_size_values">
 	    <item>10</item>
     	<item>12</item>
 	    <item>16</item>
+        <item>21</item>
 	</string-array>
 	<string-array name="thinking_arrows_texts">
 	    <item>No arrows</item>
