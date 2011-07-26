@@ -703,7 +703,7 @@ public class DroidChessController {
             final int bTime = game.timeController.getRemainingTime(false, now);
             final int inc = game.timeController.getIncrement();
             int movesToGo = game.timeController.getMovesToTC();
-            if (ponder && !currPos.whiteMove) {
+            if (ponder && !currPos.whiteMove && (movesToGo > 0)) {
                 movesToGo--;
                 if (movesToGo <= 0)
                     movesToGo += game.timeController.getMovesPerSession();
