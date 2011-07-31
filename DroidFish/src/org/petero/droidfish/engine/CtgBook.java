@@ -316,14 +316,20 @@ public class CtgBook implements IOpeningBook {
 
         final PositionData getPositionData(Position pos) throws IOException {
             boolean mirrorColor = !pos.whiteMove;
-            if (mirrorColor)
+            boolean needCopy = true;
+            if (mirrorColor) {
                 pos = mirrorPosColor(pos);
+                needCopy = false;
+            }
 
             boolean mirrorLeftRight = false;
             if ((pos.getCastleMask() == 0) && (Position.getX(pos.getKingSq(true)) < 4)) {
                 pos = mirrorPosLeftRight(pos);
                 mirrorLeftRight = true;
+                needCopy = false;
             }
+            if (needCopy)
+                pos = new Position(pos);
 
             byte[] encodedPos = positionToByteArray(pos);
             ArrayList<Integer> hashIdxList = CtoFile.getHashIndices(encodedPos, ctb);
