@@ -278,7 +278,7 @@ public class BitBoard {
         return rTables[sq][(int)(((occupied & rMasks[sq]) * rMagics[sq]) >>> (64 - rBits[sq]))];
     }
     
-    static final long[][] squaresBetween;
+    static public final long[][] squaresBetween;
     static {
         squaresBetween = new long[64][];
         for (int sq1 = 0; sq1 < 64; sq1++) {
@@ -323,7 +323,7 @@ public class BitBoard {
         0,   7,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0,   0,   9
     };
 
-    static final int getDirection(int from, int to) {
+    static public final int getDirection(int from, int to) {
         int offs = to + (to|7) - from - (from|7) + 0x77;
         return dirTable[offs];
     }
@@ -353,7 +353,7 @@ public class BitBoard {
         44, 24, 15,  8, 23,  7,  6,  5
     };
 
-    static final int numberOfTrailingZeros(long mask) {
+    static public final int numberOfTrailingZeros(long mask) {
         return trailingZ[(int)(((mask & -mask) * 0x07EDD5E59A4E28C2L) >>> 58)];
     }
 }

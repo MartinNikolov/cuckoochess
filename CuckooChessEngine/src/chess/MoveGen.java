@@ -919,14 +919,44 @@ public final class MoveGen {
     public static final void removeIllegal(Position pos, MoveList moveList) {
         int length = 0;
         UndoInfo ui = new UndoInfo();
-        for (int mi = 0; mi < moveList.size; mi++) {
-            Move m = moveList.m[mi];
-            pos.makeMove(m, ui);
-            pos.setWhiteMove(!pos.whiteMove);
-            if (!inCheck(pos))
-                moveList.m[length++].copyFrom(m);
-            pos.setWhiteMove(!pos.whiteMove);
-            pos.unMakeMove(m, ui);
+
+        boolean isInCheck = inCheck(pos);
+        final long occupied = pos.whiteBB | pos.blackBB;
+        int kSq = pos.getKingSq(pos.whiteMove);
+        long kingAtks = BitBoard.rookAttacks(kSq, occupied) | BitBoard.bishopAttacks(kSq, occupied);
+        if (isInCheck) {
+            kingAtks |= pos.pieceTypeBB[pos.whiteMove ? Piece.BKNIGHT : Piece.WKNIGHT];
+            for (int mi = 0; mi < moveList.size; mi++) {
+                Move m = moveList.m[mi];
+                boolean legal;
+                if ((m.from != kSq) && ((kingAtks & (1L<<m.to)) == 0)) {
+                    legal = false;
+                } else {
+                    pos.makeMove(m, ui);
+                    pos.setWhiteMove(!pos.whiteMove);
+                    legal = !inCheck(pos);
+                    pos.setWhiteMove(!pos.whiteMove);
+                    pos.unMakeMove(m, ui);
+                }
+                if (legal)
+                    moveList.m[length++].copyFrom(m);
+            }
+        } else {
+            for (int mi = 0; mi < moveList.size; mi++) {
+                Move m = moveList.m[mi];
+                boolean legal;
+                if ((m.from != kSq) && ((kingAtks & (1L<<m.from)) == 0)) {
+                    legal = true;
+                } else {
+                    pos.makeMove(m, ui);
+                    pos.setWhiteMove(!pos.whiteMove);
+                    legal = !inCheck(pos);
+                    pos.setWhiteMove(!pos.whiteMove);
+                    pos.unMakeMove(m, ui);
+                }
+                if (legal)
+                    moveList.m[length++].copyFrom(m);
+            }
         }
         moveList.size = length;
     }
