@@ -419,13 +419,13 @@ public class GameTest {
         System.out.println("perfT");
         Game game = new Game(new HumanPlayer(), new HumanPlayer());
         game.processString("new");
-        doTestPerfT(game.pos, 5, new int[]{20,400,8902,197281,4865609,119060324});
+        doTestPerfT(game.pos, 5, new long[]{20,400,8902,197281,4865609,119060324,3195901860L,84998978956L});
 
         game.processString("setpos r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-        doTestPerfT(game.pos, 4, new int[]{48,2039,97862,4085603,193690690});
+        doTestPerfT(game.pos, 4, new long[]{48,2039,97862,4085603,193690690});
     }
 
-    private void doTestPerfT(Position pos, int maxDepth, int[] expectedNodeCounts) {
+    private void doTestPerfT(Position pos, int maxDepth, long[] expectedNodeCounts) {
         for (int d = 1; d <= maxDepth; d++) {
             MoveGen moveGen = new MoveGen();
             long t0 = System.nanoTime();
