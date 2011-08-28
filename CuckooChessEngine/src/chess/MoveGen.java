@@ -926,10 +926,11 @@ public final class MoveGen {
         long kingAtks = BitBoard.rookAttacks(kSq, occupied) | BitBoard.bishopAttacks(kSq, occupied);
         if (isInCheck) {
             kingAtks |= pos.pieceTypeBB[pos.whiteMove ? Piece.BKNIGHT : Piece.WKNIGHT];
+            int epSquare = pos.getEpSquare();
             for (int mi = 0; mi < moveList.size; mi++) {
                 Move m = moveList.m[mi];
                 boolean legal;
-                if ((m.from != kSq) && ((kingAtks & (1L<<m.to)) == 0)) {
+                if ((m.from != kSq) && ((kingAtks & (1L<<m.to)) == 0) && (m.to != epSquare)) {
                     legal = false;
                 } else {
                     pos.makeMove(m, ui);

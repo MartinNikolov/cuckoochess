@@ -339,6 +339,16 @@ public class MoveGenTest {
         assertTrue(strMoves.contains("e1f1"));
         assertTrue(strMoves.contains("e1f2"));
         assertEquals(5, strMoves.size());
+
+        pos = TextIO.readFEN("4k3/8/8/2KPp1r1/8/8/8/8 w - e6 0 2");
+        strMoves = getMoveList(pos, true);
+        assertTrue(!strMoves.contains("d5e6"));
+        assertEquals(7, strMoves.size());
+
+        pos = TextIO.readFEN("8/6p1/4p3/2k1Pp1B/4KP1p/6rP/8/8 w - f6 0 55");
+        strMoves = getMoveList(pos, true);
+        assertTrue(strMoves.contains("e5f6"));
+        assertEquals(1, strMoves.size());
     }
     
     /**

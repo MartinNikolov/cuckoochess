@@ -361,7 +361,7 @@ public class GameTest {
         game.processString("g4");
         game.processString("Qh4");
         assertEquals(Game.GameState.BLACK_MATE, game.getGameState());
-        
+
         game.processString("setpos 5k2/5P2/5K2/8/8/8/8/8 b - - 0 1");
         assertEquals(Game.GameState.BLACK_STALEMATE, game.getGameState());
     }
