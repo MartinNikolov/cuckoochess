@@ -74,7 +74,7 @@ public class EngineControl {
     /**
      * This class is responsible for sending "info" strings during search.
      */
-    static class SearchListener implements Search.Listener {
+    private static class SearchListener implements Search.Listener {
         PrintStream os;
         
         SearchListener(PrintStream os) {
@@ -204,7 +204,7 @@ public class EngineControl {
         }
     }
 
-    static final int clamp(int val, int min, int max) {
+    private static final int clamp(int val, int min, int max) {
         if (val < min) {
             return min;
         } else if (val > max) {
@@ -270,7 +270,7 @@ public class EngineControl {
         engineThread.start();
     }
 
-    final public void stopThread() {
+    private final void stopThread() {
         Thread myThread;
         Search mySearch;
         synchronized (threadMutex) {
@@ -296,7 +296,7 @@ public class EngineControl {
         tt = new TranspositionTable(logSize);
     }
 
-    final void setupPosition(Position pos, List<Move> moves) {
+    private final void setupPosition(Position pos, List<Move> moves) {
         UndoInfo ui = new UndoInfo();
         posHashList = new long[200 + moves.size()];
         posHashListSize = 0;
@@ -310,7 +310,8 @@ public class EngineControl {
     /**
      * Try to find a move to ponder from the transposition table.
      */
-    final Move getPonderMove(Position pos, Move m) {
+    private final Move getPonderMove(Position pos, Move m) {
+        if (m == null) return null;
         Move ret = null;
         UndoInfo ui = new UndoInfo();
         pos.makeMove(m, ui);
@@ -333,7 +334,9 @@ public class EngineControl {
         return ret;
     }
 
-    static final String moveToString(Move m) {
+    private static final String moveToString(Move m) {
+        if (m == null)
+            return "0000";
         String ret = TextIO.squareToString(m.from);
         ret += TextIO.squareToString(m.to);
         switch (m.promoteTo) {

@@ -180,6 +180,8 @@ public class Search {
         tStart = System.currentTimeMillis();
 //        log = TreeLogger.getWriter("/home/petero/treelog.dmp", pos);
         totalNodes = 0;
+        if (scMovesIn.size <= 0)
+            return null; // No moves to search
         MoveInfo[] scMoves = new MoveInfo[scMovesIn.size];
         for (int mi = 0, len = 0; mi < scMovesIn.size; mi++) {
             Move m = scMovesIn.m[mi];
