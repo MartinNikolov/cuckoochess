@@ -121,7 +121,17 @@ public class Evaluate {
                                  0,  2,  4,  4,  4,  4,  2,  0,
                                  0,  3,  4,  4,  4,  4,  3,  0,
                                  0,  4,  2,  2,  2,  2,  4,  0,
-                                 0,  0, -2,  0,  0, -2,  0,  0 };
+                                -5, -5, -7, -5, -5, -7, -5, -5 };
+
+    /** Piece/square table for bishops during middle game. */
+    static final int[] bt2b = {  0,  0,  0,  0,  0,  0,  0,  0,
+                                 0,  2,  2,  2,  2,  2,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  4,  4,  4,  4,  2,  0,
+                                 0,  2,  2,  2,  2,  2,  2,  0,
+                                 0,  0,  0,  0,  0,  0,  0,  0 };
 
     /** Piece/square table for queens during middle game. */
     static final int[] qt1b = { -10, -5,  0,  0,  0,  0, -5,-10,
@@ -143,7 +153,7 @@ public class Evaluate {
                                 -3,  2,  5,  5,  5,  5,  2, -3,
                                  0,  3,  5,  5,  5,  5,  3,  0 };
 
-    static final int[] kt1w, qt1w, rt1w, bt1w, nt1w, pt1w, kt2w, nt2w, pt2w;
+    static final int[] kt1w, qt1w, rt1w, bt1w, nt1w, pt1w, kt2w, bt2w, nt2w, pt2w;
     static {
         kt1w = new int[64];
         qt1w = new int[64];
@@ -152,6 +162,7 @@ public class Evaluate {
         nt1w = new int[64];
         pt1w = new int[64];
         kt2w = new int[64];
+        bt2w = new int[64];
         nt2w = new int[64];
         pt2w = new int[64];
         for (int i = 0; i < 64; i++) {
@@ -162,6 +173,7 @@ public class Evaluate {
             nt1w[i] = nt1b[63-i];
             pt1w[i] = pt1b[63-i];
             kt2w[i] = kt2b[63-i];
+            bt2w[i] = bt2b[63-i];
             nt2w[i] = nt2b[63-i];
             pt2w[i] = pt2b[63-i];
         }
@@ -173,8 +185,8 @@ public class Evaluate {
                                          0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
     static final int[][] psTab1 = { empty, kt1w, qt1w, rt1w, bt1w, nt1w, pt1w,
                                            kt1b, qt1b, rt1b, bt1b, nt1b, pt1b };
-    static final int[][] psTab2 = { empty, kt2w, qt1w, rt1w, bt1w, nt2w, pt2w,
-                                           kt2b, qt1b, rt1b, bt1b, nt2b, pt2b };
+    static final int[][] psTab2 = { empty, kt2w, qt1w, rt1w, bt2w, nt2w, pt2w,
+                                           kt2b, qt1b, rt1b, bt2b, nt2b, pt2b };
 
     static final int[][] distToH1A8 = { { 0, 1, 2, 3, 4, 5, 6, 7 },
                                         { 1, 2, 3, 4, 5, 6, 7, 6 },

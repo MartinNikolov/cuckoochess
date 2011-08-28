@@ -725,7 +725,7 @@ public class Search {
                 if ((depth >= 3*plyScale) && mayReduce && (extend == 0)) {
                     if (!givesCheck && !passedPawnPush(pos, m)) {
                         lmrCount++;
-                        if ((lmrCount > 3) && (depth > 3*plyScale)) {
+                        if ((lmrCount > 3) && (depth > 3*plyScale) && !isCapture) {
                             lmr = 2*plyScale;
                         } else {
                             lmr = 1*plyScale;
