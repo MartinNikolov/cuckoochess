@@ -47,14 +47,15 @@ public class Book {
     private static Map<Long, List<BookEntry>> bookMap;
     private static Random rndGen;
     private static int numBookMoves = -1;
+    private boolean verbose;
 
     public Book(boolean verbose) {
-        if (numBookMoves < 0) {
-            initBook(verbose);
-        }
+        this.verbose = verbose;
     }
 
-    private final void initBook(boolean verbose) {
+    private final void initBook() {
+        if (numBookMoves >= 0)
+            return;
         long t0 = System.currentTimeMillis();
         bookMap = new HashMap<Long, List<BookEntry>>();
         rndGen = new SecureRandom();
@@ -125,6 +126,7 @@ public class Book {
 
     /** Return a random book move for a position, or null if out of book. */
     public final Move getBookMove(Position pos) {
+        initBook();
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
         if (bookMoves == null) {
             return null;
@@ -169,6 +171,7 @@ public class Book {
 
     /** Return a string describing all book moves. */
     public final String getAllBookMoves(Position pos) {
+        initBook();
         StringBuilder ret = new StringBuilder();
         List<BookEntry> bookMoves = bookMap.get(pos.zobristHash());
         if (bookMoves != null) {

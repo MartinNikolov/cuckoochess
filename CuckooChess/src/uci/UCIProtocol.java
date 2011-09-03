@@ -52,11 +52,7 @@ public class UCIProtocol {
     }
 
     public UCIProtocol() {
-        try {
-            pos = TextIO.readFEN(TextIO.startPosFEN);
-        } catch (ChessParseError ex) {
-            throw new RuntimeException();
-        }
+        pos = null;
         moves = new ArrayList<Move>();
         quit = false;
     }
@@ -144,6 +140,13 @@ public class UCIProtocol {
                     }
                 }
             } else if (cmd.equals("go")) {
+                if (pos == null) {
+                    try {
+                        pos = TextIO.readFEN(TextIO.startPosFEN);
+                    } catch (ChessParseError ex) {
+                        throw new RuntimeException();
+                    }
+                }
                 initEngine(os);
                 int idx = 1;
                 SearchParams sPar = new SearchParams();

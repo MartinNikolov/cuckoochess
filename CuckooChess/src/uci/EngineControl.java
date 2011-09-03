@@ -22,11 +22,17 @@ import chess.Book;
 import chess.ComputerPlayer;
 import chess.Move;
 import chess.MoveGen;
+import chess.Parameters;
 import chess.Piece;
 import chess.Position;
 import chess.Search;
 import chess.TextIO;
 import chess.TranspositionTable;
+import chess.Parameters.CheckParam;
+import chess.Parameters.ComboParam;
+import chess.Parameters.ParamBase;
+import chess.Parameters.SpinParam;
+import chess.Parameters.StringParam;
 import chess.TranspositionTable.TTEntry;
 import chess.UndoInfo;
 import java.io.PrintStream;
@@ -370,6 +376,41 @@ public class EngineControl {
         os.printf("option name UCI_EngineAbout type string default %s by Peter Osterlund, see http://web.comhem.se/petero2home/javachess/index.html%n",
                 ComputerPlayer.engineName);
         os.printf("option name Strength type spin default 1000 min 0 max 1000\n");
+        
+        for (String pName : Parameters.instance().getParamNames()) {
+            ParamBase p = Parameters.instance().getParam(pName);
+            switch (p.type) {
+            case CHECK: {
+                CheckParam cp = (CheckParam)p;
+                os.printf("optionn name %s type check default %s\n",
+                        p.name, cp.defaultValue?"true":"false");
+                break;
+            }
+            case SPIN: {
+                SpinParam sp = (SpinParam)p;
+                os.printf("option name %s type spin default %d min %d max %d\n",
+                        p.name, sp.defaultValue, sp.minValue, sp.maxValue);
+                break;
+            }
+            case COMBO: {
+                ComboParam cp = (ComboParam)p;
+                os.printf("option name %s type combo default %s ", cp.name, cp.defaultValue);
+                for (String s : cp.allowedValues)
+                    os.printf(" var %s", s);
+                os.printf("\n");
+                break;
+            }
+            case BUTTON:
+                os.printf("option name %s type button\n", p.name);
+                break;
+            case STRING: {
+                StringParam sp = (StringParam)p;
+                os.printf("option name %s type string default %s\n",
+                        p.name, sp.defaultValue);
+                break;
+            }
+            }
+        }
     }
 
     final void setOption(String optionName, String optionValue) {
@@ -385,6 +426,8 @@ public class EngineControl {
                 analyseMode = Boolean.parseBoolean(optionValue);
             } else if (optionName.equals("strength")) {
                 strength = Integer.parseInt(optionValue);
+            } else {
+                Parameters.instance().set(optionName, optionValue);
             }
         } catch (NumberFormatException nfe) {
         }

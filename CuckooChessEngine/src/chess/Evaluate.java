@@ -27,11 +27,11 @@ import java.io.InputStream;
  * @author petero
  */
 public class Evaluate {
-    static final int pV =  100;
-    static final int nV =  400;
-    static final int bV =  400;
-    static final int rV =  600;
-    static final int qV = 1200;
+    static final int pV = Parameters.instance().getIntPar("pV");
+    static final int nV = Parameters.instance().getIntPar("nV");
+    static final int bV = Parameters.instance().getIntPar("bV");
+    static final int rV = Parameters.instance().getIntPar("rV");
+    static final int qV = Parameters.instance().getIntPar("qV");
     static final int kV = 9900; // Used by SEE algorithm, but not included in board material sums
 
     static final int[] pieceValue;
