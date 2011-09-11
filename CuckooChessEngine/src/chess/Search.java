@@ -277,7 +277,8 @@ public class Search {
                         nodes = qNodes = 0;
                         posHashList[posHashListSize++] = pos.zobristHash();
                         pos.makeMove(m, ui);
-                        score = -negaScout(-beta, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        int score2 = -negaScout(-beta, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        score = Math.max(score, score2);
                         nodesThisMove += nodes + qNodes;
                         posHashListSize--;
                         pos.unMakeMove(m, ui);

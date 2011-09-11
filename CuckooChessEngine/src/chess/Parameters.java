@@ -93,11 +93,11 @@ public class Parameters {
     private Map<String, ParamBase> params = new TreeMap<String, ParamBase>();
 
     private Parameters() {
-        addPar(new SpinParam("qV", 0, 2000, 1244));
-        addPar(new SpinParam("rV", 0, 2000,  593));
-        addPar(new SpinParam("bV", 0, 2000,  391));
-        addPar(new SpinParam("nV", 0, 2000,  380));
-        addPar(new SpinParam("pV", 0, 2000,   92));
+        addPar(new SpinParam("qV", -200, 200, 0));
+        addPar(new SpinParam("rV", -200, 200, 0));
+        addPar(new SpinParam("bV", -200, 200, 0));
+        addPar(new SpinParam("nV", -200, 200, 0));
+        addPar(new SpinParam("pV", -200, 200, 0));
     }
 
     private final void addPar(ParamBase p) {
@@ -109,8 +109,6 @@ public class Parameters {
     }
     final int getIntPar(String name) {
         int ret = ((SpinParam)params.get(name.toLowerCase())).value;
-        System.out.printf("%.3f Parameters.getIntPar(): name:%s val:%d\n", System
-                .currentTimeMillis() * 1e-3, name, ret);
         return ret;
     }
     final String getStringPar(String name) {
