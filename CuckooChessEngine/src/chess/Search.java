@@ -590,7 +590,8 @@ public class Search {
                 q0Eval = evalScore;
                 int score = quiesce(alpha-razorMargin, beta-razorMargin, ply, 0, inCheck);
                 if (score <= alpha-razorMargin) {
-                    // FIXME! Test storing in transposition table
+                    emptyMove.score = score;
+                    tt.insert(hKey, emptyMove, TTEntry.T_LE, ply, depth, evalScore);
                     if (log != null) log.logNodeEnd(sti.nodeIdx, score, TTEntry.T_LE, evalScore, hKey);
                     return score;
                 }
@@ -698,7 +699,7 @@ public class Search {
                     if (sVal > tVal - pV / 2)
                         moveExtend = plyScale;
                 }
-                if ((moveExtend == 0) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
+                if ((moveExtend < plyScale) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
                     // Extend if going into pawn endgame
                     int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
                     if (pos.whiteMove) {
