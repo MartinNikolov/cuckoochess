@@ -1101,7 +1101,18 @@ public class Search {
         for (int i = startIdx; i < moves.size; i++) {
             Move m = moves.m[i];
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
-            int score = isCapture ? SEE(m) : 0;
+            int score = 0;
+            if (isCapture) {
+                int seeScore = isCapture ? SEE(m) : 0;
+                int v = pos.getPiece(m.to);
+                int a = pos.getPiece(m.from);
+                score = Evaluate.pieceValue[v]/10 * 1000 - Evaluate.pieceValue[a]/10;
+                if (seeScore > 0)
+                    score += 1000000;
+                else if (seeScore < 0)
+                    score -= 1000000;
+                score *= 100;
+            }
             int ks = kt.getKillerScore(ply, m);
             if (ks > 0) {
                 score += ks + 50;

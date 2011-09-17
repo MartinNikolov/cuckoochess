@@ -411,11 +411,13 @@ public class SearchTest {
         MoveGen moveGen = new MoveGen();
         MoveGen.MoveList moves = moveGen.pseudoLegalMoves(pos);
         sc.scoreMoveList(moves, 0);
-        for (int i = 1; i < moves.size; i++) {
+        for (int i = 0; i < moves.size; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves.m[i - 1].score;
-            int sc2 = moves.m[i].score;
-            assertTrue(sc2 <= sc1);
+            if (i > 0) {
+                int sc1 = moves.m[i - 1].score;
+                int sc2 = moves.m[i].score;
+                assertTrue(sc2 <= sc1);
+            }
         }
 
         moves = moveGen.pseudoLegalMoves(pos);
@@ -424,11 +426,14 @@ public class SearchTest {
         moves.m[2].score = 4711;
         sc.scoreMoveList(moves, 0, 2);
         assertEquals(17, moves.m[0].score);
-        for (int i = 2; i < moves.size; i++) {
+        assertEquals(666, moves.m[1].score);
+        for (int i = 1; i < moves.size; i++) {
             Search.selectBest(moves, i);
-            int sc1 = moves.m[i - 1].score;
-            int sc2 = moves.m[i].score;
-            assertTrue(sc2 <= sc1);
+            if (i > 1) {
+                int sc1 = moves.m[i - 1].score;
+                int sc2 = moves.m[i].score;
+                assertTrue(sc2 <= sc1);
+            }
         }
 
         // The hashMove should be first in the list
