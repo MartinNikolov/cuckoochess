@@ -1108,8 +1108,10 @@ public class Search {
                 int a = pos.getPiece(m.from);
                 score = Evaluate.pieceValue[v]/10 * 1000 - Evaluate.pieceValue[a]/10;
                 if (seeScore > 0)
+                    score += 2000000;
+                else if (seeScore == 0)
                     score += 1000000;
-                else if (seeScore < 0)
+                else
                     score -= 1000000;
                 score *= 100;
             }
