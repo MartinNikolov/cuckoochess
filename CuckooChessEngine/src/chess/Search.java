@@ -977,7 +977,17 @@ public class Search {
         return bestScore;
     }
 
-    final private boolean negSEE(Move m) {
+    /** Return >0, 0, <0, depending on the sign of SEE(m). */
+    final public int signSEE(Move m) {
+        int p0 = Evaluate.pieceValue[pos.getPiece(m.from)];
+        int p1 = Evaluate.pieceValue[pos.getPiece(m.to)];
+        if (p0 < p1)
+            return 1;
+        return SEE(m);
+    }
+
+    /** Return true if SEE(m) < 0. */
+    final public boolean negSEE(Move m) {
         int p0 = Evaluate.pieceValue[pos.getPiece(m.from)];
         int p1 = Evaluate.pieceValue[pos.getPiece(m.to)];
         if (p1 >= p0)
@@ -1110,7 +1120,7 @@ public class Search {
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY) || (m.promoteTo != Piece.EMPTY);
             int score = 0;
             if (isCapture) {
-                int seeScore = isCapture ? SEE(m) : 0;
+                int seeScore = isCapture ? signSEE(m) : 0;
                 int v = pos.getPiece(m.to);
                 int a = pos.getPiece(m.from);
                 score = Evaluate.pieceValue[v]/10 * 1000 - Evaluate.pieceValue[a]/10;
