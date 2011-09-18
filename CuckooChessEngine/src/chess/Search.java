@@ -498,6 +498,13 @@ public class Search {
                 if (    (ent.type == TTEntry.T_EXACT) ||
                         (ent.type == TTEntry.T_GE) && (score >= beta) ||
                         (ent.type == TTEntry.T_LE) && (score <= alpha)) {
+                    if (score >= beta) {
+                        hashMove = sti.hashMove;
+                        ent.getMove(hashMove);
+                        if ((hashMove != null) && (hashMove.from != hashMove.to))
+                            if (pos.getPiece(hashMove.to) == Piece.EMPTY)
+                                kt.addKiller(ply, hashMove);
+                    }
                     if (log != null) log.logNodeEnd(searchTreeInfo[ply].nodeIdx, score, ent.type, evalScore, hKey);
                     return score;
                 }
