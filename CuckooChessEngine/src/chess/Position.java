@@ -243,62 +243,58 @@ public class Position {
 
     /** Set a square to a piece value. */
     public final void setPiece(int square, int piece) {
-        // Update hash key
         int removedPiece = squares[square];
-        hashKey ^= psHashKeys[removedPiece][square];
-        hashKey ^= psHashKeys[piece][square];
-        if ((removedPiece == Piece.WPAWN) || (removedPiece == Piece.BPAWN))
-            pHashKey ^= psHashKeys[removedPiece][square];
-        if ((piece == Piece.WPAWN) || (piece == Piece.BPAWN))
-            pHashKey ^= psHashKeys[piece][square];
-        
-        // Update material balance
-        int pVal = Evaluate.pieceValue[removedPiece];
-        if (Piece.isWhite(removedPiece)) {
-            wMtrl -= pVal;
-            if (removedPiece == Piece.WPAWN)
-                wMtrlPawns -= pVal;
-        } else {
-            bMtrl -= pVal;
-            if (removedPiece == Piece.BPAWN)
-                bMtrlPawns -= pVal;
-        }
-        pVal = Evaluate.pieceValue[piece];
-        if (Piece.isWhite(piece)) {
-            wMtrl += pVal;
-            if (piece == Piece.WPAWN)
-                wMtrlPawns += pVal;
-        } else {
-            bMtrl += pVal;
-            if (piece == Piece.BPAWN)
-                bMtrlPawns += pVal;
-        }
-
-        // Update board
         squares[square] = piece;
 
+        // Update hash key
+        hashKey ^= psHashKeys[removedPiece][square];
+        hashKey ^= psHashKeys[piece][square];
+
         // Update bitboards
-        long sqMask = 1L << square;
+        final long sqMask = 1L << square;
         pieceTypeBB[removedPiece] &= ~sqMask;
         pieceTypeBB[piece] |= sqMask;
+
         if (removedPiece != Piece.EMPTY) {
-            if (Piece.isWhite(removedPiece))
+            int pVal = Evaluate.pieceValue[removedPiece];
+            if (Piece.isWhite(removedPiece)) {
+                wMtrl -= pVal;
                 whiteBB &= ~sqMask;
-            else
+                if (removedPiece == Piece.WPAWN) {
+                    wMtrlPawns -= pVal;
+                    pHashKey ^= psHashKeys[Piece.WPAWN][square];
+                }
+            } else {
+                bMtrl -= pVal;
                 blackBB &= ~sqMask;
-        }
-        if (piece != Piece.EMPTY) {
-            if (Piece.isWhite(piece))
-                whiteBB |= sqMask;
-            else
-                blackBB |= sqMask;
+                if (removedPiece == Piece.BPAWN) {
+                    bMtrlPawns -= pVal;
+                    pHashKey ^= psHashKeys[Piece.BPAWN][square];
+                }
+            }
         }
 
-        // Update king position 
-        if (piece == Piece.WKING) {
-            wKingSq = square;
-        } else if (piece == Piece.BKING) {
-            bKingSq = square;
+        if (piece != Piece.EMPTY) {
+            int pVal = Evaluate.pieceValue[piece];
+            if (Piece.isWhite(piece)) {
+                wMtrl += pVal;
+                whiteBB |= sqMask;
+                if (piece == Piece.WPAWN) {
+                    wMtrlPawns += pVal;
+                    pHashKey ^= psHashKeys[Piece.WPAWN][square];
+                }
+                if (piece == Piece.WKING)
+                    wKingSq = square;
+            } else {
+                bMtrl += pVal;
+                blackBB |= sqMask;
+                if (piece == Piece.BPAWN) {
+                    bMtrlPawns += pVal;
+                    pHashKey ^= psHashKeys[Piece.BPAWN][square];
+                }
+                if (piece == Piece.BKING)
+                    bKingSq = square;
+            }
         }
 
         // Update piece/square table scores
@@ -377,18 +373,6 @@ public class Position {
 
     public final int getKingSq(boolean whiteMove) {
         return whiteMove ? wKingSq : bKingSq;
-    }
-
-    /**
-     * Count number of pieces of a certain type.
-     */
-    public final int nPieces(int pType) {
-        int ret = 0;
-        for (int sq = 0; sq < 64; sq++) {
-            if (squares[sq] == pType)
-                ret++;
-        }
-        return ret;
     }
 
     /** Apply a move to the current position. */
@@ -473,20 +457,27 @@ public class Position {
             // Perform move
             movePieceNotPawn(move.from, move.to);
         }
-        if (!wtm) {
+        if (wtm) {
+            // Update castling rights when rook moves
+            if ((BitBoard.maskCorners & fromMask) != 0) {
+                if (p == Piece.WROOK)
+                    removeCastleRights(move.from);
+            }
+            if ((BitBoard.maskCorners & (1L << move.to)) != 0) {
+                if (capP == Piece.BROOK)
+                    removeCastleRights(move.to);
+            }
+        } else {
             fullMoveCounter++;
-        }
-
-        // Update castling rights when rook moves
-        if ((BitBoard.maskCorners & fromMask) != 0) {
-            int rook = wtm ? Piece.WROOK : Piece.BROOK;
-            if (p == rook)
-                removeCastleRights(move.from);
-        }
-        if ((BitBoard.maskCorners & (1L << move.to)) != 0) {
-            int oRook = wtm ? Piece.BROOK : Piece.WROOK;
-            if (capP == oRook)
-                removeCastleRights(move.to);
+            // Update castling rights when rook moves
+            if ((BitBoard.maskCorners & fromMask) != 0) {
+                if (p == Piece.BROOK)
+                    removeCastleRights(move.from);
+            }
+            if ((BitBoard.maskCorners & (1L << move.to)) != 0) {
+                if (capP == Piece.WROOK)
+                    removeCastleRights(move.to);
+            }
         }
 
         hashKey ^= whiteHashKey;

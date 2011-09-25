@@ -227,7 +227,8 @@ public class Evaluate {
     private long wKingZone, bKingZone;       // Squares close to king that are worth attacking
     private int wKingAttacks, bKingAttacks; // Number of attacks close to white/black king
     private long wAttacksBB, bAttacksBB;
-    
+    private long wPawnAttacks, bPawnAttacks; // Squares attacked by white/black pawns
+
     /** Constructor. */
     public Evaluate() {
         if (kpkTable == null) {
@@ -262,6 +263,13 @@ public class Evaluate {
         wKingZone = BitBoard.kingAttacks[pos.getKingSq(true)]; wKingZone |= wKingZone << 8;
         bKingZone = BitBoard.kingAttacks[pos.getKingSq(false)]; bKingZone |= bKingZone >>> 8;
         wAttacksBB = bAttacksBB = 0L;
+
+        long pawns = pos.pieceTypeBB[Piece.WPAWN];
+        wPawnAttacks = ((pawns & BitBoard.maskBToHFiles) << 7) |
+                       ((pawns & BitBoard.maskAToGFiles) << 9);
+        pawns = pos.pieceTypeBB[Piece.BPAWN];
+        bPawnAttacks = ((pawns & BitBoard.maskBToHFiles) >>> 9) |
+                       ((pawns & BitBoard.maskAToGFiles) >>> 7);
 
         score += pieceSquareEval(pos);
         score += pawnBonus(pos);
@@ -363,7 +371,7 @@ public class Evaluate {
                 int sq = BitBoard.numberOfTrailingZeros(m);
                 long atk = BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied);
                 wAttacksBB |= atk;
-                score += queenMobScore[Long.bitCount(atk & ~pos.whiteBB)];
+                score += queenMobScore[Long.bitCount(atk & ~(pos.whiteBB | bPawnAttacks))];
                 bKingAttacks += Long.bitCount(atk & bKingZone) * 2;
                 m &= m-1;
             }
@@ -373,7 +381,7 @@ public class Evaluate {
                 int sq = BitBoard.numberOfTrailingZeros(m);
                 long atk = BitBoard.rookAttacks(sq, occupied) | BitBoard.bishopAttacks(sq, occupied);
                 bAttacksBB |= atk;
-                score -= queenMobScore[Long.bitCount(atk & ~pos.blackBB)];
+                score -= queenMobScore[Long.bitCount(atk & ~(pos.blackBB | wPawnAttacks))];
                 wKingAttacks += Long.bitCount(atk & wKingZone) * 2;
                 m &= m-1;
             }
@@ -631,7 +639,7 @@ public class Evaluate {
             }
             long atk = BitBoard.rookAttacks(sq, occupied);
             wAttacksBB |= atk;
-            score += rookMobScore[Long.bitCount(atk & ~pos.whiteBB)];
+            score += rookMobScore[Long.bitCount(atk & ~(pos.whiteBB | bPawnAttacks))];
             if ((atk & bKingZone) != 0)
                 bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
@@ -649,7 +657,7 @@ public class Evaluate {
             }
             long atk = BitBoard.rookAttacks(sq, occupied);
             bAttacksBB |= atk;
-            score -= rookMobScore[Long.bitCount(atk & ~pos.blackBB)];
+            score -= rookMobScore[Long.bitCount(atk & ~(pos.blackBB | wPawnAttacks))];
             if ((atk & wKingZone) != 0)
                 wKingAttacks += Long.bitCount(atk & wKingZone);
             m &= m-1;
@@ -674,7 +682,7 @@ public class Evaluate {
             int sq = BitBoard.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
             wAttacksBB |= atk;
-            score += bishMobScore[Long.bitCount(atk & ~pos.whiteBB)];
+            score += bishMobScore[Long.bitCount(atk & ~(pos.whiteBB | bPawnAttacks))];
             if ((atk & bKingZone) != 0)
                 bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
@@ -684,7 +692,7 @@ public class Evaluate {
             int sq = BitBoard.numberOfTrailingZeros(m);
             long atk = BitBoard.bishopAttacks(sq, occupied);
             bAttacksBB |= atk;
-            score -= bishMobScore[Long.bitCount(atk & ~pos.blackBB)];
+            score -= bishMobScore[Long.bitCount(atk & ~(pos.blackBB | wPawnAttacks))];
             if ((atk & wKingZone) != 0)
                 wKingAttacks += Long.bitCount(atk & wKingZone);
             m &= m-1;
@@ -755,9 +763,7 @@ public class Evaluate {
                        pos.pieceTypeBB[Piece.BBISHOP] |
                        pos.pieceTypeBB[Piece.BROOK] |
                        pos.pieceTypeBB[Piece.BQUEEN]);
-        long pawns = pos.pieceTypeBB[Piece.WPAWN];
-        wAttacksBB |= (pawns & BitBoard.maskBToHFiles) << 7;
-        wAttacksBB |= (pawns & BitBoard.maskAToGFiles) << 9;
+        wAttacksBB |= wPawnAttacks;
         m = wAttacksBB & pos.blackBB & ~pos.pieceTypeBB[Piece.BKING];
         int tmp = 0;
         while (m != 0) {
@@ -778,9 +784,7 @@ public class Evaluate {
                        pos.pieceTypeBB[Piece.WBISHOP] |
                        pos.pieceTypeBB[Piece.WROOK] |
                        pos.pieceTypeBB[Piece.WQUEEN]);
-        pawns = pos.pieceTypeBB[Piece.BPAWN];
-        bAttacksBB |= (pawns & BitBoard.maskBToHFiles) >>> 9;
-        bAttacksBB |= (pawns & BitBoard.maskAToGFiles) >>> 7;
+        bAttacksBB |= bPawnAttacks;
         m = bAttacksBB & pos.whiteBB & ~pos.pieceTypeBB[Piece.WKING];
         tmp = 0;
         while (m != 0) {
