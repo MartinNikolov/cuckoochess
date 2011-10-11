@@ -410,6 +410,19 @@ public class EvaluateTest {
         pos = TextIO.readFEN("3Q4/8/8/8/8/4K3/1kp5/8 w - - 0 1");
         assertTrue(evalWhite(pos) > winScore);
     }
+    
+    @Test
+    public void testKRKP() throws ChessParseError {
+        System.out.println("KRKP");
+        final int pV = Evaluate.pV;
+        final int rV = Evaluate.rV;
+        final int winScore = rV - pV;
+        final int drawish = (pV + rV) / 20;
+        Position pos = TextIO.readFEN("6R1/8/8/8/5K2/2kp4/8/8 w - - 0 1");
+        assertTrue(evalWhite(pos) > winScore);
+        pos.whiteMove = !pos.whiteMove;
+        assertTrue(evalWhite(pos) < drawish);
+    }
 
     @Test
     public void testCantWin() throws ChessParseError {

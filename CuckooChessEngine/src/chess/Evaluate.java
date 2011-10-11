@@ -222,6 +222,7 @@ public class Evaluate {
     }
 
     static byte[] kpkTable = null;
+    static byte[] krkpTable = null;
 
     // King safety variables
     private long wKingZone, bKingZone;       // Squares close to king that are worth attacking
@@ -231,22 +232,27 @@ public class Evaluate {
 
     /** Constructor. */
     public Evaluate() {
-        if (kpkTable == null) {
-            byte[] table = new byte[2*32*64*48/8];
-            InputStream inStream = getClass().getResourceAsStream("/kpk.bitbase");
-            try {
-                int off = 0;
-                while (off < table.length) {
-                    int len = inStream.read(table, off, table.length - off);
-                    if (len < 0)
-                        throw new RuntimeException();
-                    off += len;
-                }
-                kpkTable = table;
-                inStream.close();
-            } catch (IOException e) {
-                throw new RuntimeException();
+        if (kpkTable == null)
+            kpkTable = readTable("/kpk.bitbase", 2*32*64*48/8);
+        if (krkpTable == null)
+            krkpTable = readTable("/krkp.winmasks", 2*32*48*8);
+    }
+
+    private byte[] readTable(String resource, int length) {
+        byte[] table = new byte[2*32*64*48/8];
+        InputStream inStream = getClass().getResourceAsStream(resource);
+        try {
+            int off = 0;
+            while (off < table.length) {
+                int len = inStream.read(table, off, table.length - off);
+                if (len < 0)
+                    throw new RuntimeException();
+                off += len;
             }
+            inStream.close();
+            return table;
+        } catch (IOException e) {
+            throw new RuntimeException();
         }
     }
 
@@ -952,6 +958,13 @@ public class Evaluate {
             score = evalKQKP(wk, wq, bk, bp);
             handled = true;
         }
+        if (!handled && (pos.wMtrl == rV) && (pos.bMtrl == pV) &&
+                (Long.bitCount(pos.pieceTypeBB[Piece.WROOK]) == 1)) {
+            int bp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BPAWN]);
+            score = krkpEval(pos.getKingSq(true), pos.getKingSq(false),
+                             bp, pos.whiteMove);
+            handled = true;
+        }
         if (!handled && (pos.bMtrl == qV) && (pos.wMtrl == pV) && 
             (Long.bitCount(pos.pieceTypeBB[Piece.BQUEEN]) == 1)) {
             int bk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.BKING]);
@@ -959,6 +972,13 @@ public class Evaluate {
             int wk = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WKING]);
             int wp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
             score = -evalKQKP(63-bk, 63-bq, 63-wk, 63-wp);
+            handled = true;
+        }
+        if (!handled && (pos.bMtrl == rV) && (pos.wMtrl == pV) &&
+                (Long.bitCount(pos.pieceTypeBB[Piece.BROOK]) == 1)) {
+            int wp = BitBoard.numberOfTrailingZeros(pos.pieceTypeBB[Piece.WPAWN]);
+            score = -krkpEval(63-pos.getKingSq(false), 63-pos.getKingSq(true),
+                             63-wp, !pos.whiteMove);
             handled = true;
         }
         if (!handled && (score > 0)) {
@@ -1069,7 +1089,6 @@ public class Evaluate {
         }
         return score;
 
-        // FIXME! Add evaluation of KRKP
         // FIXME! Add evaluation of KRPKR   : eg 8/8/8/5pk1/1r6/R7/8/4K3 w - - 0 74
         // FIXME! KRBKR is very hard to draw
     }
@@ -1125,6 +1144,27 @@ public class Evaluate {
         if (draw)
             return 0;
         return qV - pV / 4 * (7-Position.getY(wPawn));
+    }
+
+    private static final int krkpEval(int wKing, int bKing, int bPawn, boolean whiteMove) {
+        if (Position.getX(bKing) >= 4) { // Mirror X
+            wKing ^= 7;
+            bKing ^= 7;
+            bPawn ^= 7;
+        }
+        int index = whiteMove ? 0 : 1;
+        index = index * 32 + Position.getY(bKing)*4+Position.getX(bKing);
+        index = index * 48 + bPawn - 8;
+        index = index * 8 + Position.getY(wKing);
+        byte mask = krkpTable[index];
+        boolean canWin = (mask & (1 << Position.getX(wKing))) != 0;
+
+        int score = rV - pV + Position.getY(bPawn) * pV / 4;
+        if (canWin)
+            score += 150;
+        else
+            score /= 50;
+        return score;
     }
 
     /**
