@@ -550,6 +550,12 @@ public class Search {
                 nullOk = (pos.bMtrl > pos.bMtrlPawns) && (pos.bMtrlPawns > 0);
             }
             if (nullOk) {
+                if (evalScore == UNKNOWN_SCORE)
+                    evalScore = eval.evalPos(pos);
+                if (evalScore < beta)
+                    nullOk = false;
+            }
+            if (nullOk) {
                 final int R = (depth > 6*plyScale) ? 4*plyScale : 3*plyScale;
                 pos.setWhiteMove(!pos.whiteMove);
                 int epSquare = pos.getEpSquare();
