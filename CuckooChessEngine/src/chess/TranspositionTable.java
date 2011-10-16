@@ -190,11 +190,13 @@ public class TranspositionTable {
         int idx0 = h0(key);
         TTEntry ent = table[idx0];
         if (ent.key == key) {
+            ent.generation = (byte)generation;
             return ent;
         }
         int idx1 = h1(key);
         ent = table[idx1];
         if (ent.key == key) {
+            ent.generation = (byte)generation;
             return ent;
         }
         return emptySlot;
