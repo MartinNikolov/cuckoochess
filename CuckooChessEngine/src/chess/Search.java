@@ -617,7 +617,7 @@ public class Search {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
                 if (depth <= plyScale) {
-                    margin = 125;
+                    margin = 125; // FIXME! Optimize with CLOP
                 } else if (depth <= 2*plyScale) {
                     margin = 250;
                 } else if (depth <= 3*plyScale) {
@@ -689,20 +689,9 @@ public class Search {
                 return score;       // King capture
             }
             int newCaptureSquare = -1;
-            boolean isCapture = false;
-            boolean isPromotion = (m.promoteTo != Piece.EMPTY);
+            boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY);
+            boolean isPromotion = (m.promoteTo != Piece.EMPTY); // FIXME! Test mayReduce for R/B promotions
             int sVal = Integer.MIN_VALUE;
-            if (pos.getPiece(m.to) != Piece.EMPTY) {
-                isCapture = true;
-                int fVal = Evaluate.pieceValue[pos.getPiece(m.from)];
-                int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                final int pV = Evaluate.pV;
-                if (Math.abs(tVal - fVal) < pV / 2) {    // "Equal" capture
-                    sVal = SEE(m);
-                    if (Math.abs(sVal) < pV / 2)
-                        newCaptureSquare = m.to;
-                }
-            }
             int moveExtend = 0;
             if (posExtend == 0) {
                 final int pV = Evaluate.pV;
@@ -729,6 +718,7 @@ public class Search {
             
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
             boolean doFutility = false;
+            // FIXME! Try skip futility if extend > 0. If no good, move moveExtend to after futility check
             if (futilityPrune && mayReduce && haveLegalMoves) {
                 if (!givesCheck && !passedPawnPush(pos, m))
                     doFutility = true;
@@ -749,10 +739,22 @@ public class Search {
                         }
                     }
                 }
+                int newDepth = depth - plyScale + extend - lmr;
+                if (isCapture && (givesCheck || (depth + extend) > plyScale)) {
+                    // Compute recapture target square, but only if we are not going
+                    // into q-search at the next ply.
+                    int fVal = Evaluate.pieceValue[pos.getPiece(m.from)];
+                    int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                    final int pV = Evaluate.pV;
+                    if (Math.abs(tVal - fVal) < pV / 2) {    // "Equal" capture
+                        sVal = SEE(m);
+                        if (Math.abs(sVal) < pV / 2)
+                            newCaptureSquare = m.to;
+                    }
+                }
                 posHashList[posHashListSize++] = pos.zobristHash();
                 pos.makeMove(m, ui);
                 sti.currentMove = m;
-                int newDepth = depth - plyScale + extend - lmr;
 /*              int nodes0 = nodes;
                 int qNodes0 = qNodes;
                 if ((ply < 3) && (newDepth > plyScale)) {
