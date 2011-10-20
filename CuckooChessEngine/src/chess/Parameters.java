@@ -16,14 +16,16 @@ public class Parameters {
     public static class ParamBase {
         public String name;
         public Type type;
+        public boolean visible;
     }
 
     public static final class CheckParam extends ParamBase {
         public boolean value;
         public boolean defaultValue;
-        CheckParam(String name, boolean def) {
+        CheckParam(String name, boolean visible, boolean def) {
             this.name = name;
             this.type = Type.CHECK;
+            this.visible = visible;
             this.value = def;
             this.defaultValue = def;
         }
@@ -34,9 +36,10 @@ public class Parameters {
         public int maxValue;
         public int value;
         public int defaultValue;
-        SpinParam(String name, int minV, int maxV, int def) {
+        SpinParam(String name, boolean visible, int minV, int maxV, int def) {
             this.name = name;
             this.type = Type.SPIN;
+            this.visible = visible;
             this.minValue = minV;
             this.maxValue = maxV;
             this.value = def;
@@ -48,9 +51,10 @@ public class Parameters {
         public String[] allowedValues;
         public String value;
         public String defaultValue;
-        ComboParam(String name, String[] allowed, String def) {
+        ComboParam(String name, boolean visible, String[] allowed, String def) {
             this.name = name;
             this.type = Type.COMBO;
+            this.visible = visible;
             this.allowedValues = allowed;
             this.value = def;
             this.defaultValue = def;
@@ -58,18 +62,20 @@ public class Parameters {
     }
 
     public static final class ButtonParam extends ParamBase {
-        ButtonParam(String name) {
+        ButtonParam(String name, boolean visible) {
             this.name = name;
             this.type = Type.BUTTON;
+            this.visible = visible;
         }
     }
 
     public static final class StringParam extends ParamBase {
         public String value;
         public String defaultValue;
-        StringParam(String name, String def) {
+        StringParam(String name, boolean visible, String def) {
             this.name = name;
             this.type = Type.STRING;
+            this.visible = visible;
             this.value = def;
             this.defaultValue = def;
         }
@@ -81,7 +87,8 @@ public class Parameters {
     public final String[] getParamNames() {
         ArrayList<String> parNames = new ArrayList<String>();
         for (Map.Entry<String, ParamBase> e : params.entrySet())
-            parNames.add(e.getKey());
+            if (e.getValue().visible)
+                parNames.add(e.getKey());
         return parNames.toArray(new String[parNames.size()]);
     }
 
@@ -93,11 +100,11 @@ public class Parameters {
     private Map<String, ParamBase> params = new TreeMap<String, ParamBase>();
 
     private Parameters() {
-        addPar(new SpinParam("qV", -200, 200, 0));
-        addPar(new SpinParam("rV", -200, 200, 0));
-        addPar(new SpinParam("bV", -200, 200, 0));
-        addPar(new SpinParam("nV", -200, 200, 0));
-        addPar(new SpinParam("pV", -200, 200, 0));
+        addPar(new SpinParam("qV", false, -200, 200, 0));
+        addPar(new SpinParam("rV", false, -200, 200, 0));
+        addPar(new SpinParam("bV", false, -200, 200, 0));
+        addPar(new SpinParam("nV", false, -200, 200, 0));
+        addPar(new SpinParam("pV", false, -200, 200, 0));
     }
 
     private final void addPar(ParamBase p) {

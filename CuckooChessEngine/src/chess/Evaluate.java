@@ -714,7 +714,7 @@ public class Evaluate {
         // Bishop pair bonus
         if (numWhite == 2) {
             final int numPawns = pos.wMtrlPawns / pV;
-            score += 20 + (8 - numPawns) * 3;
+            score += 20 + (8 - numPawns) * 3; // FIXME! Optimize with CLOP
         }
         if (numBlack == 2) {
             final int numPawns = pos.bMtrlPawns / pV;
