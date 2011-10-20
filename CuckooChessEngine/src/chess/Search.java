@@ -690,35 +690,12 @@ public class Search {
             }
             int newCaptureSquare = -1;
             boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY);
-            boolean isPromotion = (m.promoteTo != Piece.EMPTY); // FIXME! Test mayReduce for R/B promotions
+            boolean isPromotion = (m.promoteTo != Piece.EMPTY);
             int sVal = Integer.MIN_VALUE;
-            int moveExtend = 0;
-            if (posExtend == 0) {
-                final int pV = Evaluate.pV;
-                if ((m.to == recaptureSquare)) {
-                    if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
-                    int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                    if (sVal > tVal - pV / 2)
-                        moveExtend = plyScale;
-                }
-                if ((moveExtend < plyScale) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
-                    // Extend if going into pawn endgame
-                    int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
-                    if (pos.whiteMove) {
-                        if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
-                            moveExtend = plyScale;
-                    } else {
-                        if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
-                            moveExtend = plyScale;
-                    }
-                }
-            }
             // FIXME! Test extending pawn pushes to 7:th rank
             boolean mayReduce = (m.score < 53) && (!isCapture || m.score < 0) && !isPromotion;
-            
             boolean givesCheck = MoveGen.givesCheck(pos, m); 
             boolean doFutility = false;
-            // FIXME! Try skip futility if extend > 0. If no good, move moveExtend to after futility check
             if (futilityPrune && mayReduce && haveLegalMoves) {
                 if (!givesCheck && !passedPawnPush(pos, m))
                     doFutility = true;
@@ -727,6 +704,27 @@ public class Search {
             if (doFutility) {
                 score = futilityScore;
             } else {
+                int moveExtend = 0;
+                if (posExtend == 0) {
+                    final int pV = Evaluate.pV;
+                    if ((m.to == recaptureSquare)) {
+                        if (sVal == Integer.MIN_VALUE) sVal = SEE(m);
+                        int tVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                        if (sVal > tVal - pV / 2)
+                            moveExtend = plyScale;
+                    }
+                    if ((moveExtend < plyScale) && isCapture && (pos.wMtrlPawns + pos.bMtrlPawns > pV)) {
+                        // Extend if going into pawn endgame
+                        int capVal = Evaluate.pieceValue[pos.getPiece(m.to)];
+                        if (pos.whiteMove) {
+                            if ((pos.wMtrl == pos.wMtrlPawns) && (pos.bMtrl - pos.bMtrlPawns == capVal))
+                                moveExtend = plyScale;
+                        } else {
+                            if ((pos.bMtrl == pos.bMtrlPawns) && (pos.wMtrl - pos.wMtrlPawns == capVal))
+                                moveExtend = plyScale;
+                        }
+                    }
+                }
                 int extend = Math.max(posExtend, moveExtend);
                 int lmr = 0;
                 if ((depth >= 3*plyScale) && mayReduce && (extend == 0)) {
