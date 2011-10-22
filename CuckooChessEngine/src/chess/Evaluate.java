@@ -710,15 +710,15 @@ public class Evaluate {
         boolean blackLight = (pos.pieceTypeBB[Piece.BBISHOP] & BitBoard.maskLightSq) != 0;
         int numWhite = (whiteDark ? 1 : 0) + (whiteLight ? 1 : 0);
         int numBlack = (blackDark ? 1 : 0) + (blackLight ? 1 : 0);
-    
+
         // Bishop pair bonus
         if (numWhite == 2) {
             final int numPawns = pos.wMtrlPawns / pV;
-            score += 20 + (8 - numPawns) * 3; // FIXME! Optimize with CLOP
+            score += 28 + (8 - numPawns) * 3;
         }
         if (numBlack == 2) {
             final int numPawns = pos.bMtrlPawns / pV;
-            score -= 20 + (8 - numPawns) * 3;
+            score -= 28 + (8 - numPawns) * 3;
         }
     
         // FIXME!!! Bad bishop
