@@ -617,13 +617,13 @@ public class Search {
             if ((Math.abs(alpha) <= MATE0 / 2) && (Math.abs(beta) <= MATE0 / 2)) {
                 int margin;
                 if (depth <= plyScale) {
-                    margin = 125; // FIXME! Optimize with CLOP
+                    margin = 61;
                 } else if (depth <= 2*plyScale) {
-                    margin = 250;
+                    margin = 144;
                 } else if (depth <= 3*plyScale) {
-                    margin = 375;
+                    margin = 268;
                 } else {
-                    margin = 500;
+                    margin = 334;
                 }
                 if (evalScore == UNKNOWN_SCORE) {
                     evalScore = eval.evalPos(pos);
