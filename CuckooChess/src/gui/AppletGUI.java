@@ -406,7 +406,7 @@ public class AppletGUI extends javax.swing.JApplet implements GUIInterface {
     
 
     public final int timeLimit() {
-        return TimeSlider.getValue() * 1000;
+        return Math.max(25, TimeSlider.getValue() * 1000);
     }
 
     public final boolean showThinking() {
