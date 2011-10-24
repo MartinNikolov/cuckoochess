@@ -841,8 +841,6 @@ public class Evaluate {
         score += (bKingAttacks - wKingAttacks) * 4;
         final int kSafety = interpolate(m, minM, 0, maxM, score);
         return kSafety;
-
-        // FIXME! g pawn is valuable (avoid g5, g4, gxf5)
     }
 
     private static final class KingSafetyHashData {
