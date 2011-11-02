@@ -144,8 +144,8 @@ public class Evaluate {
                                 -10, -5,  0,  0,  0,  0, -5,-10 };
 
     /** Piece/square table for rooks during middle game. */
-    static final int[] rt1b = {  0,  3,  5,  5,  5,  5,  3,  0,
-                                15, 20, 20, 20, 20, 20, 20, 15,
+    static final int[] rt1b = {  8, 11, 13, 13, 13, 13, 11,  8,
+                                22, 27, 27, 27, 27, 27, 27, 22,
                                  0,  0,  0,  0,  0,  0,  0,  0,
                                  0,  0,  0,  0,  0,  0,  0,  0,
                                 -2,  0,  0,  0,  0,  0,  0, -2,
@@ -650,10 +650,10 @@ public class Evaluate {
                 bKingAttacks += Long.bitCount(atk & bKingZone);
             m &= m-1;
         }
-        long r7 = pos.pieceTypeBB[Piece.WROOK] & 0x00ff000000000000L;
+        long r7 = (pos.pieceTypeBB[Piece.WROOK] >>> 48) & 0x00ffL;
         if (((r7 & (r7 - 1)) != 0) &&
             ((pos.pieceTypeBB[Piece.BKING] & 0xff00000000000000L) != 0))
-            score += 20; // Two rooks on 7:th row
+            score += 30; // Two rooks on 7:th row
         m = pos.pieceTypeBB[Piece.BROOK];
         while (m != 0) {
             int sq = BitBoard.numberOfTrailingZeros(m);
@@ -671,7 +671,7 @@ public class Evaluate {
         r7 = pos.pieceTypeBB[Piece.BROOK] & 0xff00L;
         if (((r7 & (r7 - 1)) != 0) &&
             ((pos.pieceTypeBB[Piece.WKING] & 0xffL) != 0))
-          score -= 20; // Two rooks on 2:nd row
+          score -= 30; // Two rooks on 2:nd row
         return score;
     }
 
