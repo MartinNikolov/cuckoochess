@@ -453,8 +453,6 @@ public class Search {
             if (ply < 20) nodesPlyVec[ply]++;
             if (depth < 20*plyScale) nodesDepthVec[depth/plyScale]++;
         }
-        nodes++;
-        totalNodes++;
         final long hKey = pos.historyHash();
 
         // Draw tests
@@ -517,8 +515,6 @@ public class Search {
 
         // If out of depth, perform quiescence search
         if (depth + posExtend <= 0) {
-            qNodes--;
-            totalNodes--;
             q0Eval = evalScore;
             int score = quiesce(alpha, beta, ply, 0, inCheck);
             int type = TTEntry.T_EXACT;
@@ -598,8 +594,6 @@ public class Search {
             }
             final int razorMargin = 250;
             if (evalScore < beta - razorMargin) {
-                qNodes--;
-                totalNodes--;
                 q0Eval = evalScore;
                 int score = quiesce(alpha-razorMargin, beta-razorMargin, ply, 0, inCheck);
                 if (score <= alpha-razorMargin) {
@@ -752,6 +746,8 @@ public class Search {
                 }
                 posHashList[posHashListSize++] = pos.zobristHash();
                 pos.makeMove(m, ui);
+                nodes++;
+                totalNodes++;
                 sti.currentMove = m;
 /*              int nodes0 = nodes;
                 int qNodes0 = qNodes;
@@ -871,8 +867,6 @@ public class Search {
      * Quiescence search. Only non-losing captures are searched.
      */
     final private int quiesce(int alpha, int beta, int ply, int depth, final boolean inCheck) {
-        qNodes++;
-        totalNodes++;
         int score;
         if (inCheck) {
             score = -(MATE0 - (ply+1));
@@ -965,7 +959,9 @@ public class Search {
             }
             final boolean nextInCheck = (depth - 1) > -4 ? givesCheck : false;
 
-            pos.makeMove(m, ui);
+            pos.makeMove(m, ui); 
+            qNodes++;
+            totalNodes++;
             score = -quiesce(-beta, -alpha, ply + 1, depth - 1, nextInCheck);
             pos.unMakeMove(m, ui);
             if (score > bestScore) {
