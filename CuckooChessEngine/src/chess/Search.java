@@ -260,7 +260,7 @@ public class Search {
                         type = TTEntry.T_GE;
                     }
                     m.score = score;
-                    tt.insert(pos.historyHash(), m, type, 0, depth, UNKNOWN_SCORE);
+                    tt.insert(pos.historyHash(), m, type, 0, depth * plyScale, UNKNOWN_SCORE);
                 }
                 if (score >= beta) {
                     int retryDelta = aspirationDelta * 2;
