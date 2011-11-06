@@ -191,6 +191,7 @@ public class Search {
         nodesToGo = 0;
         Position origPos = new Position(pos);
         int bestScoreLastIter = 0;
+        boolean firstIteration = true;
         Move bestMove = scMoves[0].move;
         this.verbose = verbose;
         if ((maxDepth < 0) || (maxDepth > 100)) {
@@ -200,12 +201,11 @@ public class Search {
             searchTreeInfo[i].allowNullMove = true;
         }
         try {
-        int depth;
-        for (depth = 1; ; depth++) {
+        for (int depthS = plyScale; ; depthS += plyScale, firstIteration = false) {
             initNodeStats();
-            if (listener != null) listener.notifyDepth(depth);
+            if (listener != null) listener.notifyDepth(depthS/plyScale);
             int aspirationDelta = (Math.abs(bestScoreLastIter) <= MATE0 / 2) ? 20 : 1000;
-            int alpha = depth > 1 ? Math.max(bestScoreLastIter - aspirationDelta, -Search.MATE0) : -Search.MATE0;
+            int alpha = firstIteration ? -Search.MATE0 : Math.max(bestScoreLastIter - aspirationDelta, -Search.MATE0);
             int bestScore = -Search.MATE0;
             UndoInfo ui = new UndoInfo();
             boolean needMoreTime = false;
@@ -219,19 +219,19 @@ public class Search {
                 posHashList[posHashListSize++] = pos.zobristHash();
                 boolean givesCheck = MoveGen.givesCheck(pos, m);
                 int beta;
-                if (depth > 1) {
-                    beta = (mi == 0) ? Math.min(bestScoreLastIter + aspirationDelta, Search.MATE0) : alpha + 1;
-                } else {
+                if (firstIteration) {
                     beta = Search.MATE0;
+                } else {
+                    beta = (mi == 0) ? Math.min(bestScoreLastIter + aspirationDelta, Search.MATE0) : alpha + 1;
                 }
 
-                int lmr = 0;
+                int lmrS = 0;
                 boolean isCapture = (pos.getPiece(m.to) != Piece.EMPTY);
                 boolean isPromotion = (m.promoteTo != Piece.EMPTY);
-                if ((depth >= 3) && !isCapture && !isPromotion) {
+                if ((depthS >= 3*plyScale) && !isCapture && !isPromotion) {
                     if (!givesCheck && !passedPawnPush(pos, m)) {
                         if (mi >= 3)
-                            lmr = 1;
+                            lmrS = plyScale;
                     }
                 }
 /*                int nodes0 = nodes;
@@ -242,12 +242,12 @@ public class Search {
                 pos.makeMove(m, ui);
                 SearchTreeInfo sti = searchTreeInfo[0];
                 sti.currentMove = m;
-                sti.lmr = lmr * plyScale;
+                sti.lmr = lmrS;
                 sti.nodeIdx = -1;
-                int score = -negaScout(-beta, -alpha, 1, (depth - lmr - 1) * plyScale, -1, givesCheck);
-                if ((lmr > 0) && (score > alpha)) {
+                int score = -negaScout(-beta, -alpha, 1, depthS - lmrS - plyScale, -1, givesCheck);
+                if ((lmrS > 0) && (score > alpha)) {
                     sti.lmr = 0;
-                    score = -negaScout(-beta, -alpha, 1, (depth - 1) * plyScale, -1, givesCheck);
+                    score = -negaScout(-beta, -alpha, 1, depthS - plyScale, -1, givesCheck);
                 }
                 int nodesThisMove = nodes + qNodes;
                 posHashListSize--;
@@ -260,7 +260,7 @@ public class Search {
                         type = TTEntry.T_GE;
                     }
                     m.score = score;
-                    tt.insert(pos.historyHash(), m, type, 0, depth * plyScale, UNKNOWN_SCORE);
+                    tt.insert(pos.historyHash(), m, type, 0, depthS, UNKNOWN_SCORE);
                 }
                 if (score >= beta) {
                     int retryDelta = aspirationDelta * 2;
@@ -273,11 +273,11 @@ public class Search {
                         if (verbose)
                             System.out.printf("%-6s %6d %6d %6d >=\n", TextIO.moveToString(pos, m, false),
                                     score, nodes, qNodes);
-                        notifyPV(depth, score, false, true, m);
+                        notifyPV(depthS/plyScale, score, false, true, m);
                         nodes = qNodes = 0;
                         posHashList[posHashListSize++] = pos.zobristHash();
                         pos.makeMove(m, ui);
-                        int score2 = -negaScout(-beta, -score, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        int score2 = -negaScout(-beta, -score, 1, depthS - plyScale, -1, givesCheck);
                         score = Math.max(score, score2);
                         nodesThisMove += nodes + qNodes;
                         posHashListSize--;
@@ -292,17 +292,17 @@ public class Search {
                         if (verbose)
                             System.out.printf("%-6s %6d %6d %6d <=\n", TextIO.moveToString(pos, m, false),
                                     score, nodes, qNodes);
-                        notifyPV(depth, score, true, false, m);
+                        notifyPV(depthS/plyScale, score, true, false, m);
                         nodes = qNodes = 0;
                         posHashList[posHashListSize++] = pos.zobristHash();
                         pos.makeMove(m, ui);
-                        score = -negaScout(-score, -alpha, 1, (depth - 1) * plyScale, -1, givesCheck);
+                        score = -negaScout(-score, -alpha, 1, depthS - plyScale, -1, givesCheck);
                         nodesThisMove += nodes + qNodes;
                         posHashListSize--;
                         pos.unMakeMove(m, ui);
                     }
                 }
-                if (verbose || ((listener != null) && (depth > 1))) {
+                if (verbose || ((listener != null) && !firstIteration)) {
                     boolean havePV = false;
                     String PV = "";
                     if ((score > alpha) || (mi == 0)) {
@@ -322,14 +322,14 @@ public class Search {
                                 TextIO.moveToString(pos, m, false), score,
                                 nodes, qNodes, (score > alpha ? " *" : ""), PV);
                     }
-                    if (havePV && (depth > 1)) {
-                        notifyPV(depth, score, false, false, m);
+                    if (havePV && !firstIteration) {
+                        notifyPV(depthS/plyScale, score, false, false, m);
                     }
                 }
                 scMoves[mi].move.score = score;
                 scMoves[mi].nodes = nodesThisMove;
                 bestScore = Math.max(bestScore, score);
-                if (depth > 1) {
+                if (!firstIteration) {
                     if ((score > alpha) || (mi == 0)) {
                         alpha = score;
                         MoveInfo tmp = scMoves[mi];
@@ -340,7 +340,7 @@ public class Search {
                         bestMove = scMoves[0].move;
                     }
                 }
-                if (depth > 1) {
+                if (!firstIteration) {
                     long timeLimit = needMoreTime ? maxTimeMillis : minTimeMillis;
                     if (timeLimit >= 0) {
                         long tNow = System.currentTimeMillis();
@@ -349,35 +349,35 @@ public class Search {
                     }
                 }
             }
-            if (depth == 1) {
+            if (firstIteration) {
                 Arrays.sort(scMoves, new MoveInfo.SortByScore());
                 bestMove = scMoves[0].move;
-                notifyPV(depth, bestMove.score, false, false, bestMove);
+                notifyPV(depthS/plyScale, bestMove.score, false, false, bestMove);
             }
             long tNow = System.currentTimeMillis();
             if (verbose) {
                 for (int i = 0; i < 20; i++) {
                     System.out.printf("%2d %7d %7d\n", i, nodesPlyVec[i], nodesDepthVec[i]);
                 }
-                System.out.printf("Time: %.3f depth:%d nps:%d\n", (tNow - tStart) * .001, depth,
+                System.out.printf("Time: %.3f depth:%.2f nps:%d\n", (tNow - tStart) * .001, depthS/(double)plyScale,
                         (int)(totalNodes / ((tNow - tStart) * .001)));
             }
             if (maxTimeMillis >= 0) {
                 if (tNow - tStart >= minTimeMillis)
                     break;
             }
-            if (depth >= maxDepth)
+            if (depthS >= maxDepth * plyScale)
                 break;
             if (maxNodes >= 0) {
                 if (totalNodes >= maxNodes)
                     break;
             }
             int plyToMate = Search.MATE0 - Math.abs(bestScore);
-            if (depth >= plyToMate)
+            if (depthS >= plyToMate * plyScale)
                 break;
             bestScoreLastIter = bestScore;
 
-            if (depth > 1) {
+            if (!firstIteration) {
                 // Moves that were hard to search should be searched early in the next iteration
                 Arrays.sort(scMoves, 1, scMoves.length, new MoveInfo.SortByNodes());
             }
