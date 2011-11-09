@@ -49,6 +49,7 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -156,7 +157,6 @@ public class DroidFish extends Activity implements GUIInterface {
 
     private final static String bookDir = "DroidFish";
     private final static String pgnDir = "DroidFish" + File.separator + "pgn";
-    private final static String scidDir = "scid";
     private BookOptions bookOptions = new BookOptions();
     private PGNOptions pgnOptions = new PGNOptions();
 
@@ -658,6 +658,7 @@ public class DroidFish extends Activity implements GUIInterface {
     static private final int RESULT_LOAD_PGN = 2;
     static private final int RESULT_EDITHEADERS = 3;
     static private final int RESULT_EDITCOMMENTS = 4;
+    static private final int RESULT_SELECT_SCID = 5;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -776,6 +777,21 @@ public class DroidFish extends Activity implements GUIInterface {
                 commInfo.postComment = bundle.getString("postComment");
                 commInfo.nag = bundle.getInt("nag");
                 ctrl.setComments(commInfo);
+            }
+            break;
+        case RESULT_SELECT_SCID:
+            if (resultCode == RESULT_OK) {
+                String pathName = data.getAction();
+                if (pathName != null) {
+                    Editor editor = settings.edit();
+                    editor.putString("currentScidFile", pathName);
+                    editor.putInt("currFT", FT_SCID);
+                    editor.commit();
+                    Intent i = new Intent(DroidFish.this, LoadScid.class);
+                    i.setAction("org.petero.droidfish.loadScid");
+                    i.putExtra("org.petero.droidfish.pathname", pathName);
+                    startActivityForResult(i, RESULT_LOAD_PGN);
+                }
             }
             break;
         }
@@ -1189,47 +1205,14 @@ public class DroidFish extends Activity implements GUIInterface {
             return alert;
         }
         case SELECT_SCID_FILE_DIALOG: {
-            final String[] fileNames = findFilesInDirectory(scidDir, new FileNameFilter() {
-                @Override
-                public boolean accept(String filename) {
-                    return filename.endsWith(".si4");
-                }
-            });
-            final int numFiles = fileNames.length;
-            if (numFiles == 0) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.app_name).setMessage(R.string.no_scid_files);
-                AlertDialog alert = builder.create();
-                return alert;
-            }
-            int defaultItem = 0;
-            String currentScidFile = settings.getString("currentScidFile", "");
-            for (int i = 0; i < numFiles; i++) {
-                if (currentScidFile.equals(fileNames[i])) {
-                    defaultItem = i;
-                    break;
-                }
-            }
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.select_scid_file);
-            builder.setSingleChoiceItems(fileNames, defaultItem, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int item) {
-                    Editor editor = settings.edit();
-                    String scidFile = fileNames[item].toString();
-                    editor.putString("currentScidFile", scidFile);
-                    editor.putInt("currFT", FT_SCID);
-                    editor.commit();
-                    String sep = File.separator;
-                    String pathName = Environment.getExternalStorageDirectory() + sep + scidDir + sep + scidFile;
-                    Intent i = new Intent(DroidFish.this, LoadScid.class);
-                    i.setAction("org.petero.droidfish.loadScid");
-                    i.putExtra("org.petero.droidfish.pathname", pathName);
-                    startActivityForResult(i, RESULT_LOAD_PGN);
-                    dialog.dismiss();
-                }
-            });
-            AlertDialog alert = builder.create();
-            return alert;
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("org.scid.android",
+                                                  "org.scid.android.SelectFileActivity"));
+            intent.setAction(".si4");
+            String currScidFile = settings.getString("currentScidFile", "");
+            intent.putExtra("org.scid.android.defaultpath", currScidFile);
+            startActivityForResult(intent, RESULT_SELECT_SCID);
+            return null;
         }
         case SELECT_PGN_FILE_SAVE_DIALOG: {
             final String[] fileNames = findFilesInDirectory(pgnDir, null);
@@ -1529,7 +1512,7 @@ public class DroidFish extends Activity implements GUIInterface {
                         } else {
                             i = new Intent(DroidFish.this, LoadScid.class);
                             i.setAction("org.petero.droidfish.loadScidPrevGame");
-                            i.putExtra("org.petero.droidfish.pathname", pathName + scidDir + sep + currFileName);
+                            i.putExtra("org.petero.droidfish.pathname", currFileName);
                         }
                         startActivityForResult(i, RESULT_LOAD_PGN);
                         break;
@@ -1574,7 +1557,7 @@ public class DroidFish extends Activity implements GUIInterface {
                         } else {
                             i = new Intent(DroidFish.this, LoadScid.class);
                             i.setAction("org.petero.droidfish.loadScidNextGame");
-                            i.putExtra("org.petero.droidfish.pathname", pathName + scidDir + sep + currFileName);
+                            i.putExtra("org.petero.droidfish.pathname", currFileName);
                         }
                         startActivityForResult(i, RESULT_LOAD_PGN);
                         break;
