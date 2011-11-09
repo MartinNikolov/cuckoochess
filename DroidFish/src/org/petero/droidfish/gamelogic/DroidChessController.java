@@ -717,7 +717,8 @@ public class DroidChessController {
                     final Pair<String,Move> pair =
                         computerPlayer.doSearch(ph.first, ph.second, currPos, haveDrawOffer,
                                                 wTime, bTime, inc, fMovesToGo,
-                                                gui.ponderMode(), fPonderMove);
+                                                gui.ponderMode(), fPonderMove,
+                                                gui.engineThreads());
                     final String cmd = pair.first;
                     final Move ponder = pair.second;
                     final SearchStatus localSS = ss;
@@ -777,7 +778,8 @@ public class DroidChessController {
                         if (alive) {
                             computerPlayer.setEngineStrength(engine, 1000);
                             computerPlayer.setNumPV(numPV);
-                            computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer);
+                            computerPlayer.analyze(ph.first, ph.second, currPos, haveDrawOffer,
+                                                   gui.engineThreads());
                         }
                     }
                 });

@@ -66,4 +66,7 @@ public interface GUIInterface {
 
     /** Return true if pondering (permanent brain) is enabled. */
     public boolean ponderMode();
+
+    /** Return the number of engine threads to use. */
+    int engineThreads();
 }

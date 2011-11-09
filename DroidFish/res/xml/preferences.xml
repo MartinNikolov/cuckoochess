@@ -37,6 +37,14 @@
             android:summary="Let engine think while waiting for opponent's move"
             android:defaultValue="false">
         </CheckBoxPreference>
+        <ListPreference
+            android:key="threads"
+            android:title="Threads"
+            android:summary="Number of engine threads (CPU cores) to use"
+            android:entryValues="@array/engine_threads_values"
+            android:entries="@array/engine_threads_texts"
+            android:defaultValue="0">
+        </ListPreference>
     </PreferenceCategory>
 	<PreferenceCategory
 		android:title="Time Control">

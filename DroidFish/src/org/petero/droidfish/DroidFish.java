@@ -125,6 +125,8 @@ public class DroidFish extends Activity implements GUIInterface {
     // FIXME!!! Add anti-lamer test: 8/8/8/8/8/8/3R3r/k3K2R w K - 0 1 bm O-O
     // FIXME!!! Add anti-lamer test: 4kr2/8/8/4PpN1/8/8/4Q3/3RK3 w - f6 0 2 bm exf6
 
+    // FIXME!!! Remember multi-PV analysis setting when program restarted.
+
     private ChessBoard cb;
     private static DroidChessController ctrl = null;
     private boolean mShowThinking;
@@ -133,6 +135,7 @@ public class DroidFish extends Activity implements GUIInterface {
     private int maxNumArrows;
     private GameMode gameMode;
     private boolean mPonderMode;
+    private int mEngineThreads;
     private boolean boardFlipped;
     private boolean autoSwapSides;
 
@@ -528,6 +531,8 @@ public class DroidFish extends Activity implements GUIInterface {
         maxNumArrows = getIntSetting("thinkingArrows", 2);
         mShowBookHints = settings.getBoolean("bookHints", false);
 
+        mEngineThreads = getIntSetting("threads", 0);
+
         String engine = settings.getString("engine", "");
         int strength = settings.getInt("strength", 1000);
         setEngineStrength(engine, strength);
@@ -819,6 +824,11 @@ public class DroidFish extends Activity implements GUIInterface {
     @Override
     public boolean ponderMode() {
         return mPonderMode;
+    }
+
+    @Override
+    public int engineThreads() {
+        return mEngineThreads;
     }
 
     /** Report a move made that is a candidate for GUI animation. */

@@ -9,6 +9,20 @@
 	   <item>stockfish</item>
 	   <item>cuckoochess</item>
 	</string-array>
+    <string-array name="engine_threads_texts">
+        <item>Automatic</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="engine_threads_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
 	<string-array name="moves_per_session_texts">
 	    <item>Whole Game</item>
 	    <item>1 move</item>

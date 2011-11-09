@@ -47,6 +47,7 @@ public class DroidComputerPlayer {
     private boolean newGame = false;
     private String engine = "";
     private int maxPV = 1;  // >1 if multiPV mode is supported
+    private static int numCPUs = 1;
 
     private boolean havePonderHit = false;
 
@@ -72,12 +73,12 @@ public class DroidComputerPlayer {
             uciEngine.initialize();
             uciEngine.writeLineToEngine("uci");
             readUCIOptions();
-            int nThreads = getNumCPUs();
+            int nThreads = getNumCPUs(); 
             if (nThreads > 8) nThreads = 8;
+            numCPUs = nThreads;
             if (!useCuckoo)
                 uciEngine.setOption("Hash", 16);
             uciEngine.setOption("Ponder", false);
-            uciEngine.setOption("Threads", nThreads);
             uciEngine.writeLineToEngine("ucinewgame");
             syncReady();
         }
@@ -225,12 +226,14 @@ public class DroidComputerPlayer {
      *              by repetition/50 moves.
      * @param ponderEnabled True if pondering is enabled in the GUI. Can affect time management.
      * @param ponderMove Move to ponder, or null for non-ponder search.
+     * @param engineThreads  Number of engine threads to use, if supported by engine.
      * @return The computer player command, and the next ponder move.
      */
     public final Pair<String,Move> doSearch(Position prevPos, ArrayList<Move> mList,
                                             Position currPos, boolean drawOffer,
                                             int wTime, int bTime, int inc, int movesToGo,
-                                            boolean ponderEnabled, Move ponderMove) {
+                                            boolean ponderEnabled, Move ponderMove,
+                                            int engineThreads) {
         if (listener != null)
             listener.notifyBookInfo("", null);
 
@@ -286,6 +289,7 @@ public class DroidComputerPlayer {
         maybeNewGame();
         uciEngine.setOption("Ponder", ponderEnabled);
         uciEngine.setOption("UCI_AnalyseMode", false);
+        uciEngine.setOption("Threads", engineThreads > 0 ? engineThreads : numCPUs);
         uciEngine.writeLineToEngine(posStr.toString());
         if (wTime < 1) wTime = 1;
         if (bTime < 1) bTime = 1;
@@ -362,7 +366,8 @@ public class DroidComputerPlayer {
 
     public boolean shouldStop = false;
 
-    public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos, boolean drawOffer) {
+    public final void analyze(Position prevPos, ArrayList<Move> mList, Position currPos,
+                              boolean drawOffer, int engineThreads) {
         if (shouldStop)
             return;
         if (listener != null) {
@@ -390,6 +395,7 @@ public class DroidComputerPlayer {
         maybeNewGame();
         uciEngine.writeLineToEngine(posStr.toString());
         uciEngine.setOption("UCI_AnalyseMode", true);
+        uciEngine.setOption("Threads", engineThreads > 0 ? engineThreads : numCPUs);
         String goStr = String.format("go infinite");
         uciEngine.writeLineToEngine(goStr);
 
