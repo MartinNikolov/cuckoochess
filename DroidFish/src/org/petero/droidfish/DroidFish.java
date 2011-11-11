@@ -1209,8 +1209,6 @@ public class DroidFish extends Activity implements GUIInterface {
             intent.setComponent(new ComponentName("org.scid.android",
                                                   "org.scid.android.SelectFileActivity"));
             intent.setAction(".si4");
-            String currScidFile = settings.getString("currentScidFile", "");
-            intent.putExtra("org.scid.android.defaultpath", currScidFile);
             startActivityForResult(intent, RESULT_SELECT_SCID);
             return null;
         }
