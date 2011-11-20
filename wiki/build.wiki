@@ -3,11 +3,11 @@
 
 = Introduction =
 
-This page explains how to build CuckooChess and DroidFish using eclipse in linux.
+This page explains how to build CuckooChess and DroidFish using eclipse in linux and windows.
 
 = Preparations =
 
-To build the CuckooChess chess engine, a standard eclipse installation is enough.
+To build the CuckooChess chess engine, you need an eclipse installation with support for svn. I use "Subversive SVN Team Provider" and "SVNKit".
 
 To build the DroidFish Android app, you first need to install the Android SDK and the Android NDK from
 http://developer.android.com/sdk/index.html.
@@ -18,10 +18,10 @@ http://developer.android.com/sdk/index.html.
     # In eclipse, select File -> New -> Other -> Checkout Projects from SVN.
     # Create a new repository location, http://cuckoochess.googlecode.com/svn/trunk/.
     # Select CuckooChessEngine, click Finish.
-  # If java is installed in a non-standard location on your computer, change the BinBook_builder eclipse builder:
+  # If java is installed in a non-standard location on your computer or you are using windows, change the BinBook_builder eclipse builder:
     # Right-click on CuckooChessEngine in the package explorer, select Properties.
     # Click Builder -> BinBook_builder -> Edit.
-    # Change Location to point to your java executable.
+    # Change Location to point to your java executable. In windows, this is likely C:\Windows\System32\java.exe.
   # Checkout the CuckooChess project from http://cuckoochess.googlecode.com/svn/trunk/.
   # When the CuckooChess project is built (which will happen automatically if "build automatically" is enabled) a jar file is created in workspace_path/CuckooChess/deploy/CuckooChess.jar.
 
@@ -29,6 +29,6 @@ http://developer.android.com/sdk/index.html.
 
   # DroidFish depends on the CuckooChessEngine project, so checkout that project first.
   # Checkout the DroidFish project from http://cuckoochess.googlecode.com/svn/trunk/.
-  # Define the NDK environment variable to point to your NDK installation directory, or modify the DroidFish Native_Builder to point to the ndk-build script in the NDK installation directory.
+  # Define the NDK environment variable to point to your NDK installation directory, or modify the DroidFish Native_Builder to point to the ndk-build script in the NDK installation directory. In windows, point to the ndk-build.cmd script in the NDK installation directory.
   
 If you plan to make modifications to the source code, you may also want to checkout the DroidFishTest project from http://cuckoochess.googlecode.com/svn/trunk/.
